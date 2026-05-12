@@ -1,0 +1,181 @@
+{
+  "created_at_utc": "2026-05-06T21:53:03.249267+00:00",
+  "result": "OK",
+  "package": "visagio_static_simulator_FASE2_IMPLEMENTADA_v1",
+  "phase": "phase_2_baseline_implemented",
+  "path_count_checked": 24,
+  "missing_paths": [],
+  "paths": [
+    {
+      "path": "fase-2-baseline/index.html",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 6613,
+      "sha256": "80cfec8e169ad46052252f5d7e8c28a610364ed3eea58204958ee34ffe90450f"
+    },
+    {
+      "path": "assets/js/shared/common.js",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 2082,
+      "sha256": "5df32968c13aec7a64373e367da164d32d1083fcf46a5151f4533d806af89e1b"
+    },
+    {
+      "path": "assets/js/shared/data-loader.js",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 467,
+      "sha256": "e5c99f827d737524ce106d45aa068c3c37cb1206e3abf9ccb907c225b71118c4"
+    },
+    {
+      "path": "assets/js/phase2/main.js",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 5771,
+      "sha256": "ac702852143f5ae627b9517822488bfa31ab13418a193655ac04a0b61987fdf1"
+    },
+    {
+      "path": "assets/js/phase2/baseline-dashboard.js",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 5659,
+      "sha256": "9316e88e6c99b05351748597bf9ef5e3cb75e9bc60e78af3e78dbe973617ccea"
+    },
+    {
+      "path": "assets/js/phase2/phase2-tests.js",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1704,
+      "sha256": "46c756903a1496884dabc845c277b0adb30d0a0b7c1e1b612c7fb4fa15115801"
+    },
+    {
+      "path": "assets/js/phase2/cost-engine.js",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 396,
+      "sha256": "2ea2c681af906daa965d4a4d83570cf4ca60879ccce89f42964808dd15dbe7f1"
+    },
+    {
+      "path": "assets/js/phase2/base-fit-score.js",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 363,
+      "sha256": "62640dd3f439cb60b1576cb3bd65efc5c4e739d8a53895164faa520e178ff8d8"
+    },
+    {
+      "path": "data/validation/phase2_implementation_report.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1046,
+      "sha256": "003573492ee9c537d3967d0501e23bb23452aae072e68819bb2bd93aa9f2920a"
+    },
+    {
+      "path": "docs/02_fases_do_projeto/27_FASE2_IMPLEMENTADA.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3025,
+      "sha256": "0388057420cbf1972d3db378da2b443f6ec16f5a021b1d4e801200de5615e202"
+    },
+    {
+      "path": "docs/03_modulos_contratos_funcoes/27_FASE2_MODULOS_IMPLEMENTADOS.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3348,
+      "sha256": "880415531373a58a40368c7eb417ecbe7718456a29074e3af4faea58f526bd14"
+    },
+    {
+      "path": "docs/05_testes_aceite/27_TESTES_ACEITE_FASE2.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 942,
+      "sha256": "ee28d0f3d7ecc8c9328a6e53ff00ca7e5c121869fb60c61d12ab98e7186820be"
+    },
+    {
+      "path": "data/empresa1/phase2/baseline_model.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 2621,
+      "sha256": "5627f59b4706894b4744bd1e6ab8fe03599243c8d1c0ef7d11adcb57ba1680b8"
+    },
+    {
+      "path": "data/empresa1/phase2/baseline_flows.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 25195,
+      "sha256": "879e11a39469aa7197388144ecb0de45cf2415363efb2d603685bc632fde9081"
+    },
+    {
+      "path": "data/empresa1/phase2/baseline_costs.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1667,
+      "sha256": "28d746d477d5d200313c2c0ad2661018cb96ea9318f97ea5abec5fd9ae0be190"
+    },
+    {
+      "path": "data/empresa1/phase2/tax_results.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 392,
+      "sha256": "9cb24dbf0d1cb2ab980b10261ada3e011c0a7e54b4394d03ba556842558230ba"
+    },
+    {
+      "path": "data/empresa1/phase2/base_fit.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 326,
+      "sha256": "55b242fa3fd2edb685ad72e24916c89642519ebfb98eef594bc63bfd501b679d"
+    },
+    {
+      "path": "data/empresa1/phase2/phase2_bundle.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 30610,
+      "sha256": "2fa664b463407461b6bfe0bbf2b2659d59fef2126b14982c955d3abf1f969cf3"
+    },
+    {
+      "path": "data/empresa2/phase2/baseline_model.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1284,
+      "sha256": "3d022592bf9af18563762b09df1a0eeea8949e411e828f8d7a23e2276d2c3329"
+    },
+    {
+      "path": "data/empresa2/phase2/baseline_flows.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 29515,
+      "sha256": "4db66175e93c91e460b67bad2e84aa36ac08477c8bb744c888a71869db571195"
+    },
+    {
+      "path": "data/empresa2/phase2/baseline_costs.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 2218,
+      "sha256": "a25e7ff1c8b820585e53d91d7aabb83e91161a64f288419f7977878e7d28c4d1"
+    },
+    {
+      "path": "data/empresa2/phase2/tax_results.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 583,
+      "sha256": "9123e67454cd33b0fb9c389e3d1a4dde10e3fc39bab2d7bcfa38f2898592f797"
+    },
+    {
+      "path": "data/empresa2/phase2/base_fit.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1865,
+      "sha256": "6b1c7022ff550009beb8d8dae8782cc5ebf68fd12970fc61b3b2fb2dd829b67d"
+    },
+    {
+      "path": "data/empresa2/phase2/phase2_bundle.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 35962,
+      "sha256": "c50807fcaaea7865eb1f9cc1a4fd818240ac780406800da55ac3f8c05332629f"
+    }
+  ],
+  "notes": [
+    "Relatório específico da Fase 2. O path_resolution_report geral da Fase 1 foi preservado para rastreabilidade."
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "title": "Debug Playbook",
+  "rules": [
+    "Abrir por python -m http.server na raiz.",
+    "Usar /debug/ para localizar fase/módulo/path/teste.",
+    "Nunca misturar company_id entre empresas."
+  ],
+  "common_errors": [
+    {
+      "symptom": "fetch HTTP 404",
+      "where": "DataLoader",
+      "how_to_fix": "Verifique path relativo e servidor local na raiz."
+    },
+    {
+      "symptom": "custo total não fecha",
+      "where": "CostEngine",
+      "how_to_fix": "Confira soma das parcelas e tax_impact."
+    }
+  ]
+}

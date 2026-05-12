@@ -1,0 +1,217 @@
+Fábrica_UF,CD_UF,Cliente_UF,ICMS_Fábrica_CD_Tipo,ICMS_Fábrica_CD_Aliq,ICMS_CD_Cliente_Tipo,ICMS_CD_Cliente_Aliq_Origem,ICMS_Interno_Cliente,DIFAL_Aliq,Observações
+SP,RJ,AC,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente AC (Norte): 7% origem + 13% DIFAL
+SP,RJ,AL,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente AL (Nordeste): 7% origem + 13% DIFAL
+SP,RJ,AM,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente AM (Norte): 7% origem + 13% DIFAL
+SP,RJ,AP,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente AP (Norte): 7% origem + 13% DIFAL
+SP,RJ,BA,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente BA (Nordeste): 7% origem + 13% DIFAL
+SP,RJ,CE,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente CE (Nordeste): 7% origem + 13% DIFAL
+SP,RJ,DF,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente DF (Centro-Oeste): 7% origem + 13% DIFAL
+SP,RJ,ES,Interestadual,12%,Interestadual,7%,17%,10%,CD RJ para cliente ES (Sudeste): 7% origem + 10% DIFAL
+SP,RJ,GO,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente GO (Centro-Oeste): 7% origem + 13% DIFAL
+SP,RJ,MA,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente MA (Nordeste): 7% origem + 13% DIFAL
+SP,RJ,MT,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente MT (Centro-Oeste): 7% origem + 13% DIFAL
+SP,RJ,MS,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente MS (Centro-Oeste): 7% origem + 13% DIFAL
+SP,RJ,MG,Interestadual,12%,Interestadual,12%,18%,6%,CD RJ para cliente MG (Sudeste): 12% origem + 6% DIFAL
+SP,RJ,PA,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente PA (Norte): 7% origem + 13% DIFAL
+SP,RJ,PB,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente PB (Nordeste): 7% origem + 13% DIFAL
+SP,RJ,PR,Interestadual,12%,Interestadual,12%,19%,7%,CD RJ para cliente PR (Sul): 12% origem + 7% DIFAL
+SP,RJ,PE,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente PE (Nordeste): 7% origem + 13% DIFAL
+SP,RJ,PI,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente PI (Nordeste): 7% origem + 13% DIFAL
+SP,RJ,RN,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente RN (Nordeste): 7% origem + 13% DIFAL
+SP,RJ,RS,Interestadual,12%,Interestadual,12%,19%,7%,CD RJ para cliente RS (Sul): 12% origem + 7% DIFAL
+SP,RJ,RJ,Interno,20%,Interno,20%,20%,0%,CD RJ para cliente RJ: venda interna sem DIFAL
+SP,RJ,RO,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente RO (Norte): 7% origem + 13% DIFAL
+SP,RJ,RR,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente RR (Norte): 7% origem + 13% DIFAL
+SP,RJ,SC,Interestadual,12%,Interestadual,12%,19%,7%,CD RJ para cliente SC (Sul): 12% origem + 7% DIFAL
+SP,RJ,SP,Interestadual,12%,Interestadual,12%,18%,6%,CD RJ para cliente SP (Sudeste): 12% origem + 6% DIFAL
+SP,RJ,SE,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente SE (Nordeste): 7% origem + 13% DIFAL
+SP,RJ,TO,Interestadual,12%,Interestadual,7%,20%,13%,CD RJ para cliente TO (Norte): 7% origem + 13% DIFAL
+SP,SP,AC,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente AC: 7% origem + 13% DIFAL
+SP,SP,AL,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente AL: 7% origem + 13% DIFAL
+SP,SP,AM,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente AM: 7% origem + 13% DIFAL
+SP,SP,AP,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente AP: 7% origem + 13% DIFAL
+SP,SP,BA,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente BA: 7% origem + 13% DIFAL
+SP,SP,CE,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente CE: 7% origem + 13% DIFAL
+SP,SP,DF,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente DF: 7% origem + 13% DIFAL
+SP,SP,ES,Interno,18%,Interestadual,7%,17%,10%,Fábrica→CD interno SP. CD SP para cliente ES: 7% origem + 10% DIFAL
+SP,SP,GO,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente GO: 7% origem + 13% DIFAL
+SP,SP,MA,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente MA: 7% origem + 13% DIFAL
+SP,SP,MT,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente MT: 7% origem + 13% DIFAL
+SP,SP,MS,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente MS: 7% origem + 13% DIFAL
+SP,SP,MG,Interno,18%,Interestadual,12%,18%,6%,Fábrica→CD interno SP. CD SP para cliente MG: 12% origem + 6% DIFAL
+SP,SP,PA,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente PA: 7% origem + 13% DIFAL
+SP,SP,PB,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente PB: 7% origem + 13% DIFAL
+SP,SP,PR,Interno,18%,Interestadual,12%,19%,7%,Fábrica→CD interno SP. CD SP para cliente PR: 12% origem + 7% DIFAL
+SP,SP,PE,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente PE: 7% origem + 13% DIFAL
+SP,SP,PI,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente PI: 7% origem + 13% DIFAL
+SP,SP,RN,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente RN: 7% origem + 13% DIFAL
+SP,SP,RS,Interno,18%,Interestadual,12%,19%,7%,Fábrica→CD interno SP. CD SP para cliente RS: 12% origem + 7% DIFAL
+SP,SP,RJ,Interno,18%,Interestadual,12%,20%,8%,Fábrica→CD interno SP. CD SP para cliente RJ: 12% origem + 8% DIFAL
+SP,SP,RO,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente RO: 7% origem + 13% DIFAL
+SP,SP,RR,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente RR: 7% origem + 13% DIFAL
+SP,SP,SC,Interno,18%,Interestadual,12%,19%,7%,Fábrica→CD interno SP. CD SP para cliente SC: 12% origem + 7% DIFAL
+SP,SP,SP,Interno,18%,Interno,18%,18%,0%,Fábrica→CD interno SP. CD SP para cliente SP: venda interna sem DIFAL
+SP,SP,SE,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente SE: 7% origem + 13% DIFAL
+SP,SP,TO,Interno,18%,Interestadual,7%,20%,13%,Fábrica→CD interno SP. CD SP para cliente TO: 7% origem + 13% DIFAL
+SP,MG,AC,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente AC (Norte): 7% origem + 13% DIFAL
+SP,MG,AL,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente AL (Nordeste): 7% origem + 13% DIFAL
+SP,MG,AM,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente AM (Norte): 7% origem + 13% DIFAL
+SP,MG,AP,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente AP (Norte): 7% origem + 13% DIFAL
+SP,MG,BA,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente BA (Nordeste): 7% origem + 13% DIFAL
+SP,MG,CE,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente CE (Nordeste): 7% origem + 13% DIFAL
+SP,MG,DF,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente DF (Centro-Oeste): 7% origem + 13% DIFAL
+SP,MG,ES,Interestadual,12%,Interestadual,7%,17%,10%,CD MG para cliente ES (Sudeste): 7% origem + 10% DIFAL
+SP,MG,GO,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente GO (Centro-Oeste): 7% origem + 13% DIFAL
+SP,MG,MA,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente MA (Nordeste): 7% origem + 13% DIFAL
+SP,MG,MT,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente MT (Centro-Oeste): 7% origem + 13% DIFAL
+SP,MG,MS,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente MS (Centro-Oeste): 7% origem + 13% DIFAL
+SP,MG,MG,Interno,18%,Interno,18%,18%,0%,CD MG para cliente MG: venda interna sem DIFAL
+SP,MG,PA,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente PA (Norte): 7% origem + 13% DIFAL
+SP,MG,PB,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente PB (Nordeste): 7% origem + 13% DIFAL
+SP,MG,PR,Interestadual,12%,Interestadual,12%,19%,7%,CD MG para cliente PR (Sul): 12% origem + 7% DIFAL
+SP,MG,PE,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente PE (Nordeste): 7% origem + 13% DIFAL
+SP,MG,PI,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente PI (Nordeste): 7% origem + 13% DIFAL
+SP,MG,RN,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente RN (Nordeste): 7% origem + 13% DIFAL
+SP,MG,RS,Interestadual,12%,Interestadual,12%,19%,7%,CD MG para cliente RS (Sul): 12% origem + 7% DIFAL
+SP,MG,RJ,Interestadual,12%,Interestadual,12%,20%,8%,CD MG para cliente RJ (Sudeste): 12% origem + 8% DIFAL
+SP,MG,RO,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente RO (Norte): 7% origem + 13% DIFAL
+SP,MG,RR,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente RR (Norte): 7% origem + 13% DIFAL
+SP,MG,SC,Interestadual,12%,Interestadual,12%,19%,7%,CD MG para cliente SC (Sul): 12% origem + 7% DIFAL
+SP,MG,SP,Interestadual,12%,Interestadual,12%,18%,6%,CD MG para cliente SP (Sudeste): 12% origem + 6% DIFAL
+SP,MG,SE,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente SE (Nordeste): 7% origem + 13% DIFAL
+SP,MG,TO,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente TO (Norte): 7% origem + 13% DIFAL
+SP,ES,AC,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente AC (Norte): 7% origem + 13% DIFAL
+SP,ES,AL,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente AL (Nordeste): 7% origem + 13% DIFAL
+SP,ES,AM,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente AM (Norte): 7% origem + 13% DIFAL
+SP,ES,AP,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente AP (Norte): 7% origem + 13% DIFAL
+SP,ES,BA,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente BA (Nordeste): 7% origem + 13% DIFAL
+SP,ES,CE,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente CE (Nordeste): 7% origem + 13% DIFAL
+SP,ES,DF,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente DF (Centro-Oeste): 7% origem + 13% DIFAL
+SP,ES,ES,Interno,17%,Interno,17%,17%,0%,CD ES para cliente ES: venda interna sem DIFAL
+SP,ES,GO,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente GO (Centro-Oeste): 7% origem + 13% DIFAL
+SP,ES,MA,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente MA (Nordeste): 7% origem + 13% DIFAL
+SP,ES,MT,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente MT (Centro-Oeste): 7% origem + 13% DIFAL
+SP,ES,MS,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente MS (Centro-Oeste): 7% origem + 13% DIFAL
+SP,ES,MG,Interestadual,12%,Interestadual,7%,18%,11%,CD ES para cliente MG (Sudeste): 7% origem + 11% DIFAL
+SP,ES,PA,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente PA (Norte): 7% origem + 13% DIFAL
+SP,ES,PB,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente PB (Nordeste): 7% origem + 13% DIFAL
+SP,ES,PR,Interestadual,12%,Interestadual,12%,19%,7%,CD ES para cliente PR (Sul): 12% origem + 7% DIFAL
+SP,ES,PE,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente PE (Nordeste): 7% origem + 13% DIFAL
+SP,ES,PI,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente PI (Nordeste): 7% origem + 13% DIFAL
+SP,ES,RN,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente RN (Nordeste): 7% origem + 13% DIFAL
+SP,ES,RS,Interestadual,12%,Interestadual,12%,19%,7%,CD ES para cliente RS (Sul): 12% origem + 7% DIFAL
+SP,ES,RJ,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente RJ (Sudeste): 7% origem + 13% DIFAL
+SP,ES,RO,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente RO (Norte): 7% origem + 13% DIFAL
+SP,ES,RR,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente RR (Norte): 7% origem + 13% DIFAL
+SP,ES,SC,Interestadual,12%,Interestadual,12%,19%,7%,CD ES para cliente SC (Sul): 12% origem + 7% DIFAL
+SP,ES,SP,Interestadual,12%,Interestadual,12%,18%,6%,CD ES para cliente SP (Sudeste): 12% origem + 6% DIFAL
+SP,ES,SE,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente SE (Nordeste): 7% origem + 13% DIFAL
+SP,ES,TO,Interestadual,12%,Interestadual,7%,20%,13%,CD ES para cliente TO (Norte): 7% origem + 13% DIFAL
+RJ,RJ,AC,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente AC: 7% origem + 13% DIFAL
+RJ,RJ,AL,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente AL: 7% origem + 13% DIFAL
+RJ,RJ,AM,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente AM: 7% origem + 13% DIFAL
+RJ,RJ,AP,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente AP: 7% origem + 13% DIFAL
+RJ,RJ,BA,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente BA: 7% origem + 13% DIFAL
+RJ,RJ,CE,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente CE: 7% origem + 13% DIFAL
+RJ,RJ,DF,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente DF: 7% origem + 13% DIFAL
+RJ,RJ,ES,Interno,20%,Interestadual,7%,17%,10%,Fábrica→CD interno RJ. CD RJ para cliente ES: 7% origem + 10% DIFAL
+RJ,RJ,GO,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente GO: 7% origem + 13% DIFAL
+RJ,RJ,MA,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente MA: 7% origem + 13% DIFAL
+RJ,RJ,MT,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente MT: 7% origem + 13% DIFAL
+RJ,RJ,MS,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente MS: 7% origem + 13% DIFAL
+RJ,RJ,MG,Interno,20%,Interestadual,12%,18%,6%,Fábrica→CD interno RJ. CD RJ para cliente MG: 12% origem + 6% DIFAL
+RJ,RJ,PA,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente PA: 7% origem + 13% DIFAL
+RJ,RJ,PB,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente PB: 7% origem + 13% DIFAL
+RJ,RJ,PR,Interno,20%,Interestadual,12%,19%,7%,Fábrica→CD interno RJ. CD RJ para cliente PR: 12% origem + 7% DIFAL
+RJ,RJ,PE,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente PE: 7% origem + 13% DIFAL
+RJ,RJ,PI,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente PI: 7% origem + 13% DIFAL
+RJ,RJ,RN,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente RN: 7% origem + 13% DIFAL
+RJ,RJ,RS,Interno,20%,Interestadual,12%,19%,7%,Fábrica→CD interno RJ. CD RJ para cliente RS: 12% origem + 7% DIFAL
+RJ,RJ,RJ,Interno,20%,Interno,20%,20%,0%,Fábrica→CD interno RJ. CD RJ para cliente RJ: venda interna sem DIFAL
+RJ,RJ,RO,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente RO: 7% origem + 13% DIFAL
+RJ,RJ,RR,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente RR: 7% origem + 13% DIFAL
+RJ,RJ,SC,Interno,20%,Interestadual,12%,19%,7%,Fábrica→CD interno RJ. CD RJ para cliente SC: 12% origem + 7% DIFAL
+RJ,RJ,SP,Interno,20%,Interestadual,12%,18%,6%,Fábrica→CD interno RJ. CD RJ para cliente SP: 12% origem + 6% DIFAL
+RJ,RJ,SE,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente SE: 7% origem + 13% DIFAL
+RJ,RJ,TO,Interno,20%,Interestadual,7%,20%,13%,Fábrica→CD interno RJ. CD RJ para cliente TO: 7% origem + 13% DIFAL
+RJ,SP,AC,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente AC (Norte): 7% origem + 13% DIFAL
+RJ,SP,AL,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente AL (Nordeste): 7% origem + 13% DIFAL
+RJ,SP,AM,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente AM (Norte): 7% origem + 13% DIFAL
+RJ,SP,AP,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente AP (Norte): 7% origem + 13% DIFAL
+RJ,SP,BA,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente BA (Nordeste): 7% origem + 13% DIFAL
+RJ,SP,CE,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente CE (Nordeste): 7% origem + 13% DIFAL
+RJ,SP,DF,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente DF (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,SP,ES,Interestadual,12%,Interestadual,7%,17%,10%,CD SP para cliente ES (Sudeste): 7% origem + 10% DIFAL
+RJ,SP,GO,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente GO (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,SP,MA,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente MA (Nordeste): 7% origem + 13% DIFAL
+RJ,SP,MT,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente MT (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,SP,MS,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente MS (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,SP,MG,Interestadual,12%,Interestadual,12%,18%,6%,CD SP para cliente MG (Sudeste): 12% origem + 6% DIFAL
+RJ,SP,PA,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente PA (Norte): 7% origem + 13% DIFAL
+RJ,SP,PB,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente PB (Nordeste): 7% origem + 13% DIFAL
+RJ,SP,PR,Interestadual,12%,Interestadual,12%,19%,7%,CD SP para cliente PR (Sul): 12% origem + 7% DIFAL
+RJ,SP,PE,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente PE (Nordeste): 7% origem + 13% DIFAL
+RJ,SP,PI,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente PI (Nordeste): 7% origem + 13% DIFAL
+RJ,SP,RN,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente RN (Nordeste): 7% origem + 13% DIFAL
+RJ,SP,RS,Interestadual,12%,Interestadual,12%,19%,7%,CD SP para cliente RS (Sul): 12% origem + 7% DIFAL
+RJ,SP,RJ,Interestadual,12%,Interestadual,12%,20%,8%,CD SP para cliente RJ (Sudeste): 12% origem + 8% DIFAL
+RJ,SP,RO,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente RO (Norte): 7% origem + 13% DIFAL
+RJ,SP,RR,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente RR (Norte): 7% origem + 13% DIFAL
+RJ,SP,SC,Interestadual,12%,Interestadual,12%,19%,7%,CD SP para cliente SC (Sul): 12% origem + 7% DIFAL
+RJ,SP,SP,Interestadual,12%,Interno,18%,18%,0%,CD SP para cliente SP: venda interna sem DIFAL
+RJ,SP,SE,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente SE (Nordeste): 7% origem + 13% DIFAL
+RJ,SP,TO,Interestadual,12%,Interestadual,7%,20%,13%,CD SP para cliente TO (Norte): 7% origem + 13% DIFAL
+RJ,MG,AC,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente AC (Norte): 7% origem + 13% DIFAL
+RJ,MG,AL,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente AL (Nordeste): 7% origem + 13% DIFAL
+RJ,MG,AM,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente AM (Norte): 7% origem + 13% DIFAL
+RJ,MG,AP,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente AP (Norte): 7% origem + 13% DIFAL
+RJ,MG,BA,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente BA (Nordeste): 7% origem + 13% DIFAL
+RJ,MG,CE,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente CE (Nordeste): 7% origem + 13% DIFAL
+RJ,MG,DF,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente DF (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,MG,ES,Interestadual,12%,Interestadual,7%,17%,10%,CD MG para cliente ES (Sudeste): 7% origem + 10% DIFAL
+RJ,MG,GO,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente GO (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,MG,MA,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente MA (Nordeste): 7% origem + 13% DIFAL
+RJ,MG,MT,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente MT (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,MG,MS,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente MS (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,MG,MG,Interno,18%,Interno,18%,18%,0%,CD MG para cliente MG: venda interna sem DIFAL
+RJ,MG,PA,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente PA (Norte): 7% origem + 13% DIFAL
+RJ,MG,PB,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente PB (Nordeste): 7% origem + 13% DIFAL
+RJ,MG,PR,Interestadual,12%,Interestadual,12%,19%,7%,CD MG para cliente PR (Sul): 12% origem + 7% DIFAL
+RJ,MG,PE,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente PE (Nordeste): 7% origem + 13% DIFAL
+RJ,MG,PI,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente PI (Nordeste): 7% origem + 13% DIFAL
+RJ,MG,RN,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente RN (Nordeste): 7% origem + 13% DIFAL
+RJ,MG,RS,Interestadual,12%,Interestadual,12%,19%,7%,CD MG para cliente RS (Sul): 12% origem + 7% DIFAL
+RJ,MG,RJ,Interestadual,12%,Interestadual,12%,20%,8%,CD MG para cliente RJ (Sudeste): 12% origem + 8% DIFAL
+RJ,MG,RO,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente RO (Norte): 7% origem + 13% DIFAL
+RJ,MG,RR,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente RR (Norte): 7% origem + 13% DIFAL
+RJ,MG,SC,Interestadual,12%,Interestadual,12%,19%,7%,CD MG para cliente SC (Sul): 12% origem + 7% DIFAL
+RJ,MG,SP,Interestadual,12%,Interestadual,12%,18%,6%,CD MG para cliente SP (Sudeste): 12% origem + 6% DIFAL
+RJ,MG,SE,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente SE (Nordeste): 7% origem + 13% DIFAL
+RJ,MG,TO,Interestadual,12%,Interestadual,7%,20%,13%,CD MG para cliente TO (Norte): 7% origem + 13% DIFAL
+RJ,ES,AC,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente AC (Norte): 7% origem + 13% DIFAL
+RJ,ES,AL,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente AL (Nordeste): 7% origem + 13% DIFAL
+RJ,ES,AM,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente AM (Norte): 7% origem + 13% DIFAL
+RJ,ES,AP,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente AP (Norte): 7% origem + 13% DIFAL
+RJ,ES,BA,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente BA (Nordeste): 7% origem + 13% DIFAL
+RJ,ES,CE,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente CE (Nordeste): 7% origem + 13% DIFAL
+RJ,ES,DF,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente DF (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,ES,ES,Interno,17%,Interno,17%,17%,0%,CD ES para cliente ES: venda interna sem DIFAL
+RJ,ES,GO,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente GO (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,ES,MA,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente MA (Nordeste): 7% origem + 13% DIFAL
+RJ,ES,MT,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente MT (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,ES,MS,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente MS (Centro-Oeste): 7% origem + 13% DIFAL
+RJ,ES,MG,Interestadual,7%,Interestadual,7%,18%,11%,CD ES para cliente MG (Sudeste): 7% origem + 11% DIFAL
+RJ,ES,PA,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente PA (Norte): 7% origem + 13% DIFAL
+RJ,ES,PB,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente PB (Nordeste): 7% origem + 13% DIFAL
+RJ,ES,PR,Interestadual,7%,Interestadual,12%,19%,7%,CD ES para cliente PR (Sul): 12% origem + 7% DIFAL
+RJ,ES,PE,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente PE (Nordeste): 7% origem + 13% DIFAL
+RJ,ES,PI,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente PI (Nordeste): 7% origem + 13% DIFAL
+RJ,ES,RN,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente RN (Nordeste): 7% origem + 13% DIFAL
+RJ,ES,RS,Interestadual,7%,Interestadual,12%,19%,7%,CD ES para cliente RS (Sul): 12% origem + 7% DIFAL
+RJ,ES,RJ,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente RJ (Sudeste): 7% origem + 13% DIFAL
+RJ,ES,RO,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente RO (Norte): 7% origem + 13% DIFAL
+RJ,ES,RR,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente RR (Norte): 7% origem + 13% DIFAL
+RJ,ES,SC,Interestadual,7%,Interestadual,12%,19%,7%,CD ES para cliente SC (Sul): 12% origem + 7% DIFAL
+RJ,ES,SP,Interestadual,7%,Interestadual,12%,18%,6%,CD ES para cliente SP (Sudeste): 12% origem + 6% DIFAL
+RJ,ES,SE,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente SE (Nordeste): 7% origem + 13% DIFAL
+RJ,ES,TO,Interestadual,7%,Interestadual,7%,20%,13%,CD ES para cliente TO (Norte): 7% origem + 13% DIFAL

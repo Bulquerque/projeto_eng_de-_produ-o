@@ -1,0 +1,68 @@
+{
+  "id": "RecommendationPanel",
+  "phase": 5,
+  "status": "planned_phase_5",
+  "page": "/fase-5-entrega-final",
+  "purpose": "Apresenta recomendação final com ressalvas: melhor cenário por objetivo, robustez, riscos e próximos passos.",
+  "inputs": {
+    "rankedScenarios": [],
+    "stressResults": [],
+    "explanations": [],
+    "objective": {}
+  },
+  "outputs": {
+    "recommendation": {
+      "recommendedScenarioId": "cenario_3cds",
+      "confidence": "medium",
+      "why": [],
+      "caveats": []
+    }
+  },
+  "internal_functions": [
+    [
+      "selectRecommendedScenario(ranked, stress)",
+      "Seleciona cenário equilibrando score e robustez."
+    ],
+    [
+      "buildCaveats(alerts)",
+      "Monta ressalvas."
+    ],
+    [
+      "classifyConfidence(evidence)",
+      "Classifica confiança."
+    ],
+    [
+      "renderRecommendation(rec)",
+      "Mostra recomendação visual."
+    ]
+  ],
+  "external_calls": [
+    [
+      "ScenarioScoring",
+      "Recebe ranking."
+    ],
+    [
+      "StressTestEngine",
+      "Recebe robustez."
+    ],
+    [
+      "ExplainabilityEngine",
+      "Recebe drivers e trade-offs."
+    ]
+  ],
+  "tests": {
+    "unit": [
+      "cenário com score alto e stress ruim recebe ressalva",
+      "sem evidência suficiente => confiança baixa"
+    ],
+    "integration": [
+      "recomendação aparece no relatório"
+    ],
+    "manual": [
+      "conferir se recomendação não ignora riscos"
+    ],
+    "acceptance": [
+      "recomendação precisa citar caveats quando existirem"
+    ]
+  }
+}

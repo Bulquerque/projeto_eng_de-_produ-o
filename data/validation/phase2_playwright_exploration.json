@@ -1,0 +1,273 @@
+{
+  "result": "ok",
+  "phase": 2,
+  "generated_at_utc": "2026-05-11T12:38:54Z",
+  "page_url": "/fase-2-baseline/",
+  "controls": {
+    "buttons": [
+      {
+        "text": "Empresa 1",
+        "aria_selected": "true",
+        "class_name": "company-tab active"
+      },
+      {
+        "text": "Empresa 2",
+        "aria_selected": "false",
+        "class_name": "company-tab"
+      },
+      {
+        "text": "Empresa 1",
+        "aria_selected": "true",
+        "class_name": "company-tab active"
+      },
+      {
+        "text": "Empresa 2",
+        "aria_selected": "false",
+        "class_name": "company-tab"
+      }
+    ],
+    "links": [
+      {
+        "text": "Pular para o conteúdo",
+        "href": "#main"
+      },
+      {
+        "text": "V",
+        "href": "../index.html"
+      },
+      {
+        "text": "Validação",
+        "href": "../index.html"
+      },
+      {
+        "text": "Baseline",
+        "href": "../fase-2-baseline/"
+      },
+      {
+        "text": "Simulação",
+        "href": "../fase-3-cenarios/"
+      },
+      {
+        "text": "Otimização",
+        "href": "../fase-4-score-otimizador/"
+      },
+      {
+        "text": "Entrega",
+        "href": "../fase-5-entrega-final/"
+      },
+      {
+        "text": "Debug",
+        "href": "../debug/"
+      }
+    ]
+  },
+  "states": {
+    "empresa1_initial": {
+      "company_id": "empresa1",
+      "current_company": "Empresa 1",
+      "current_scenario": "baseline_empresa1",
+      "current_status": "computed_baseline_without_historical_reference",
+      "proof_cards": [
+        "CDs ativos0—",
+        "Origens0detectadas",
+        "Destinos0cobertura",
+        "Fluxos36linhas processadas",
+        "Total com tributoR$ 31,32 mibaseline",
+        "Benchmarkpendentedisponibilidade",
+        "CDs ativos0—",
+        "Origens0detectadas",
+        "Destinos0cobertura",
+        "Fluxos76linhas processadas",
+        "Total com tributoR$ 49,66 mibaseline",
+        "Benchmarkpendentedisponibilidade"
+      ],
+      "baseline_summary": [
+        "CDs ativos15BA / LAURO DE FREITAS · CE / ITAITINGA · ES / SERRA · GO / RIO VERDE",
+        "Origens15detectadas",
+        "Destinos36cobertura",
+        "Fluxos3636 destinos cobertos"
+      ],
+      "cost_cards": [
+        "TransferênciaR$ 0origem → CD",
+        "DistribuiçãoR$ 14,69 miCD → destino",
+        "ArmazenagemR$ 11,65 mioperação",
+        "EstoqueR$ 4,98 micapital",
+        "TributárioR$ 0quando disponível",
+        "Total com tributoR$ 31,32 mibaseline total"
+      ],
+      "flow_summary": [
+        "total_flows36,0",
+        "destinations_covered36,0",
+        "cds_used11,0",
+        "total_revenue501.768.139,4",
+        "total_weight_or_volume29.125.081,3",
+        "demand_destinations_aggregated36,0",
+        "invalid_demand_rows_dropped3,0",
+        "dropped_without_distance0,0"
+      ],
+      "tax_panel": "Impacto tributárioR$ 0valor canônicoCobertura tributária0,0%0 linhasFonte canônicascenario_totals canônicosem conflito",
+      "calibration_panel": "Base Fit Scorependentebenchmark_pendingSem referência consolidada disponível.Benchmark pendente: não há custo histórico consolidado para esta empresa.",
+      "auto_checks": [
+        "Baseline prontocomputed_baseline_without_historical_referenceOK",
+        "Empresa corretaesperado empresa1OK",
+        "Fluxos gerados36 fluxosOK",
+        "Custos não negativoscustos principaisOK",
+        "Total logístico fechasoma 31319475.32442116 vs total 31319475.32442116OK",
+        "Total com tributo fechatotal 31319475.32442116OK",
+        "Empresa 1 sem score inventadobenchmark pendenteOK",
+        "Base Fit válidobenchmark pendente sem score inventadoOK"
+      ],
+      "check_summary": "8/8 testes OK",
+      "manual_progress": "0/8 checagens manuais marcadas para empresa1."
+    },
+    "empresa2_after_click": {
+      "company_id": "empresa2",
+      "current_company": "Empresa 2",
+      "current_scenario": "baseline_empresa2",
+      "current_status": "workbook_baseline_reconstructed",
+      "proof_cards": [
+        "CDs ativos0—",
+        "Origens0detectadas",
+        "Destinos0cobertura",
+        "Fluxos36linhas processadas",
+        "Total com tributoR$ 31,32 mibaseline",
+        "Benchmarkpendentedisponibilidade",
+        "CDs ativos0—",
+        "Origens0detectadas",
+        "Destinos0cobertura",
+        "Fluxos76linhas processadas",
+        "Total com tributoR$ 49,66 mibaseline",
+        "Benchmarkpendentedisponibilidade"
+      ],
+      "baseline_summary": [
+        "CDs ativos4Red-RJ · Red-SP · Red-ES · Red-MG",
+        "Origens3detectadas",
+        "Destinos28cobertura",
+        "Fluxos7628 destinos cobertos"
+      ],
+      "cost_cards": [
+        "TransferênciaR$ 3,15 miorigem → CD",
+        "DistribuiçãoR$ 7,64 miCD → destino",
+        "ArmazenagemR$ 8,65 mioperação",
+        "EstoqueR$ 4,14 micapital",
+        "TributárioR$ 26,08 miquando disponível",
+        "Total com tributoR$ 49,66 mibaseline total"
+      ],
+      "flow_summary": [
+        "total_flows76,0",
+        "destinations_covered28,0",
+        "cds_used10,0",
+        "total_revenue257.991.189,0",
+        "total_weight_or_volume5.516.011,0",
+        "factory_to_cd_flows10,0",
+        "cd_to_destination_flows66,0",
+        "total_revenue_cd_to_destination257.991.189,0"
+      ],
+      "tax_panel": "Impacto tributárioR$ 26,08 mivalor canônicoCobertura tributária100,0%278 linhasFonte canônicascenario_totals canônico / dados_tributario evidênciaalerta ativo",
+      "calibration_panel": "Base Fit Scorependentebenchmark_pendingSem referência consolidada disponível.Benchmark pendente: não há custo histórico consolidado para esta empresa.",
+      "auto_checks": [
+        "Baseline prontoworkbook_baseline_reconstructedOK",
+        "Empresa corretaesperado empresa2OK",
+        "Fluxos gerados76 fluxosOK",
+        "Custos não negativoscustos principaisOK",
+        "Total logístico fechasoma 23574434.013195544 vs total 23574434.013195544OK",
+        "Total com tributo fechatotal 49655885.58961008OK",
+        "Empresa 2 sem benchmark independentebenchmark pendenteOK",
+        "Fonte canônica definidascenario_totals como referênciaOK",
+        "Reconciliação tributária explícitaReconciliação tributária divergente: scenario_totals=26081451.58, matriz=25567543.94, delta=-513907.63 (-1.97%).OK",
+        "Base Fit válidobenchmark pendente sem score inventadoOK"
+      ],
+      "check_summary": "10/10 testes OK",
+      "manual_progress": "0/8 checagens manuais marcadas para empresa2."
+    },
+    "company_buttons_after_click": [
+      {
+        "text": "Empresa 1",
+        "aria_selected": "false",
+        "class_name": "company-tab"
+      },
+      {
+        "text": "Empresa 2",
+        "aria_selected": "true",
+        "class_name": "company-tab active"
+      },
+      {
+        "text": "Empresa 1",
+        "aria_selected": "false",
+        "class_name": "company-tab"
+      },
+      {
+        "text": "Empresa 2",
+        "aria_selected": "true",
+        "class_name": "company-tab active"
+      }
+    ],
+    "empresa2_after_rerun": {
+      "check_summary": "10/10 testes OK",
+      "auto_checks": [
+        "Baseline prontoworkbook_baseline_reconstructedOK",
+        "Empresa corretaesperado empresa2OK",
+        "Fluxos gerados76 fluxosOK",
+        "Custos não negativoscustos principaisOK",
+        "Total logístico fechasoma 23574434.013195544 vs total 23574434.013195544OK",
+        "Total com tributo fechatotal 49655885.58961008OK",
+        "Empresa 2 sem benchmark independentebenchmark pendenteOK",
+        "Fonte canônica definidascenario_totals como referênciaOK",
+        "Reconciliação tributária explícitaReconciliação tributária divergente: scenario_totals=26081451.58, matriz=25567543.94, delta=-513907.63 (-1.97%).OK",
+        "Base Fit válidobenchmark pendente sem score inventadoOK"
+      ]
+    },
+    "manual_after_two_checks": {
+      "progress": "2/8 checagens manuais marcadas para empresa2.",
+      "first_item": "Abri /fase-2-baseline/.Validação manual para empresa2feito"
+    },
+    "manual_after_clear": {
+      "progress": "0/8 checagens manuais marcadas para empresa2.",
+      "first_item": "Abri /fase-2-baseline/.Validação manual para empresa2pendente"
+    }
+  },
+  "keyboard_checks": {
+    "company_tab_enter": {
+      "current_company": "Empresa 2",
+      "current_scenario": "baseline_empresa2"
+    },
+    "clear_button_space": {
+      "progress": "0/8 checagens manuais marcadas para empresa2."
+    }
+  },
+  "console_messages": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Password forms should have (optionally hidden) username fields for accessibility: (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[phase2::main] baseline:normalized {session_id: phase2_main_1778503136477, timestamp: 2026-05-11T12:38:57.397Z, phase: phase2, module: main, level: info}"
+    },
+    {
+      "type": "log",
+      "text": "[phase2::main] Empresa carregada {session_id: phase2_main_1778503136477, timestamp: 2026-05-11T12:38:57.443Z, phase: phase2, module: main, level: info}"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Password forms should have (optionally hidden) username fields for accessibility: (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[phase2::main] baseline:normalized {session_id: phase2_main_1778503136477, timestamp: 2026-05-11T12:38:58.233Z, phase: phase2, module: main, level: info}"
+    },
+    {
+      "type": "log",
+      "text": "[phase2::main] Empresa carregada {session_id: phase2_main_1778503136477, timestamp: 2026-05-11T12:38:58.247Z, phase: phase2, module: main, level: info}"
+    },
+    {
+      "type": "log",
+      "text": "[phase2::main] baseline:normalized {session_id: phase2_main_1778503136477, timestamp: 2026-05-11T12:39:01.210Z, phase: phase2, module: main, level: info}"
+    },
+    {
+      "type": "log",
+      "text": "[phase2::main] Empresa carregada {session_id: phase2_main_1778503136477, timestamp: 2026-05-11T12:39:01.225Z, phase: phase2, module: main, level: info}"
+    }
+  ],
+  "findings": []
+}

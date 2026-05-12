@@ -1,0 +1,73 @@
+{
+  "id": "ExplainabilityEngine",
+  "phase": 5,
+  "status": "planned_phase_5",
+  "page": "/fase-5-entrega-final",
+  "purpose": "Gera explicações textuais simples e auditáveis sobre por que um cenário ganhou, perdeu ou ficou arriscado.",
+  "inputs": {
+    "baselineResults": {},
+    "scenarioResults": {},
+    "delta": {},
+    "qualityAlerts": [],
+    "stressResults": []
+  },
+  "outputs": {
+    "explanation": "O cenário reduziu armazenagem, mas aumentou distribuição.",
+    "mainDrivers": [
+      "redução de armazenagem",
+      "aumento de distância média"
+    ],
+    "riskNarrative": "Cenário concentra volume em um CD."
+  },
+  "internal_functions": [
+    [
+      "identifyMainDrivers(delta)",
+      "Escolhe maiores variações."
+    ],
+    [
+      "describeTradeoffs(delta, alerts)",
+      "Gera texto de trade-off."
+    ],
+    [
+      "describeStressBehavior(stressResults)",
+      "Resume robustez."
+    ],
+    [
+      "guardAgainstOverclaim(text, evidence)",
+      "Evita afirmações sem dado."
+    ]
+  ],
+  "external_calls": [
+    [
+      "ScenarioComparator",
+      "Recebe delta."
+    ],
+    [
+      "ScenarioQualityCheck",
+      "Recebe alertas."
+    ],
+    [
+      "StressTestEngine",
+      "Recebe stress."
+    ],
+    [
+      "ExecutiveReport",
+      "Envia narrativa final."
+    ]
+  ],
+  "tests": {
+    "unit": [
+      "se armazenagem cai, texto menciona queda",
+      "se risco alto, texto menciona risco"
+    ],
+    "integration": [
+      "relatório inclui explicação"
+    ],
+    "manual": [
+      "ler explicação e conferir com gráficos"
+    ],
+    "acceptance": [
+      "não dizer que é melhor se score/robustez não sustentam"
+    ]
+  }
+}

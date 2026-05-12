@@ -1,0 +1,1094 @@
+[
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "calls": [
+      "DataLoader.fetchJson",
+      "Carregar JSONs declarados em paths."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "calls": [
+      "CompanySelector.render",
+      "Renderizar seleção Empresa 1 / Empresa 2."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "calls": [
+      "DatasetPanel.render",
+      "Mostrar datasets da empresa selecionada."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "calls": [
+      "PathAuditPanel.render",
+      "Mostrar status dos caminhos auditados."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "CompanySelector",
+    "calls": [
+      "DatasetPanel.render",
+      "Re-renderizar datasets da empresa."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "CompanySelector",
+    "calls": [
+      "DataQualityPanel.render",
+      "Re-renderizar qualidade da empresa."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "CompanySelector",
+    "calls": [
+      "ManualChecklist.render",
+      "Atualizar checklist sem perder estado."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "DataQualityPanel",
+    "calls": [
+      "DatasetPanel.getCompanyDatasets",
+      "Cruzar qualidade com datasets exibidos, se necessário."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "DatasetPanel",
+    "calls": [
+      "PathAuditPanel.getPathStatus",
+      "Checar se o caminho está em missing_paths."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "DatasetPanel",
+    "calls": [
+      "DataLoader.fetchJson",
+      "Opcionalmente carregar metadados dos datasets."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "Phase1TestPanel",
+    "calls": [
+      "DataLoader",
+      "Usa estado carregado pelo DataLoader."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "Phase1TestPanel",
+    "calls": [
+      "CompanySelector",
+      "Confirma empresa selecionada."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "WorkbookInventoryPanel",
+    "calls": [
+      "DataLoader.fetchText",
+      "Carregar workbook_sheet_inventory.csv."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 1,
+    "module": "WorkbookInventoryPanel",
+    "calls": [
+      "PathAuditPanel.getPathStatus",
+      "Validar paths de exports."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 2,
+    "module": "BaseFitScore",
+    "calls": "ReferenceResultExtractor",
+    "file": "assets/js/phase2/base-fit-score.js"
+  },
+  {
+    "phase": 2,
+    "module": "BaseFitScore",
+    "calls": "CostEngine",
+    "file": "assets/js/phase2/base-fit-score.js"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineBuilder",
+    "calls": "BaselineDataAdapter",
+    "file": "assets/js/phase2/baseline-builder.js"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDashboard",
+    "calls": "BaselineBuilder",
+    "file": "assets/js/phase2/baseline-dashboard.js"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDashboard",
+    "calls": "FlowBuilder",
+    "file": "assets/js/phase2/baseline-dashboard.js"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDashboard",
+    "calls": "TaxEngineBasic",
+    "file": "assets/js/phase2/baseline-dashboard.js"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDashboard",
+    "calls": "CalibrationPanel",
+    "file": "assets/js/phase2/baseline-dashboard.js"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDataAdapter",
+    "calls": "DataLoader",
+    "file": "assets/js/phase2/baseline-data-adapter.js"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDataAdapter",
+    "calls": "DataQualityPanel",
+    "file": "assets/js/phase2/baseline-data-adapter.js"
+  },
+  {
+    "phase": 2,
+    "module": "CalibrationPanel",
+    "calls": "BaseFitScore",
+    "file": "assets/js/phase2/calibration-panel.js"
+  },
+  {
+    "phase": 2,
+    "module": "CalibrationPanel",
+    "calls": "ReferenceResultExtractor",
+    "file": "assets/js/phase2/calibration-panel.js"
+  },
+  {
+    "phase": 2,
+    "module": "CostEngine",
+    "calls": "FlowBuilder",
+    "file": "assets/js/phase2/cost-engine.js"
+  },
+  {
+    "phase": 2,
+    "module": "DistanceResolver",
+    "calls": "FlowBuilder",
+    "file": "assets/js/phase2/distance-resolver.js"
+  },
+  {
+    "phase": 2,
+    "module": "DistanceResolver",
+    "calls": "CostEngine",
+    "file": "assets/js/phase2/distance-resolver.js"
+  },
+  {
+    "phase": 2,
+    "module": "FlowBuilder",
+    "calls": "BaselineBuilder",
+    "file": "assets/js/phase2/flow-builder.js"
+  },
+  {
+    "phase": 2,
+    "module": "Phase2TestPanel",
+    "calls": "CostEngine",
+    "file": "assets/js/phase2/phase2-tests.js"
+  },
+  {
+    "phase": 2,
+    "module": "Phase2TestPanel",
+    "calls": "BaseFitScore",
+    "file": "assets/js/phase2/phase2-tests.js"
+  },
+  {
+    "phase": 2,
+    "module": "Phase2TestPanel",
+    "calls": "BaselineBuilder",
+    "file": "assets/js/phase2/phase2-tests.js"
+  },
+  {
+    "phase": 2,
+    "module": "ReferenceResultExtractor",
+    "calls": "BaseFitScore",
+    "file": "assets/js/phase2/reference-result-extractor.js"
+  },
+  {
+    "phase": 2,
+    "module": "TaxEngineBasic",
+    "calls": "FlowBuilder",
+    "file": "assets/js/phase2/tax-engine-basic.js"
+  },
+  {
+    "phase": 2,
+    "module": "TaxEngineBasic",
+    "calls": "CostEngine",
+    "file": "assets/js/phase2/tax-engine-basic.js"
+  },
+  {
+    "phase": 3,
+    "module": "Phase3TestPanel",
+    "calls": "módulos phase2/phase3 conforme implementação",
+    "file": "assets/js/phase3/phase3-tests.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioArenaDashboard",
+    "calls": "módulos phase2/phase3 conforme implementação",
+    "file": "assets/js/phase3/scenario-arena-dashboard.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioBuilder",
+    "calls": [
+      "ScenarioValidator",
+      "Valida alterações."
+    ],
+    "file": "assets/js/phase3/scenario-builder.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioBuilder",
+    "calls": [
+      "FlowBuilder",
+      "Recria fluxos."
+    ],
+    "file": "assets/js/phase3/scenario-builder.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioBuilder",
+    "calls": [
+      "CostEngine",
+      "Calcula custos do cenário."
+    ],
+    "file": "assets/js/phase3/scenario-builder.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioBuilder",
+    "calls": [
+      "TaxEngine",
+      "Calcula tributos se ligado."
+    ],
+    "file": "assets/js/phase3/scenario-builder.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioChangeExplainer",
+    "calls": "módulos phase2/phase3 conforme implementação",
+    "file": "assets/js/phase3/scenario-change-explainer.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioComparator",
+    "calls": [
+      "CostEngine",
+      "Usa custos calculados."
+    ],
+    "file": "assets/js/phase3/scenario-comparator.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioComparator",
+    "calls": [
+      "TaxEngine",
+      "Usa tributos calculados."
+    ],
+    "file": "assets/js/phase3/scenario-comparator.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioComparator",
+    "calls": [
+      "ScenarioQualityCheck",
+      "Usa scores e alertas."
+    ],
+    "file": "assets/js/phase3/scenario-comparator.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioFlowRebuilder",
+    "calls": "módulos phase2/phase3 conforme implementação",
+    "file": "assets/js/phase3/scenario-flow-rebuilder.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioImportExport",
+    "calls": "módulos phase2/phase3 conforme implementação",
+    "file": "assets/js/phase3/scenario-import-export.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioLibrary",
+    "calls": "módulos phase2/phase3 conforme implementação",
+    "file": "assets/js/phase3/scenario-library.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioPersistence",
+    "calls": [
+      "ScenarioValidator",
+      "Valida antes de salvar/importar."
+    ],
+    "file": "assets/js/phase3/scenario-persistence.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioPersistence",
+    "calls": [
+      "AuditTrail",
+      "Registra origem do cenário importado/exportado."
+    ],
+    "file": "assets/js/phase3/scenario-persistence.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioQualityCheck",
+    "calls": [
+      "ScenarioValidator",
+      "Recebe validade básica."
+    ],
+    "file": "assets/js/phase3/scenario-quality-check.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioQualityCheck",
+    "calls": [
+      "ScenarioScoring",
+      "Entrega qualityScore para ranking."
+    ],
+    "file": "assets/js/phase3/scenario-quality-check.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioQualityCheck",
+    "calls": [
+      "ExplainabilityEngine",
+      "Entrega alertas para explicação."
+    ],
+    "file": "assets/js/phase3/scenario-quality-check.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioSimulator",
+    "calls": "módulos phase2/phase3 conforme implementação",
+    "file": "assets/js/phase3/scenario-simulator.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioValidator",
+    "calls": [
+      "DataQualityPanel",
+      "Usa diagnóstico de dados."
+    ],
+    "file": "assets/js/phase3/scenario-validator.js"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioValidator",
+    "calls": [
+      "ScenarioQualityCheck",
+      "Envia warnings não bloqueantes."
+    ],
+    "file": "assets/js/phase3/scenario-validator.js"
+  },
+  {
+    "phase": 4,
+    "module": "CandidateScenarioGenerator",
+    "calls": "ScenarioBuilder",
+    "file": "assets/js/phase4/candidate-scenario-generator.js"
+  },
+  {
+    "phase": 4,
+    "module": "CandidateScenarioGenerator",
+    "calls": "ConstraintEngine",
+    "file": "assets/js/phase4/candidate-scenario-generator.js"
+  },
+  {
+    "phase": 4,
+    "module": "ConstraintEngine",
+    "calls": "ScenarioQualityCheck",
+    "file": "assets/js/phase4/constraint-engine.js"
+  },
+  {
+    "phase": 4,
+    "module": "ConstraintEngine",
+    "calls": "ScenarioValidator",
+    "file": "assets/js/phase4/constraint-engine.js"
+  },
+  {
+    "phase": 4,
+    "module": "MetricNormalizer",
+    "calls": "ScenarioMetricExtractor",
+    "file": "assets/js/phase4/metric-normalizer.js"
+  },
+  {
+    "phase": 4,
+    "module": "MetricNormalizer",
+    "calls": "ObjectiveValidator",
+    "file": "assets/js/phase4/metric-normalizer.js"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveBuilder",
+    "calls": "ObjectiveValidator",
+    "file": "assets/js/phase4/objective-builder.js"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveBuilder",
+    "calls": "ObjectiveProfileLibrary",
+    "file": "assets/js/phase4/objective-builder.js"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveProfileLibrary",
+    "calls": "ObjectiveBuilder",
+    "file": "assets/js/phase4/objective-profile-library.js"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveValidator",
+    "calls": "ObjectiveBuilder",
+    "file": "assets/js/phase4/objective-validator.js"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveValidator",
+    "calls": "MetricNormalizer",
+    "file": "assets/js/phase4/objective-validator.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "calls": "ObjectiveBuilder",
+    "file": "assets/js/phase4/phase4-dashboard.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "calls": "ObjectiveProfileLibrary",
+    "file": "assets/js/phase4/phase4-dashboard.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "calls": "ScenarioOptimizer",
+    "file": "assets/js/phase4/phase4-dashboard.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "calls": "SearchLogPanel",
+    "file": "assets/js/phase4/phase4-dashboard.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "calls": "RankingExplainer",
+    "file": "assets/js/phase4/phase4-dashboard.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "calls": "TradeoffFrontier",
+    "file": "assets/js/phase4/phase4-dashboard.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "calls": "Phase4TestPanel",
+    "file": "assets/js/phase4/phase4-dashboard.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4TestPanel",
+    "calls": "ObjectiveBuilder",
+    "file": "assets/js/phase4/phase4-tests.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4TestPanel",
+    "calls": "MetricNormalizer",
+    "file": "assets/js/phase4/phase4-tests.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4TestPanel",
+    "calls": "ScenarioScoring",
+    "file": "assets/js/phase4/phase4-tests.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4TestPanel",
+    "calls": "CandidateScenarioGenerator",
+    "file": "assets/js/phase4/phase4-tests.js"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4TestPanel",
+    "calls": "ScenarioOptimizer",
+    "file": "assets/js/phase4/phase4-tests.js"
+  },
+  {
+    "phase": 4,
+    "module": "RankingExplainer",
+    "calls": "ScenarioScoring",
+    "file": "assets/js/phase4/ranking-explainer.js"
+  },
+  {
+    "phase": 4,
+    "module": "RankingExplainer",
+    "calls": "ScenarioComparator",
+    "file": "assets/js/phase4/ranking-explainer.js"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioMetricExtractor",
+    "calls": "ScenarioSimulator",
+    "file": "assets/js/phase4/scenario-metric-extractor.js"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioMetricExtractor",
+    "calls": "ScenarioQualityCheck",
+    "file": "assets/js/phase4/scenario-metric-extractor.js"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "calls": "CandidateScenarioGenerator",
+    "file": "assets/js/phase4/scenario-optimizer.js"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "calls": "ScenarioSimulator",
+    "file": "assets/js/phase4/scenario-optimizer.js"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "calls": "ConstraintEngine",
+    "file": "assets/js/phase4/scenario-optimizer.js"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "calls": "ScenarioMetricExtractor",
+    "file": "assets/js/phase4/scenario-optimizer.js"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "calls": "MetricNormalizer",
+    "file": "assets/js/phase4/scenario-optimizer.js"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "calls": "ScenarioScoring",
+    "file": "assets/js/phase4/scenario-optimizer.js"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioScoring",
+    "calls": "ObjectiveValidator",
+    "file": "assets/js/phase4/scenario-scoring.js"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioScoring",
+    "calls": "MetricNormalizer",
+    "file": "assets/js/phase4/scenario-scoring.js"
+  },
+  {
+    "phase": 4,
+    "module": "SearchLogPanel",
+    "calls": "ScenarioOptimizer",
+    "file": "assets/js/phase4/search-log-panel.js"
+  },
+  {
+    "phase": 4,
+    "module": "TradeoffFrontier",
+    "calls": "ScenarioScoring",
+    "file": "assets/js/phase4/tradeoff-frontier.js"
+  },
+  {
+    "phase": 4,
+    "module": "TradeoffFrontier",
+    "calls": "ScenarioQualityCheck",
+    "file": "assets/js/phase4/tradeoff-frontier.js"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrail",
+    "calls": [
+      "ScenarioPersistence",
+      "Recebe cenários salvos/importados."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrail",
+    "calls": [
+      "ScenarioOptimizer",
+      "Recebe search log."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrail",
+    "calls": [
+      "ExecutiveReport",
+      "Inclui auditoria no relatório."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "calls": "DataLoader",
+    "file": "assets/js/phase5/audit-trail-engine.js"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "calls": "ScenarioPersistence",
+    "file": "assets/js/phase5/audit-trail-engine.js"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "calls": "ObjectiveBuilder",
+    "file": "assets/js/phase5/audit-trail-engine.js"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "calls": "RecommendationEngine",
+    "file": "assets/js/phase5/audit-trail-engine.js"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReport",
+    "calls": [
+      "ExplainabilityEngine",
+      "Recebe narrativa."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReport",
+    "calls": [
+      "AuditTrail",
+      "Recebe premissas/fontes."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReport",
+    "calls": [
+      "ExportEngine",
+      "Exporta arquivos."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "calls": "RecommendationEngine",
+    "file": "assets/js/phase5/executive-report-builder.js"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "calls": "StressTestEngine",
+    "file": "assets/js/phase5/executive-report-builder.js"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "calls": "RobustnessScorer",
+    "file": "assets/js/phase5/executive-report-builder.js"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "calls": "AuditTrailEngine",
+    "file": "assets/js/phase5/executive-report-builder.js"
+  },
+  {
+    "phase": 5,
+    "module": "ExplainabilityEngine",
+    "calls": [
+      "ScenarioComparator",
+      "Recebe delta."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "ExplainabilityEngine",
+    "calls": [
+      "ScenarioQualityCheck",
+      "Recebe alertas."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "ExplainabilityEngine",
+    "calls": [
+      "StressTestEngine",
+      "Recebe stress."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "ExplainabilityEngine",
+    "calls": [
+      "ExecutiveReport",
+      "Envia narrativa final."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "ExportCenter",
+    "calls": "ExecutiveReportBuilder",
+    "file": "assets/js/phase5/export-center.js"
+  },
+  {
+    "phase": 5,
+    "module": "ExportCenter",
+    "calls": "AuditTrailEngine",
+    "file": "assets/js/phase5/export-center.js"
+  },
+  {
+    "phase": 5,
+    "module": "ExportCenter",
+    "calls": "StressTestEngine",
+    "file": "assets/js/phase5/export-center.js"
+  },
+  {
+    "phase": 5,
+    "module": "ExportEngine",
+    "calls": [
+      "ExecutiveReport",
+      "Exporta relatório."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "ExportEngine",
+    "calls": [
+      "AuditTrail",
+      "Exporta auditoria."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "ExportEngine",
+    "calls": [
+      "ScenarioPersistence",
+      "Exporta/importa cenários."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "FinalQAChecker",
+    "calls": "DataLoader",
+    "file": "assets/js/phase5/final-qa-checker.js"
+  },
+  {
+    "phase": 5,
+    "module": "FinalQAChecker",
+    "calls": "Phase5TestPanel",
+    "file": "assets/js/phase5/final-qa-checker.js"
+  },
+  {
+    "phase": 5,
+    "module": "FinalScenarioSelector",
+    "calls": "ScenarioScoring",
+    "file": "assets/js/phase5/final-scenario-selector.js"
+  },
+  {
+    "phase": 5,
+    "module": "FinalScenarioSelector",
+    "calls": "ScenarioOptimizer",
+    "file": "assets/js/phase5/final-scenario-selector.js"
+  },
+  {
+    "phase": 5,
+    "module": "FinalScenarioSelector",
+    "calls": "ScenarioComparator",
+    "file": "assets/js/phase5/final-scenario-selector.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "FinalScenarioSelector",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "StressTestEngine",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "SensitivityEngine",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "RobustnessScorer",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "RecommendationEngine",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "AuditTrailEngine",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "ExecutiveReportBuilder",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "ExportCenter",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "FinalQAChecker",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "ReleaseValidator",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "calls": "Phase5TestPanel",
+    "file": "assets/js/phase5/phase5-dashboard.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "calls": "StressTestEngine",
+    "file": "assets/js/phase5/phase5-tests.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "calls": "RobustnessScorer",
+    "file": "assets/js/phase5/phase5-tests.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "calls": "RecommendationEngine",
+    "file": "assets/js/phase5/phase5-tests.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "calls": "AuditTrailEngine",
+    "file": "assets/js/phase5/phase5-tests.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "calls": "ExecutiveReportBuilder",
+    "file": "assets/js/phase5/phase5-tests.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "calls": "ExportCenter",
+    "file": "assets/js/phase5/phase5-tests.js"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "calls": "FinalQAChecker",
+    "file": "assets/js/phase5/phase5-tests.js"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "calls": "ScenarioScoring",
+    "file": "assets/js/phase5/recommendation-engine.js"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "calls": "ScenarioComparator",
+    "file": "assets/js/phase5/recommendation-engine.js"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "calls": "ScenarioQualityCheck",
+    "file": "assets/js/phase5/recommendation-engine.js"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "calls": "RobustnessScorer",
+    "file": "assets/js/phase5/recommendation-engine.js"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationPanel",
+    "calls": [
+      "ScenarioScoring",
+      "Recebe ranking."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationPanel",
+    "calls": [
+      "StressTestEngine",
+      "Recebe robustez."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationPanel",
+    "calls": [
+      "ExplainabilityEngine",
+      "Recebe drivers e trade-offs."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "ReleaseValidator",
+    "calls": "FinalQAChecker",
+    "file": "assets/js/phase5/release-validator.js"
+  },
+  {
+    "phase": 5,
+    "module": "RobustnessScorer",
+    "calls": "StressTestEngine",
+    "file": "assets/js/phase5/robustness-scorer.js"
+  },
+  {
+    "phase": 5,
+    "module": "RobustnessScorer",
+    "calls": "ScenarioQualityCheck",
+    "file": "assets/js/phase5/robustness-scorer.js"
+  },
+  {
+    "phase": 5,
+    "module": "SensitivityEngine",
+    "calls": "ScenarioSimulator",
+    "file": "assets/js/phase5/sensitivity-engine.js"
+  },
+  {
+    "phase": 5,
+    "module": "SensitivityEngine",
+    "calls": "ScenarioComparator",
+    "file": "assets/js/phase5/sensitivity-engine.js"
+  },
+  {
+    "phase": 5,
+    "module": "StressCaseLibrary",
+    "calls": "StressTestEngine",
+    "file": "assets/js/phase5/stress-case-library.js"
+  },
+  {
+    "phase": 5,
+    "module": "StressTestEngine",
+    "calls": [
+      "ScenarioBuilder",
+      "Aplicar mudanças temporárias."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "StressTestEngine",
+    "calls": [
+      "CostEngine",
+      "Recalcular custos."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "StressTestEngine",
+    "calls": [
+      "TaxEngine",
+      "Recalcular tributo."
+    ],
+    "file": ""
+  },
+  {
+    "phase": 5,
+    "module": "StressTestEngine",
+    "calls": [
+      "ScenarioComparator",
+      "Comparar contra base."
+    ],
+    "file": ""
+  }
+]

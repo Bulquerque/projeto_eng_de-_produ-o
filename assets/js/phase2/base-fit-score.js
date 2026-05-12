@@ -1,0 +1,1 @@
+export function validateBaseFit(baseFit){if(!baseFit)return {pass:false,message:'base_fit ausente'}; if(baseFit.status==='benchmark_pending')return {pass:baseFit.base_fit_score===null,message:'benchmark pendente sem score inventado'}; return {pass:Number(baseFit.base_fit_score)>=0&&Number(baseFit.base_fit_score)<=100,message:`score ${baseFit.base_fit_score}`}}

@@ -1,0 +1,12 @@
+{
+  "company_id": "empresa1",
+  "scenario_id": "baseline_empresa1",
+  "base_fit_score": null,
+  "status": "benchmark_pending",
+  "reference_source": null,
+  "errors_by_metric": [],
+  "warnings": [
+    "Sem benchmark histórico consolidado independente no pacote para calcular Base Fit Score sem inventar benchmark."
+  ],
+  "errors": []
+}

@@ -1,0 +1,71 @@
+{
+  "id": "CompanySelector",
+  "phase": 1,
+  "status": "implemented_phase_1",
+  "page": "/ e /fase-1-validacao/",
+  "purpose": "Permite alternar entre Empresa 1 e Empresa 2 mantendo isolamento total de datasets, indicadores e mensagens.",
+  "inputs": {
+    "companies": [
+      {
+        "id": "empresa1",
+        "name": "Empresa 1",
+        "description": "Demanda + Distância + Premissas"
+      },
+      {
+        "id": "empresa2",
+        "name": "Empresa 2",
+        "description": "Workbook de malha logística"
+      }
+    ],
+    "selectedCompany": "empresa1"
+  },
+  "outputs": {
+    "selectedCompany": "empresa2",
+    "selectionChanged": true
+  },
+  "internal_functions": [
+    [
+      "renderCompanyCards(companies)",
+      "Monta os cards/botões das empresas."
+    ],
+    [
+      "selectCompany(companyId)",
+      "Atualiza estado global e solicita rerender."
+    ],
+    [
+      "getSelectedCompany(state)",
+      "Retorna a empresa ativa de forma segura."
+    ]
+  ],
+  "external_calls": [
+    [
+      "DatasetPanel.render",
+      "Re-renderizar datasets da empresa."
+    ],
+    [
+      "DataQualityPanel.render",
+      "Re-renderizar qualidade da empresa."
+    ],
+    [
+      "ManualChecklist.render",
+      "Atualizar checklist sem perder estado."
+    ]
+  ],
+  "tests": {
+    "unit": [
+      "empresa1 é padrão",
+      "selectCompany troca para empresa2"
+    ],
+    "integration": [
+      "trocar empresa muda cards de datasets",
+      "trocar empresa não mistura paths"
+    ],
+    "manual": [
+      "clicar Empresa 1 e depois Empresa 2",
+      "confirmar que os títulos/datasets mudam"
+    ],
+    "acceptance": [
+      "nenhum dataset da Empresa 2 aparece quando Empresa 1 está selecionada"
+    ]
+  }
+}

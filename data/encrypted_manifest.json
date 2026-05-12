@@ -1,0 +1,1311 @@
+{
+  "version": 1,
+  "generated_by": "scripts/encrypt_data.py",
+  "encryption": {
+    "algorithm": "AES-GCM",
+    "kdf": "PBKDF2-SHA-256",
+    "iterations": 310000,
+    "scope": [
+      "data/empresa1/**/*.json|csv",
+      "data/empresa2/**/*.json|csv"
+    ]
+  },
+  "entries": [
+    {
+      "id": "data.empresa1.baseline.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/baseline.json",
+      "encrypted_path": "data/empresa1/baseline.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.core.demand_records.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/core/demand_records.csv",
+      "encrypted_path": "data/empresa1/core/demand_records.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.core.demand_records.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/core/demand_records.json",
+      "encrypted_path": "data/empresa1/core/demand_records.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.core.demand_summary_by_uf.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/core/demand_summary_by_uf.json",
+      "encrypted_path": "data/empresa1/core/demand_summary_by_uf.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.core.distance_matrix.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/core/distance_matrix.csv",
+      "encrypted_path": "data/empresa1/core/distance_matrix.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.core.distance_matrix.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/core/distance_matrix.json",
+      "encrypted_path": "data/empresa1/core/distance_matrix.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.core.network_summary.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/core/network_summary.json",
+      "encrypted_path": "data/empresa1/core/network_summary.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.core.premissas.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/core/premissas.csv",
+      "encrypted_path": "data/empresa1/core/premissas.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.core.premissas.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/core/premissas.json",
+      "encrypted_path": "data/empresa1/core/premissas.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.phase2.base_fit.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/phase2/base_fit.json",
+      "encrypted_path": "data/empresa1/phase2/base_fit.json.enc.json",
+      "original_type": "json",
+      "sha256": "11211e1433feaac4b8346e407849c568192ae502560fc03ba08433281bf539a4",
+      "size_bytes": 337
+    },
+    {
+      "id": "data.empresa1.phase2.baseline_costs.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/phase2/baseline_costs.json",
+      "encrypted_path": "data/empresa1/phase2/baseline_costs.json.enc.json",
+      "original_type": "json",
+      "sha256": "28d746d477d5d200313c2c0ad2661018cb96ea9318f97ea5abec5fd9ae0be190",
+      "size_bytes": 1667
+    },
+    {
+      "id": "data.empresa1.phase2.baseline_flows.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/phase2/baseline_flows.json",
+      "encrypted_path": "data/empresa1/phase2/baseline_flows.json.enc.json",
+      "original_type": "json",
+      "sha256": "879e11a39469aa7197388144ecb0de45cf2415363efb2d603685bc632fde9081",
+      "size_bytes": 25195
+    },
+    {
+      "id": "data.empresa1.phase2.baseline_model.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/phase2/baseline_model.json",
+      "encrypted_path": "data/empresa1/phase2/baseline_model.json.enc.json",
+      "original_type": "json",
+      "sha256": "b26cebab8bc9616226437b569aa5ea8ada111e05828111a45eb11f1a8fed3e1a",
+      "size_bytes": 2621
+    },
+    {
+      "id": "data.empresa1.phase2.phase2_bundle.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/phase2/phase2_bundle.json",
+      "encrypted_path": "data/empresa1/phase2/phase2_bundle.json.enc.json",
+      "original_type": "json",
+      "sha256": "658f4469002543cd857792f2607237327d8c6339ed80f5796d81bc0999ac27a9",
+      "size_bytes": 31832
+    },
+    {
+      "id": "data.empresa1.phase2.tax_results.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/phase2/tax_results.json",
+      "encrypted_path": "data/empresa1/phase2/tax_results.json.enc.json",
+      "original_type": "json",
+      "sha256": "9cb24dbf0d1cb2ab980b10261ada3e011c0a7e54b4394d03ba556842558230ba",
+      "size_bytes": 392
+    },
+    {
+      "id": "data.empresa1.phase3.sample_scenarios.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/phase3/sample_scenarios.json",
+      "encrypted_path": "data/empresa1/phase3/sample_scenarios.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.phase4.default_objectives.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/phase4/default_objectives.json",
+      "encrypted_path": "data/empresa1/phase4/default_objectives.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.phase5.default_stress_cases.json",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/phase5/default_stress_cases.json",
+      "encrypted_path": "data/empresa1/phase5/default_stress_cases.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.raw_exports.Planilha1.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/raw_exports/Planilha1.csv",
+      "encrypted_path": "data/empresa1/raw_exports/Planilha1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.raw_exports.Sheet1.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/raw_exports/Sheet1.csv",
+      "encrypted_path": "data/empresa1/raw_exports/Sheet1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.source_exports.Dados de Demanda(3).Planilha1.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/source_exports/Dados de Demanda(3)/Planilha1.csv",
+      "encrypted_path": "data/empresa1/source_exports/Dados de Demanda(3)/Planilha1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.source_exports.Dados de Distância(3).Sheet1.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/source_exports/Dados de Distância(3)/Sheet1.csv",
+      "encrypted_path": "data/empresa1/source_exports/Dados de Distância(3)/Sheet1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.source_exports.Premissas Gerais(4).Planilha1.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/source_exports/Premissas Gerais(4)/Planilha1.csv",
+      "encrypted_path": "data/empresa1/source_exports/Premissas Gerais(4)/Planilha1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.source_exports.empresa1_demand.01_Planilha1.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/source_exports/empresa1_demand/01_Planilha1.csv",
+      "encrypted_path": "data/empresa1/source_exports/empresa1_demand/01_Planilha1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.source_exports.empresa1_distance.01_Sheet1.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/source_exports/empresa1_distance/01_Sheet1.csv",
+      "encrypted_path": "data/empresa1/source_exports/empresa1_distance/01_Sheet1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa1.source_exports.empresa1_premissas.01_Planilha1.csv",
+      "company_id": "empresa1",
+      "original_path": "data/empresa1/source_exports/empresa1_premissas/01_Planilha1.csv",
+      "encrypted_path": "data/empresa1/source_exports/empresa1_premissas/01_Planilha1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.baseline.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/baseline.json",
+      "encrypted_path": "data/empresa2/baseline.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.aux_custo_armazenagem.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/aux_custo_armazenagem.csv",
+      "encrypted_path": "data/empresa2/core/aux_custo_armazenagem.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.aux_custo_armazenagem.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/aux_custo_armazenagem.json",
+      "encrypted_path": "data/empresa2/core/aux_custo_armazenagem.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.aux_custo_distribuicao.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/aux_custo_distribuicao.csv",
+      "encrypted_path": "data/empresa2/core/aux_custo_distribuicao.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.aux_custo_distribuicao.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/aux_custo_distribuicao.json",
+      "encrypted_path": "data/empresa2/core/aux_custo_distribuicao.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.aux_custo_transferencia.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/aux_custo_transferencia.csv",
+      "encrypted_path": "data/empresa2/core/aux_custo_transferencia.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.aux_custo_transferencia.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/aux_custo_transferencia.json",
+      "encrypted_path": "data/empresa2/core/aux_custo_transferencia.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.cenarios.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/cenarios.csv",
+      "encrypted_path": "data/empresa2/core/cenarios.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.cenarios.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/cenarios.json",
+      "encrypted_path": "data/empresa2/core/cenarios.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.dados_roteamento.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/dados_roteamento.csv",
+      "encrypted_path": "data/empresa2/core/dados_roteamento.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.dados_roteamento.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/dados_roteamento.json",
+      "encrypted_path": "data/empresa2/core/dados_roteamento.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.dados_tributario.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/dados_tributario.csv",
+      "encrypted_path": "data/empresa2/core/dados_tributario.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.dados_tributario.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/dados_tributario.json",
+      "encrypted_path": "data/empresa2/core/dados_tributario.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.distribuicao_fabrica_cd.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/distribuicao_fabrica_cd.csv",
+      "encrypted_path": "data/empresa2/core/distribuicao_fabrica_cd.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.distribuicao_fabrica_cd.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/distribuicao_fabrica_cd.json",
+      "encrypted_path": "data/empresa2/core/distribuicao_fabrica_cd.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.estoque.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/estoque.csv",
+      "encrypted_path": "data/empresa2/core/estoque.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.estoque.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/estoque.json",
+      "encrypted_path": "data/empresa2/core/estoque.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.faturamento_filial_uf.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/faturamento_filial_uf.csv",
+      "encrypted_path": "data/empresa2/core/faturamento_filial_uf.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.faturamento_filial_uf.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/faturamento_filial_uf.json",
+      "encrypted_path": "data/empresa2/core/faturamento_filial_uf.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.faturamento_uf.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/faturamento_uf.csv",
+      "encrypted_path": "data/empresa2/core/faturamento_uf.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.faturamento_uf.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/faturamento_uf.json",
+      "encrypted_path": "data/empresa2/core/faturamento_uf.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.lat_long.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/lat_long.csv",
+      "encrypted_path": "data/empresa2/core/lat_long.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.lat_long.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/lat_long.json",
+      "encrypted_path": "data/empresa2/core/lat_long.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.parametros.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/parametros.csv",
+      "encrypted_path": "data/empresa2/core/parametros.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.parametros.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/parametros.json",
+      "encrypted_path": "data/empresa2/core/parametros.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.rotas_mapa.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/rotas_mapa.csv",
+      "encrypted_path": "data/empresa2/core/rotas_mapa.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.rotas_mapa.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/rotas_mapa.json",
+      "encrypted_path": "data/empresa2/core/rotas_mapa.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.scenario_blocks.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/scenario_blocks.json",
+      "encrypted_path": "data/empresa2/core/scenario_blocks.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.scenario_totals.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/scenario_totals.csv",
+      "encrypted_path": "data/empresa2/core/scenario_totals.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.scenario_totals.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/scenario_totals.json",
+      "encrypted_path": "data/empresa2/core/scenario_totals.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.tabela_logistica.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/tabela_logistica.csv",
+      "encrypted_path": "data/empresa2/core/tabela_logistica.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.tabela_logistica.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/tabela_logistica.json",
+      "encrypted_path": "data/empresa2/core/tabela_logistica.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.tabelas_cif_dist.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/tabelas_cif_dist.csv",
+      "encrypted_path": "data/empresa2/core/tabelas_cif_dist.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.core.tabelas_cif_dist.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/core/tabelas_cif_dist.json",
+      "encrypted_path": "data/empresa2/core/tabelas_cif_dist.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.phase2.base_fit.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/phase2/base_fit.json",
+      "encrypted_path": "data/empresa2/phase2/base_fit.json.enc.json",
+      "original_type": "json",
+      "sha256": "7a972bb86c291507612946688577115638a06cb040585e31209d985ab430a5a4",
+      "size_bytes": 337
+    },
+    {
+      "id": "data.empresa2.phase2.baseline_costs.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/phase2/baseline_costs.json",
+      "encrypted_path": "data/empresa2/phase2/baseline_costs.json.enc.json",
+      "original_type": "json",
+      "sha256": "a2a7e2ed147561115a843ec2e301764646c3593e61bab6157296bf1211983929",
+      "size_bytes": 2391
+    },
+    {
+      "id": "data.empresa2.phase2.baseline_flows.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/phase2/baseline_flows.json",
+      "encrypted_path": "data/empresa2/phase2/baseline_flows.json.enc.json",
+      "original_type": "json",
+      "sha256": "4db66175e93c91e460b67bad2e84aa36ac08477c8bb744c888a71869db571195",
+      "size_bytes": 29515
+    },
+    {
+      "id": "data.empresa2.phase2.baseline_model.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/phase2/baseline_model.json",
+      "encrypted_path": "data/empresa2/phase2/baseline_model.json.enc.json",
+      "original_type": "json",
+      "sha256": "d9c8c0d74613efdf5bc50d3ce9161bc2924a71b6a93288a54292a835ef89d6dd",
+      "size_bytes": 1343
+    },
+    {
+      "id": "data.empresa2.phase2.phase2_bundle.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/phase2/phase2_bundle.json",
+      "encrypted_path": "data/empresa2/phase2/phase2_bundle.json.enc.json",
+      "original_type": "json",
+      "sha256": "ac690847d4ce03b99c8c762fd3955b39e1d14fdcb8f7ef750c5b8d55067fe5a8",
+      "size_bytes": 39879
+    },
+    {
+      "id": "data.empresa2.phase2.tax_results.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/phase2/tax_results.json",
+      "encrypted_path": "data/empresa2/phase2/tax_results.json.enc.json",
+      "original_type": "json",
+      "sha256": "b4d2867746ccd71a3bfc3079e9da227f03ca8d5940ddab2e83c30c380f2c4687",
+      "size_bytes": 2123
+    },
+    {
+      "id": "data.empresa2.phase3.sample_scenarios.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/phase3/sample_scenarios.json",
+      "encrypted_path": "data/empresa2/phase3/sample_scenarios.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.phase4.default_objectives.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/phase4/default_objectives.json",
+      "encrypted_path": "data/empresa2/phase4/default_objectives.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.phase5.default_stress_cases.json",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/phase5/default_stress_cases.json",
+      "encrypted_path": "data/empresa2/phase5/default_stress_cases.json.enc.json",
+      "original_type": "json",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Aux_Custo_Armaz.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Aux_Custo_Armaz.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Aux_Custo_Armaz.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Aux_Custo_Transfer_ncia.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Aux_Custo_Transfer_ncia.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Aux_Custo_Transfer_ncia.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Aux__Custo_Distribui_o.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Aux__Custo_Distribui_o.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Aux__Custo_Distribui_o.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Cen_rios.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Cen_rios.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Cen_rios.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Dados_Brasil.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Dados_Brasil.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Dados_Brasil.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Dados_OPLs.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Dados_OPLs.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Dados_OPLs.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Dados_Roteamento.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Dados_Roteamento.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Dados_Roteamento.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Dados_Tribut_rio.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Dados_Tribut_rio.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Dados_Tribut_rio.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Distribui_o_F_brica_CD.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Distribui_o_F_brica_CD.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Distribui_o_F_brica_CD.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Estoque.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Estoque.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Estoque.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Faturamento_UF.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Faturamento_UF.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Faturamento_UF.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Faturamento_por_Filial_x_UF.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Faturamento_por_Filial_x_UF.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Faturamento_por_Filial_x_UF.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.In_cio.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/In_cio.csv",
+      "encrypted_path": "data/empresa2/raw_exports/In_cio.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Lat_Long.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Lat_Long.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Lat_Long.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Mapa_Brasil.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Mapa_Brasil.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Mapa_Brasil.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Par_metros.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Par_metros.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Par_metros.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Rotas_Mapa.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Rotas_Mapa.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Rotas_Mapa.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Roteamento.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Roteamento.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Roteamento.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.SD2_Atualizar.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/SD2_Atualizar.csv",
+      "encrypted_path": "data/empresa2/raw_exports/SD2_Atualizar.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Sensibilidade_1.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Sensibilidade_1.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Sensibilidade_1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Sensibilidade_2.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Sensibilidade_2.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Sensibilidade_2.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.TB_Distribui_o.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/TB_Distribui_o.csv",
+      "encrypted_path": "data/empresa2/raw_exports/TB_Distribui_o.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.TB_Transfer_ncia.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/TB_Transfer_ncia.csv",
+      "encrypted_path": "data/empresa2/raw_exports/TB_Transfer_ncia.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Tabela_Log_stica.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Tabela_Log_stica.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Tabela_Log_stica.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.raw_exports.Tabelas_CIF_Dist.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/raw_exports/Tabelas_CIF_Dist.csv",
+      "encrypted_path": "data/empresa2/raw_exports/Tabelas_CIF_Dist.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.01_Inicio.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/01_Inicio.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/01_Inicio.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.02_Parametros.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/02_Parametros.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/02_Parametros.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.03_Mapa_Brasil.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/03_Mapa_Brasil.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/03_Mapa_Brasil.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.04_Cenarios.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/04_Cenarios.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/04_Cenarios.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.05_Sensibilidade_1.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/05_Sensibilidade_1.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/05_Sensibilidade_1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.06_Sensibilidade_2.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/06_Sensibilidade_2.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/06_Sensibilidade_2.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.07_Roteamento.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/07_Roteamento.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/07_Roteamento.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.08_Dados_OPLs.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/08_Dados_OPLs.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/08_Dados_OPLs.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.09_Dados_Tributario.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/09_Dados_Tributario.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/09_Dados_Tributario.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.10_Dados_Roteamento.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/10_Dados_Roteamento.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/10_Dados_Roteamento.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.11_Tabelas_CIF_Dist.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/11_Tabelas_CIF_Dist.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/11_Tabelas_CIF_Dist.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.12_Aux_Custo_Distribuicao.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/12_Aux_Custo_Distribuicao.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/12_Aux_Custo_Distribuicao.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.13_TB_Distribuicao.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/13_TB_Distribuicao.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/13_TB_Distribuicao.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.14_Aux_Custo_Transferencia.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/14_Aux_Custo_Transferencia.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/14_Aux_Custo_Transferencia.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.15_TB_Transferencia.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/15_TB_Transferencia.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/15_TB_Transferencia.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.16_Aux_Custo_Armaz.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/16_Aux_Custo_Armaz.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/16_Aux_Custo_Armaz.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.17_Dados_Brasil.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/17_Dados_Brasil.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/17_Dados_Brasil.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.18_Lat_Long.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/18_Lat_Long.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/18_Lat_Long.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.19_Rotas_Mapa.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/19_Rotas_Mapa.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/19_Rotas_Mapa.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.20_SD2_Atualizar.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/20_SD2_Atualizar.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/20_SD2_Atualizar.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.21_Estoque.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/21_Estoque.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/21_Estoque.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.22_Faturamento_UF.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/22_Faturamento_UF.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/22_Faturamento_UF.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.23_Distribuicao_Fabrica_CD.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/23_Distribuicao_Fabrica_CD.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/23_Distribuicao_Fabrica_CD.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.24_Faturamento_por_Filial_x_UF.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/24_Faturamento_por_Filial_x_UF.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/24_Faturamento_por_Filial_x_UF.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_alias_vcaracol.25_Tabela_Logistica.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/25_Tabela_Logistica.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_alias_vcaracol/25_Tabela_Logistica.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.01_Inicio.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/01_Inicio.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/01_Inicio.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.02_Parametros.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/02_Parametros.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/02_Parametros.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.03_Mapa_Brasil.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/03_Mapa_Brasil.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/03_Mapa_Brasil.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.04_Cenarios.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/04_Cenarios.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/04_Cenarios.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.05_Sensibilidade_1.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/05_Sensibilidade_1.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/05_Sensibilidade_1.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.06_Sensibilidade_2.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/06_Sensibilidade_2.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/06_Sensibilidade_2.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.07_Roteamento.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/07_Roteamento.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/07_Roteamento.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.08_Dados_OPLs.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/08_Dados_OPLs.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/08_Dados_OPLs.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.09_Dados_Tributario.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/09_Dados_Tributario.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/09_Dados_Tributario.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.10_Dados_Roteamento.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/10_Dados_Roteamento.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/10_Dados_Roteamento.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.11_Tabelas_CIF_Dist.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/11_Tabelas_CIF_Dist.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/11_Tabelas_CIF_Dist.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.12_Aux_Custo_Distribuicao.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/12_Aux_Custo_Distribuicao.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/12_Aux_Custo_Distribuicao.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.13_TB_Distribuicao.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/13_TB_Distribuicao.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/13_TB_Distribuicao.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.14_Aux_Custo_Transferencia.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/14_Aux_Custo_Transferencia.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/14_Aux_Custo_Transferencia.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.15_TB_Transferencia.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/15_TB_Transferencia.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/15_TB_Transferencia.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.16_Aux_Custo_Armaz.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/16_Aux_Custo_Armaz.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/16_Aux_Custo_Armaz.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.17_Dados_Brasil.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/17_Dados_Brasil.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/17_Dados_Brasil.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.18_Lat_Long.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/18_Lat_Long.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/18_Lat_Long.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.19_Rotas_Mapa.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/19_Rotas_Mapa.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/19_Rotas_Mapa.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.20_SD2_Atualizar.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/20_SD2_Atualizar.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/20_SD2_Atualizar.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.21_Estoque.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/21_Estoque.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/21_Estoque.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.22_Faturamento_UF.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/22_Faturamento_UF.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/22_Faturamento_UF.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.23_Distribuicao_Fabrica_CD.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/23_Distribuicao_Fabrica_CD.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/23_Distribuicao_Fabrica_CD.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.24_Faturamento_por_Filial_x_UF.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/24_Faturamento_por_Filial_x_UF.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/24_Faturamento_por_Filial_x_UF.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "data.empresa2.source_exports.empresa2_main.25_Tabela_Logistica.csv",
+      "company_id": "empresa2",
+      "original_path": "data/empresa2/source_exports/empresa2_main/25_Tabela_Logistica.csv",
+      "encrypted_path": "data/empresa2/source_exports/empresa2_main/25_Tabela_Logistica.csv.enc.json",
+      "original_type": "csv",
+      "sha256": null,
+      "size_bytes": null
+    }
+  ]
+}

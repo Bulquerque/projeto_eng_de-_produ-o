@@ -1,0 +1,36 @@
+{
+  "created_at_utc": "2026-05-06T20:08:50.443020+00:00",
+  "package": "visagio_static_simulator_FASE1_ORGANIZADO_v4",
+  "result": "OK",
+  "changes": [
+    "Docs split into thematic subfolders.",
+    "Tests split into objective-specific subfolders.",
+    "Temporary regeneration_check_tmp removed from deliverable package.",
+    "Root kept small and runtime paths preserved."
+  ],
+  "top_level_folders": [
+    "assets",
+    "data",
+    "docs",
+    "etl",
+    "fase-1-validacao",
+    "references",
+    "tests"
+  ],
+  "docs_folders": [
+    "00_inicio",
+    "01_visao_geral_do_projeto",
+    "02_fases_do_projeto",
+    "03_modulos_contratos_funcoes",
+    "04_dados_caminhos_auditoria",
+    "05_testes_aceite",
+    "06_manifestos"
+  ],
+  "tests_folders": [
+    "00_basicos",
+    "01_paths_auditoria",
+    "02_fase1_frontend",
+    "03_contratos_modulos",
+    "04_e2e_visual_opcional"
+  ]
+}

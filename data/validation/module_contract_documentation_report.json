@@ -1,0 +1,20 @@
+{
+  "result": "MODULE_CONTRACT_DOCUMENTATION_OK",
+  "module_count": 31,
+  "phases": {
+    "1": 9,
+    "2": 6,
+    "3": 5,
+    "4": 5,
+    "5": 6
+  },
+  "contract_files": [
+    "data/contracts/module_contracts_all_phases.json",
+    "data/contracts/module_dependency_matrix.csv",
+    "data/contracts/module_tests_matrix.csv",
+    "docs/23_MODULOS_TODAS_FASES_CONTRATOS.md",
+    "docs/24_FUNCOES_E_DEPENDENCIAS_MODULOS.md",
+    "docs/25_TESTES_POR_MODULO_TODAS_FASES.md",
+    "docs/26_MAPA_FASES_MODULOS.md"
+  ]
+}

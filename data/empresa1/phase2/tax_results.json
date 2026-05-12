@@ -1,0 +1,18 @@
+{
+  "scenario_id": "baseline_empresa1",
+  "company_id": "empresa1",
+  "tax_results": {
+    "icms_estimated": 0,
+    "difal_estimated": 0,
+    "total_tax_impact": 0
+  },
+  "tax_coverage": {
+    "flows_with_tax_data": 0,
+    "flows_without_tax_data": 36,
+    "coverage_pct": 0
+  },
+  "warnings": [
+    "Sem matriz tributária específica da Empresa 1 no pacote da Fase 2."
+  ],
+  "errors": []
+}

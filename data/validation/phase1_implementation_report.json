@@ -1,0 +1,47 @@
+{
+  "created_at_utc": "2026-05-06T18:54:41.773454+00:00",
+  "package": "visagio_static_simulator_FASE1_v1",
+  "phase": "phase_1",
+  "status": "implemented",
+  "implemented_modules": [
+    "DataLoader",
+    "CompanySelector",
+    "DatasetPanel",
+    "DataQualityPanel",
+    "PathAuditPanel",
+    "WorkbookInventoryPanel",
+    "ManualChecklist",
+    "Phase1AutoChecks"
+  ],
+  "updated_files": [
+    "index.html",
+    "assets/styles.css",
+    "assets/app.js",
+    "fase-1-validacao/index.html",
+    "README.md",
+    "docs/14_FASE1_IMPLEMENTADA.md"
+  ],
+  "new_tests": [
+    "tests/test_phase1_static_site.py",
+    "tests/test_phase1_http_server.py",
+    "tests/test_phase1_playwright.py"
+  ],
+  "expected_manual_checks": [
+    "Empresa 1 mostra demanda/distância/premissas",
+    "Empresa 2 mostra datasets de malha",
+    "não há mistura entre empresas",
+    "paths faltantes = 0",
+    "cenários Empresa 2 aparecem como blocos especiais"
+  ],
+  "known_limitations": [
+    "Fase 1 não implementa CostEngine, cenário base, otimizador ou stress test.",
+    "Playwright pode ser bloqueado por política do ambiente; o script registra skip nesse caso."
+  ],
+  "path_report": "data/validation/path_resolution_report.json",
+  "test_results": "data/validation/phase1_test_results.json",
+  "test_summary": "OK_WITH_PLAYWRIGHT_ENVIRONMENT_SKIP",
+  "updated_at_utc": "2026-05-06T18:58:55.660346+00:00",
+  "package_after_folder_organization": "visagio_static_simulator_FASE1_ORGANIZADO_v4",
+  "folder_organization": "organized_docs_tests_and_clean_root",
+  "organized_at_utc": "2026-05-06T19:57:55.485152+00:00"
+}

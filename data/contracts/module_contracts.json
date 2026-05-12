@@ -1,0 +1,2268 @@
+{
+  "version": "2026-05-06-docs-v3",
+  "scope": "Contratos documentais para todas as 5 fases do simulador estático de malha logística.",
+  "rules": {
+    "company_isolation": "Empresa 1 e Empresa 2 nunca podem ser misturadas em dados, cenários, baseline, ranking ou relatório.",
+    "static_site": "Todos os paths usados em runtime devem ser relativos à raiz do pacote.",
+    "auditability": "Toda simulação final precisa registrar dados, premissas, versão e cenário.",
+    "no_silent_failures": "Erro ou warning relevante deve aparecer na interface ou no relatório."
+  },
+  "modules": [
+    {
+      "id": "AppBootstrap",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Inicializa o site estático, carrega os artefatos mínimos da Fase 1 e dispara a primeira renderização segura da interface.",
+      "inputs": {
+        "rootElementId": "app",
+        "paths": {
+          "catalog": "data/catalog.json",
+          "qualitySummary": "data/data_quality_summary.json",
+          "pathReport": "data/validation/path_resolution_report.json",
+          "auditSummary": "data/validation/final_v6_audit_summary.json",
+          "workbookInventory": "data/validation/workbook_sheet_inventory.csv"
+        },
+        "defaultCompany": "empresa1"
+      },
+      "outputs": {
+        "appState": {
+          "selectedCompany": "empresa1",
+          "loaded": true,
+          "loadErrors": []
+        },
+        "renderedSections": [
+          "company-selector",
+          "dataset-panel",
+          "quality-panel",
+          "audit-panel",
+          "manual-checklist"
+        ]
+      },
+      "internal_functions": [
+        [
+          "initApp()",
+          "Cria o estado inicial e coordena a sequência de carregamento."
+        ],
+        [
+          "loadPhase1Artifacts(paths)",
+          "Busca catálogo, qualidade, auditoria e inventário."
+        ],
+        [
+          "renderApp(state)",
+          "Renderiza a interface conforme a empresa selecionada."
+        ],
+        [
+          "showFatalError(error)",
+          "Mostra erro visível quando a inicialização falha."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DataLoader.fetchJson",
+          "Carregar JSONs declarados em paths."
+        ],
+        [
+          "CompanySelector.render",
+          "Renderizar seleção Empresa 1 / Empresa 2."
+        ],
+        [
+          "DatasetPanel.render",
+          "Mostrar datasets da empresa selecionada."
+        ],
+        [
+          "PathAuditPanel.render",
+          "Mostrar status dos caminhos auditados."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "initApp cria estado inicial com empresa1",
+          "showFatalError não deixa a página em branco"
+        ],
+        "integration": [
+          "site abre via http.server",
+          "todos os artefatos da Fase 1 são carregados"
+        ],
+        "manual": [
+          "abrir / e confirmar que os painéis aparecem",
+          "abrir /fase-1-validacao/ e confirmar que redireciona/mostra o mesmo app"
+        ],
+        "acceptance": [
+          "não usa path absoluto",
+          "não quebra se um painel tiver warning"
+        ]
+      }
+    },
+    {
+      "id": "DataLoader",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "global",
+      "purpose": "Centraliza a leitura dos arquivos estáticos JSON/CSV usados pela interface. É o módulo que garante que os dados vêm dos caminhos relativos corretos.",
+      "inputs": {
+        "requests": [
+          {
+            "key": "catalog",
+            "path": "data/catalog.json",
+            "type": "json"
+          },
+          {
+            "key": "inventory",
+            "path": "data/validation/workbook_sheet_inventory.csv",
+            "type": "csv"
+          }
+        ]
+      },
+      "outputs": {
+        "loaded": {
+          "catalog": {},
+          "inventory": []
+        },
+        "errors": [],
+        "missing": []
+      },
+      "internal_functions": [
+        [
+          "fetchJson(path)",
+          "Carrega JSON e retorna objeto parseado com erro amigável."
+        ],
+        [
+          "fetchText(path)",
+          "Carrega CSV/texto sem tentar converter automaticamente."
+        ],
+        [
+          "parseCsv(text)",
+          "Converte CSV simples para array de objetos quando necessário."
+        ],
+        [
+          "loadAll(requests)",
+          "Executa as leituras essenciais e acumula erros."
+        ]
+      ],
+      "external_calls": [],
+      "tests": {
+        "unit": [
+          "fetchJson rejeita JSON inválido com mensagem clara",
+          "parseCsv preserva cabeçalhos"
+        ],
+        "integration": [
+          "catalog.json carrega",
+          "workbook_sheet_inventory.csv carrega"
+        ],
+        "manual": [
+          "abrir DevTools e confirmar ausência de 404 nos arquivos principais"
+        ],
+        "acceptance": [
+          "falha de um arquivo aparece na tela e não some silenciosamente"
+        ]
+      }
+    },
+    {
+      "id": "CompanySelector",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Permite alternar entre Empresa 1 e Empresa 2 mantendo isolamento total de datasets, indicadores e mensagens.",
+      "inputs": {
+        "companies": [
+          {
+            "id": "empresa1",
+            "name": "Empresa 1",
+            "description": "Demanda + Distância + Premissas"
+          },
+          {
+            "id": "empresa2",
+            "name": "Empresa 2",
+            "description": "Workbook de malha logística"
+          }
+        ],
+        "selectedCompany": "empresa1"
+      },
+      "outputs": {
+        "selectedCompany": "empresa2",
+        "selectionChanged": true
+      },
+      "internal_functions": [
+        [
+          "renderCompanyCards(companies)",
+          "Monta os cards/botões das empresas."
+        ],
+        [
+          "selectCompany(companyId)",
+          "Atualiza estado global e solicita rerender."
+        ],
+        [
+          "getSelectedCompany(state)",
+          "Retorna a empresa ativa de forma segura."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DatasetPanel.render",
+          "Re-renderizar datasets da empresa."
+        ],
+        [
+          "DataQualityPanel.render",
+          "Re-renderizar qualidade da empresa."
+        ],
+        [
+          "ManualChecklist.render",
+          "Atualizar checklist sem perder estado."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "empresa1 é padrão",
+          "selectCompany troca para empresa2"
+        ],
+        "integration": [
+          "trocar empresa muda cards de datasets",
+          "trocar empresa não mistura paths"
+        ],
+        "manual": [
+          "clicar Empresa 1 e depois Empresa 2",
+          "confirmar que os títulos/datasets mudam"
+        ],
+        "acceptance": [
+          "nenhum dataset da Empresa 2 aparece quando Empresa 1 está selecionada"
+        ]
+      }
+    },
+    {
+      "id": "DatasetPanel",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Mostra os datasets core e arquivos brutos vinculados à empresa selecionada, com caminhos relativos visíveis para auditoria manual.",
+      "inputs": {
+        "selectedCompany": "empresa1",
+        "catalog": {
+          "companies": {
+            "empresa1": {
+              "coreDatasets": []
+            }
+          }
+        },
+        "pathReport": {
+          "missing_paths": []
+        }
+      },
+      "outputs": {
+        "visibleDatasets": [
+          {
+            "name": "demand_records",
+            "path": "data/empresa1/core/demand_records.json",
+            "status": "OK"
+          }
+        ],
+        "missingDatasets": []
+      },
+      "internal_functions": [
+        [
+          "getCompanyDatasets(catalog, companyId)",
+          "Filtra datasets pela empresa selecionada."
+        ],
+        [
+          "normalizeDatasetRecord(record)",
+          "Padroniza nome, descrição, formato e path."
+        ],
+        [
+          "renderDatasetCard(dataset)",
+          "Cria o card visual do dataset."
+        ],
+        [
+          "markDatasetStatus(dataset, pathReport)",
+          "Marca OK/warning/error conforme auditoria de paths."
+        ]
+      ],
+      "external_calls": [
+        [
+          "PathAuditPanel.getPathStatus",
+          "Checar se o caminho está em missing_paths."
+        ],
+        [
+          "DataLoader.fetchJson",
+          "Opcionalmente carregar metadados dos datasets."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "getCompanyDatasets filtra corretamente",
+          "path absoluto é sinalizado"
+        ],
+        "integration": [
+          "Empresa 1 mostra demanda/distância/premissas",
+          "Empresa 2 mostra tabelas core e scenario_blocks"
+        ],
+        "manual": [
+          "copiar um caminho exibido e conferir que existe na pasta"
+        ],
+        "acceptance": [
+          "todo dataset obrigatório tem path visível"
+        ]
+      }
+    },
+    {
+      "id": "DataQualityPanel",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Exibe score de qualidade, contagens, warnings e erros já apurados na preparação dos dados.",
+      "inputs": {
+        "selectedCompany": "empresa1",
+        "qualitySummary": {
+          "empresa1": {
+            "score": 92,
+            "errors": [],
+            "warnings": []
+          }
+        }
+      },
+      "outputs": {
+        "qualityViewModel": {
+          "score": 92,
+          "status": "OK",
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "internal_functions": [
+        [
+          "getQualityForCompany(summary, companyId)",
+          "Obtém o bloco de qualidade da empresa."
+        ],
+        [
+          "classifyQualityStatus(score, errors)",
+          "Traduz score e erros em OK/warning/error."
+        ],
+        [
+          "renderQualityMetric(metric)",
+          "Renderiza indicador principal."
+        ],
+        [
+          "renderWarnings(warnings)",
+          "Lista alertas sem esconder informação."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DatasetPanel.getCompanyDatasets",
+          "Cruzar qualidade com datasets exibidos, se necessário."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "erro gera status error",
+          "score baixo gera warning"
+        ],
+        "integration": [
+          "painel muda ao trocar empresa"
+        ],
+        "manual": [
+          "verificar se warnings aparecem em amarelo e erros em vermelho"
+        ],
+        "acceptance": [
+          "não esconder problemas de dados"
+        ]
+      }
+    },
+    {
+      "id": "PathAuditPanel",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Mostra a auditoria dos caminhos do pacote: quantidade checada, faltantes, abas auditadas e arquivos core obrigatórios.",
+      "inputs": {
+        "pathReport": {
+          "result": "OK",
+          "path_count_checked": 55,
+          "missing_paths": []
+        },
+        "auditSummary": {
+          "workbooks_checked": 5,
+          "sheets_checked": 53
+        }
+      },
+      "outputs": {
+        "auditStatus": "OK",
+        "missingCount": 0,
+        "checkedPaths": 55,
+        "workbooksChecked": 5,
+        "sheetsChecked": 53
+      },
+      "internal_functions": [
+        [
+          "getPathStatus(path, report)",
+          "Retorna OK/missing para um path."
+        ],
+        [
+          "summarizeAudit(report, summary)",
+          "Cria indicadores de auditoria."
+        ],
+        [
+          "renderAuditBadges(summary)",
+          "Mostra badges visuais de OK/warning/error."
+        ],
+        [
+          "renderMissingPaths(paths)",
+          "Lista paths faltantes quando existirem."
+        ]
+      ],
+      "external_calls": [],
+      "tests": {
+        "unit": [
+          "missing_paths vazio gera OK",
+          "missing_paths > 0 gera error"
+        ],
+        "integration": [
+          "path report é exibido na página"
+        ],
+        "manual": [
+          "confirmar visualmente missing_paths = 0"
+        ],
+        "acceptance": [
+          "nenhum caminho crítico pode ficar invisível"
+        ]
+      }
+    },
+    {
+      "id": "WorkbookInventoryPanel",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Mostra o inventário de abas dos workbooks, especialmente para provar que as abas da Empresa 2 foram exportadas e mapeadas.",
+      "inputs": {
+        "inventoryRows": [
+          {
+            "empresa": "empresa2",
+            "workbook": "Analise_Malha_Empresa2(1).xlsx",
+            "sheet": "Cenários",
+            "csv_export_path": "data/empresa2/source_exports/.../Cenários.csv"
+          }
+        ],
+        "selectedCompany": "empresa2"
+      },
+      "outputs": {
+        "visibleSheets": [
+          {
+            "sheet": "Cenários",
+            "status": "mapped",
+            "coreMapping": [
+              "scenario_blocks.json",
+              "scenario_totals.json"
+            ]
+          }
+        ],
+        "sheetCount": 25
+      },
+      "internal_functions": [
+        [
+          "parseWorkbookInventory(csvText)",
+          "Converte o inventário CSV em linhas."
+        ],
+        [
+          "filterInventoryByCompany(rows, companyId)",
+          "Filtra abas por empresa."
+        ],
+        [
+          "detectSpecialSheets(rows)",
+          "Marca abas com tratamento especial, como Cenários."
+        ],
+        [
+          "renderSheetInventoryTable(rows)",
+          "Mostra tabela compacta de abas e exports."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DataLoader.fetchText",
+          "Carregar workbook_sheet_inventory.csv."
+        ],
+        [
+          "PathAuditPanel.getPathStatus",
+          "Validar paths de exports."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "Cenários é detectada como special sheet",
+          "filtro por empresa não mistura workbooks"
+        ],
+        "integration": [
+          "inventário mostra 53 abas auditadas",
+          "Empresa 2 mostra 25 abas por workbook"
+        ],
+        "manual": [
+          "verificar se Cenários mostra scenario_blocks/scenario_totals"
+        ],
+        "acceptance": [
+          "toda aba auditada precisa ter export ou justificativa"
+        ]
+      }
+    },
+    {
+      "id": "ManualChecklist",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Permite ao usuário marcar manualmente validações da Fase 1 e salvar o progresso no navegador.",
+      "inputs": {
+        "phase": 1,
+        "checks": [
+          {
+            "id": "empresa1_datasets",
+            "label": "Empresa 1 mostra demanda, distância e premissas"
+          }
+        ]
+      },
+      "outputs": {
+        "completed": 1,
+        "total": 7,
+        "storageKey": "phase1ManualChecklist"
+      },
+      "internal_functions": [
+        [
+          "loadChecklistState(key)",
+          "Lê checks salvos no localStorage."
+        ],
+        [
+          "toggleCheck(checkId)",
+          "Marca/desmarca uma validação."
+        ],
+        [
+          "saveChecklistState(key, state)",
+          "Persiste o progresso localmente."
+        ],
+        [
+          "resetChecklist()",
+          "Limpa o checklist manual."
+        ]
+      ],
+      "external_calls": [],
+      "tests": {
+        "unit": [
+          "toggleCheck alterna boolean",
+          "reset limpa todos"
+        ],
+        "integration": [
+          "estado persiste após reload"
+        ],
+        "manual": [
+          "marcar checklist, recarregar página, conferir permanência"
+        ],
+        "acceptance": [
+          "usuário consegue auditar manualmente a Fase 1 sem abrir código"
+        ]
+      }
+    },
+    {
+      "id": "Phase1TestPanel",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Mostra no navegador os testes automáticos básicos da Fase 1, permitindo checagem rápida sem terminal.",
+      "inputs": {
+        "appState": {},
+        "loadedArtifacts": {},
+        "selectedCompany": "empresa1"
+      },
+      "outputs": {
+        "browserTests": [
+          {
+            "name": "catalog_loaded",
+            "status": "pass"
+          }
+        ],
+        "summary": {
+          "passed": 8,
+          "failed": 0
+        }
+      },
+      "internal_functions": [
+        [
+          "runBrowserChecks(state)",
+          "Executa testes simples no estado carregado."
+        ],
+        [
+          "assertCondition(name, condition)",
+          "Converte condição em resultado pass/fail."
+        ],
+        [
+          "renderTestResults(results)",
+          "Mostra os testes em cards/tabela."
+        ],
+        [
+          "computeTestSummary(results)",
+          "Conta passes/fails."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DataLoader",
+          "Usa estado carregado pelo DataLoader."
+        ],
+        [
+          "CompanySelector",
+          "Confirma empresa selecionada."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "assertCondition false gera fail",
+          "summary conta resultados"
+        ],
+        "integration": [
+          "painel aparece depois do carregamento"
+        ],
+        "manual": [
+          "confirmar que todos os testes do navegador passam"
+        ],
+        "acceptance": [
+          "falha precisa aparecer visualmente"
+        ]
+      }
+    },
+    {
+      "id": "BaselineBuilder",
+      "phase": 2,
+      "status": "planned_phase_2",
+      "page": "/fase-2-baseline",
+      "purpose": "Reconstrói o cenário atual de cada empresa a partir dos dados core, gerando a estrutura AS-IS que será usada como comparação oficial.",
+      "inputs": {
+        "company": "empresa1",
+        "coreData": {
+          "demand": "data/empresa1/core/demand_records.json",
+          "distances": "data/empresa1/core/distance_matrix.json",
+          "assumptions": "data/empresa1/core/premissas.json"
+        },
+        "baselineRules": {
+          "allocationPolicy": "current_or_nearest_valid",
+          "timeGrain": "annual"
+        }
+      },
+      "outputs": {
+        "baselineScenario": {
+          "scenarioId": "baseline_empresa1",
+          "company": "empresa1",
+          "activeCds": [],
+          "flows": [],
+          "timeGrain": "annual",
+          "isBaseline": true
+        },
+        "warnings": []
+      },
+      "internal_functions": [
+        [
+          "buildBaseline(company, coreData, rules)",
+          "Orquestra a construção do AS-IS."
+        ],
+        [
+          "inferActiveCds(coreData)",
+          "Identifica CDs ativos nos dados."
+        ],
+        [
+          "buildInitialFlows(demand, distances, rules)",
+          "Monta fluxos origem-CD-destino."
+        ],
+        [
+          "validateBaselineCompleteness(baseline)",
+          "Confere se demanda, CD e UF estão cobertos."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DataLoader.fetchJson",
+          "Carregar dados core."
+        ],
+        [
+          "FlowBuilder.buildFlows",
+          "Construir fluxos normalizados."
+        ],
+        [
+          "BaselineValidator.validate",
+          "Validar AS-IS antes dos custos."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "baseline tem company",
+          "baseline tem scenarioId",
+          "demanda total preservada"
+        ],
+        "integration": [
+          "Empresa 1 gera baseline",
+          "Empresa 2 gera baseline"
+        ],
+        "manual": [
+          "verificar CDs ativos e UFs atendidas"
+        ],
+        "acceptance": [
+          "não existe UF com demanda sem atendimento"
+        ]
+      }
+    },
+    {
+      "id": "FlowBuilder",
+      "phase": 2,
+      "status": "planned_phase_2",
+      "page": "/fase-2-baseline",
+      "purpose": "Normaliza os fluxos logísticos usados por custo, serviço, cenário e comparação.",
+      "inputs": {
+        "demandRecords": [],
+        "distanceMatrix": [],
+        "allocationRules": {
+          "eachDestinationAssignedTo": "one_cd",
+          "fallback": "nearest_cd_with_distance"
+        }
+      },
+      "outputs": {
+        "flows": [
+          {
+            "origin": "SP",
+            "cd": "CD_SP",
+            "destinationUf": "RJ",
+            "volume": 1000,
+            "distanceKm": 450,
+            "flowType": "transfer_or_distribution"
+          }
+        ],
+        "unassignedDemand": []
+      },
+      "internal_functions": [
+        [
+          "normalizeDemand(records)",
+          "Padroniza demanda por UF/CD/SKU/mês quando existir."
+        ],
+        [
+          "lookupDistance(origin, destination, matrix)",
+          "Busca distância de forma robusta."
+        ],
+        [
+          "assignDemandToCd(demand, rules)",
+          "Aplica política de atendimento."
+        ],
+        [
+          "buildFlowRecords(assignments)",
+          "Gera registros normalizados de fluxo."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DataQualityPanel",
+          "Usa warnings de dados para não mascarar faltantes."
+        ],
+        [
+          "ScenarioValidator",
+          "Reaproveita regras de validade de cenário."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "distância faltante vira warning",
+          "volume total dos flows = demanda total"
+        ],
+        "integration": [
+          "flows alimentam CostEngine"
+        ],
+        "manual": [
+          "checar top rotas em tabela"
+        ],
+        "acceptance": [
+          "nenhum fluxo crítico sem origem, CD, destino ou volume"
+        ]
+      }
+    },
+    {
+      "id": "CostEngine",
+      "phase": 2,
+      "status": "planned_phase_2",
+      "page": "/fase-2-baseline e /fase-3-cenarios",
+      "purpose": "Calcula as parcelas de custo logístico: transferência, distribuição, armazenagem, estoque e total.",
+      "inputs": {
+        "scenario": {
+          "company": "empresa1",
+          "flows": []
+        },
+        "assumptions": {
+          "freightRate": {
+            "transfer": 4.3,
+            "distribution": 6.8,
+            "unit": "BRL/km_or_ton_km"
+          },
+          "storageCost": {},
+          "inventoryDays": 45,
+          "wacc": 0.15
+        }
+      },
+      "outputs": {
+        "costs": {
+          "transferCost": 0,
+          "distributionCost": 0,
+          "storageCost": 0,
+          "inventoryCost": 0,
+          "totalLogisticsCost": 0
+        },
+        "costByCd": [],
+        "costByUf": [],
+        "warnings": []
+      },
+      "internal_functions": [
+        [
+          "calculateTransferCost(flows, assumptions)",
+          "Calcula custo fábrica-CD."
+        ],
+        [
+          "calculateDistributionCost(flows, assumptions)",
+          "Calcula custo CD-cliente/UF."
+        ],
+        [
+          "calculateStorageCost(scenario, assumptions)",
+          "Calcula armazenagem por CD."
+        ],
+        [
+          "calculateInventoryCost(scenario, assumptions)",
+          "Calcula custo de capital em estoque."
+        ],
+        [
+          "sumCostComponents(components)",
+          "Fecha total logístico."
+        ]
+      ],
+      "external_calls": [
+        [
+          "FlowBuilder",
+          "Recebe fluxos normalizados."
+        ],
+        [
+          "TaxEngine",
+          "Opcionalmente compõe custo total com tributos."
+        ],
+        [
+          "ScenarioQualityCheck",
+          "Envia custos e alertas para score de qualidade."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "total = soma das parcelas",
+          "custo nunca negativo",
+          "frete maior aumenta transporte"
+        ],
+        "integration": [
+          "baseline alimenta BaseFitScore",
+          "cenário alimenta Comparator"
+        ],
+        "manual": [
+          "alterar frete +10% e verificar transporte maior"
+        ],
+        "acceptance": [
+          "cada custo tem premissa rastreável"
+        ]
+      }
+    },
+    {
+      "id": "TaxEngine",
+      "phase": 2,
+      "status": "planned_phase_2",
+      "page": "/fase-2-baseline e /fase-3-cenarios",
+      "purpose": "Calcula camada tributária parametrizada, sem assumir regra fiscal hardcoded não validada. Deve suportar regime atual, sem efeito tributário e horizonte de reforma quando os dados existirem.",
+      "inputs": {
+        "scenario": {},
+        "taxTables": {
+          "icmsRoutes": "data/empresa2/core/dados_tributario.json",
+          "icms216": "references/raw_sources/icms_216_linhas.csv"
+        },
+        "taxMode": "current|no_tax|reform_transition|post_reform",
+        "assumptions": {
+          "useDifal": true,
+          "useBenefits": false
+        }
+      },
+      "outputs": {
+        "taxResults": {
+          "icmsOwn": 0,
+          "difal": 0,
+          "taxBenefit": 0,
+          "totalTaxImpact": 0
+        },
+        "taxByRoute": [],
+        "warnings": []
+      },
+      "internal_functions": [
+        [
+          "resolveTaxMode(mode)",
+          "Seleciona regime tributário."
+        ],
+        [
+          "lookupRouteTax(origin, cd, destination, tables)",
+          "Busca regra por rota."
+        ],
+        [
+          "calculateDifal(route, assumptions)",
+          "Calcula DIFAL quando aplicável."
+        ],
+        [
+          "applyTaxBenefit(route, assumptions)",
+          "Aplica benefício somente se parametrizado."
+        ],
+        [
+          "aggregateTax(routeTaxes)",
+          "Consolida tributo por cenário."
+        ]
+      ],
+      "external_calls": [
+        [
+          "FlowBuilder",
+          "Recebe rotas."
+        ],
+        [
+          "AuditTrail",
+          "Registra premissas fiscais usadas."
+        ],
+        [
+          "ScenarioQualityCheck",
+          "Envia alertas de dependência tributária."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "no_tax retorna zero",
+          "alíquota faltante gera warning",
+          "DIFAL não pode ser negativo sem regra explícita"
+        ],
+        "integration": [
+          "resultado tributário entra no comparator"
+        ],
+        "manual": [
+          "ligar/desligar efeito tributário e ver diferença"
+        ],
+        "acceptance": [
+          "benefício fiscal precisa ficar explícito como premissa, nunca escondido"
+        ]
+      }
+    },
+    {
+      "id": "BaseFitScore",
+      "phase": 2,
+      "status": "planned_phase_2",
+      "page": "/fase-2-baseline",
+      "purpose": "Mede a paridade entre resultado simulado e cenário real/base. Essa é a prova de que o simulador replica a realidade antes de simular futuro.",
+      "inputs": {
+        "actual": {
+          "totalLogisticsCost": 10000000,
+          "components": {}
+        },
+        "simulated": {
+          "totalLogisticsCost": 9800000,
+          "components": {}
+        },
+        "weights": {
+          "total": 0.4,
+          "components": 0.4,
+          "cd": 0.1,
+          "uf": 0.1
+        }
+      },
+      "outputs": {
+        "baseFitScore": 91,
+        "totalErrorPct": -2.0,
+        "componentErrors": {},
+        "status": "OK",
+        "alerts": []
+      },
+      "internal_functions": [
+        [
+          "calculatePctError(actual, simulated)",
+          "Calcula erro percentual robusto."
+        ],
+        [
+          "scoreError(error, tolerance)",
+          "Converte erro em nota 0-100."
+        ],
+        [
+          "aggregateFitScore(scores, weights)",
+          "Agrega score ponderado."
+        ],
+        [
+          "classifyFitStatus(score, alerts)",
+          "Classifica OK/warning/error."
+        ]
+      ],
+      "external_calls": [
+        [
+          "CostEngine",
+          "Recebe custos simulados."
+        ],
+        [
+          "BaselineBuilder",
+          "Recebe cenário base."
+        ],
+        [
+          "CalibrationPanel",
+          "Mostra o resultado visual."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "simulado igual real => 100",
+          "erro alto reduz score",
+          "divisão por zero tratada"
+        ],
+        "integration": [
+          "Fase 2 mostra score por empresa"
+        ],
+        "manual": [
+          "comparar tabela real vs simulado"
+        ],
+        "acceptance": [
+          "erro alto não pode ser vendido como OK"
+        ]
+      }
+    },
+    {
+      "id": "CalibrationPanel",
+      "phase": 2,
+      "status": "planned_phase_2",
+      "page": "/fase-2-baseline",
+      "purpose": "Mostra visualmente paridade, erros por componente e pontos que precisam de calibração.",
+      "inputs": {
+        "baseFit": {},
+        "actual": {},
+        "simulated": {},
+        "selectedCompany": "empresa1"
+      },
+      "outputs": {
+        "visibleRows": [
+          {
+            "metric": "total",
+            "actual": 100,
+            "simulated": 98,
+            "errorPct": -2,
+            "status": "OK"
+          }
+        ],
+        "calibrationWarnings": []
+      },
+      "internal_functions": [
+        [
+          "buildCalibrationRows(actual, simulated)",
+          "Monta linhas de comparação."
+        ],
+        [
+          "renderFitScore(score)",
+          "Renderiza nota final."
+        ],
+        [
+          "renderErrorHeatmap(rows)",
+          "Mostra onde o modelo erra mais."
+        ],
+        [
+          "renderCalibrationHints(alerts)",
+          "Sugere checagens sem inventar correções."
+        ]
+      ],
+      "external_calls": [
+        [
+          "BaseFitScore",
+          "Recebe score e erros."
+        ],
+        [
+          "AuditTrail",
+          "Registra versão de calibração."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "linhas mostram real/simulado/erro",
+          "warning aparece quando erro > tolerância"
+        ],
+        "integration": [
+          "troca de empresa troca calibração"
+        ],
+        "manual": [
+          "conferir se o erro total está visível"
+        ],
+        "acceptance": [
+          "não esconder erro de calibração"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioBuilder",
+      "phase": 3,
+      "status": "planned_phase_3",
+      "page": "/fase-3-cenarios",
+      "purpose": "Permite criar cenários manuais a partir do baseline, mudando CDs ativos, alocação, frete, estoque, demanda, modo tributário e outras premissas controladas.",
+      "inputs": {
+        "baselineScenario": {
+          "scenarioId": "baseline_empresa1"
+        },
+        "changes": {
+          "activeCds": [
+            "RJ",
+            "SP",
+            "ES"
+          ],
+          "freightMultiplier": 1.1,
+          "inventoryDays": 35,
+          "taxMode": "current"
+        }
+      },
+      "outputs": {
+        "scenario": {
+          "scenarioId": "empresa1_custom_001",
+          "company": "empresa1",
+          "isBaseline": false,
+          "changesApplied": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "internal_functions": [
+        [
+          "createScenarioFromBaseline(baseline)",
+          "Clona baseline com versionamento."
+        ],
+        [
+          "applyScenarioChanges(scenario, changes)",
+          "Aplica alterações do usuário."
+        ],
+        [
+          "rebuildScenarioFlows(scenario)",
+          "Recalcula fluxos quando CD/alocação muda."
+        ],
+        [
+          "nameScenario(scenario, name)",
+          "Define nome legível e ID."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioValidator",
+          "Valida alterações."
+        ],
+        [
+          "FlowBuilder",
+          "Recria fluxos."
+        ],
+        [
+          "CostEngine",
+          "Calcula custos do cenário."
+        ],
+        [
+          "TaxEngine",
+          "Calcula tributos se ligado."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "cenário mantém company",
+          "changesApplied registra mudanças"
+        ],
+        "integration": [
+          "cenário criado aparece no comparador"
+        ],
+        "manual": [
+          "fechar um CD e conferir mudança visual"
+        ],
+        "acceptance": [
+          "cenário inválido gera erro claro"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioValidator",
+      "phase": 3,
+      "status": "planned_phase_3",
+      "page": "/fase-3-cenarios",
+      "purpose": "Bloqueia ou alerta cenários impossíveis: sem CD ativo, demanda sem atendimento, capacidade estourada, distância ausente ou empresa misturada.",
+      "inputs": {
+        "scenario": {},
+        "constraints": {
+          "minCds": 1,
+          "maxCdUtilization": 0.9,
+          "allowCrossCompanyComparison": false
+        }
+      },
+      "outputs": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "blockingReasons": []
+      },
+      "internal_functions": [
+        [
+          "validateCompanyIsolation(scenario)",
+          "Garante que a empresa é única."
+        ],
+        [
+          "validateActiveCds(scenario)",
+          "Confere CDs ativos."
+        ],
+        [
+          "validateDemandCoverage(scenario)",
+          "Confere atendimento da demanda."
+        ],
+        [
+          "validateCapacity(scenario, constraints)",
+          "Confere capacidade."
+        ],
+        [
+          "validateDistances(scenario)",
+          "Confere rotas com distância."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DataQualityPanel",
+          "Usa diagnóstico de dados."
+        ],
+        [
+          "ScenarioQualityCheck",
+          "Envia warnings não bloqueantes."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "sem CD ativo é inválido",
+          "empresa misturada é inválida"
+        ],
+        "integration": [
+          "ScenarioBuilder chama validator antes de salvar"
+        ],
+        "manual": [
+          "tentar cenário absurdo e ver bloqueio"
+        ],
+        "acceptance": [
+          "nenhum cenário inválido entra no ranking"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioComparator",
+      "phase": 3,
+      "status": "planned_phase_3",
+      "page": "/fase-3-cenarios",
+      "purpose": "Compara múltiplos cenários da mesma empresa contra o baseline correto, mostrando custo, saving, serviço, risco e tributo.",
+      "inputs": {
+        "baselineScenarioId": "baseline_empresa1",
+        "scenarios": [
+          {
+            "scenarioId": "baseline_empresa1"
+          },
+          {
+            "scenarioId": "empresa1_custom_001"
+          }
+        ],
+        "metrics": [
+          "cost",
+          "saving",
+          "service",
+          "risk",
+          "tax"
+        ]
+      },
+      "outputs": {
+        "comparisonTable": [],
+        "deltaVsBaseline": [],
+        "bestByCost": "empresa1_custom_001",
+        "warnings": []
+      },
+      "internal_functions": [
+        [
+          "assertSameCompany(scenarios)",
+          "Impede comparação entre empresas."
+        ],
+        [
+          "computeScenarioDelta(baseline, scenario)",
+          "Calcula diferença contra base."
+        ],
+        [
+          "buildComparisonTable(scenarios)",
+          "Monta tabela lado a lado."
+        ],
+        [
+          "rankByMetric(scenarios, metric)",
+          "Ordena por métrica escolhida."
+        ]
+      ],
+      "external_calls": [
+        [
+          "CostEngine",
+          "Usa custos calculados."
+        ],
+        [
+          "TaxEngine",
+          "Usa tributos calculados."
+        ],
+        [
+          "ScenarioQualityCheck",
+          "Usa scores e alertas."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "baseline saving = 0",
+          "cross-company bloqueado"
+        ],
+        "integration": [
+          "cenários criados aparecem na tabela"
+        ],
+        "manual": [
+          "comparar Base, 3 CDs e ES"
+        ],
+        "acceptance": [
+          "saving sempre usa baseline da mesma empresa"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioQualityCheck",
+      "phase": 3,
+      "status": "planned_phase_3",
+      "page": "/fase-3-cenarios e /fase-4-score-otimizador",
+      "purpose": "Avalia plausibilidade operacional do cenário, separando cenário barato de cenário realmente executável.",
+      "inputs": {
+        "scenario": {},
+        "results": {},
+        "constraints": {
+          "maxConcentration": 0.65,
+          "maxCdUtilization": 0.9,
+          "maxDistanceIncreasePct": 20
+        }
+      },
+      "outputs": {
+        "qualityScore": 78,
+        "alerts": [
+          {
+            "severity": "warning",
+            "message": "CD ES concentra 82% do volume"
+          }
+        ],
+        "riskFlags": []
+      },
+      "internal_functions": [
+        [
+          "calculateConcentrationRisk(scenario)",
+          "Mede dependência de poucos CDs."
+        ],
+        [
+          "calculateCapacityRisk(scenario, constraints)",
+          "Mede estouro de capacidade."
+        ],
+        [
+          "calculateServiceProxy(scenario)",
+          "Usa distância/lead time proxy."
+        ],
+        [
+          "aggregateQualityScore(parts)",
+          "Agrega qualidade 0-100."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioValidator",
+          "Recebe validade básica."
+        ],
+        [
+          "ScenarioScoring",
+          "Entrega qualityScore para ranking."
+        ],
+        [
+          "ExplainabilityEngine",
+          "Entrega alertas para explicação."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "100% volume em um CD gera alerta",
+          "capacidade acima do limite gera severidade alta"
+        ],
+        "integration": [
+          "Comparator mostra qualityScore"
+        ],
+        "manual": [
+          "centralizar tudo e conferir alerta"
+        ],
+        "acceptance": [
+          "custo baixo não apaga risco alto"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioPersistence",
+      "phase": 3,
+      "status": "planned_phase_3",
+      "page": "/fase-3-cenarios",
+      "purpose": "Salva cenários criados pelo usuário no navegador e permite exportar/importar JSON de cenário.",
+      "inputs": {
+        "scenario": {},
+        "storageKey": "savedScenarios_empresa1",
+        "operation": "save|load|delete|export|import"
+      },
+      "outputs": {
+        "savedScenarios": [],
+        "exportJson": {},
+        "status": "OK"
+      },
+      "internal_functions": [
+        [
+          "saveScenario(scenario)",
+          "Salva no localStorage por empresa."
+        ],
+        [
+          "loadScenarios(company)",
+          "Lê cenários da empresa."
+        ],
+        [
+          "deleteScenario(id)",
+          "Remove cenário."
+        ],
+        [
+          "exportScenario(id)",
+          "Gera JSON baixável."
+        ],
+        [
+          "importScenario(json)",
+          "Importa e valida cenário."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioValidator",
+          "Valida antes de salvar/importar."
+        ],
+        [
+          "AuditTrail",
+          "Registra origem do cenário importado/exportado."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "salva e carrega por empresa",
+          "delete remove só o cenário escolhido"
+        ],
+        "integration": [
+          "cenário salvo aparece após reload"
+        ],
+        "manual": [
+          "salvar cenário, recarregar, conferir"
+        ],
+        "acceptance": [
+          "cenários da Empresa 1 não aparecem na Empresa 2"
+        ]
+      }
+    },
+    {
+      "id": "ObjectiveBuilder",
+      "phase": 4,
+      "status": "planned_phase_4",
+      "page": "/fase-4-score-otimizador",
+      "purpose": "Permite ao usuário criar sua própria função objetivo com pesos de custo, serviço, risco, tributo e estoque.",
+      "inputs": {
+        "weights": {
+          "cost": 0.4,
+          "service": 0.25,
+          "risk": 0.15,
+          "tax": 0.1,
+          "inventory": 0.1
+        },
+        "profileName": "Perfil CFO"
+      },
+      "outputs": {
+        "objective": {
+          "objectiveId": "perfil_cfo",
+          "weights": {},
+          "valid": true,
+          "normalization": "minmax_by_comparison_set"
+        },
+        "errors": []
+      },
+      "internal_functions": [
+        [
+          "normalizeWeights(weights)",
+          "Faz pesos somarem 1 quando possível."
+        ],
+        [
+          "validateWeights(weights)",
+          "Bloqueia negativos e soma inválida."
+        ],
+        [
+          "buildObjective(profileName, weights)",
+          "Cria objeto de objetivo."
+        ],
+        [
+          "loadPresetProfile(name)",
+          "Carrega CFO/Supply/Fiscal/Conservador."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioScoring",
+          "Envia objetivo validado."
+        ],
+        [
+          "ScenarioOptimizer",
+          "Envia objetivo para busca."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "pesos somam 1",
+          "peso negativo bloqueado"
+        ],
+        "integration": [
+          "mudar pesos muda ranking"
+        ],
+        "manual": [
+          "criar Perfil CFO e Perfil Supply"
+        ],
+        "acceptance": [
+          "objetivo inválido não roda score"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioScoring",
+      "phase": 4,
+      "status": "planned_phase_4",
+      "page": "/fase-4-score-otimizador",
+      "purpose": "Normaliza métricas heterogêneas e calcula o score final de cada cenário conforme função objetivo escolhida.",
+      "inputs": {
+        "scenarioResults": [],
+        "objective": {
+          "weights": {
+            "cost": 0.4,
+            "service": 0.25,
+            "risk": 0.15,
+            "tax": 0.1,
+            "inventory": 0.1
+          }
+        }
+      },
+      "outputs": {
+        "rankedScenarios": [
+          {
+            "scenarioId": "cenario_3cds",
+            "score": 86,
+            "rank": 1,
+            "scoreBreakdown": {}
+          }
+        ],
+        "normalizationDetails": {}
+      },
+      "internal_functions": [
+        [
+          "normalizeMetric(values, direction)",
+          "Converte métricas para 0-100."
+        ],
+        [
+          "calculateWeightedScore(metrics, weights)",
+          "Calcula score ponderado."
+        ],
+        [
+          "buildScoreBreakdown(scenario)",
+          "Mostra contribuição de cada métrica."
+        ],
+        [
+          "rankScenarios(scored)",
+          "Ordena cenários por score."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ObjectiveBuilder",
+          "Recebe pesos."
+        ],
+        [
+          "ScenarioQualityCheck",
+          "Recebe risco/qualidade."
+        ],
+        [
+          "ScenarioComparator",
+          "Recebe métricas comparáveis."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "menor custo recebe score maior",
+          "maior risco recebe score menor",
+          "score entre 0 e 100"
+        ],
+        "integration": [
+          "ranking muda com pesos"
+        ],
+        "manual": [
+          "aumentar peso de custo e observar ranking"
+        ],
+        "acceptance": [
+          "score sempre mostra decomposição"
+        ]
+      }
+    },
+    {
+      "id": "ConstraintEngine",
+      "phase": 4,
+      "status": "planned_phase_4",
+      "page": "/fase-4-score-otimizador",
+      "purpose": "Define e valida restrições usadas pelo otimizador: mínimo/máximo de CDs, capacidade, concentração, cobertura e lead time.",
+      "inputs": {
+        "constraints": {
+          "minCds": 2,
+          "maxCds": 4,
+          "maxConcentration": 0.65,
+          "requireAllDemandCovered": true
+        }
+      },
+      "outputs": {
+        "normalizedConstraints": {},
+        "valid": true,
+        "errors": []
+      },
+      "internal_functions": [
+        [
+          "validateConstraintSchema(constraints)",
+          "Confere tipos e limites."
+        ],
+        [
+          "applyHardConstraints(scenario)",
+          "Elimina cenário impossível."
+        ],
+        [
+          "applySoftConstraints(scenario)",
+          "Gera penalidades/alerts."
+        ],
+        [
+          "explainConstraintFailure(scenario)",
+          "Explica por que cenário foi rejeitado."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioValidator",
+          "Reaproveita validade operacional."
+        ],
+        [
+          "ScenarioOptimizer",
+          "Filtra candidatos."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "minCds > maxCds é inválido",
+          "maxConcentration fora de 0-1 é inválido"
+        ],
+        "integration": [
+          "otimizador rejeita candidato inválido"
+        ],
+        "manual": [
+          "limitar max CDs e conferir busca"
+        ],
+        "acceptance": [
+          "cenário que viola hard constraint não entra no top"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioOptimizer",
+      "phase": 4,
+      "status": "planned_phase_4",
+      "page": "/fase-4-score-otimizador",
+      "purpose": "Gera candidatos de cenário em busca leve no navegador. Não promete ótimo global; entrega bons candidatos auditáveis.",
+      "inputs": {
+        "company": "empresa1",
+        "baseline": {},
+        "objective": {},
+        "constraints": {},
+        "searchConfig": {
+          "method": "exhaustive|greedy|iterated_greedy",
+          "maxIterations": 500,
+          "seed": 42
+        }
+      },
+      "outputs": {
+        "bestScenarios": [],
+        "searchLog": {
+          "testedScenarios": 500,
+          "validScenarios": 420,
+          "invalidScenarios": 80,
+          "method": "iterated_greedy",
+          "seed": 42
+        }
+      },
+      "internal_functions": [
+        [
+          "generateCandidate(scenario, rng)",
+          "Cria candidato a partir de mudanças."
+        ],
+        [
+          "evaluateCandidate(candidate)",
+          "Valida, calcula custo, qualidade e score."
+        ],
+        [
+          "runExhaustiveSearch(space)",
+          "Testa espaço pequeno inteiro."
+        ],
+        [
+          "runGreedySearch(space)",
+          "Busca incremental simples."
+        ],
+        [
+          "runIteratedGreedy(config)",
+          "Refina candidatos por iterações."
+        ],
+        [
+          "recordSearchLog(event)",
+          "Registra busca auditável."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioBuilder",
+          "Criar candidatos."
+        ],
+        [
+          "ConstraintEngine",
+          "Filtrar candidatos."
+        ],
+        [
+          "CostEngine",
+          "Avaliar custo."
+        ],
+        [
+          "TaxEngine",
+          "Avaliar tributo."
+        ],
+        [
+          "ScenarioScoring",
+          "Avaliar score."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "mesma seed reproduz resultado",
+          "não gera cenário sem CD"
+        ],
+        "integration": [
+          "top 5 aparecem na tela"
+        ],
+        "manual": [
+          "rodar busca e conferir log"
+        ],
+        "acceptance": [
+          "otimizador sempre informa quantos cenários testou"
+        ]
+      }
+    },
+    {
+      "id": "SearchLogPanel",
+      "phase": 4,
+      "status": "planned_phase_4",
+      "page": "/fase-4-score-otimizador",
+      "purpose": "Mostra rastreabilidade da busca: método, seed, candidatos testados, rejeições e top cenários.",
+      "inputs": {
+        "searchLog": {
+          "testedScenarios": 500,
+          "validScenarios": 420,
+          "invalidScenarios": 80,
+          "rejectionReasons": []
+        }
+      },
+      "outputs": {
+        "visibleLog": {},
+        "rejectionSummary": [],
+        "topCandidatesTable": []
+      },
+      "internal_functions": [
+        [
+          "summarizeSearchLog(log)",
+          "Consolida números da busca."
+        ],
+        [
+          "groupRejectionReasons(log)",
+          "Agrupa por restrição violada."
+        ],
+        [
+          "renderTopCandidates(candidates)",
+          "Mostra top cenários."
+        ],
+        [
+          "renderSearchConfig(config)",
+          "Mostra método/seed/iters."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioOptimizer",
+          "Recebe log."
+        ],
+        [
+          "AuditTrail",
+          "Envia log para rastreabilidade."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "valid+invalid = tested",
+          "rejection summary agrupa corretamente"
+        ],
+        "integration": [
+          "log aparece após otimização"
+        ],
+        "manual": [
+          "verificar método e seed usados"
+        ],
+        "acceptance": [
+          "busca sem log não é aceita"
+        ]
+      }
+    },
+    {
+      "id": "StressTestEngine",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final",
+      "purpose": "Aplica choques de frete, demanda, WACC, armazenagem, capacidade e tributo para testar robustez do cenário.",
+      "inputs": {
+        "scenario": {},
+        "stressCases": [
+          {
+            "name": "frete_mais_20",
+            "changes": {
+              "freightMultiplier": 1.2
+            }
+          }
+        ],
+        "baseline": {}
+      },
+      "outputs": {
+        "stressResults": [
+          {
+            "case": "frete_mais_20",
+            "totalCost": 11000000,
+            "savingVsBase": 0.03,
+            "stillPositive": true
+          }
+        ],
+        "robustnessScore": 74,
+        "alerts": []
+      },
+      "internal_functions": [
+        [
+          "applyStressCase(scenario, stressCase)",
+          "Cria versão estressada."
+        ],
+        [
+          "runStressCase(stressedScenario)",
+          "Calcula cenário sob choque."
+        ],
+        [
+          "compareStressVsBaseline(result)",
+          "Mede saving e piora."
+        ],
+        [
+          "calculateRobustnessScore(results)",
+          "Agrega robustez."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioBuilder",
+          "Aplicar mudanças temporárias."
+        ],
+        [
+          "CostEngine",
+          "Recalcular custos."
+        ],
+        [
+          "TaxEngine",
+          "Recalcular tributo."
+        ],
+        [
+          "ScenarioComparator",
+          "Comparar contra base."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "frete +20% aumenta transporte",
+          "demanda +15% aumenta volume/custo variável"
+        ],
+        "integration": [
+          "stress roda nos top cenários"
+        ],
+        "manual": [
+          "rodar stress no cenário vencedor"
+        ],
+        "acceptance": [
+          "saving negativo em stress gera alerta"
+        ]
+      }
+    },
+    {
+      "id": "ExplainabilityEngine",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final",
+      "purpose": "Gera explicações textuais simples e auditáveis sobre por que um cenário ganhou, perdeu ou ficou arriscado.",
+      "inputs": {
+        "baselineResults": {},
+        "scenarioResults": {},
+        "delta": {},
+        "qualityAlerts": [],
+        "stressResults": []
+      },
+      "outputs": {
+        "explanation": "O cenário reduziu armazenagem, mas aumentou distribuição.",
+        "mainDrivers": [
+          "redução de armazenagem",
+          "aumento de distância média"
+        ],
+        "riskNarrative": "Cenário concentra volume em um CD."
+      },
+      "internal_functions": [
+        [
+          "identifyMainDrivers(delta)",
+          "Escolhe maiores variações."
+        ],
+        [
+          "describeTradeoffs(delta, alerts)",
+          "Gera texto de trade-off."
+        ],
+        [
+          "describeStressBehavior(stressResults)",
+          "Resume robustez."
+        ],
+        [
+          "guardAgainstOverclaim(text, evidence)",
+          "Evita afirmações sem dado."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioComparator",
+          "Recebe delta."
+        ],
+        [
+          "ScenarioQualityCheck",
+          "Recebe alertas."
+        ],
+        [
+          "StressTestEngine",
+          "Recebe stress."
+        ],
+        [
+          "ExecutiveReport",
+          "Envia narrativa final."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "se armazenagem cai, texto menciona queda",
+          "se risco alto, texto menciona risco"
+        ],
+        "integration": [
+          "relatório inclui explicação"
+        ],
+        "manual": [
+          "ler explicação e conferir com gráficos"
+        ],
+        "acceptance": [
+          "não dizer que é melhor se score/robustez não sustentam"
+        ]
+      }
+    },
+    {
+      "id": "AuditTrail",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final e global",
+      "purpose": "Registra dados, premissas, versão do modelo, cenário, objetivo e resultados para cada simulação exportável.",
+      "inputs": {
+        "company": "empresa1",
+        "scenario": {},
+        "assumptions": {},
+        "dataVersions": {},
+        "modelVersion": "1.0.0",
+        "results": {}
+      },
+      "outputs": {
+        "auditRecord": {
+          "auditId": "audit_001",
+          "company": "empresa1",
+          "scenarioId": "cenario_3cds",
+          "dataSources": [],
+          "assumptionsUsed": {},
+          "modelVersion": "1.0.0"
+        }
+      },
+      "internal_functions": [
+        [
+          "createAuditRecord(payload)",
+          "Cria registro de auditoria."
+        ],
+        [
+          "hashScenarioInput(scenario)",
+          "Gera hash reprodutível."
+        ],
+        [
+          "attachDataSources(record, sources)",
+          "Anexa paths e hashes de fontes."
+        ],
+        [
+          "exportAuditJson(record)",
+          "Gera JSON exportável."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioPersistence",
+          "Recebe cenários salvos/importados."
+        ],
+        [
+          "ScenarioOptimizer",
+          "Recebe search log."
+        ],
+        [
+          "ExecutiveReport",
+          "Inclui auditoria no relatório."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "audit tem empresa, cenário, versão e premissas",
+          "hash muda quando input muda"
+        ],
+        "integration": [
+          "relatório exporta audit trail"
+        ],
+        "manual": [
+          "abrir JSON de auditoria e conferir fontes"
+        ],
+        "acceptance": [
+          "nenhuma simulação final sem audit trail"
+        ]
+      }
+    },
+    {
+      "id": "ExecutiveReport",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final",
+      "purpose": "Monta relatório executivo do cenário: resumo, comparação, saving, riscos, stress, premissas e recomendação defendível.",
+      "inputs": {
+        "company": "empresa1",
+        "baseline": {},
+        "selectedScenario": {},
+        "comparison": {},
+        "stress": {},
+        "explanation": {},
+        "audit": {}
+      },
+      "outputs": {
+        "report": {
+          "title": "Relatório Executivo - Empresa 1",
+          "sections": [
+            "Resumo",
+            "Comparação",
+            "Riscos",
+            "Stress",
+            "Premissas"
+          ]
+        },
+        "exportFormats": [
+          "html",
+          "json",
+          "csv_summary"
+        ]
+      },
+      "internal_functions": [
+        [
+          "buildExecutiveSummary(inputs)",
+          "Cria resumo de decisão."
+        ],
+        [
+          "buildCostWaterfallData(comparison)",
+          "Prepara decomposição de saving."
+        ],
+        [
+          "buildRiskSection(alerts)",
+          "Monta seção de riscos."
+        ],
+        [
+          "buildAssumptionsSection(audit)",
+          "Lista premissas."
+        ],
+        [
+          "renderReport(report)",
+          "Renderiza relatório."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ExplainabilityEngine",
+          "Recebe narrativa."
+        ],
+        [
+          "AuditTrail",
+          "Recebe premissas/fontes."
+        ],
+        [
+          "ExportEngine",
+          "Exporta arquivos."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "relatório tem empresa e cenário",
+          "relatório inclui saving e premissas"
+        ],
+        "integration": [
+          "relatório gera após stress"
+        ],
+        "manual": [
+          "ler relatório e ver se conta a história"
+        ],
+        "acceptance": [
+          "relatório não pode faltar audit trail"
+        ]
+      }
+    },
+    {
+      "id": "ExportEngine",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final",
+      "purpose": "Exporta resultados, cenários, auditoria e relatórios em formatos simples para entrega ou reuso.",
+      "inputs": {
+        "payload": {},
+        "format": "json|csv|html",
+        "filename": "resultado_empresa1_cenario3.json"
+      },
+      "outputs": {
+        "downloadReady": true,
+        "filename": "resultado_empresa1_cenario3.json",
+        "mimeType": "application/json"
+      },
+      "internal_functions": [
+        [
+          "toJson(payload)",
+          "Serializa JSON."
+        ],
+        [
+          "toCsv(rows)",
+          "Converte linhas para CSV."
+        ],
+        [
+          "toHtml(report)",
+          "Gera HTML exportável."
+        ],
+        [
+          "triggerDownload(blob, filename)",
+          "Dispara download no navegador."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ExecutiveReport",
+          "Exporta relatório."
+        ],
+        [
+          "AuditTrail",
+          "Exporta auditoria."
+        ],
+        [
+          "ScenarioPersistence",
+          "Exporta/importa cenários."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "JSON exportado é parseável",
+          "CSV contém cabeçalho"
+        ],
+        "integration": [
+          "botão exportar gera arquivo"
+        ],
+        "manual": [
+          "baixar arquivo e abrir"
+        ],
+        "acceptance": [
+          "export não pode sair vazio"
+        ]
+      }
+    },
+    {
+      "id": "RecommendationPanel",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final",
+      "purpose": "Apresenta recomendação final com ressalvas: melhor cenário por objetivo, robustez, riscos e próximos passos.",
+      "inputs": {
+        "rankedScenarios": [],
+        "stressResults": [],
+        "explanations": [],
+        "objective": {}
+      },
+      "outputs": {
+        "recommendation": {
+          "recommendedScenarioId": "cenario_3cds",
+          "confidence": "medium",
+          "why": [],
+          "caveats": []
+        }
+      },
+      "internal_functions": [
+        [
+          "selectRecommendedScenario(ranked, stress)",
+          "Seleciona cenário equilibrando score e robustez."
+        ],
+        [
+          "buildCaveats(alerts)",
+          "Monta ressalvas."
+        ],
+        [
+          "classifyConfidence(evidence)",
+          "Classifica confiança."
+        ],
+        [
+          "renderRecommendation(rec)",
+          "Mostra recomendação visual."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioScoring",
+          "Recebe ranking."
+        ],
+        [
+          "StressTestEngine",
+          "Recebe robustez."
+        ],
+        [
+          "ExplainabilityEngine",
+          "Recebe drivers e trade-offs."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "cenário com score alto e stress ruim recebe ressalva",
+          "sem evidência suficiente => confiança baixa"
+        ],
+        "integration": [
+          "recomendação aparece no relatório"
+        ],
+        "manual": [
+          "conferir se recomendação não ignora riscos"
+        ],
+        "acceptance": [
+          "recomendação precisa citar caveats quando existirem"
+        ]
+      }
+    }
+  ]
+}

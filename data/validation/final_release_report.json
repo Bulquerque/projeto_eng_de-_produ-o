@@ -1,0 +1,38 @@
+{
+  "release_name": "visagio_static_simulator_FASE5_IMPLEMENTADA_v1",
+  "status": "ready",
+  "scope": "Fases 1 a 5 implementadas como site estatico",
+  "pages": [
+    "/",
+    "/fase-1-validacao/",
+    "/fase-2-baseline/",
+    "/fase-3-cenarios/",
+    "/fase-4-score-otimizador/",
+    "/fase-5-entrega-final/"
+  ],
+  "phase5_modules": [
+    "FinalScenarioSelector",
+    "StressCaseLibrary",
+    "StressTestEngine",
+    "SensitivityEngine",
+    "RobustnessScorer",
+    "RecommendationEngine",
+    "AuditTrailEngine",
+    "ExecutiveReportBuilder",
+    "ExportCenter",
+    "FinalQAChecker",
+    "ReleaseValidator",
+    "Phase5Dashboard",
+    "Phase5TestPanel"
+  ],
+  "tests_executed_by_group": {
+    "base_paths_phase1_phase2": "passed",
+    "phase3": "passed",
+    "phase4": "passed",
+    "phase5": "passed"
+  },
+  "notes": [
+    "Todos os testes foram executados em grupos no pacote final extraido para evitar timeout de processo unico.",
+    "O site continua 100% estatico e usa apenas caminhos relativos."
+  ]
+}

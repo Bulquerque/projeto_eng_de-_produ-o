@@ -1,0 +1,588 @@
+{
+  "package": "visagio_static_simulator_FASE3_IMPLEMENTADA_v1",
+  "version": "8.0-phase2-baseline-implemented",
+  "generated_at_utc": "2026-05-06T18:57:02.185564+00:00",
+  "companies": {
+    "empresa1": {
+      "label": "Empresa 1",
+      "separation_rule": "Usar somente Dados de Demanda, Dados de Distância e Premissas Gerais para esta empresa.",
+      "baseline": "data/empresa1/baseline.json",
+      "core_files": [
+        {
+          "id": "demand_records",
+          "csv": "data/empresa1/core/demand_records.csv",
+          "json": "data/empresa1/core/demand_records.json",
+          "rows": 60311,
+          "columns": 10,
+          "headers": [
+            "UF",
+            "CENTROIDE",
+            "CODIGO",
+            "CATEGORIA",
+            "SUBCATEGORIA",
+            "FORNECEDOR",
+            "PESO_DEMANDA_KG",
+            "QTD_ITENS_UNID",
+            "FATURAMENTO_MENSAL"
+          ],
+          "description": "Demanda mensal por UF, centroide, SKU/código, categoria, fornecedor, peso, quantidade e faturamento."
+        },
+        {
+          "id": "distance_matrix",
+          "csv": "data/empresa1/core/distance_matrix.csv",
+          "json": "data/empresa1/core/distance_matrix.json",
+          "rows": 576,
+          "columns": 11,
+          "headers": [
+            "UF_ORIGEM",
+            "ORIGEM",
+            "UF_DESTINO",
+            "DESTINO",
+            "Latitude_Origem",
+            "Longitude_Origem",
+            "Latitude_Destino",
+            "Longitude_Destino",
+            "Distancia(KM)",
+            "Frete (R$/Kg)"
+          ],
+          "description": "Matriz origem-destino com UF, centroide/cidade, coordenadas, distância em km e frete R$/kg."
+        },
+        {
+          "id": "premissas",
+          "csv": "data/empresa1/core/premissas.csv",
+          "json": "data/empresa1/core/premissas.json",
+          "rows": 3,
+          "columns": 4,
+          "headers": [
+            "premissa",
+            "valor",
+            "unidade"
+          ],
+          "description": "Premissas gerais do modelo da Empresa 1."
+        },
+        {
+          "id": "demand_summary_by_uf",
+          "json": "data/empresa1/core/demand_summary_by_uf.json",
+          "rows": 21,
+          "description": "Resumo agregado da demanda por UF."
+        },
+        {
+          "id": "network_summary",
+          "json": "data/empresa1/core/network_summary.json",
+          "rows": 52,
+          "description": "Resumo da rede de origens e destinos da Empresa 1."
+        }
+      ],
+      "raw_exports_dir": "data/empresa1/raw_exports/",
+      "source_exports_dir": "data/empresa1/source_exports/",
+      "source_workbooks": [
+        {
+          "source_id": "empresa1_demand",
+          "filename": "Dados de Demanda(3).xlsx",
+          "source_path": "references/raw_sources/Dados de Demanda(3).xlsx",
+          "sheet_count": 1,
+          "source_export_dir": "data/empresa1/source_exports/empresa1_demand"
+        },
+        {
+          "source_id": "empresa1_distance",
+          "filename": "Dados de Distância(3).xlsx",
+          "source_path": "references/raw_sources/Dados de Distância(3).xlsx",
+          "sheet_count": 1,
+          "source_export_dir": "data/empresa1/source_exports/empresa1_distance"
+        },
+        {
+          "source_id": "empresa1_premissas",
+          "filename": "Premissas Gerais(4).xlsx",
+          "source_path": "references/raw_sources/Premissas Gerais(4).xlsx",
+          "sheet_count": 1,
+          "source_export_dir": "data/empresa1/source_exports/empresa1_premissas"
+        }
+      ]
+    },
+    "empresa2": {
+      "label": "Empresa 2",
+      "separation_rule": "Usar somente Analise_Malha_Empresa2 / workbook de malha desta empresa.",
+      "baseline": "data/empresa2/baseline.json",
+      "core_files": [
+        {
+          "id": "faturamento_uf",
+          "sheet": "Faturamento_UF",
+          "csv": "data/empresa2/core/faturamento_uf.csv",
+          "json": "data/empresa2/core/faturamento_uf.json",
+          "rows": 28,
+          "columns": 4,
+          "headers": [
+            "UF",
+            "Méd. Vendas 2025",
+            "Participação UF 2025"
+          ],
+          "description": "Faturamento por UF de destino em 2025."
+        },
+        {
+          "id": "distribuicao_fabrica_cd",
+          "sheet": "Distribuição Fábrica_CD",
+          "csv": "data/empresa2/core/distribuicao_fabrica_cd.csv",
+          "json": "data/empresa2/core/distribuicao_fabrica_cd.json",
+          "rows": 14,
+          "columns": 10,
+          "headers": [
+            "Origem",
+            "Origem UF",
+            "Destino",
+            "Destino UF",
+            "Quantidade",
+            "Batelada",
+            "$",
+            "% Qtd",
+            "% Batelada"
+          ],
+          "description": "Fluxos de fábrica/terceirista para CDs."
+        },
+        {
+          "id": "faturamento_filial_uf",
+          "sheet": "Faturamento por Filial x UF",
+          "csv": "data/empresa2/core/faturamento_filial_uf.csv",
+          "json": "data/empresa2/core/faturamento_filial_uf.json",
+          "rows": 168,
+          "columns": 5,
+          "headers": [
+            "Filial Origem",
+            "UF Destino",
+            "Faturamento 2025",
+            "%"
+          ],
+          "description": "Faturamento por filial origem e UF destino."
+        },
+        {
+          "id": "tabela_logistica",
+          "sheet": "Tabela Logística",
+          "csv": "data/empresa2/core/tabela_logistica.csv",
+          "json": "data/empresa2/core/tabela_logistica.json",
+          "rows": 159,
+          "columns": 17,
+          "headers": [
+            "CÓDIGO",
+            "DESCRIÇÃO",
+            "ML/G",
+            "CX",
+            "CAIXA (CxLxA)",
+            "PESO CX (kg)",
+            "NCM",
+            "CEST",
+            "EAN13",
+            "DUN14",
+            "N º DE PROCESSO",
+            "P.Líq. (g)",
+            "P.Brt. (g)",
+            "Alt.",
+            "Larg.",
+            "Compr."
+          ],
+          "description": "Cadastro logístico/fiscal de produtos."
+        },
+        {
+          "id": "parametros",
+          "sheet": "Parâmetros",
+          "csv": "data/empresa2/core/parametros.csv",
+          "json": "data/empresa2/core/parametros.json",
+          "rows": 14,
+          "columns": 4,
+          "headers": [
+            "Parâmetro",
+            "Valor",
+            "col_D"
+          ],
+          "description": "Parâmetros gerais do modelo da Empresa 2."
+        },
+        {
+          "id": "cenarios",
+          "sheet": "Cenários",
+          "csv": "data/empresa2/core/cenarios.csv",
+          "json": "data/empresa2/core/cenarios.json",
+          "rows": 25,
+          "columns": 11,
+          "headers": [
+            "Cenário 1",
+            "4 CDs",
+            "col_C",
+            "col_D",
+            "col_E",
+            "col_F",
+            "col_G",
+            "col_H",
+            "Sim",
+            "col_J"
+          ],
+          "description": "Resultados e decomposição de cenários do workbook."
+        },
+        {
+          "id": "dados_tributario",
+          "sheet": "Dados_Tributário",
+          "csv": "data/empresa2/core/dados_tributario.csv",
+          "json": "data/empresa2/core/dados_tributario.json",
+          "rows": 556,
+          "columns": 41,
+          "headers": [
+            "# Cenário",
+            "Categoria NCM",
+            "Tipo Emissão",
+            "UF Origem",
+            "Filial Origem",
+            "UF Destino",
+            "Vlr. Total SD2",
+            "Vlr ST Ext - Original",
+            "Vlr ST - Original",
+            "Vlr PIS - Original",
+            "Vlr COFINS - Original",
+            "Vlr IPI - Original",
+            "Vlr ICMS - Original",
+            "Vlr FCP - Original",
+            "Alq ST Ext - Original",
+            "Alq ST - Original",
+            "Alq PIS - Original",
+            "Alq COFINS - Original",
+            "Alq IPI - Original",
+            "Alq ICMS - Original",
+            "Alq FCP - Original",
+            "Receita Líquida",
+            "Alq ST Ext - Cenário",
+            "Alq FCP - Cenário",
+            "Alq ICMS - Cenário",
+            "Alq IPI - Cenário",
+            "Alq COFINS - Cenário",
+            "Alq PIS - Cenário",
+            "Alq ST - Cenário",
+            "Vlr ST Ext - Cenário",
+            "Vlr FCP - Cenário",
+            "Vlr ICMS - Cenário",
+            "Vlr IPI - Cenário",
+            "Vlr COFINS - Cenário",
+            "Vlr PIS - Cenário",
+            "Vlr ST - Cenário",
+            "Efeitos Débitos",
+            "Efeitos Créditos",
+            "Alq ICMS Efetiva",
+            "Alq Outros Efetiva"
+          ],
+          "description": "Matriz tributária e decomposição de impostos."
+        },
+        {
+          "id": "estoque",
+          "sheet": "Estoque",
+          "csv": "data/empresa2/core/estoque.csv",
+          "json": "data/empresa2/core/estoque.json",
+          "rows": 633,
+          "columns": 21,
+          "headers": [
+            "col_A",
+            "col_B",
+            "col_C",
+            "col_D",
+            "col_E",
+            "col_F",
+            "col_G",
+            "col_H",
+            "col_I",
+            "col_J",
+            "col_K",
+            "col_L",
+            "col_M",
+            "col_N",
+            "col_O",
+            "col_P",
+            "col_Q",
+            "col_R",
+            "col_S",
+            "col_T"
+          ],
+          "description": "Estoque médio por filial/produto."
+        },
+        {
+          "id": "dados_roteamento",
+          "sheet": "Dados_Roteamento",
+          "csv": "data/empresa2/core/dados_roteamento.csv",
+          "json": "data/empresa2/core/dados_roteamento.json",
+          "rows": 18,
+          "columns": 15,
+          "headers": [
+            "Indústria",
+            "CD",
+            "Destino",
+            "Observação",
+            "Rota + Obs",
+            "Participação Rota Hoje",
+            "Frete Transferência",
+            "Custo Armazenagem",
+            "Frete Distribuição",
+            "Custo Logístico",
+            "ICMS",
+            "Outros Tributos",
+            "Efeitos Tributários",
+            "Impacto total"
+          ],
+          "description": "Dados de apoio de roteamento."
+        },
+        {
+          "id": "tabelas_cif_dist",
+          "sheet": "Tabelas_CIF_Dist",
+          "csv": "data/empresa2/core/tabelas_cif_dist.csv",
+          "json": "data/empresa2/core/tabelas_cif_dist.json",
+          "rows": 61,
+          "columns": 13,
+          "headers": [
+            "Origem",
+            "UF",
+            "Destino",
+            "Até 10kg",
+            "10 a 20kg",
+            "20 a 30kg",
+            "30 a 50kg",
+            "50 a 70kg",
+            "70 a 100kg",
+            "Acima 100kg (R$/kg)",
+            "Frete Valor (Decimal)",
+            "col_L"
+          ],
+          "description": "Tabelas CIF de distribuição."
+        },
+        {
+          "id": "aux_custo_transferencia",
+          "sheet": "Aux_Custo_Transferência",
+          "csv": "data/empresa2/core/aux_custo_transferencia.csv",
+          "json": "data/empresa2/core/aux_custo_transferencia.json",
+          "rows": 192,
+          "columns": 15,
+          "headers": [
+            "DATA",
+            "NF",
+            "ORIGEM",
+            "ORIGEM UF",
+            "CLIENTE",
+            "DESTINO UF",
+            "VOLUME",
+            "PESO",
+            "VALOR NOTA",
+            "FRETE VALOR",
+            "FRETE %",
+            "TRANSPORTADORA",
+            "CONFERENCIA DE FRETE",
+            "OBS."
+          ],
+          "description": "Base auxiliar de custo de transferência."
+        },
+        {
+          "id": "aux_custo_armazenagem",
+          "sheet": "Aux_Custo_Armaz",
+          "csv": "data/empresa2/core/aux_custo_armazenagem.csv",
+          "json": "data/empresa2/core/aux_custo_armazenagem.json",
+          "rows": 67,
+          "columns": 12,
+          "headers": [
+            "Filial",
+            "Cód Filial",
+            "Itens",
+            "Tipo",
+            "Tarifas",
+            "UN",
+            "Qtd. Setembro",
+            "Qtd. Outubro",
+            "Qtd. Novembro",
+            "Qtd. Média 3M",
+            "Custo"
+          ],
+          "description": "Base auxiliar de custo de armazenagem."
+        },
+        {
+          "id": "aux_custo_distribuicao",
+          "sheet": "Aux_ Custo_Distribuição",
+          "csv": "data/empresa2/core/aux_custo_distribuicao.csv",
+          "json": "data/empresa2/core/aux_custo_distribuicao.json",
+          "rows": 11445,
+          "columns": 39,
+          "headers": [
+            "FILIAL",
+            "PEDIDO",
+            "INTEGRAÇÃO",
+            "DATA WMS",
+            "NF",
+            "CLIENTE",
+            "UF",
+            "MUNICIPIO",
+            "REGIÕES",
+            "VOLUME",
+            "PESO",
+            "VALOR NOTA",
+            "CTE",
+            "NFs",
+            "FRETE VALOR",
+            "FRETE %",
+            "TDE",
+            "AG",
+            "TDA",
+            "CARRO DEDICADO",
+            "REENTREGA",
+            "DEVOLUÇÃO",
+            "TAXA PALETIZAÇÃO",
+            "%",
+            "CONFERENCIA  DE FRETE",
+            "TRANSPORTADORA",
+            "PEDIDO/NF EXPEDIDO",
+            "PREVISÃO NF",
+            "PEDIDO/NF ENTREGUE",
+            "TEMPO REAL DA ENTREGA(DIAS)",
+            "Lead Time Entrega",
+            "OCOCRENCIA FALTA",
+            "OCORRENCIA AVARIA",
+            "OBS.",
+            "STATUS",
+            "SLA",
+            "Lead Time (Dias)",
+            "OBS"
+          ],
+          "description": "Base auxiliar de custo de distribuição e SLA."
+        },
+        {
+          "id": "lat_long",
+          "sheet": "Lat & Long",
+          "csv": "data/empresa2/core/lat_long.csv",
+          "json": "data/empresa2/core/lat_long.json",
+          "rows": 16,
+          "columns": 5,
+          "headers": [
+            "UF",
+            "Cidade",
+            "Lat",
+            "Long"
+          ],
+          "description": "Coordenadas de UFs/cidades."
+        },
+        {
+          "id": "rotas_mapa",
+          "sheet": "Rotas_Mapa",
+          "csv": "data/empresa2/core/rotas_mapa.csv",
+          "json": "data/empresa2/core/rotas_mapa.json",
+          "rows": 30,
+          "columns": 8,
+          "headers": [
+            "Cidade origem",
+            "Cidade Destino",
+            "Rota",
+            "Cenário",
+            "col_E",
+            "Cidade origem_2",
+            "Cidade Destino_2"
+          ],
+          "description": "Rotas para mapa."
+        },
+        {
+          "id": "scenario_blocks",
+          "json": "data/empresa2/core/scenario_blocks.json",
+          "rows": 3,
+          "description": "Blocos estruturados extraídos da aba Cenários, preservando cada cenário, suas linhas e total."
+        },
+        {
+          "id": "scenario_totals",
+          "csv": "data/empresa2/core/scenario_totals.csv",
+          "json": "data/empresa2/core/scenario_totals.json",
+          "rows": 3,
+          "description": "Totais de cada cenário extraídos ou inferidos de forma explícita quando o cenário tem apenas uma linha."
+        }
+      ],
+      "raw_exports_dir": "data/empresa2/raw_exports/",
+      "source_exports_dir": "data/empresa2/source_exports/",
+      "source_workbooks": [
+        {
+          "source_id": "empresa2_main",
+          "filename": "Analise_Malha_Empresa2(1).xlsx",
+          "source_path": "references/raw_sources/Analise_Malha_Empresa2(1).xlsx",
+          "sheet_count": 25,
+          "source_export_dir": "data/empresa2/source_exports/empresa2_main"
+        },
+        {
+          "source_id": "empresa2_alias_vcaracol",
+          "filename": "Análise Malha Logística - vCaracol(3).xlsx",
+          "source_path": "references/raw_sources/Análise Malha Logística - vCaracol(3).xlsx",
+          "sheet_count": 25,
+          "source_export_dir": "data/empresa2/source_exports/empresa2_alias_vcaracol"
+        }
+      ]
+    }
+  },
+  "contracts": "data/contracts/module_contracts.json",
+  "phase_tests": "data/validation/phase_tests.json",
+  "data_presence_proof": "data/validation/data_presence_proof.json",
+  "source_manifest": "references/source_documents_manifest.csv",
+  "path_audit": "data/validation/path_resolution_report.json",
+  "regeneration_compare_report": "data/validation/regeneration_compare_report.json",
+  "full_workbook_path_audit": "data/validation/full_workbook_path_audit.json",
+  "workbook_sheet_inventory": "data/validation/workbook_sheet_inventory.csv",
+  "final_audit": "data/validation/final_v6_audit_summary.json",
+  "phase_1": {
+    "implemented": true,
+    "entrypoints": [
+      "index.html",
+      "fase-1-validacao/index.html"
+    ],
+    "updated_files": [
+      "index.html",
+      "assets/styles.css",
+      "assets/app.js",
+      "fase-1-validacao/index.html"
+    ],
+    "implementation_report": "data/validation/phase1_implementation_report.json",
+    "tests": [
+      "tests/test_phase1_static_site.py",
+      "tests/test_phase1_http_server.py",
+      "tests/test_phase1_playwright.py"
+    ],
+    "test_results": "data/validation/phase1_test_results.json"
+  },
+  "phase2": {
+    "status": "implemented",
+    "page": "fase-2-baseline/index.html",
+    "generated_at_utc": "2026-05-12T15:31:34.224493+00:00",
+    "companies": {
+      "empresa1": {
+        "phase2_bundle": "data/empresa1/phase2/phase2_bundle.json",
+        "baseline_model": "data/empresa1/phase2/baseline_model.json",
+        "baseline_flows": "data/empresa1/phase2/baseline_flows.json",
+        "baseline_costs": "data/empresa1/phase2/baseline_costs.json",
+        "tax_results": "data/empresa1/phase2/tax_results.json",
+        "base_fit": "data/empresa1/phase2/base_fit.json",
+        "baseline_status": "computed_baseline_without_historical_reference",
+        "flow_count": 36,
+        "base_fit_status": "benchmark_pending"
+      },
+      "empresa2": {
+        "phase2_bundle": "data/empresa2/phase2/phase2_bundle.json",
+        "baseline_model": "data/empresa2/phase2/baseline_model.json",
+        "baseline_flows": "data/empresa2/phase2/baseline_flows.json",
+        "baseline_costs": "data/empresa2/phase2/baseline_costs.json",
+        "tax_results": "data/empresa2/phase2/tax_results.json",
+        "base_fit": "data/empresa2/phase2/base_fit.json",
+        "baseline_status": "workbook_baseline_reconstructed",
+        "flow_count": 76,
+        "base_fit_status": "benchmark_pending",
+        "base_fit_score": null
+      }
+    }
+  },
+  "phase3": {
+    "status": "implemented",
+    "page": "fase-3-cenarios/index.html",
+    "scope": [
+      "scenario_builder",
+      "scenario_validator",
+      "flow_rebuilder",
+      "scenario_simulator",
+      "comparator",
+      "quality_check",
+      "change_explainer",
+      "persistence",
+      "import_export",
+      "dashboard",
+      "tests"
+    ],
+    "implemented_at_utc": "2026-05-06T22:26:28.226452+00:00"
+  }
+}

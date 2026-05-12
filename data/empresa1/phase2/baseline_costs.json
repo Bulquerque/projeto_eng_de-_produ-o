@@ -1,0 +1,55 @@
+{
+  "scenario_id": "baseline_empresa1",
+  "company_id": "empresa1",
+  "cost_basis": "computed_proxy",
+  "costs": {
+    "transfer_cost": 0,
+    "distribution_cost": 14693575.420616498,
+    "storage_cost": 11650032.521356668,
+    "inventory_cost": 4975867.382447997,
+    "tax_impact": 0,
+    "total_logistics_cost": 31319475.32442116,
+    "total_with_tax": 31319475.32442116
+  },
+  "assumptions_used": {
+    "storage_cost_per_kg_month": 0.4,
+    "wacc": 0.119,
+    "inventory_value_proxy": "one average month of revenue",
+    "transfer_cost": "not_available_in_source_data",
+    "tax_impact": "not_available_in_source_data"
+  },
+  "cost_breakdown": [
+    {
+      "metric": "transfer_cost",
+      "value": 0,
+      "source": "not_available_zeroed_with_warning"
+    },
+    {
+      "metric": "distribution_cost",
+      "value": 14693575.420616498,
+      "source": "demand_weight_x_freight_per_kg"
+    },
+    {
+      "metric": "storage_cost",
+      "value": 11650032.521356668,
+      "source": "monthly_weight_x_storage_cost_per_kg_month_x_12"
+    },
+    {
+      "metric": "inventory_cost",
+      "value": 4975867.382447997,
+      "source": "monthly_revenue_x_wacc"
+    },
+    {
+      "metric": "tax_impact",
+      "value": 0,
+      "source": "not_available_zeroed_with_warning"
+    }
+  ],
+  "warnings": [
+    "Destino DF/GOIANIA: distância resolvida com status city_name_fallback.",
+    "Destino PB/RECIFE: distância resolvida com status city_name_fallback.",
+    "Empresa 1 não possui benchmark histórico consolidado; Base Fit Score fica pendente.",
+    "Custo de transferência e tributo não foram inferidos para evitar inventar dado ausente."
+  ],
+  "errors": []
+}

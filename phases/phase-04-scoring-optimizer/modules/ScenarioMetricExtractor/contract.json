@@ -1,0 +1,44 @@
+{
+  "id": "ScenarioMetricExtractor",
+  "phase": 4,
+  "status": "implemented_phase_4",
+  "page": "/fase-4-score-otimizador/",
+  "file": "assets/js/phase4/scenario-metric-extractor.js",
+  "purpose": "Extrai métricas comparáveis dos cenários simulados: custo, qualidade, risco, tributo e eficiência de estoque.",
+  "inputs": {
+    "company_id": "empresa1|empresa2",
+    "objective": "{}",
+    "scenario_results": "[]",
+    "constraints": "{}",
+    "optimizer_config": "{}"
+  },
+  "outputs": {
+    "result": "{}",
+    "scored_scenarios": "[]",
+    "search_log": "{}",
+    "warnings": "[]",
+    "errors": "[]"
+  },
+  "internal_functions": [
+    "extractScenarioMetrics"
+  ],
+  "external_calls": [
+    "ScenarioSimulator",
+    "ScenarioQualityCheck"
+  ],
+  "tests": {
+    "unit": [
+      "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+      "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+    ],
+    "integration": [
+      "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+    ],
+    "manual": [
+      "checklist na página /fase-4-score-otimizador/"
+    ],
+    "acceptance": [
+      "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+    ]
+  }
+}

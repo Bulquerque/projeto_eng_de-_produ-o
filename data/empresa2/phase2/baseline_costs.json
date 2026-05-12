@@ -1,0 +1,70 @@
+{
+  "scenario_id": "baseline_empresa2",
+  "company_id": "empresa2",
+  "cost_basis": "workbook_scenario_totals_cenario_1",
+  "costs": {
+    "transfer_cost": 3148100.5106217293,
+    "distribution_cost": 7637802.742085703,
+    "storage_cost": 8647999.461242853,
+    "inventory_cost": 4140531.299245261,
+    "tax_impact": 26081451.576414526,
+    "freight_cost": 10785903.252707433,
+    "total_logistics_cost": 23574434.013195544,
+    "total_with_tax": 49655885.58961008
+  },
+  "reference_results": {
+    "transfer_cost": 3148100.5106217293,
+    "distribution_cost": 7637802.742085703,
+    "storage_cost": 8647999.461242853,
+    "inventory_cost": 4140531.299245261,
+    "tax_impact": 26081451.576414526,
+    "freight_cost": 10785903.252707433,
+    "total_logistics_cost": 23574434.013195544,
+    "total_with_tax": 49655885.58961008
+  },
+  "raw_operational_evidence": {
+    "transfer_freight_sum_aux_table": 350543.81,
+    "distribution_freight_sum_aux_table": 2333443.12,
+    "storage_monthly_sum_aux_table": 637183.4586542788,
+    "storage_annualized_sum_aux_table": 7646201.503851345,
+    "inventory_value_sum_estoque": 34162799.498723246,
+    "inventory_cost_using_inferred_wacc": 4140531.299245261,
+    "inferred_wacc_from_workbook_inventory_cost": 0.12120000000000011,
+    "tax_effect_from_tax_matrix_raw": 25567543.94315701,
+    "tax_effect_from_tax_matrix_reconciled": 26081451.57641452,
+    "workbook_adjustment_factor": 0.010000000000001119
+  },
+  "cost_breakdown": [
+    {
+      "metric": "storage_cost",
+      "value": 8647999.461242853,
+      "source": "scenario_totals:Cenário 1"
+    },
+    {
+      "metric": "transfer_cost",
+      "value": 3148100.5106217293,
+      "source": "scenario_totals:Cenário 1"
+    },
+    {
+      "metric": "distribution_cost",
+      "value": 7637802.742085703,
+      "source": "scenario_totals:Cenário 1"
+    },
+    {
+      "metric": "inventory_cost",
+      "value": 4140531.299245261,
+      "source": "scenario_totals:Cenário 1"
+    },
+    {
+      "metric": "tax_impact",
+      "value": 26081451.576414526,
+      "source": "scenario_totals:Cenário 1"
+    }
+  ],
+  "warnings": [
+    "Cenário 1 do workbook é a referência canônica para reconstrução nesta fase.",
+    "Sem benchmark independente consolidado no pacote; Base Fit Score fica pendente.",
+    "A aba Cenários é em blocos; usar scenario_blocks/scenario_totals."
+  ],
+  "errors": []
+}

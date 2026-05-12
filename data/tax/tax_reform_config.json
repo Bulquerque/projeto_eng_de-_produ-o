@@ -1,0 +1,159 @@
+{
+  "default_tax_mode": "current",
+  "default_tax_regime": "legacy_current",
+  "default_category": "default_goods",
+  "tax_mode_aliases": {
+    "current": "legacy_current",
+    "disabled": "disabled",
+    "reform_2026": "reform_2026",
+    "reform_2027": "reform_2027_2028",
+    "reform_2028": "reform_2027_2028",
+    "reform_2029": "transition_2029",
+    "reform_2030": "transition_2030",
+    "reform_2031": "transition_2031",
+    "reform_2032": "transition_2032",
+    "reform_2033": "reform_full_2033"
+  },
+  "regimes": {
+    "legacy_current": {
+      "label": "Sistema atual",
+      "ui_mode": "current",
+      "year": 2025,
+      "year_label": "2025",
+      "calculation_mode": "legacy_current",
+      "legacy_weight": 1,
+      "cbs_rate": 0,
+      "ibs_rate": 0,
+      "selective_rate": 0,
+      "credit_rate": 0
+    },
+    "disabled": {
+      "label": "Tributário desligado",
+      "ui_mode": "disabled",
+      "year": 2025,
+      "year_label": "desligado",
+      "calculation_mode": "disabled",
+      "legacy_weight": 0,
+      "cbs_rate": 0,
+      "ibs_rate": 0,
+      "selective_rate": 0,
+      "credit_rate": 0
+    },
+    "reform_2026": {
+      "label": "2026, ano-teste",
+      "ui_mode": "reform_2026",
+      "year": 2026,
+      "year_label": "2026",
+      "calculation_mode": "transition_test",
+      "legacy_weight": 0.995,
+      "cbs_rate": 0.009,
+      "ibs_rate": 0.001,
+      "selective_rate": 0,
+      "credit_rate": 0.02
+    },
+    "reform_2027_2028": {
+      "label": "2027-2028, CBS em vigor",
+      "ui_mode": "reform_2027",
+      "alt_ui_mode": "reform_2028",
+      "year": 2027,
+      "year_label": "2027-2028",
+      "calculation_mode": "reform_cbs",
+      "legacy_weight": 0.72,
+      "cbs_rate": 0.088,
+      "ibs_rate": 0,
+      "selective_rate": 0.01,
+      "credit_rate": 0.15
+    },
+    "transition_2029": {
+      "label": "Transição 2029",
+      "ui_mode": "reform_2029",
+      "year": 2029,
+      "year_label": "2029",
+      "calculation_mode": "transition_2029",
+      "legacy_weight": 0.9,
+      "ibs_weight": 0.1,
+      "cbs_rate": 0.088,
+      "ibs_rate": 0.177,
+      "selective_rate": 0.01,
+      "credit_rate": 0.15
+    },
+    "transition_2030": {
+      "label": "Transição 2030",
+      "ui_mode": "reform_2030",
+      "year": 2030,
+      "year_label": "2030",
+      "calculation_mode": "transition_2030",
+      "legacy_weight": 0.8,
+      "ibs_weight": 0.2,
+      "cbs_rate": 0.088,
+      "ibs_rate": 0.177,
+      "selective_rate": 0.01,
+      "credit_rate": 0.15
+    },
+    "transition_2031": {
+      "label": "Transição 2031",
+      "ui_mode": "reform_2031",
+      "year": 2031,
+      "year_label": "2031",
+      "calculation_mode": "transition_2031",
+      "legacy_weight": 0.7,
+      "ibs_weight": 0.3,
+      "cbs_rate": 0.088,
+      "ibs_rate": 0.177,
+      "selective_rate": 0.01,
+      "credit_rate": 0.15
+    },
+    "transition_2032": {
+      "label": "Transição 2032",
+      "ui_mode": "reform_2032",
+      "year": 2032,
+      "year_label": "2032",
+      "calculation_mode": "transition_2032",
+      "legacy_weight": 0.6,
+      "ibs_weight": 0.4,
+      "cbs_rate": 0.088,
+      "ibs_rate": 0.177,
+      "selective_rate": 0.01,
+      "credit_rate": 0.15
+    },
+    "reform_full_2033": {
+      "label": "2033, regime integral",
+      "ui_mode": "reform_2033",
+      "year": 2033,
+      "year_label": "2033",
+      "calculation_mode": "reform_full",
+      "legacy_weight": 0,
+      "ibs_weight": 1,
+      "cbs_rate": 0.088,
+      "ibs_rate": 0.177,
+      "selective_rate": 0.02,
+      "credit_rate": 0.2
+    }
+  },
+  "category_rules": {
+    "default_goods": {
+      "cbs_rate_multiplier": 1,
+      "ibs_rate_multiplier": 1,
+      "selective_rate_multiplier": 0,
+      "credit_rate": 0.1
+    },
+    "essential_goods": {
+      "cbs_rate_multiplier": 0.7,
+      "ibs_rate_multiplier": 0.8,
+      "selective_rate_multiplier": 0,
+      "credit_rate": 0.15
+    },
+    "services": {
+      "cbs_rate_multiplier": 1.05,
+      "ibs_rate_multiplier": 1.05,
+      "selective_rate_multiplier": 0,
+      "credit_rate": 0.08
+    },
+    "selective_goods": {
+      "cbs_rate_multiplier": 1,
+      "ibs_rate_multiplier": 1,
+      "selective_rate_multiplier": 1,
+      "credit_rate": 0
+    }
+  }
+}

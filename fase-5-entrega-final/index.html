@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Relatório Executivo e Stress Test</title>
+  <meta name="description" content="Conclusão do simulador: stress test, robustez, recomendação e relatório executivo.">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script type="importmap">
+    { "imports": { "chart.js": "../assets/vendor/chart.esm.js" } }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <header class="hero phase5-hero">
+    <nav class="topbar" aria-label="Navegação principal">
+      <a class="brand-mark" href="../index.html" aria-label="Voltar para início">V</a>
+      <div><p class="eyebrow">Capstone Visagio · Entrega</p><h1>Entrega Final, Robustez e Relatório Executivo</h1><span style="position:absolute;left:-9999px;">Fase 5</span></div>
+      <div class="topbar-actions">
+        <a href="../index.html" class="ghost-button">Validação</a>
+        <a href="../fase-2-baseline/" class="ghost-button">Baseline</a>
+        <a href="../fase-3-cenarios/" class="ghost-button">Simulação</a>
+        <a href="../fase-4-score-otimizador/" class="ghost-button">Otimização</a>
+        <a href="../fase-5-entrega-final/" class="ghost-button active" aria-current="page">Entrega</a>
+        <a href="../debug/" class="ghost-button">Debug</a>
+      </div>
+    </nav>
+    <section class="hero-grid">
+      <div class="hero-copy">
+        <span class="status-chip status-ok" id="phase5Status">módulo ativo</span>
+        <h2>O simulador agora fecha a decisão: recomenda, estressa, audita e exporta.</h2>
+        <p>A Entrega Final usa o cenário ótimo selecionado na Otimização, roda stress tests, mede robustez, gera recomendação explicável, cria relatório executivo e valida o release final.</p>
+        <div class="hero-actions company-toggle" role="tablist" aria-label="Selecionar empresa">
+          <button type="button" class="company-tab active" data-company="empresa1" role="tab" aria-selected="true">Empresa 1</button>
+          <button type="button" class="company-tab" data-company="empresa2" role="tab" aria-selected="false">Empresa 2</button>
+        </div>
+      </div>
+      <aside class="hero-card" aria-label="Resumo técnico do pacote">
+        <dl class="summary-list">
+          <div><dt>Pacote</dt><dd id="packageName">—</dd></div>
+          <div><dt>Versão</dt><dd id="packageVersion">—</dd></div>
+          <div><dt>Utilidade</dt><dd>Entrega</dd></div>
+          <div><dt>Contexto</dt><dd>robustez, recomendação e exportação</dd></div>
+        </dl>
+      </aside>
+    </section>
+  </header>
+
+  <main id="main">
+    <section class="section final-dashboard">
+      <div class="section-heading row-heading">
+        <div><p class="eyebrow">empresa selecionada</p><h2><span id="phase5CompanyLabel">Empresa 1</span> · Entrega final</h2><p>Selecione a empresa, escolha o modo de recomendação e rode a análise final.</p></div>
+        <div class="company-toggle" role="tablist" aria-label="Selecionar empresa"><button type="button" class="company-tab active" data-company="empresa1">Empresa 1</button><button type="button" class="company-tab" data-company="empresa2">Empresa 2</button></div>
+      </div>
+      <div id="phase5Loading" class="card"><strong>Carregando Fase 5...</strong></div>
+      <div class="two-column-grid">
+        <article class="card">
+          <h3>Configuração final</h3>
+          <label>Selecionar cenário por<select id="phase5SelectionMode"><option value="best_by_score">maior score</option><option value="best_by_cost">menor custo</option><option value="best_by_robustness">melhor robustez/qualidade</option><option value="manual">manual (por ID)</option></select></label>
+          <label id="manualScenarioIdLabel" style="display:none">ID do cenário manual<input id="phase5ManualScenarioId" type="text" placeholder="ex: scenario_empresa1_001"></label>
+          <label>Perfil de stress<select id="phase5StressProfile"><option value="standard">padrão</option><option value="conservative">conservador</option></select></label>
+          <label>Variável de sensibilidade<select id="phase5SensitivityVariable"><option value="freight_multiplier">frete</option><option value="demand_multiplier">demanda</option><option value="inventory_days">dias de estoque</option><option value="wacc">WACC</option></select></label>
+          <label>Variável X da matriz<select id="phase5SensitivityX"><option value="freight_multiplier">frete</option><option value="demand_multiplier">demanda</option><option value="inventory_days">dias de estoque</option><option value="wacc">WACC</option></select></label>
+          <label>Variável Y da matriz<select id="phase5SensitivityY"><option value="demand_multiplier">demanda</option><option value="freight_multiplier">frete</option><option value="inventory_days">dias de estoque</option><option value="wacc">WACC</option></select></label>
+          <label>Limite de segurança da enumeração<input id="phase5MaxCandidates" type="number" min="100" max="10000" step="100" value="5000"></label>
+          <button type="button" class="primary-button" id="rerunPhase5">Reexecutar análise final</button>
+        </article>
+        <article class="card">
+          <h3>Resumo final</h3>
+          <canvas id="robustnessChart" class="chart-canvas" style="height:180px; margin-bottom:12px;"></canvas>
+          <div class="metric-grid compact-grid" id="phase5OverviewCards"></div>
+        </article>
+      </div>
+      <article class="card phase2-grid-spaced">
+        <h3>Paridade com workbook</h3>
+        <div id="workbookParityPanel"></div>
+      </article>
+      <article class="card phase2-grid-spaced"><h3>Situação final da empresa</h3><div class="table-wrap" id="finalSituationTable"></div></article>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">robustez</p><h2>Stress test e sensibilidade</h2><p>O cenário selecionado é testado contra choques de frete, demanda, WACC, estoque e modo tributário.</p></div>
+      <div class="two-column-grid">
+        <article class="card"><h3>Stress test</h3><canvas id="stressChart" class="chart-canvas"></canvas><div class="table-wrap" id="stressPanel"></div></article>
+        <article class="card"><h3>Sensibilidade</h3><canvas id="sensitivityChart" class="chart-canvas"></canvas><div class="table-wrap" id="sensitivityPanel"></div></article>
+      </div>
+      <article class="card phase2-grid-spaced"><h3>Matriz de sensibilidade</h3><div class="table-wrap" id="sensitivityMatrixPanel"></div></article>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">decisão</p><h2>Recomendação e relatório executivo</h2></div>
+      <div class="two-column-grid">
+        <article class="card recommendation-card"><h3>Recomendação final</h3><div id="recommendationPanel"></div></article>
+        <article class="card executive-report"><h3>Relatório executivo</h3><div id="executiveReportPanel"></div></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">rastreabilidade</p><h2>Audit trail e exportação</h2></div>
+      <div class="two-column-grid">
+        <article class="card audit-trail-panel"><h3>Audit trail</h3><div id="auditTrailPanel"></div></article>
+        <article class="card export-center"><h3>Export Center</h3><p>Baixe o pacote de decisão em formatos simples para auditoria e apresentação.</p><div class="export-buttons" id="exportCenterPanel"></div></article>
+      </div>
+    </section>
+
+  </main>
+  <footer class="footer"><p>Simulador logístico completo e pronto para análise.</p></footer>
+  <script type="module" src="../assets/js/phase5/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,748 @@
+{
+  "created_at_utc": "2026-05-06T20:08:50.442546+00:00",
+  "result": "OK",
+  "package": "visagio_static_simulator_FASE1_ORGANIZADO_v4",
+  "phase": "phase_1_organized_structure",
+  "path_count_checked": 105,
+  "missing_paths": [],
+  "paths": [
+    {
+      "path": "README.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1050,
+      "sha256": "d85dc1ab5184b49ef4925c69fa906eedfc36ed01be0262ada4f078a9c48c8263"
+    },
+    {
+      "path": "COMO_USAR_AGORA.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 927,
+      "sha256": "f21c30711cfffaa3c0d869e3cc0f66d02c65c620a93186205e274ddf70254166"
+    },
+    {
+      "path": "PROJECT_STRUCTURE.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1176,
+      "sha256": "3f4af9fe6eb2273f649493fb4cf73f8dc885a7167761169e1476fca5ef5d2c25"
+    },
+    {
+      "path": "index.html",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 8377,
+      "sha256": "520a5ce2025f4bdb2697da1b710e8a3faff6b85aceb6f8c0cde2e731e9d6c10e"
+    },
+    {
+      "path": "assets/README.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 173,
+      "sha256": "d8ff9047f985cece07f97c84125c423b0d81441660e211c46d54d4a030436c6f"
+    },
+    {
+      "path": "assets/app.js",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 26569,
+      "sha256": "9394f695d3e328998a910be5bd141177ba6e3100d1a26c26baec36838a4eb7a7"
+    },
+    {
+      "path": "assets/styles.css",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 9662,
+      "sha256": "27ff4c2e72530c56ba4fe38255baf6ca232542cddf3ad0b06004d7d6107b3971"
+    },
+    {
+      "path": "fase-1-validacao/index.html",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 448,
+      "sha256": "06f2b18ec31bfa36be0aa6fb8e89b4193549b5551bc989ef66f559939efab211"
+    },
+    {
+      "path": "data/README.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 728,
+      "sha256": "d7750deca31f24a132fad76a0c42bfb9178a32695a23ef14f564e85fc8a9ff8b"
+    },
+    {
+      "path": "data/catalog.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 17209,
+      "sha256": "31110287473fc8639230e202d62463f31262dfbc2818b141b67b611d2e49266a"
+    },
+    {
+      "path": "data/data_quality_summary.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 39521,
+      "sha256": "aa4b4f9410080bc2759103f9025ea588a203baf913d15afa28e7158b06cb85ed"
+    },
+    {
+      "path": "data/validation/README.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 376,
+      "sha256": "92fa2723ac64145862d1bc26b81712c59d0ba1282144e42c79afc167be8a6145"
+    },
+    {
+      "path": "data/validation/data_presence_proof.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 15417,
+      "sha256": "94e8cecc6a573bad3024a38f5b30c3c045a001c1e78f62e8b4ea1153706204c1"
+    },
+    {
+      "path": "data/validation/full_workbook_path_audit.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 83410,
+      "sha256": "36cb5d64056f6730b184e0c075f4d36243890fb6b908f1f720ab3800ec5e6a1f"
+    },
+    {
+      "path": "data/validation/final_v6_audit_summary.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 22042,
+      "sha256": "06bc489475d62bf56a0ad8b254cbcba37964d255f77da8065b744596108b99e0"
+    },
+    {
+      "path": "data/validation/workbook_sheet_inventory.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 15689,
+      "sha256": "1e2ab06540fe0cd68e3d2cb329e52a9c7b3a3622edf17b427c247ecfba88d63a"
+    },
+    {
+      "path": "data/validation/folder_organization_report.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 883,
+      "sha256": "f2bc409664cbf5a45685df939cc46a9325d58e215668c0b75ae14d8e16cede5a"
+    },
+    {
+      "path": "data/contracts/README.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 350,
+      "sha256": "e2acbc5b1bfc614131510cc093efe4f9e7b1aa0cb2c78bb12067fbb50283658d"
+    },
+    {
+      "path": "data/contracts/module_contracts_all_phases.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 60572,
+      "sha256": "08bc87e1b5aedc7cbd6363675f0101a39969e9d4cd017ceee3499808b4cdfc02"
+    },
+    {
+      "path": "data/empresa1/README.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 257,
+      "sha256": "95d858ff4d71b43ed0675e88e4ae26d57a52c92ddeb278e1a425e3398c86478f"
+    },
+    {
+      "path": "data/empresa1/core/demand_records.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 7297818,
+      "sha256": "54a93b565bf522b57e894a3b0ff9b4084146188971656d7130c99df9f1970eda"
+    },
+    {
+      "path": "data/empresa1/core/distance_matrix.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 59822,
+      "sha256": "2a284e663a636a64edd60c4870ea5c6b033434087a73b7392d3bb374eb7c2b07"
+    },
+    {
+      "path": "data/empresa1/core/premissas.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 127,
+      "sha256": "4317c2c6be1633c19e23e485aca73a75b4c16052b7be9cc8d131881a9c486d78"
+    },
+    {
+      "path": "data/empresa1/baseline.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1730,
+      "sha256": "b8587b46e70759d4040bbd7b2aadf4d42447aac81e3a385956959de2a9b5bede"
+    },
+    {
+      "path": "data/empresa2/README.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 342,
+      "sha256": "7a305f22b61f39d862dc07072dd0b5fb93b333d940ab33db3a2657740dfd8e46"
+    },
+    {
+      "path": "data/empresa2/core/faturamento_uf.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1336,
+      "sha256": "97c301341f40b5ce9c7d6f744082af6f8d51ca469661266040139197d16acac3"
+    },
+    {
+      "path": "data/empresa2/core/distribuicao_fabrica_cd.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1077,
+      "sha256": "f85fd997664bb2604f2b9f048da0e67081f774bf07a8b549fe5c2b89008b5128"
+    },
+    {
+      "path": "data/empresa2/core/dados_tributario.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 102826,
+      "sha256": "8a0dc458935d783e319350689ad261fc2c502400f1ce3062c5f6acc4d88eaf37"
+    },
+    {
+      "path": "data/empresa2/core/estoque.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 110291,
+      "sha256": "afc4eeba733525caf4017230df338cb29387065b97cc7e7378f3a5e8ec31d8d1"
+    },
+    {
+      "path": "data/empresa2/core/scenario_blocks.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 6809,
+      "sha256": "5b697c8f57334e2b8d8cc6668d38587fa4d7bf43f9ef788d39bcc8d69cfb5aef"
+    },
+    {
+      "path": "data/empresa2/core/scenario_totals.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 754,
+      "sha256": "fd648ecd761c1a2ce7d9b11dd92f86ba3b94361c74330dc8c08f272464e27ff6"
+    },
+    {
+      "path": "references/README.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 360,
+      "sha256": "7e1b239d003b258112c173d072259d638b64be76ca160c38bc7dca8ebf519e32"
+    },
+    {
+      "path": "references/source_documents_manifest.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3660,
+      "sha256": "7db5f7885a345bf82b640af111a8e4ff49ff93f9dd39dc2f18ed788e412995b1"
+    },
+    {
+      "path": "tests/README.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 674,
+      "sha256": "fc3249595a9348849b6fafd2c2c8025e8b0b2f69bfdd2f2850135a6dfff567f1"
+    },
+    {
+      "path": "tests/run_all_tests.py",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 705,
+      "sha256": "b6387295049bd0eb12b39368078fa09a9fd0771dc2aaa3dd00353d53d07a16e1"
+    },
+    {
+      "path": "docs/README.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 664,
+      "sha256": "b5b8292e508907ca27b278dcdfcd6d60e04a7128540cde2ac6f58ec9710e2bd0"
+    },
+    {
+      "path": "docs/00_inicio/00_INDICE_DOCUMENTACAO.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 932,
+      "sha256": "31b00b095ced2d17f1a9769341e400f923c33faa116d10b6a94c6478e2441b6a"
+    },
+    {
+      "path": "docs/03_modulos_contratos_funcoes/23_MODULOS_TODAS_FASES_CONTRATOS.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 53803,
+      "sha256": "57551f73b4e06b90e9fd84adf42600b90b1f9d17337a3c40486d3d1d7228d993"
+    },
+    {
+      "path": "data/empresa1/core/demand_records.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 20144016,
+      "sha256": "66b0fde642a3295ba9d86044f529543de2f11fac2e2e28707e0e452174314062"
+    },
+    {
+      "path": "data/empresa1/core/distance_matrix.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 201951,
+      "sha256": "ef8aa3cdfff3afd685ebb8a7148e90249ec9ad5f4fa1196647dacdeec843530d"
+    },
+    {
+      "path": "data/empresa1/core/premissas.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 329,
+      "sha256": "bc0a0dfe8a73c66877b8ba3ff8c6e60f8dd471d0e4b824a71c2c33363ee968c7"
+    },
+    {
+      "path": "data/empresa1/core/demand_summary_by_uf.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3563,
+      "sha256": "6ac1bad2df1cd1436059c25854c71761dddcd959d95d73c4ca2bca5b2ff2e550"
+    },
+    {
+      "path": "data/empresa1/core/network_summary.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3090,
+      "sha256": "48fb985106543cc5044e51275527132ce698d0ab66e056d13f3b1322ae886bc2"
+    },
+    {
+      "path": "data/empresa2/baseline.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1318,
+      "sha256": "c818caa269f0b9bc8430ec9522b30bc257ad6615fd700915106cbbf63a2d33cf"
+    },
+    {
+      "path": "data/empresa2/core/faturamento_uf.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3997,
+      "sha256": "35b40987da8f66af53bff860e4b82b60f940bba801228f576e33f5e019f05c3a"
+    },
+    {
+      "path": "data/empresa2/core/distribuicao_fabrica_cd.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3635,
+      "sha256": "66f9e58c42df6722ead68c2e2b6d45b8d2f3f314546067fd9ea9e24717107b0e"
+    },
+    {
+      "path": "data/empresa2/core/faturamento_filial_uf.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 5158,
+      "sha256": "1f346e9dac04feb3a15d6c22f4b05d26f7cb18881526bdf36e6c96275407cefa"
+    },
+    {
+      "path": "data/empresa2/core/faturamento_filial_uf.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 22743,
+      "sha256": "fd49641d4447505905da920f5a172c198b970fbf81bed78a9d978ef3566c774c"
+    },
+    {
+      "path": "data/empresa2/core/tabela_logistica.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 32083,
+      "sha256": "5af1bda37cf4fe14fdecf04e2e4cf2b1abc11347892172e85aa6af6d7e7f4f31"
+    },
+    {
+      "path": "data/empresa2/core/tabela_logistica.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 79167,
+      "sha256": "cfbe80d6de31c13898cbf3f9f1ab4c40465e672315f54c8fd55943736684382f"
+    },
+    {
+      "path": "data/empresa2/core/parametros.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 487,
+      "sha256": "262a51ae7673a16489744ad84840d6465e573ab789142039e106f70de3bde61e"
+    },
+    {
+      "path": "data/empresa2/core/parametros.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1573,
+      "sha256": "a7813bf709ac864f1dcd5c6053c39c72772527bc4231d3d6eb51bdf37f10c847"
+    },
+    {
+      "path": "data/empresa2/core/cenarios.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 2616,
+      "sha256": "093d68f6c42c65ef6f3881ca340a9921bea58ca15f95d8156cf83e9f92a92519"
+    },
+    {
+      "path": "data/empresa2/core/cenarios.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 7246,
+      "sha256": "3eb34ba0e4517fa261ea0c5ddbf5b618a36b26ddb92ceeac549a7d6b0e2acc7a"
+    },
+    {
+      "path": "data/empresa2/core/dados_tributario.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 708186,
+      "sha256": "cca2a005e21641e645aff1de7cdb752928a946bf783b48b848fec4439cbb9433"
+    },
+    {
+      "path": "data/empresa2/core/estoque.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 334887,
+      "sha256": "fc4b3279c3abd5df3b997c1825eb85449af3ee0eca00e478e66366bc8009b497"
+    },
+    {
+      "path": "data/empresa2/core/dados_roteamento.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 4107,
+      "sha256": "3d56436e45ba58c3aeec0ba3a0070e634f3d32c17f042780e2242d4d6aab62b6"
+    },
+    {
+      "path": "data/empresa2/core/dados_roteamento.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 10226,
+      "sha256": "437f1b001f0507b3c824e42bbe054dfb826441948350e9aea409c7cb15400385"
+    },
+    {
+      "path": "data/empresa2/core/tabelas_cif_dist.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 5196,
+      "sha256": "20d5af427dd193a58557bb083865a80455acd3ac16adfc049223ca961ac58c7b"
+    },
+    {
+      "path": "data/empresa2/core/tabelas_cif_dist.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 21258,
+      "sha256": "133c9444e22e8180556134944079364cbd2a115a1fec682e1e6573c7e24daad0"
+    },
+    {
+      "path": "data/empresa2/core/aux_custo_transferencia.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 15815,
+      "sha256": "27b0e4fc34fd009b8a8f3e03db10889d54d0ffcb07c4fefc459a974c237c4ccd"
+    },
+    {
+      "path": "data/empresa2/core/aux_custo_transferencia.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 71448,
+      "sha256": "dd4cd60240b87de0bc8832799394682b6ac66d8c25223b16a421f3de31dca620"
+    },
+    {
+      "path": "data/empresa2/core/aux_custo_armazenagem.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 7972,
+      "sha256": "024ce6930371262a3a3e2fec57b29d95afd89226d36d045405fa192af51e153c"
+    },
+    {
+      "path": "data/empresa2/core/aux_custo_armazenagem.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 23476,
+      "sha256": "5cbbafef7a1dee488f113456036031b88679dfc82137e79a49ec923090173c45"
+    },
+    {
+      "path": "data/empresa2/core/aux_custo_distribuicao.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1669139,
+      "sha256": "2f62ca20127876939226198238a941e9de0dad9381f695c1a275f429300da10e"
+    },
+    {
+      "path": "data/empresa2/core/aux_custo_distribuicao.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 11201999,
+      "sha256": "6794a4a0a7855ce2a61f41d56ff610db0ada33bcbb9cc4ed1e0b0bb707902e77"
+    },
+    {
+      "path": "data/empresa2/core/lat_long.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 641,
+      "sha256": "2e57f68d2c35479fcf97099415e58e3f328701016c0467a8d9a283f9313c3050"
+    },
+    {
+      "path": "data/empresa2/core/lat_long.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1923,
+      "sha256": "369cfe51f33e8e298de62f1de52dbc31e5f7c0577a08feee0efdf4fd5785a674"
+    },
+    {
+      "path": "data/empresa2/core/rotas_mapa.csv",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 2129,
+      "sha256": "9886c4b5aece86ac43ca9d72b96345ffbab04e5f75572398e9f6e8b7f2430368"
+    },
+    {
+      "path": "data/empresa2/core/rotas_mapa.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 7512,
+      "sha256": "3064ec327e4ed0f832feefa74aff276fdd3087ee8822f24cd3a8496a0c0c035b"
+    },
+    {
+      "path": "data/empresa2/core/scenario_totals.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1492,
+      "sha256": "2797823744044582fba1e433860358684b899b2d65ff346c8e1dce307ee81091"
+    },
+    {
+      "path": "docs/00_inicio/00_README_DO_PACOTE.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1943,
+      "sha256": "4e7ef1d318dddd7fae117f04c737c794c312c45af133a56b0200a1a4c251bce7"
+    },
+    {
+      "path": "docs/01_visao_geral_do_projeto/01_ENTENDIMENTO_DO_DESAFIO.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 502,
+      "sha256": "a105a6c7e18c8f9e9a97a36e683dea92c043cccb2ca9f713d8d1fc5f4a573570"
+    },
+    {
+      "path": "docs/01_visao_geral_do_projeto/02_ARQUITETURA_SITE_ESTATICO.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 609,
+      "sha256": "e63d95172e4a8084238be790d43e874c12effc24d480af0fa5eeab840b5ea95b"
+    },
+    {
+      "path": "docs/01_visao_geral_do_projeto/06_FEATURES_PRIORIZADAS.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 437,
+      "sha256": "2dbb51752e3c69bb878c78b6004c9a66dfca5c4d6c06e7f419e0f1eaaa7251c5"
+    },
+    {
+      "path": "docs/01_visao_geral_do_projeto/07_REGRAS_DE_SEPARACAO_EMPRESAS.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 397,
+      "sha256": "7a29080508a156820b5ae94c90b44450888157a54d0b4a5874f9670ccf5598ba"
+    },
+    {
+      "path": "docs/01_visao_geral_do_projeto/09_BACKLOG_IMPLEMENTACAO.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 386,
+      "sha256": "f1efb7a7ce19c5c54a2c7d8c400e122055dd042936ee1d29e7eaa167d3bd1e3c"
+    },
+    {
+      "path": "docs/02_fases_do_projeto/03_PLANO_EM_5_FASES.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1292,
+      "sha256": "17fc278ed565b746b6c58447f73433f78a211e272493f59f5ecc47defca994a4"
+    },
+    {
+      "path": "docs/02_fases_do_projeto/14_FASE1_IMPLEMENTADA.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3034,
+      "sha256": "683e9293db7e8b38b6f19bab1cb24c3ff018bd733eb1b131c84cb5ee4af3cafe"
+    },
+    {
+      "path": "docs/02_fases_do_projeto/15_GUIA_RAPIDO_FASE1.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1960,
+      "sha256": "c8597066fcfe9bfb69b794469b427aa345ea1887ee11488126284c874f52086e"
+    },
+    {
+      "path": "docs/02_fases_do_projeto/16_GUIA_USUARIO_FASE1.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3154,
+      "sha256": "6a9800c9250b5db98e24317cd86d2d7e5ac2fd732a6bd9904bba52d6df90af61"
+    },
+    {
+      "path": "docs/02_fases_do_projeto/17_GUIA_DESENVOLVEDOR_FASE1.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3176,
+      "sha256": "7f9c18435663fbc9eb7abe7ec98a6e21d2a9882ceaa1e0d42d0422833906ee52"
+    },
+    {
+      "path": "docs/02_fases_do_projeto/20_TROUBLESHOOTING_FASE1.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 2175,
+      "sha256": "4b1894c1acf0c8b84b0afdd74715ad07eb79c6445569c4e992a1dcf5e6e39876"
+    },
+    {
+      "path": "docs/02_fases_do_projeto/21_PLANO_FASE2.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 2091,
+      "sha256": "17a265d212ce918c84afd597a3202065408e59207b9563628087a0a37091e442"
+    },
+    {
+      "path": "docs/03_modulos_contratos_funcoes/04_MODULOS_INPUT_OUTPUT.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1038,
+      "sha256": "6e0c0fc1c9cd259ca0386f943f0591448e2a2ef3bafb8a08f49e290023f08fb7"
+    },
+    {
+      "path": "docs/03_modulos_contratos_funcoes/10_CONTRATOS_TOON.toon",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 606,
+      "sha256": "ae3a04ffd8797b465f53a9958577b152400b3951e4630767a43218b7d4c4585c"
+    },
+    {
+      "path": "docs/03_modulos_contratos_funcoes/24_FUNCOES_E_DEPENDENCIAS_MODULOS.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 18221,
+      "sha256": "d2f98806b7f5d1587808cc5a1828853af6444e242ae92fe1886af4d459d01247"
+    },
+    {
+      "path": "docs/03_modulos_contratos_funcoes/25_TESTES_POR_MODULO_TODAS_FASES.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 10771,
+      "sha256": "d42f32438788df8c2ef30d3dbc63e942bd4c186e55766031e2a7a523268b133c"
+    },
+    {
+      "path": "docs/03_modulos_contratos_funcoes/26_MAPA_FASES_MODULOS.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 6682,
+      "sha256": "8caf094f937d6273b78074f021a1c9e4b33633421424a47c9ad685352af8326a"
+    },
+    {
+      "path": "docs/04_dados_caminhos_auditoria/08_DICIONARIO_DE_DADOS.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 653,
+      "sha256": "997cb470b284a871f2e2c2854395059b48f69cc669efe13556d32b7b9a54492a"
+    },
+    {
+      "path": "docs/04_dados_caminhos_auditoria/11_CAMINHOS_E_REGENERACAO.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1499,
+      "sha256": "e1ab078d20551d9896196e1d58282b4d803c11b2dca4e359953f961813d0bef6"
+    },
+    {
+      "path": "docs/04_dados_caminhos_auditoria/12_AUDITORIA_COMPLETA_CAMINHOS_ABAS.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 995,
+      "sha256": "b43307fa41588fafd97fe70810aaf3204de71567a4be02c7fcc01ea6cf5f1012"
+    },
+    {
+      "path": "docs/04_dados_caminhos_auditoria/13_AUDITORIA_FINAL_V6.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1702,
+      "sha256": "91a0b422781c5eb08ab61a0831d6f45ed33d468e74c5f69ac15a1d54d3fb9e5a"
+    },
+    {
+      "path": "docs/04_dados_caminhos_auditoria/18_MAPA_DADOS_CAMINHOS_FASE1.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 6131,
+      "sha256": "a24be7939df8060f84eb058dbf1073ad9e72ce491d910067003fcbebe2d9eb9e"
+    },
+    {
+      "path": "docs/05_testes_aceite/05_TESTES_E_VALIDACAO_MANUAL.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 365,
+      "sha256": "7b0d2ee049277935481dfc52be042cd84d2ee834339410b1b15d4a1f458ace97"
+    },
+    {
+      "path": "docs/05_testes_aceite/19_TESTES_E_ACEITE_FASE1.md",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 2687,
+      "sha256": "c942039753ae99e00d2dc6e0e9730ebec94008af83413870b45ef9ecb1d8d792"
+    },
+    {
+      "path": "docs/06_manifestos/22_DOCUMENTATION_MANIFEST.json",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 2580,
+      "sha256": "8ee137c5072811554b81dc38cf60ca7d104a49c138497fdb182219177600e5d6"
+    },
+    {
+      "path": "tests/00_basicos/check_package.py",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1432,
+      "sha256": "4786e8bd551a66171ba9a6f9454db870be50b0da62fe679e5c170fb327372f13"
+    },
+    {
+      "path": "tests/01_paths_auditoria/test_final_deep_audit.py",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1627,
+      "sha256": "592b60842ea46e25f2ef63ed7abca8c45987c92067ce1972ea713ec0553365f0"
+    },
+    {
+      "path": "tests/01_paths_auditoria/test_full_workbook_paths.py",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 971,
+      "sha256": "04b54aa9306770db1b8dcf88ef460599a5c24f8a4e9ddc0cf20f874f13abf22a"
+    },
+    {
+      "path": "tests/01_paths_auditoria/test_paths_and_regeneration.py",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 815,
+      "sha256": "bcc0329c5fc6cf89c62d22ce4a7e399dd7e17aa7be40b9576304563cebd916f0"
+    },
+    {
+      "path": "tests/02_fase1_frontend/test_phase1_static_site.py",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 4616,
+      "sha256": "c88a8c5dbbe04e114953cc904fb733fd61e037d8826b7bc018c8ee39de609317"
+    },
+    {
+      "path": "tests/02_fase1_frontend/test_phase1_http_server.py",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 1917,
+      "sha256": "ee7268bce7ceeef3a697454c55fc42e88aeeb5370dd844d7c6add4cf336c5c35"
+    },
+    {
+      "path": "tests/03_contratos_modulos/test_module_contracts_documentation.py",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 2806,
+      "sha256": "5aac7dc2f2df6b8c22e12816642bdd5a21729653becda5d75829ea97f57712ae"
+    },
+    {
+      "path": "tests/04_e2e_visual_opcional/test_phase1_playwright.py",
+      "exists": true,
+      "kind": "file",
+      "size_bytes": 3311,
+      "sha256": "319874964961d09b01123148117742628780ed19df65b765435ea2357bab3fc6"
+    }
+  ],
+  "notes": [
+    "Generated after final folder reorganization. Runtime paths for index.html/assets/data were preserved."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "ScenarioSimulator",
+  "phase": 3,
+  "status": "implemented_phase_3",
+  "page": "/fase-3-cenarios/",
+  "file": "assets/js/phase3/scenario-simulator.js",
+  "purpose": "Executa cenário validado, recalcula fluxos, custos e tributo básico.",
+  "inputs": {
+    "company_id": "empresa1|empresa2",
+    "scenario": "{}",
+    "baseline_bundle": "{}"
+  },
+  "outputs": {
+    "result": "{}",
+    "warnings": "[]",
+    "errors": "[]"
+  },
+  "internal_functions": [
+    "ver arquivo JS para funções exportadas e helpers internos"
+  ],
+  "external_calls": [
+    "módulos phase2/phase3 conforme implementação"
+  ],
+  "tests": {
+    "unit": [
+      "test_phase3_logic.py"
+    ],
+    "integration": [
+      "test_phase3_http_server.py"
+    ],
+    "manual": [
+      "checklist na página /fase-3-cenarios/"
+    ],
+    "acceptance": [
+      "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+    ]
+  }
+}
