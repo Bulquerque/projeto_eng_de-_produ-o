@@ -1,0 +1,69 @@
+# AuditTrail
+
+## Fase
+Fase 5 — `phase-05-final-delivery`
+
+## O que faz
+Registra dados, premissas, versão do modelo, cenário, objetivo e resultados para cada simulação exportável.
+
+## Implementação real
+`/fase-5-entrega-final e global`
+
+## Input JSON
+```json
+{
+  "company": "empresa1",
+  "scenario": {},
+  "assumptions": {},
+  "dataVersions": {},
+  "modelVersion": "1.0.0",
+  "results": {}
+}
+```
+
+## Output JSON
+```json
+{
+  "auditRecord": {
+    "auditId": "audit_001",
+    "company": "empresa1",
+    "scenarioId": "cenario_3cds",
+    "dataSources": [],
+    "assumptionsUsed": {},
+    "modelVersion": "1.0.0"
+  }
+}
+```
+
+## Funções internas
+- `['createAuditRecord(payload)', 'Cria registro de auditoria.']`
+- `['hashScenarioInput(scenario)', 'Gera hash reprodutível.']`
+- `['attachDataSources(record, sources)', 'Anexa paths e hashes de fontes.']`
+- `['exportAuditJson(record)', 'Gera JSON exportável.']`
+
+## Módulos chamados
+- `['ScenarioPersistence', 'Recebe cenários salvos/importados.']`
+- `['ScenarioOptimizer', 'Recebe search log.']`
+- `['ExecutiveReport', 'Inclui auditoria no relatório.']`
+
+## Testes
+```json
+{
+  "unit": [
+    "audit tem empresa, cenário, versão e premissas",
+    "hash muda quando input muda"
+  ],
+  "integration": [
+    "relatório exporta audit trail"
+  ],
+  "manual": [
+    "abrir JSON de auditoria e conferir fontes"
+  ],
+  "acceptance": [
+    "nenhuma simulação final sem audit trail"
+  ]
+}
+```
+
+## Debug
+Abra `/debug/`, procure `AuditTrail` e rode os testes listados.

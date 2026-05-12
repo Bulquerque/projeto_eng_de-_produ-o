@@ -1,0 +1,582 @@
+{
+  "zip_original_issue": "O arquivo anterior visagio_static_simulator_base.zip foi detectado como ZIP inválido; esta versão foi reconstruída do zero e validada.",
+  "generated_package": "visagio_static_simulator_base_VALIDADO_v6.zip",
+  "html_css_js_present": [
+    "index.html",
+    "assets/styles.css",
+    "assets/app.js"
+  ],
+  "visagio_palette_from_uploaded_pptx": {
+    "source": "202509_RefsVisagio_Apoio Malha Log com efeito tributário.pptx / ppt/theme/theme6.xml",
+    "scheme_name": "Paleta Visagio Institucional",
+    "colors": [
+      "#00363D",
+      "#F7F3F5",
+      "#0F515C",
+      "#0C7878",
+      "#A9FDAC",
+      "#939196",
+      "#00A189",
+      "#E3DFE2",
+      "#CCC9CA"
+    ]
+  },
+  "empresa1_minimum_required_data": {
+    "demand_records_rows": 60311,
+    "distance_matrix_rows": 576,
+    "premissas_rows": 3,
+    "demand_ufs": 21,
+    "distance_origins": 16,
+    "distance_destinations": 36
+  },
+  "empresa2_minimum_required_data": {
+    "workbook_sheets": 25,
+    "core_tables": {
+      "faturamento_uf": 28,
+      "distribuicao_fabrica_cd": 14,
+      "faturamento_filial_uf": 168,
+      "tabela_logistica": 159,
+      "parametros": 14,
+      "cenarios": 25,
+      "dados_tributario": 556,
+      "estoque": 633,
+      "dados_roteamento": 18,
+      "tabelas_cif_dist": 61,
+      "aux_custo_transferencia": 192,
+      "aux_custo_armazenagem": 67,
+      "aux_custo_distribuicao": 11445,
+      "lat_long": 16,
+      "rotas_mapa": 30,
+      "scenario_totals": 3,
+      "scenario_blocks": 3
+    },
+    "scenario_totals_rows": 3
+  },
+  "raw_sources_count": 18,
+  "workbook_meta": [
+    {
+      "file": "Dados de Demanda(3).xlsx",
+      "size_bytes": 4632746,
+      "sha256": "df6c3c49f83f54366f9b6148218d402d91ea6658e99d268b9b973b38e31e71f4",
+      "valid_zip": true,
+      "sheets": [
+        {
+          "name": "Planilha1",
+          "dimension": "A1:K60318",
+          "rows_with_cells": 60312,
+          "max_excel_row": 60318,
+          "max_col": 11,
+          "cells": 542785,
+          "formulas": 3
+        }
+      ],
+      "source_id": "empresa1_demanda"
+    },
+    {
+      "file": "Dados de Distância(3).xlsx",
+      "size_bytes": 47817,
+      "sha256": "dbc50759ff41970f042a4d30c7889399c230606fa6c43b1b569e8f20a2438ad8",
+      "valid_zip": true,
+      "sheets": [
+        {
+          "name": "Sheet1",
+          "dimension": "A1:J577",
+          "rows_with_cells": 577,
+          "max_excel_row": 577,
+          "max_col": 10,
+          "cells": 5770,
+          "formulas": 576
+        }
+      ],
+      "source_id": "empresa1_distancias"
+    },
+    {
+      "file": "Premissas Gerais(4).xlsx",
+      "size_bytes": 8723,
+      "sha256": "5123df4cb2886d718c4e05b2a30183177ca6c24edd7c642a5472db4b6b7a74a7",
+      "valid_zip": true,
+      "sheets": [
+        {
+          "name": "Planilha1",
+          "dimension": "A1:C7",
+          "rows_with_cells": 4,
+          "max_excel_row": 7,
+          "max_col": 3,
+          "cells": 9,
+          "formulas": 0
+        }
+      ],
+      "source_id": "empresa1_premissas"
+    },
+    {
+      "file": "Analise_Malha_Empresa2(1).xlsx",
+      "size_bytes": 5106541,
+      "sha256": "95ecd04ed818ae0e25ea99ad28785c3f033ba1678d00cc55c1ff12e221b1709f",
+      "valid_zip": true,
+      "sheets": [
+        {
+          "name": "Início",
+          "dimension": "A1:I20",
+          "rows_with_cells": 18,
+          "max_excel_row": 20,
+          "max_col": 9,
+          "cells": 90,
+          "formulas": 0
+        },
+        {
+          "name": "Parâmetros",
+          "dimension": "B1:E39",
+          "rows_with_cells": 27,
+          "max_excel_row": 30,
+          "max_col": 5,
+          "cells": 52,
+          "formulas": 6
+        },
+        {
+          "name": "Mapa Brasil",
+          "dimension": "A1:B6",
+          "rows_with_cells": 4,
+          "max_excel_row": 6,
+          "max_col": 2,
+          "cells": 6,
+          "formulas": 0
+        },
+        {
+          "name": "Cenários",
+          "dimension": "A1:T42",
+          "rows_with_cells": 33,
+          "max_excel_row": 42,
+          "max_col": 20,
+          "cells": 244,
+          "formulas": 104
+        },
+        {
+          "name": "Sensibilidade 1",
+          "dimension": "B1:R20",
+          "rows_with_cells": 16,
+          "max_excel_row": 20,
+          "max_col": 18,
+          "cells": 108,
+          "formulas": 3
+        },
+        {
+          "name": "Sensibilidade 2",
+          "dimension": "B1:K21",
+          "rows_with_cells": 18,
+          "max_excel_row": 21,
+          "max_col": 11,
+          "cells": 106,
+          "formulas": 6
+        },
+        {
+          "name": "Roteamento",
+          "dimension": "B1:K30",
+          "rows_with_cells": 22,
+          "max_excel_row": 30,
+          "max_col": 11,
+          "cells": 103,
+          "formulas": 0
+        },
+        {
+          "name": "Dados_OPLs",
+          "dimension": "A1:S164",
+          "rows_with_cells": 163,
+          "max_excel_row": 164,
+          "max_col": 19,
+          "cells": 1412,
+          "formulas": 326
+        },
+        {
+          "name": "Dados_Tributário",
+          "dimension": "A1:AN562",
+          "rows_with_cells": 562,
+          "max_excel_row": 562,
+          "max_col": 40,
+          "cells": 22396,
+          "formulas": 14456
+        },
+        {
+          "name": "Dados_Roteamento",
+          "dimension": "A1:N23",
+          "rows_with_cells": 22,
+          "max_excel_row": 23,
+          "max_col": 14,
+          "cells": 272,
+          "formulas": 180
+        },
+        {
+          "name": "Tabelas_CIF_Dist",
+          "dimension": "A1:L72",
+          "rows_with_cells": 63,
+          "max_excel_row": 72,
+          "max_col": 12,
+          "cells": 605,
+          "formulas": 60
+        },
+        {
+          "name": "Aux_ Custo_Distribuição",
+          "dimension": "A2:AM1041182",
+          "rows_with_cells": 11736,
+          "max_excel_row": 1041182,
+          "max_col": 39,
+          "cells": 307221,
+          "formulas": 0
+        },
+        {
+          "name": "TB_Distribuição",
+          "dimension": "A3:AG72",
+          "rows_with_cells": 67,
+          "max_excel_row": 72,
+          "max_col": 33,
+          "cells": 738,
+          "formulas": 3
+        },
+        {
+          "name": "Aux_Custo_Transferência",
+          "dimension": "A1:N193",
+          "rows_with_cells": 193,
+          "max_excel_row": 193,
+          "max_col": 14,
+          "cells": 2702,
+          "formulas": 112
+        },
+        {
+          "name": "TB_Transferência",
+          "dimension": "A1:M49",
+          "rows_with_cells": 44,
+          "max_excel_row": 49,
+          "max_col": 13,
+          "cells": 230,
+          "formulas": 1
+        },
+        {
+          "name": "Aux_Custo_Armaz",
+          "dimension": "A1:K72",
+          "rows_with_cells": 70,
+          "max_excel_row": 72,
+          "max_col": 11,
+          "cells": 750,
+          "formulas": 134
+        },
+        {
+          "name": "Dados_Brasil",
+          "dimension": "A1:F24",
+          "rows_with_cells": 21,
+          "max_excel_row": 24,
+          "max_col": 6,
+          "cells": 116,
+          "formulas": 108
+        },
+        {
+          "name": "Lat & Long",
+          "dimension": "A1:D21",
+          "rows_with_cells": 19,
+          "max_excel_row": 21,
+          "max_col": 4,
+          "cells": 70,
+          "formulas": 0
+        },
+        {
+          "name": "Rotas_Mapa",
+          "dimension": "A1:G35",
+          "rows_with_cells": 33,
+          "max_excel_row": 35,
+          "max_col": 7,
+          "cells": 169,
+          "formulas": 0
+        },
+        {
+          "name": "SD2_Atualizar",
+          "dimension": "A1:K59433",
+          "rows_with_cells": 59432,
+          "max_excel_row": 59433,
+          "max_col": 11,
+          "cells": 475749,
+          "formulas": 1
+        },
+        {
+          "name": "Estoque",
+          "dimension": "A1:T636",
+          "rows_with_cells": 635,
+          "max_excel_row": 636,
+          "max_col": 20,
+          "cells": 6356,
+          "formulas": 1264
+        },
+        {
+          "name": "Faturamento_UF",
+          "dimension": "A1:C30",
+          "rows_with_cells": 30,
+          "max_excel_row": 30,
+          "max_col": 3,
+          "cells": 88,
+          "formulas": 0
+        },
+        {
+          "name": "Distribuição Fábrica_CD",
+          "dimension": "A1:I16",
+          "rows_with_cells": 16,
+          "max_excel_row": 16,
+          "max_col": 9,
+          "cells": 136,
+          "formulas": 28
+        },
+        {
+          "name": "Faturamento por Filial x UF",
+          "dimension": "A1:D170",
+          "rows_with_cells": 170,
+          "max_excel_row": 170,
+          "max_col": 4,
+          "cells": 677,
+          "formulas": 0
+        },
+        {
+          "name": "Tabela Logística",
+          "dimension": "A1:P160",
+          "rows_with_cells": 160,
+          "max_excel_row": 160,
+          "max_col": 16,
+          "cells": 2560,
+          "formulas": 0
+        }
+      ],
+      "source_id": "empresa2_malha"
+    },
+    {
+      "file": "Análise Malha Logística - vCaracol(3).xlsx",
+      "size_bytes": 5106541,
+      "sha256": "95ecd04ed818ae0e25ea99ad28785c3f033ba1678d00cc55c1ff12e221b1709f",
+      "valid_zip": true,
+      "sheets": [
+        {
+          "name": "Início",
+          "dimension": "A1:I20",
+          "rows_with_cells": 18,
+          "max_excel_row": 20,
+          "max_col": 9,
+          "cells": 90,
+          "formulas": 0
+        },
+        {
+          "name": "Parâmetros",
+          "dimension": "B1:E39",
+          "rows_with_cells": 27,
+          "max_excel_row": 30,
+          "max_col": 5,
+          "cells": 52,
+          "formulas": 6
+        },
+        {
+          "name": "Mapa Brasil",
+          "dimension": "A1:B6",
+          "rows_with_cells": 4,
+          "max_excel_row": 6,
+          "max_col": 2,
+          "cells": 6,
+          "formulas": 0
+        },
+        {
+          "name": "Cenários",
+          "dimension": "A1:T42",
+          "rows_with_cells": 33,
+          "max_excel_row": 42,
+          "max_col": 20,
+          "cells": 244,
+          "formulas": 104
+        },
+        {
+          "name": "Sensibilidade 1",
+          "dimension": "B1:R20",
+          "rows_with_cells": 16,
+          "max_excel_row": 20,
+          "max_col": 18,
+          "cells": 108,
+          "formulas": 3
+        },
+        {
+          "name": "Sensibilidade 2",
+          "dimension": "B1:K21",
+          "rows_with_cells": 18,
+          "max_excel_row": 21,
+          "max_col": 11,
+          "cells": 106,
+          "formulas": 6
+        },
+        {
+          "name": "Roteamento",
+          "dimension": "B1:K30",
+          "rows_with_cells": 22,
+          "max_excel_row": 30,
+          "max_col": 11,
+          "cells": 103,
+          "formulas": 0
+        },
+        {
+          "name": "Dados_OPLs",
+          "dimension": "A1:S164",
+          "rows_with_cells": 163,
+          "max_excel_row": 164,
+          "max_col": 19,
+          "cells": 1412,
+          "formulas": 326
+        },
+        {
+          "name": "Dados_Tributário",
+          "dimension": "A1:AN562",
+          "rows_with_cells": 562,
+          "max_excel_row": 562,
+          "max_col": 40,
+          "cells": 22396,
+          "formulas": 14456
+        },
+        {
+          "name": "Dados_Roteamento",
+          "dimension": "A1:N23",
+          "rows_with_cells": 22,
+          "max_excel_row": 23,
+          "max_col": 14,
+          "cells": 272,
+          "formulas": 180
+        },
+        {
+          "name": "Tabelas_CIF_Dist",
+          "dimension": "A1:L72",
+          "rows_with_cells": 63,
+          "max_excel_row": 72,
+          "max_col": 12,
+          "cells": 605,
+          "formulas": 60
+        },
+        {
+          "name": "Aux_ Custo_Distribuição",
+          "dimension": "A2:AM1041182",
+          "rows_with_cells": 11736,
+          "max_excel_row": 1041182,
+          "max_col": 39,
+          "cells": 307221,
+          "formulas": 0
+        },
+        {
+          "name": "TB_Distribuição",
+          "dimension": "A3:AG72",
+          "rows_with_cells": 67,
+          "max_excel_row": 72,
+          "max_col": 33,
+          "cells": 738,
+          "formulas": 3
+        },
+        {
+          "name": "Aux_Custo_Transferência",
+          "dimension": "A1:N193",
+          "rows_with_cells": 193,
+          "max_excel_row": 193,
+          "max_col": 14,
+          "cells": 2702,
+          "formulas": 112
+        },
+        {
+          "name": "TB_Transferência",
+          "dimension": "A1:M49",
+          "rows_with_cells": 44,
+          "max_excel_row": 49,
+          "max_col": 13,
+          "cells": 230,
+          "formulas": 1
+        },
+        {
+          "name": "Aux_Custo_Armaz",
+          "dimension": "A1:K72",
+          "rows_with_cells": 70,
+          "max_excel_row": 72,
+          "max_col": 11,
+          "cells": 750,
+          "formulas": 134
+        },
+        {
+          "name": "Dados_Brasil",
+          "dimension": "A1:F24",
+          "rows_with_cells": 21,
+          "max_excel_row": 24,
+          "max_col": 6,
+          "cells": 116,
+          "formulas": 108
+        },
+        {
+          "name": "Lat & Long",
+          "dimension": "A1:D21",
+          "rows_with_cells": 19,
+          "max_excel_row": 21,
+          "max_col": 4,
+          "cells": 70,
+          "formulas": 0
+        },
+        {
+          "name": "Rotas_Mapa",
+          "dimension": "A1:G35",
+          "rows_with_cells": 33,
+          "max_excel_row": 35,
+          "max_col": 7,
+          "cells": 169,
+          "formulas": 0
+        },
+        {
+          "name": "SD2_Atualizar",
+          "dimension": "A1:K59433",
+          "rows_with_cells": 59432,
+          "max_excel_row": 59433,
+          "max_col": 11,
+          "cells": 475749,
+          "formulas": 1
+        },
+        {
+          "name": "Estoque",
+          "dimension": "A1:T636",
+          "rows_with_cells": 635,
+          "max_excel_row": 636,
+          "max_col": 20,
+          "cells": 6356,
+          "formulas": 1264
+        },
+        {
+          "name": "Faturamento_UF",
+          "dimension": "A1:C30",
+          "rows_with_cells": 30,
+          "max_excel_row": 30,
+          "max_col": 3,
+          "cells": 88,
+          "formulas": 0
+        },
+        {
+          "name": "Distribuição Fábrica_CD",
+          "dimension": "A1:I16",
+          "rows_with_cells": 16,
+          "max_excel_row": 16,
+          "max_col": 9,
+          "cells": 136,
+          "formulas": 28
+        },
+        {
+          "name": "Faturamento por Filial x UF",
+          "dimension": "A1:D170",
+          "rows_with_cells": 170,
+          "max_excel_row": 170,
+          "max_col": 4,
+          "cells": 677,
+          "formulas": 0
+        },
+        {
+          "name": "Tabela Logística",
+          "dimension": "A1:P160",
+          "rows_with_cells": 160,
+          "max_excel_row": 160,
+          "max_col": 16,
+          "cells": 2560,
+          "formulas": 0
+        }
+      ],
+      "source_id": "empresa2_malha_vcaracol_referencia"
+    }
+  ],
+  "path_validation_summary": "Todos os caminhos declarados em catalog.json, HTML, JS e manifest foram resolvidos no teste de auditoria.",
+  "final_audit_note": "All 5 XLSX workbooks and 53 workbook sheets are covered by source_export paths; runtime paths are relative and rechecked in v6."
+}

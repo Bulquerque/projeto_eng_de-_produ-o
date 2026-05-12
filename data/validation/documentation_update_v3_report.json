@@ -1,0 +1,33 @@
+{
+  "result": "DOCUMENTATION_MODULE_CONTRACTS_UPDATED_OK",
+  "new_docs": [
+    "docs/23_MODULOS_TODAS_FASES_CONTRATOS.md",
+    "docs/24_FUNCOES_E_DEPENDENCIAS_MODULOS.md",
+    "docs/25_TESTES_POR_MODULO_TODAS_FASES.md",
+    "docs/26_MAPA_FASES_MODULOS.md"
+  ],
+  "new_contracts": [
+    "data/contracts/module_contracts_all_phases.json",
+    "data/contracts/module_dependency_matrix.csv",
+    "data/contracts/module_dependency_matrix.json",
+    "data/contracts/module_tests_matrix.csv",
+    "data/contracts/module_tests_matrix.json"
+  ],
+  "module_count": 31,
+  "modules_by_phase": {
+    "1": 9,
+    "2": 6,
+    "3": 5,
+    "4": 5,
+    "5": 6
+  },
+  "tests_run": [
+    "tests/test_module_contracts_documentation.py -> MODULE_CONTRACT_DOCUMENTATION_OK",
+    "tests/check_package.py -> PACKAGE_CHECK_OK",
+    "tests/test_phase1_static_site.py -> PHASE1_STATIC_SITE_TESTS_OK",
+    "tests/test_phase1_http_server.py -> PHASE1_HTTP_SERVER_OK",
+    "tests/test_full_workbook_paths.py -> FULL_WORKBOOK_PATH_AUDIT_OK",
+    "tests/test_paths_and_regeneration.py -> REGENERATION_AND_PATH_CHECK_OK",
+    "tests/test_final_deep_audit.py -> FINAL_DEEP_AUDIT_OK"
+  ]
+}

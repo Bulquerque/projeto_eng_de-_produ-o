@@ -1,0 +1,346 @@
+phase,module,test_type,test
+1,AppBootstrap,unit,initApp cria estado inicial com empresa1
+1,AppBootstrap,unit,showFatalError não deixa a página em branco
+1,AppBootstrap,integration,site abre via http.server
+1,AppBootstrap,integration,todos os artefatos da Fase 1 são carregados
+1,AppBootstrap,manual,abrir / e confirmar que os painéis aparecem
+1,AppBootstrap,manual,abrir /fase-1-validacao/ e confirmar que redireciona/mostra o mesmo app
+1,AppBootstrap,acceptance,não usa path absoluto
+1,AppBootstrap,acceptance,não quebra se um painel tiver warning
+1,CompanySelector,unit,empresa1 é padrão
+1,CompanySelector,unit,selectCompany troca para empresa2
+1,CompanySelector,integration,trocar empresa muda cards de datasets
+1,CompanySelector,integration,trocar empresa não mistura paths
+1,CompanySelector,manual,clicar Empresa 1 e depois Empresa 2
+1,CompanySelector,manual,confirmar que os títulos/datasets mudam
+1,CompanySelector,acceptance,nenhum dataset da Empresa 2 aparece quando Empresa 1 está selecionada
+1,DataLoader,unit,fetchJson rejeita JSON inválido com mensagem clara
+1,DataLoader,unit,parseCsv preserva cabeçalhos
+1,DataLoader,integration,catalog.json carrega
+1,DataLoader,integration,workbook_sheet_inventory.csv carrega
+1,DataLoader,manual,abrir DevTools e confirmar ausência de 404 nos arquivos principais
+1,DataLoader,acceptance,falha de um arquivo aparece na tela e não some silenciosamente
+1,DataQualityPanel,unit,erro gera status error
+1,DataQualityPanel,unit,score baixo gera warning
+1,DataQualityPanel,integration,painel muda ao trocar empresa
+1,DataQualityPanel,manual,verificar se warnings aparecem em amarelo e erros em vermelho
+1,DataQualityPanel,acceptance,não esconder problemas de dados
+1,DatasetPanel,unit,getCompanyDatasets filtra corretamente
+1,DatasetPanel,unit,path absoluto é sinalizado
+1,DatasetPanel,integration,Empresa 1 mostra demanda/distância/premissas
+1,DatasetPanel,integration,Empresa 2 mostra tabelas core e scenario_blocks
+1,DatasetPanel,manual,copiar um caminho exibido e conferir que existe na pasta
+1,DatasetPanel,acceptance,todo dataset obrigatório tem path visível
+1,ManualChecklist,unit,toggleCheck alterna boolean
+1,ManualChecklist,unit,reset limpa todos
+1,ManualChecklist,integration,estado persiste após reload
+1,ManualChecklist,manual,"marcar checklist, recarregar página, conferir permanência"
+1,ManualChecklist,acceptance,usuário consegue auditar manualmente a Fase 1 sem abrir código
+1,PathAuditPanel,unit,missing_paths vazio gera OK
+1,PathAuditPanel,unit,missing_paths > 0 gera error
+1,PathAuditPanel,integration,path report é exibido na página
+1,PathAuditPanel,manual,confirmar visualmente missing_paths = 0
+1,PathAuditPanel,acceptance,nenhum caminho crítico pode ficar invisível
+1,Phase1TestPanel,unit,assertCondition false gera fail
+1,Phase1TestPanel,unit,summary conta resultados
+1,Phase1TestPanel,integration,painel aparece depois do carregamento
+1,Phase1TestPanel,manual,confirmar que todos os testes do navegador passam
+1,Phase1TestPanel,acceptance,falha precisa aparecer visualmente
+1,WorkbookInventoryPanel,unit,Cenários é detectada como special sheet
+1,WorkbookInventoryPanel,unit,filtro por empresa não mistura workbooks
+1,WorkbookInventoryPanel,integration,inventário mostra 53 abas auditadas
+1,WorkbookInventoryPanel,integration,Empresa 2 mostra 25 abas por workbook
+1,WorkbookInventoryPanel,manual,verificar se Cenários mostra scenario_blocks/scenario_totals
+1,WorkbookInventoryPanel,acceptance,toda aba auditada precisa ter export ou justificativa
+2,BaseFitScore,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,BaseFitScore,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,BaseFitScore,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,BaseFitScore,manual,checklist na página /fase-2-baseline/
+2,BaseFitScore,acceptance,python tests/run_all_tests.py
+2,BaselineBuilder,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,BaselineBuilder,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,BaselineBuilder,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,BaselineBuilder,manual,checklist na página /fase-2-baseline/
+2,BaselineBuilder,acceptance,python tests/run_all_tests.py
+2,BaselineDashboard,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,BaselineDashboard,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,BaselineDashboard,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,BaselineDashboard,manual,checklist na página /fase-2-baseline/
+2,BaselineDashboard,acceptance,python tests/run_all_tests.py
+2,BaselineDataAdapter,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,BaselineDataAdapter,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,BaselineDataAdapter,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,BaselineDataAdapter,manual,checklist na página /fase-2-baseline/
+2,BaselineDataAdapter,acceptance,python tests/run_all_tests.py
+2,CalibrationPanel,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,CalibrationPanel,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,CalibrationPanel,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,CalibrationPanel,manual,checklist na página /fase-2-baseline/
+2,CalibrationPanel,acceptance,python tests/run_all_tests.py
+2,CostEngine,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,CostEngine,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,CostEngine,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,CostEngine,manual,checklist na página /fase-2-baseline/
+2,CostEngine,acceptance,python tests/run_all_tests.py
+2,DistanceResolver,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,DistanceResolver,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,DistanceResolver,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,DistanceResolver,manual,checklist na página /fase-2-baseline/
+2,DistanceResolver,acceptance,python tests/run_all_tests.py
+2,FlowBuilder,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,FlowBuilder,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,FlowBuilder,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,FlowBuilder,manual,checklist na página /fase-2-baseline/
+2,FlowBuilder,acceptance,python tests/run_all_tests.py
+2,Phase2TestPanel,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,Phase2TestPanel,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,Phase2TestPanel,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,Phase2TestPanel,manual,checklist na página /fase-2-baseline/
+2,Phase2TestPanel,acceptance,python tests/run_all_tests.py
+2,ReferenceResultExtractor,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,ReferenceResultExtractor,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,ReferenceResultExtractor,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,ReferenceResultExtractor,manual,checklist na página /fase-2-baseline/
+2,ReferenceResultExtractor,acceptance,python tests/run_all_tests.py
+2,TaxEngineBasic,unit,tests/05_fase2_baseline/test_phase2_static_site.py
+2,TaxEngineBasic,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
+2,TaxEngineBasic,integration,tests/05_fase2_baseline/test_phase2_http_server.py
+2,TaxEngineBasic,manual,checklist na página /fase-2-baseline/
+2,TaxEngineBasic,acceptance,python tests/run_all_tests.py
+3,Phase3TestPanel,unit,test_phase3_logic.py
+3,Phase3TestPanel,integration,test_phase3_http_server.py
+3,Phase3TestPanel,manual,checklist na página /fase-3-cenarios/
+3,Phase3TestPanel,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK
+3,ScenarioArenaDashboard,unit,test_phase3_logic.py
+3,ScenarioArenaDashboard,integration,test_phase3_http_server.py
+3,ScenarioArenaDashboard,manual,checklist na página /fase-3-cenarios/
+3,ScenarioArenaDashboard,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK
+3,ScenarioBuilder,unit,cenário mantém company
+3,ScenarioBuilder,unit,changesApplied registra mudanças
+3,ScenarioBuilder,integration,cenário criado aparece no comparador
+3,ScenarioBuilder,manual,fechar um CD e conferir mudança visual
+3,ScenarioBuilder,acceptance,cenário inválido gera erro claro
+3,ScenarioChangeExplainer,unit,test_phase3_logic.py
+3,ScenarioChangeExplainer,integration,test_phase3_http_server.py
+3,ScenarioChangeExplainer,manual,checklist na página /fase-3-cenarios/
+3,ScenarioChangeExplainer,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK
+3,ScenarioComparator,unit,baseline saving = 0
+3,ScenarioComparator,unit,cross-company bloqueado
+3,ScenarioComparator,integration,cenários criados aparecem na tabela
+3,ScenarioComparator,manual,"comparar Base, 3 CDs e ES"
+3,ScenarioComparator,acceptance,saving sempre usa baseline da mesma empresa
+3,ScenarioFlowRebuilder,unit,test_phase3_logic.py
+3,ScenarioFlowRebuilder,integration,test_phase3_http_server.py
+3,ScenarioFlowRebuilder,manual,checklist na página /fase-3-cenarios/
+3,ScenarioFlowRebuilder,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK
+3,ScenarioImportExport,unit,test_phase3_logic.py
+3,ScenarioImportExport,integration,test_phase3_http_server.py
+3,ScenarioImportExport,manual,checklist na página /fase-3-cenarios/
+3,ScenarioImportExport,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK
+3,ScenarioLibrary,unit,test_phase3_logic.py
+3,ScenarioLibrary,integration,test_phase3_http_server.py
+3,ScenarioLibrary,manual,checklist na página /fase-3-cenarios/
+3,ScenarioLibrary,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK
+3,ScenarioPersistence,unit,salva e carrega por empresa
+3,ScenarioPersistence,unit,delete remove só o cenário escolhido
+3,ScenarioPersistence,integration,cenário salvo aparece após reload
+3,ScenarioPersistence,manual,"salvar cenário, recarregar, conferir"
+3,ScenarioPersistence,acceptance,cenários da Empresa 1 não aparecem na Empresa 2
+3,ScenarioQualityCheck,unit,100% volume em um CD gera alerta
+3,ScenarioQualityCheck,unit,capacidade acima do limite gera severidade alta
+3,ScenarioQualityCheck,integration,Comparator mostra qualityScore
+3,ScenarioQualityCheck,manual,centralizar tudo e conferir alerta
+3,ScenarioQualityCheck,acceptance,custo baixo não apaga risco alto
+3,ScenarioSimulator,unit,test_phase3_logic.py
+3,ScenarioSimulator,integration,test_phase3_http_server.py
+3,ScenarioSimulator,manual,checklist na página /fase-3-cenarios/
+3,ScenarioSimulator,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK
+3,ScenarioValidator,unit,sem CD ativo é inválido
+3,ScenarioValidator,unit,empresa misturada é inválida
+3,ScenarioValidator,integration,ScenarioBuilder chama validator antes de salvar
+3,ScenarioValidator,manual,tentar cenário absurdo e ver bloqueio
+3,ScenarioValidator,acceptance,nenhum cenário inválido entra no ranking
+4,CandidateScenarioGenerator,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,CandidateScenarioGenerator,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,CandidateScenarioGenerator,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,CandidateScenarioGenerator,manual,checklist na página /fase-4-score-otimizador/
+4,CandidateScenarioGenerator,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,ConstraintEngine,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,ConstraintEngine,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,ConstraintEngine,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,ConstraintEngine,manual,checklist na página /fase-4-score-otimizador/
+4,ConstraintEngine,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,MetricNormalizer,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,MetricNormalizer,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,MetricNormalizer,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,MetricNormalizer,manual,checklist na página /fase-4-score-otimizador/
+4,MetricNormalizer,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,ObjectiveBuilder,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,ObjectiveBuilder,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,ObjectiveBuilder,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,ObjectiveBuilder,manual,checklist na página /fase-4-score-otimizador/
+4,ObjectiveBuilder,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,ObjectiveProfileLibrary,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,ObjectiveProfileLibrary,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,ObjectiveProfileLibrary,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,ObjectiveProfileLibrary,manual,checklist na página /fase-4-score-otimizador/
+4,ObjectiveProfileLibrary,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,ObjectiveValidator,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,ObjectiveValidator,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,ObjectiveValidator,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,ObjectiveValidator,manual,checklist na página /fase-4-score-otimizador/
+4,ObjectiveValidator,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,Phase4Dashboard,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,Phase4Dashboard,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,Phase4Dashboard,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,Phase4Dashboard,manual,checklist na página /fase-4-score-otimizador/
+4,Phase4Dashboard,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,Phase4TestPanel,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,Phase4TestPanel,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,Phase4TestPanel,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,Phase4TestPanel,manual,checklist na página /fase-4-score-otimizador/
+4,Phase4TestPanel,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,RankingExplainer,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,RankingExplainer,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,RankingExplainer,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,RankingExplainer,manual,checklist na página /fase-4-score-otimizador/
+4,RankingExplainer,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,ScenarioMetricExtractor,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,ScenarioMetricExtractor,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,ScenarioMetricExtractor,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,ScenarioMetricExtractor,manual,checklist na página /fase-4-score-otimizador/
+4,ScenarioMetricExtractor,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,ScenarioOptimizer,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,ScenarioOptimizer,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,ScenarioOptimizer,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,ScenarioOptimizer,manual,checklist na página /fase-4-score-otimizador/
+4,ScenarioOptimizer,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,ScenarioScoring,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,ScenarioScoring,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,ScenarioScoring,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,ScenarioScoring,manual,checklist na página /fase-4-score-otimizador/
+4,ScenarioScoring,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,SearchLogPanel,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,SearchLogPanel,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,SearchLogPanel,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,SearchLogPanel,manual,checklist na página /fase-4-score-otimizador/
+4,SearchLogPanel,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+4,TradeoffFrontier,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
+4,TradeoffFrontier,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
+4,TradeoffFrontier,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
+4,TradeoffFrontier,manual,checklist na página /fase-4-score-otimizador/
+4,TradeoffFrontier,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
+5,AuditTrail,unit,"audit tem empresa, cenário, versão e premissas"
+5,AuditTrail,unit,hash muda quando input muda
+5,AuditTrail,integration,relatório exporta audit trail
+5,AuditTrail,manual,abrir JSON de auditoria e conferir fontes
+5,AuditTrail,acceptance,nenhuma simulação final sem audit trail
+5,AuditTrailEngine,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,AuditTrailEngine,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,AuditTrailEngine,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,AuditTrailEngine,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,AuditTrailEngine,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,AuditTrailEngine,manual,checklist na página /fase-5-entrega-final/
+5,AuditTrailEngine,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,ExecutiveReport,unit,relatório tem empresa e cenário
+5,ExecutiveReport,unit,relatório inclui saving e premissas
+5,ExecutiveReport,integration,relatório gera após stress
+5,ExecutiveReport,manual,ler relatório e ver se conta a história
+5,ExecutiveReport,acceptance,relatório não pode faltar audit trail
+5,ExecutiveReportBuilder,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,ExecutiveReportBuilder,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,ExecutiveReportBuilder,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,ExecutiveReportBuilder,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,ExecutiveReportBuilder,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,ExecutiveReportBuilder,manual,checklist na página /fase-5-entrega-final/
+5,ExecutiveReportBuilder,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,ExplainabilityEngine,unit,"se armazenagem cai, texto menciona queda"
+5,ExplainabilityEngine,unit,"se risco alto, texto menciona risco"
+5,ExplainabilityEngine,integration,relatório inclui explicação
+5,ExplainabilityEngine,manual,ler explicação e conferir com gráficos
+5,ExplainabilityEngine,acceptance,não dizer que é melhor se score/robustez não sustentam
+5,ExportCenter,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,ExportCenter,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,ExportCenter,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,ExportCenter,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,ExportCenter,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,ExportCenter,manual,checklist na página /fase-5-entrega-final/
+5,ExportCenter,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,ExportEngine,unit,JSON exportado é parseável
+5,ExportEngine,unit,CSV contém cabeçalho
+5,ExportEngine,integration,botão exportar gera arquivo
+5,ExportEngine,manual,baixar arquivo e abrir
+5,ExportEngine,acceptance,export não pode sair vazio
+5,FinalQAChecker,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,FinalQAChecker,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,FinalQAChecker,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,FinalQAChecker,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,FinalQAChecker,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,FinalQAChecker,manual,checklist na página /fase-5-entrega-final/
+5,FinalQAChecker,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,FinalScenarioSelector,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,FinalScenarioSelector,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,FinalScenarioSelector,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,FinalScenarioSelector,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,FinalScenarioSelector,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,FinalScenarioSelector,manual,checklist na página /fase-5-entrega-final/
+5,FinalScenarioSelector,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,Phase5Dashboard,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,Phase5Dashboard,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,Phase5Dashboard,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,Phase5Dashboard,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,Phase5Dashboard,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,Phase5Dashboard,manual,checklist na página /fase-5-entrega-final/
+5,Phase5Dashboard,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,Phase5TestPanel,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,Phase5TestPanel,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,Phase5TestPanel,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,Phase5TestPanel,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,Phase5TestPanel,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,Phase5TestPanel,manual,checklist na página /fase-5-entrega-final/
+5,Phase5TestPanel,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,RecommendationEngine,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,RecommendationEngine,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,RecommendationEngine,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,RecommendationEngine,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,RecommendationEngine,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,RecommendationEngine,manual,checklist na página /fase-5-entrega-final/
+5,RecommendationEngine,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,RecommendationPanel,unit,cenário com score alto e stress ruim recebe ressalva
+5,RecommendationPanel,unit,sem evidência suficiente => confiança baixa
+5,RecommendationPanel,integration,recomendação aparece no relatório
+5,RecommendationPanel,manual,conferir se recomendação não ignora riscos
+5,RecommendationPanel,acceptance,recomendação precisa citar caveats quando existirem
+5,ReleaseValidator,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,ReleaseValidator,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,ReleaseValidator,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,ReleaseValidator,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,ReleaseValidator,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,ReleaseValidator,manual,checklist na página /fase-5-entrega-final/
+5,ReleaseValidator,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,RobustnessScorer,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,RobustnessScorer,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,RobustnessScorer,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,RobustnessScorer,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,RobustnessScorer,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,RobustnessScorer,manual,checklist na página /fase-5-entrega-final/
+5,RobustnessScorer,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,SensitivityEngine,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,SensitivityEngine,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,SensitivityEngine,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,SensitivityEngine,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,SensitivityEngine,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,SensitivityEngine,manual,checklist na página /fase-5-entrega-final/
+5,SensitivityEngine,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,StressCaseLibrary,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
+5,StressCaseLibrary,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
+5,StressCaseLibrary,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
+5,StressCaseLibrary,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
+5,StressCaseLibrary,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
+5,StressCaseLibrary,manual,checklist na página /fase-5-entrega-final/
+5,StressCaseLibrary,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
+5,StressTestEngine,unit,frete +20% aumenta transporte
+5,StressTestEngine,unit,demanda +15% aumenta volume/custo variável
+5,StressTestEngine,integration,stress roda nos top cenários
+5,StressTestEngine,manual,rodar stress no cenário vencedor
+5,StressTestEngine,acceptance,saving negativo em stress gera alerta

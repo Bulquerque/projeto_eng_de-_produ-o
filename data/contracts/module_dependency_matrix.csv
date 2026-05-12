@@ -1,0 +1,159 @@
+phase,module,calls,file
+1,AppBootstrap,"['DataLoader.fetchJson', 'Carregar JSONs declarados em paths.']",
+1,AppBootstrap,"['CompanySelector.render', 'Renderizar seleção Empresa 1 / Empresa 2.']",
+1,AppBootstrap,"['DatasetPanel.render', 'Mostrar datasets da empresa selecionada.']",
+1,AppBootstrap,"['PathAuditPanel.render', 'Mostrar status dos caminhos auditados.']",
+1,CompanySelector,"['DatasetPanel.render', 'Re-renderizar datasets da empresa.']",
+1,CompanySelector,"['DataQualityPanel.render', 'Re-renderizar qualidade da empresa.']",
+1,CompanySelector,"['ManualChecklist.render', 'Atualizar checklist sem perder estado.']",
+1,DataQualityPanel,"['DatasetPanel.getCompanyDatasets', 'Cruzar qualidade com datasets exibidos, se necessário.']",
+1,DatasetPanel,"['PathAuditPanel.getPathStatus', 'Checar se o caminho está em missing_paths.']",
+1,DatasetPanel,"['DataLoader.fetchJson', 'Opcionalmente carregar metadados dos datasets.']",
+1,Phase1TestPanel,"['DataLoader', 'Usa estado carregado pelo DataLoader.']",
+1,Phase1TestPanel,"['CompanySelector', 'Confirma empresa selecionada.']",
+1,WorkbookInventoryPanel,"['DataLoader.fetchText', 'Carregar workbook_sheet_inventory.csv.']",
+1,WorkbookInventoryPanel,"['PathAuditPanel.getPathStatus', 'Validar paths de exports.']",
+2,BaseFitScore,ReferenceResultExtractor,assets/js/phase2/base-fit-score.js
+2,BaseFitScore,CostEngine,assets/js/phase2/base-fit-score.js
+2,BaselineBuilder,BaselineDataAdapter,assets/js/phase2/baseline-builder.js
+2,BaselineDashboard,BaselineBuilder,assets/js/phase2/baseline-dashboard.js
+2,BaselineDashboard,FlowBuilder,assets/js/phase2/baseline-dashboard.js
+2,BaselineDashboard,TaxEngineBasic,assets/js/phase2/baseline-dashboard.js
+2,BaselineDashboard,CalibrationPanel,assets/js/phase2/baseline-dashboard.js
+2,BaselineDataAdapter,DataLoader,assets/js/phase2/baseline-data-adapter.js
+2,BaselineDataAdapter,DataQualityPanel,assets/js/phase2/baseline-data-adapter.js
+2,CalibrationPanel,BaseFitScore,assets/js/phase2/calibration-panel.js
+2,CalibrationPanel,ReferenceResultExtractor,assets/js/phase2/calibration-panel.js
+2,CostEngine,FlowBuilder,assets/js/phase2/cost-engine.js
+2,DistanceResolver,FlowBuilder,assets/js/phase2/distance-resolver.js
+2,DistanceResolver,CostEngine,assets/js/phase2/distance-resolver.js
+2,FlowBuilder,BaselineBuilder,assets/js/phase2/flow-builder.js
+2,Phase2TestPanel,CostEngine,assets/js/phase2/phase2-tests.js
+2,Phase2TestPanel,BaseFitScore,assets/js/phase2/phase2-tests.js
+2,Phase2TestPanel,BaselineBuilder,assets/js/phase2/phase2-tests.js
+2,ReferenceResultExtractor,BaseFitScore,assets/js/phase2/reference-result-extractor.js
+2,TaxEngineBasic,FlowBuilder,assets/js/phase2/tax-engine-basic.js
+2,TaxEngineBasic,CostEngine,assets/js/phase2/tax-engine-basic.js
+3,Phase3TestPanel,módulos phase2/phase3 conforme implementação,assets/js/phase3/phase3-tests.js
+3,ScenarioArenaDashboard,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-arena-dashboard.js
+3,ScenarioBuilder,"['ScenarioValidator', 'Valida alterações.']",assets/js/phase3/scenario-builder.js
+3,ScenarioBuilder,"['FlowBuilder', 'Recria fluxos.']",assets/js/phase3/scenario-builder.js
+3,ScenarioBuilder,"['CostEngine', 'Calcula custos do cenário.']",assets/js/phase3/scenario-builder.js
+3,ScenarioBuilder,"['TaxEngine', 'Calcula tributos se ligado.']",assets/js/phase3/scenario-builder.js
+3,ScenarioChangeExplainer,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-change-explainer.js
+3,ScenarioComparator,"['CostEngine', 'Usa custos calculados.']",assets/js/phase3/scenario-comparator.js
+3,ScenarioComparator,"['TaxEngine', 'Usa tributos calculados.']",assets/js/phase3/scenario-comparator.js
+3,ScenarioComparator,"['ScenarioQualityCheck', 'Usa scores e alertas.']",assets/js/phase3/scenario-comparator.js
+3,ScenarioFlowRebuilder,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-flow-rebuilder.js
+3,ScenarioImportExport,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-import-export.js
+3,ScenarioLibrary,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-library.js
+3,ScenarioPersistence,"['ScenarioValidator', 'Valida antes de salvar/importar.']",assets/js/phase3/scenario-persistence.js
+3,ScenarioPersistence,"['AuditTrail', 'Registra origem do cenário importado/exportado.']",assets/js/phase3/scenario-persistence.js
+3,ScenarioQualityCheck,"['ScenarioValidator', 'Recebe validade básica.']",assets/js/phase3/scenario-quality-check.js
+3,ScenarioQualityCheck,"['ScenarioScoring', 'Entrega qualityScore para ranking.']",assets/js/phase3/scenario-quality-check.js
+3,ScenarioQualityCheck,"['ExplainabilityEngine', 'Entrega alertas para explicação.']",assets/js/phase3/scenario-quality-check.js
+3,ScenarioSimulator,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-simulator.js
+3,ScenarioValidator,"['DataQualityPanel', 'Usa diagnóstico de dados.']",assets/js/phase3/scenario-validator.js
+3,ScenarioValidator,"['ScenarioQualityCheck', 'Envia warnings não bloqueantes.']",assets/js/phase3/scenario-validator.js
+4,CandidateScenarioGenerator,ScenarioBuilder,assets/js/phase4/candidate-scenario-generator.js
+4,CandidateScenarioGenerator,ConstraintEngine,assets/js/phase4/candidate-scenario-generator.js
+4,ConstraintEngine,ScenarioQualityCheck,assets/js/phase4/constraint-engine.js
+4,ConstraintEngine,ScenarioValidator,assets/js/phase4/constraint-engine.js
+4,MetricNormalizer,ScenarioMetricExtractor,assets/js/phase4/metric-normalizer.js
+4,MetricNormalizer,ObjectiveValidator,assets/js/phase4/metric-normalizer.js
+4,ObjectiveBuilder,ObjectiveValidator,assets/js/phase4/objective-builder.js
+4,ObjectiveBuilder,ObjectiveProfileLibrary,assets/js/phase4/objective-builder.js
+4,ObjectiveProfileLibrary,ObjectiveBuilder,assets/js/phase4/objective-profile-library.js
+4,ObjectiveValidator,ObjectiveBuilder,assets/js/phase4/objective-validator.js
+4,ObjectiveValidator,MetricNormalizer,assets/js/phase4/objective-validator.js
+4,Phase4Dashboard,ObjectiveBuilder,assets/js/phase4/phase4-dashboard.js
+4,Phase4Dashboard,ObjectiveProfileLibrary,assets/js/phase4/phase4-dashboard.js
+4,Phase4Dashboard,ScenarioOptimizer,assets/js/phase4/phase4-dashboard.js
+4,Phase4Dashboard,SearchLogPanel,assets/js/phase4/phase4-dashboard.js
+4,Phase4Dashboard,RankingExplainer,assets/js/phase4/phase4-dashboard.js
+4,Phase4Dashboard,TradeoffFrontier,assets/js/phase4/phase4-dashboard.js
+4,Phase4Dashboard,Phase4TestPanel,assets/js/phase4/phase4-dashboard.js
+4,Phase4TestPanel,ObjectiveBuilder,assets/js/phase4/phase4-tests.js
+4,Phase4TestPanel,MetricNormalizer,assets/js/phase4/phase4-tests.js
+4,Phase4TestPanel,ScenarioScoring,assets/js/phase4/phase4-tests.js
+4,Phase4TestPanel,CandidateScenarioGenerator,assets/js/phase4/phase4-tests.js
+4,Phase4TestPanel,ScenarioOptimizer,assets/js/phase4/phase4-tests.js
+4,RankingExplainer,ScenarioScoring,assets/js/phase4/ranking-explainer.js
+4,RankingExplainer,ScenarioComparator,assets/js/phase4/ranking-explainer.js
+4,ScenarioMetricExtractor,ScenarioSimulator,assets/js/phase4/scenario-metric-extractor.js
+4,ScenarioMetricExtractor,ScenarioQualityCheck,assets/js/phase4/scenario-metric-extractor.js
+4,ScenarioOptimizer,CandidateScenarioGenerator,assets/js/phase4/scenario-optimizer.js
+4,ScenarioOptimizer,ScenarioSimulator,assets/js/phase4/scenario-optimizer.js
+4,ScenarioOptimizer,ConstraintEngine,assets/js/phase4/scenario-optimizer.js
+4,ScenarioOptimizer,ScenarioMetricExtractor,assets/js/phase4/scenario-optimizer.js
+4,ScenarioOptimizer,MetricNormalizer,assets/js/phase4/scenario-optimizer.js
+4,ScenarioOptimizer,ScenarioScoring,assets/js/phase4/scenario-optimizer.js
+4,ScenarioScoring,ObjectiveValidator,assets/js/phase4/scenario-scoring.js
+4,ScenarioScoring,MetricNormalizer,assets/js/phase4/scenario-scoring.js
+4,SearchLogPanel,ScenarioOptimizer,assets/js/phase4/search-log-panel.js
+4,TradeoffFrontier,ScenarioScoring,assets/js/phase4/tradeoff-frontier.js
+4,TradeoffFrontier,ScenarioQualityCheck,assets/js/phase4/tradeoff-frontier.js
+5,AuditTrail,"['ScenarioPersistence', 'Recebe cenários salvos/importados.']",
+5,AuditTrail,"['ScenarioOptimizer', 'Recebe search log.']",
+5,AuditTrail,"['ExecutiveReport', 'Inclui auditoria no relatório.']",
+5,AuditTrailEngine,DataLoader,assets/js/phase5/audit-trail-engine.js
+5,AuditTrailEngine,ScenarioPersistence,assets/js/phase5/audit-trail-engine.js
+5,AuditTrailEngine,ObjectiveBuilder,assets/js/phase5/audit-trail-engine.js
+5,AuditTrailEngine,RecommendationEngine,assets/js/phase5/audit-trail-engine.js
+5,ExecutiveReport,"['ExplainabilityEngine', 'Recebe narrativa.']",
+5,ExecutiveReport,"['AuditTrail', 'Recebe premissas/fontes.']",
+5,ExecutiveReport,"['ExportEngine', 'Exporta arquivos.']",
+5,ExecutiveReportBuilder,RecommendationEngine,assets/js/phase5/executive-report-builder.js
+5,ExecutiveReportBuilder,StressTestEngine,assets/js/phase5/executive-report-builder.js
+5,ExecutiveReportBuilder,RobustnessScorer,assets/js/phase5/executive-report-builder.js
+5,ExecutiveReportBuilder,AuditTrailEngine,assets/js/phase5/executive-report-builder.js
+5,ExplainabilityEngine,"['ScenarioComparator', 'Recebe delta.']",
+5,ExplainabilityEngine,"['ScenarioQualityCheck', 'Recebe alertas.']",
+5,ExplainabilityEngine,"['StressTestEngine', 'Recebe stress.']",
+5,ExplainabilityEngine,"['ExecutiveReport', 'Envia narrativa final.']",
+5,ExportCenter,ExecutiveReportBuilder,assets/js/phase5/export-center.js
+5,ExportCenter,AuditTrailEngine,assets/js/phase5/export-center.js
+5,ExportCenter,StressTestEngine,assets/js/phase5/export-center.js
+5,ExportEngine,"['ExecutiveReport', 'Exporta relatório.']",
+5,ExportEngine,"['AuditTrail', 'Exporta auditoria.']",
+5,ExportEngine,"['ScenarioPersistence', 'Exporta/importa cenários.']",
+5,FinalQAChecker,DataLoader,assets/js/phase5/final-qa-checker.js
+5,FinalQAChecker,Phase5TestPanel,assets/js/phase5/final-qa-checker.js
+5,FinalScenarioSelector,ScenarioScoring,assets/js/phase5/final-scenario-selector.js
+5,FinalScenarioSelector,ScenarioOptimizer,assets/js/phase5/final-scenario-selector.js
+5,FinalScenarioSelector,ScenarioComparator,assets/js/phase5/final-scenario-selector.js
+5,Phase5Dashboard,FinalScenarioSelector,assets/js/phase5/phase5-dashboard.js
+5,Phase5Dashboard,StressTestEngine,assets/js/phase5/phase5-dashboard.js
+5,Phase5Dashboard,SensitivityEngine,assets/js/phase5/phase5-dashboard.js
+5,Phase5Dashboard,RobustnessScorer,assets/js/phase5/phase5-dashboard.js
+5,Phase5Dashboard,RecommendationEngine,assets/js/phase5/phase5-dashboard.js
+5,Phase5Dashboard,AuditTrailEngine,assets/js/phase5/phase5-dashboard.js
+5,Phase5Dashboard,ExecutiveReportBuilder,assets/js/phase5/phase5-dashboard.js
+5,Phase5Dashboard,ExportCenter,assets/js/phase5/phase5-dashboard.js
+5,Phase5Dashboard,FinalQAChecker,assets/js/phase5/phase5-dashboard.js
+5,Phase5Dashboard,ReleaseValidator,assets/js/phase5/phase5-dashboard.js
+5,Phase5Dashboard,Phase5TestPanel,assets/js/phase5/phase5-dashboard.js
+5,Phase5TestPanel,StressTestEngine,assets/js/phase5/phase5-tests.js
+5,Phase5TestPanel,RobustnessScorer,assets/js/phase5/phase5-tests.js
+5,Phase5TestPanel,RecommendationEngine,assets/js/phase5/phase5-tests.js
+5,Phase5TestPanel,AuditTrailEngine,assets/js/phase5/phase5-tests.js
+5,Phase5TestPanel,ExecutiveReportBuilder,assets/js/phase5/phase5-tests.js
+5,Phase5TestPanel,ExportCenter,assets/js/phase5/phase5-tests.js
+5,Phase5TestPanel,FinalQAChecker,assets/js/phase5/phase5-tests.js
+5,RecommendationEngine,ScenarioScoring,assets/js/phase5/recommendation-engine.js
+5,RecommendationEngine,ScenarioComparator,assets/js/phase5/recommendation-engine.js
+5,RecommendationEngine,ScenarioQualityCheck,assets/js/phase5/recommendation-engine.js
+5,RecommendationEngine,RobustnessScorer,assets/js/phase5/recommendation-engine.js
+5,RecommendationPanel,"['ScenarioScoring', 'Recebe ranking.']",
+5,RecommendationPanel,"['StressTestEngine', 'Recebe robustez.']",
+5,RecommendationPanel,"['ExplainabilityEngine', 'Recebe drivers e trade-offs.']",
+5,ReleaseValidator,FinalQAChecker,assets/js/phase5/release-validator.js
+5,RobustnessScorer,StressTestEngine,assets/js/phase5/robustness-scorer.js
+5,RobustnessScorer,ScenarioQualityCheck,assets/js/phase5/robustness-scorer.js
+5,SensitivityEngine,ScenarioSimulator,assets/js/phase5/sensitivity-engine.js
+5,SensitivityEngine,ScenarioComparator,assets/js/phase5/sensitivity-engine.js
+5,StressCaseLibrary,StressTestEngine,assets/js/phase5/stress-case-library.js
+5,StressTestEngine,"['ScenarioBuilder', 'Aplicar mudanças temporárias.']",
+5,StressTestEngine,"['CostEngine', 'Recalcular custos.']",
+5,StressTestEngine,"['TaxEngine', 'Recalcular tributo.']",
+5,StressTestEngine,"['ScenarioComparator', 'Comparar contra base.']",

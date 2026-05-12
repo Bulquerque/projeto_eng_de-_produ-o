@@ -1,0 +1,10 @@
+{
+  "created_at_utc": "2026-05-06T18:20:08.563748+00:00",
+  "result": "OK",
+  "regeneration_method": "All source_export CSVs were regenerated from original XLSX workbooks before finalization; the path/hash of every exported sheet is recorded in workbook_sheet_inventory.csv and full_workbook_path_audit.json.",
+  "workbooks_regenerated": 5,
+  "sheets_regenerated": 53,
+  "manifest_sha_mismatches": [],
+  "reviewed_at_utc_v6": "2026-05-06T18:25:59.475428+00:00",
+  "package": "visagio_static_simulator_base_VALIDADO_v6"
+}

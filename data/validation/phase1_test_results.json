@@ -1,0 +1,44 @@
+{
+  "created_at_utc": "2026-05-06T18:58:55.660346+00:00",
+  "commands": [
+    {
+      "command": "python tests/check_package.py",
+      "result": "PACKAGE_CHECK_OK"
+    },
+    {
+      "command": "python tests/test_full_workbook_paths.py",
+      "result": "FULL_WORKBOOK_PATH_AUDIT_OK"
+    },
+    {
+      "command": "python tests/test_paths_and_regeneration.py",
+      "result": "REGENERATION_AND_PATH_CHECK_OK"
+    },
+    {
+      "command": "python tests/test_final_deep_audit.py",
+      "result": "FINAL_DEEP_AUDIT_OK"
+    },
+    {
+      "command": "python tests/test_phase1_static_site.py",
+      "result": "PHASE1_STATIC_SITE_TESTS_OK"
+    },
+    {
+      "command": "python tests/test_phase1_http_server.py",
+      "result": "PHASE1_HTTP_SERVER_OK"
+    },
+    {
+      "command": "python tests/test_phase1_playwright.py",
+      "result": "PHASE1_PLAYWRIGHT_SKIPPED",
+      "note": "Chromium in this environment blocks localhost with ERR_BLOCKED_BY_ADMINISTRATOR. Script remains available and will run in a normal local environment."
+    },
+    {
+      "command": "node --check assets/app.js",
+      "result": "SYNTAX_OK"
+    },
+    {
+      "command": "python -m json.tool data/catalog.json",
+      "result": "JSON_OK"
+    }
+  ],
+  "overall": "OK_WITH_PLAYWRIGHT_ENVIRONMENT_SKIP",
+  "last_observed_run": "ALL_PHASE1_AVAILABLE_TESTS_DONE"
+}

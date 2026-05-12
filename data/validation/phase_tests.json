@@ -1,0 +1,72 @@
+{
+  "phase_1": {
+    "label": "Validação",
+    "page": "/fase-1-validacao",
+    "manual_checks": [
+      "trocar Empresa 1/Empresa 2",
+      "ver datasets carregados",
+      "ver score de qualidade"
+    ],
+    "automated_tests": [
+      "catalog_has_required_files",
+      "source_files_exist",
+      "zip_integrity"
+    ]
+  },
+  "phase_2": {
+    "label": "Baseline",
+    "page": "/fase-2-baseline",
+    "manual_checks": [
+      "ver cenário base",
+      "comparar real vs simulado quando calibrado",
+      "conferir erro por componente"
+    ],
+    "automated_tests": [
+      "baseline_has_company",
+      "cost_total_sum",
+      "base_fit_score_bounds"
+    ]
+  },
+  "phase_3": {
+    "label": "Simulação",
+    "page": "/fase-3-cenarios",
+    "manual_checks": [
+      "criar cenário 3 CDs",
+      "comparar contra baseline",
+      "validar alertas"
+    ],
+    "automated_tests": [
+      "scenario_company_not_mixed",
+      "baseline_saving_zero",
+      "invalid_scenario_blocks"
+    ]
+  },
+  "phase_4": {
+    "label": "Otimização",
+    "page": "/fase-4-score-otimizador",
+    "manual_checks": [
+      "mudar pesos do score",
+      "rodar busca de cenários",
+      "ver top 5"
+    ],
+    "automated_tests": [
+      "weights_sum_100",
+      "ranking_changes_with_weights",
+      "optimizer_generates_valid_scenarios"
+    ]
+  },
+  "phase_5": {
+    "label": "Entrega",
+    "page": "/fase-5-entrega-final",
+    "manual_checks": [
+      "rodar stress de frete",
+      "ler explicação automática",
+      "exportar relatório"
+    ],
+    "automated_tests": [
+      "stress_monotonicity",
+      "audit_has_required_fields",
+      "report_has_baseline_and_scenario"
+    ]
+  }
+}

@@ -1,0 +1,2072 @@
+[
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "test_type": "unit",
+    "test": "initApp cria estado inicial com empresa1"
+  },
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "test_type": "unit",
+    "test": "showFatalError não deixa a página em branco"
+  },
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "test_type": "integration",
+    "test": "site abre via http.server"
+  },
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "test_type": "integration",
+    "test": "todos os artefatos da Fase 1 são carregados"
+  },
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "test_type": "manual",
+    "test": "abrir / e confirmar que os painéis aparecem"
+  },
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "test_type": "manual",
+    "test": "abrir /fase-1-validacao/ e confirmar que redireciona/mostra o mesmo app"
+  },
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "test_type": "acceptance",
+    "test": "não usa path absoluto"
+  },
+  {
+    "phase": 1,
+    "module": "AppBootstrap",
+    "test_type": "acceptance",
+    "test": "não quebra se um painel tiver warning"
+  },
+  {
+    "phase": 1,
+    "module": "CompanySelector",
+    "test_type": "unit",
+    "test": "empresa1 é padrão"
+  },
+  {
+    "phase": 1,
+    "module": "CompanySelector",
+    "test_type": "unit",
+    "test": "selectCompany troca para empresa2"
+  },
+  {
+    "phase": 1,
+    "module": "CompanySelector",
+    "test_type": "integration",
+    "test": "trocar empresa muda cards de datasets"
+  },
+  {
+    "phase": 1,
+    "module": "CompanySelector",
+    "test_type": "integration",
+    "test": "trocar empresa não mistura paths"
+  },
+  {
+    "phase": 1,
+    "module": "CompanySelector",
+    "test_type": "manual",
+    "test": "clicar Empresa 1 e depois Empresa 2"
+  },
+  {
+    "phase": 1,
+    "module": "CompanySelector",
+    "test_type": "manual",
+    "test": "confirmar que os títulos/datasets mudam"
+  },
+  {
+    "phase": 1,
+    "module": "CompanySelector",
+    "test_type": "acceptance",
+    "test": "nenhum dataset da Empresa 2 aparece quando Empresa 1 está selecionada"
+  },
+  {
+    "phase": 1,
+    "module": "DataLoader",
+    "test_type": "unit",
+    "test": "fetchJson rejeita JSON inválido com mensagem clara"
+  },
+  {
+    "phase": 1,
+    "module": "DataLoader",
+    "test_type": "unit",
+    "test": "parseCsv preserva cabeçalhos"
+  },
+  {
+    "phase": 1,
+    "module": "DataLoader",
+    "test_type": "integration",
+    "test": "catalog.json carrega"
+  },
+  {
+    "phase": 1,
+    "module": "DataLoader",
+    "test_type": "integration",
+    "test": "workbook_sheet_inventory.csv carrega"
+  },
+  {
+    "phase": 1,
+    "module": "DataLoader",
+    "test_type": "manual",
+    "test": "abrir DevTools e confirmar ausência de 404 nos arquivos principais"
+  },
+  {
+    "phase": 1,
+    "module": "DataLoader",
+    "test_type": "acceptance",
+    "test": "falha de um arquivo aparece na tela e não some silenciosamente"
+  },
+  {
+    "phase": 1,
+    "module": "DataQualityPanel",
+    "test_type": "unit",
+    "test": "erro gera status error"
+  },
+  {
+    "phase": 1,
+    "module": "DataQualityPanel",
+    "test_type": "unit",
+    "test": "score baixo gera warning"
+  },
+  {
+    "phase": 1,
+    "module": "DataQualityPanel",
+    "test_type": "integration",
+    "test": "painel muda ao trocar empresa"
+  },
+  {
+    "phase": 1,
+    "module": "DataQualityPanel",
+    "test_type": "manual",
+    "test": "verificar se warnings aparecem em amarelo e erros em vermelho"
+  },
+  {
+    "phase": 1,
+    "module": "DataQualityPanel",
+    "test_type": "acceptance",
+    "test": "não esconder problemas de dados"
+  },
+  {
+    "phase": 1,
+    "module": "DatasetPanel",
+    "test_type": "unit",
+    "test": "getCompanyDatasets filtra corretamente"
+  },
+  {
+    "phase": 1,
+    "module": "DatasetPanel",
+    "test_type": "unit",
+    "test": "path absoluto é sinalizado"
+  },
+  {
+    "phase": 1,
+    "module": "DatasetPanel",
+    "test_type": "integration",
+    "test": "Empresa 1 mostra demanda/distância/premissas"
+  },
+  {
+    "phase": 1,
+    "module": "DatasetPanel",
+    "test_type": "integration",
+    "test": "Empresa 2 mostra tabelas core e scenario_blocks"
+  },
+  {
+    "phase": 1,
+    "module": "DatasetPanel",
+    "test_type": "manual",
+    "test": "copiar um caminho exibido e conferir que existe na pasta"
+  },
+  {
+    "phase": 1,
+    "module": "DatasetPanel",
+    "test_type": "acceptance",
+    "test": "todo dataset obrigatório tem path visível"
+  },
+  {
+    "phase": 1,
+    "module": "ManualChecklist",
+    "test_type": "unit",
+    "test": "toggleCheck alterna boolean"
+  },
+  {
+    "phase": 1,
+    "module": "ManualChecklist",
+    "test_type": "unit",
+    "test": "reset limpa todos"
+  },
+  {
+    "phase": 1,
+    "module": "ManualChecklist",
+    "test_type": "integration",
+    "test": "estado persiste após reload"
+  },
+  {
+    "phase": 1,
+    "module": "ManualChecklist",
+    "test_type": "manual",
+    "test": "marcar checklist, recarregar página, conferir permanência"
+  },
+  {
+    "phase": 1,
+    "module": "ManualChecklist",
+    "test_type": "acceptance",
+    "test": "usuário consegue auditar manualmente a Fase 1 sem abrir código"
+  },
+  {
+    "phase": 1,
+    "module": "PathAuditPanel",
+    "test_type": "unit",
+    "test": "missing_paths vazio gera OK"
+  },
+  {
+    "phase": 1,
+    "module": "PathAuditPanel",
+    "test_type": "unit",
+    "test": "missing_paths > 0 gera error"
+  },
+  {
+    "phase": 1,
+    "module": "PathAuditPanel",
+    "test_type": "integration",
+    "test": "path report é exibido na página"
+  },
+  {
+    "phase": 1,
+    "module": "PathAuditPanel",
+    "test_type": "manual",
+    "test": "confirmar visualmente missing_paths = 0"
+  },
+  {
+    "phase": 1,
+    "module": "PathAuditPanel",
+    "test_type": "acceptance",
+    "test": "nenhum caminho crítico pode ficar invisível"
+  },
+  {
+    "phase": 1,
+    "module": "Phase1TestPanel",
+    "test_type": "unit",
+    "test": "assertCondition false gera fail"
+  },
+  {
+    "phase": 1,
+    "module": "Phase1TestPanel",
+    "test_type": "unit",
+    "test": "summary conta resultados"
+  },
+  {
+    "phase": 1,
+    "module": "Phase1TestPanel",
+    "test_type": "integration",
+    "test": "painel aparece depois do carregamento"
+  },
+  {
+    "phase": 1,
+    "module": "Phase1TestPanel",
+    "test_type": "manual",
+    "test": "confirmar que todos os testes do navegador passam"
+  },
+  {
+    "phase": 1,
+    "module": "Phase1TestPanel",
+    "test_type": "acceptance",
+    "test": "falha precisa aparecer visualmente"
+  },
+  {
+    "phase": 1,
+    "module": "WorkbookInventoryPanel",
+    "test_type": "unit",
+    "test": "Cenários é detectada como special sheet"
+  },
+  {
+    "phase": 1,
+    "module": "WorkbookInventoryPanel",
+    "test_type": "unit",
+    "test": "filtro por empresa não mistura workbooks"
+  },
+  {
+    "phase": 1,
+    "module": "WorkbookInventoryPanel",
+    "test_type": "integration",
+    "test": "inventário mostra 53 abas auditadas"
+  },
+  {
+    "phase": 1,
+    "module": "WorkbookInventoryPanel",
+    "test_type": "integration",
+    "test": "Empresa 2 mostra 25 abas por workbook"
+  },
+  {
+    "phase": 1,
+    "module": "WorkbookInventoryPanel",
+    "test_type": "manual",
+    "test": "verificar se Cenários mostra scenario_blocks/scenario_totals"
+  },
+  {
+    "phase": 1,
+    "module": "WorkbookInventoryPanel",
+    "test_type": "acceptance",
+    "test": "toda aba auditada precisa ter export ou justificativa"
+  },
+  {
+    "phase": 2,
+    "module": "BaseFitScore",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaseFitScore",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaseFitScore",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaseFitScore",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "BaseFitScore",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineBuilder",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineBuilder",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineBuilder",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineBuilder",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineBuilder",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDashboard",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDashboard",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDashboard",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDashboard",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDashboard",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDataAdapter",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDataAdapter",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDataAdapter",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDataAdapter",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "BaselineDataAdapter",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 2,
+    "module": "CalibrationPanel",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "CalibrationPanel",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "CalibrationPanel",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "CalibrationPanel",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "CalibrationPanel",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 2,
+    "module": "CostEngine",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "CostEngine",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "CostEngine",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "CostEngine",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "CostEngine",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 2,
+    "module": "DistanceResolver",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "DistanceResolver",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "DistanceResolver",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "DistanceResolver",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "DistanceResolver",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 2,
+    "module": "FlowBuilder",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "FlowBuilder",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "FlowBuilder",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "FlowBuilder",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "FlowBuilder",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 2,
+    "module": "Phase2TestPanel",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "Phase2TestPanel",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "Phase2TestPanel",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "Phase2TestPanel",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "Phase2TestPanel",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 2,
+    "module": "ReferenceResultExtractor",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "ReferenceResultExtractor",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "ReferenceResultExtractor",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "ReferenceResultExtractor",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "ReferenceResultExtractor",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 2,
+    "module": "TaxEngineBasic",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
+  },
+  {
+    "phase": 2,
+    "module": "TaxEngineBasic",
+    "test_type": "unit",
+    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+  },
+  {
+    "phase": 2,
+    "module": "TaxEngineBasic",
+    "test_type": "integration",
+    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
+  },
+  {
+    "phase": 2,
+    "module": "TaxEngineBasic",
+    "test_type": "manual",
+    "test": "checklist na página /fase-2-baseline/"
+  },
+  {
+    "phase": 2,
+    "module": "TaxEngineBasic",
+    "test_type": "acceptance",
+    "test": "python tests/run_all_tests.py"
+  },
+  {
+    "phase": 3,
+    "module": "Phase3TestPanel",
+    "test_type": "unit",
+    "test": "test_phase3_logic.py"
+  },
+  {
+    "phase": 3,
+    "module": "Phase3TestPanel",
+    "test_type": "integration",
+    "test": "test_phase3_http_server.py"
+  },
+  {
+    "phase": 3,
+    "module": "Phase3TestPanel",
+    "test_type": "manual",
+    "test": "checklist na página /fase-3-cenarios/"
+  },
+  {
+    "phase": 3,
+    "module": "Phase3TestPanel",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioArenaDashboard",
+    "test_type": "unit",
+    "test": "test_phase3_logic.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioArenaDashboard",
+    "test_type": "integration",
+    "test": "test_phase3_http_server.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioArenaDashboard",
+    "test_type": "manual",
+    "test": "checklist na página /fase-3-cenarios/"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioArenaDashboard",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioBuilder",
+    "test_type": "unit",
+    "test": "cenário mantém company"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioBuilder",
+    "test_type": "unit",
+    "test": "changesApplied registra mudanças"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioBuilder",
+    "test_type": "integration",
+    "test": "cenário criado aparece no comparador"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioBuilder",
+    "test_type": "manual",
+    "test": "fechar um CD e conferir mudança visual"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioBuilder",
+    "test_type": "acceptance",
+    "test": "cenário inválido gera erro claro"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioChangeExplainer",
+    "test_type": "unit",
+    "test": "test_phase3_logic.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioChangeExplainer",
+    "test_type": "integration",
+    "test": "test_phase3_http_server.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioChangeExplainer",
+    "test_type": "manual",
+    "test": "checklist na página /fase-3-cenarios/"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioChangeExplainer",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioComparator",
+    "test_type": "unit",
+    "test": "baseline saving = 0"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioComparator",
+    "test_type": "unit",
+    "test": "cross-company bloqueado"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioComparator",
+    "test_type": "integration",
+    "test": "cenários criados aparecem na tabela"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioComparator",
+    "test_type": "manual",
+    "test": "comparar Base, 3 CDs e ES"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioComparator",
+    "test_type": "acceptance",
+    "test": "saving sempre usa baseline da mesma empresa"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioFlowRebuilder",
+    "test_type": "unit",
+    "test": "test_phase3_logic.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioFlowRebuilder",
+    "test_type": "integration",
+    "test": "test_phase3_http_server.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioFlowRebuilder",
+    "test_type": "manual",
+    "test": "checklist na página /fase-3-cenarios/"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioFlowRebuilder",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioImportExport",
+    "test_type": "unit",
+    "test": "test_phase3_logic.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioImportExport",
+    "test_type": "integration",
+    "test": "test_phase3_http_server.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioImportExport",
+    "test_type": "manual",
+    "test": "checklist na página /fase-3-cenarios/"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioImportExport",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioLibrary",
+    "test_type": "unit",
+    "test": "test_phase3_logic.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioLibrary",
+    "test_type": "integration",
+    "test": "test_phase3_http_server.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioLibrary",
+    "test_type": "manual",
+    "test": "checklist na página /fase-3-cenarios/"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioLibrary",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioPersistence",
+    "test_type": "unit",
+    "test": "salva e carrega por empresa"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioPersistence",
+    "test_type": "unit",
+    "test": "delete remove só o cenário escolhido"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioPersistence",
+    "test_type": "integration",
+    "test": "cenário salvo aparece após reload"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioPersistence",
+    "test_type": "manual",
+    "test": "salvar cenário, recarregar, conferir"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioPersistence",
+    "test_type": "acceptance",
+    "test": "cenários da Empresa 1 não aparecem na Empresa 2"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioQualityCheck",
+    "test_type": "unit",
+    "test": "100% volume em um CD gera alerta"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioQualityCheck",
+    "test_type": "unit",
+    "test": "capacidade acima do limite gera severidade alta"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioQualityCheck",
+    "test_type": "integration",
+    "test": "Comparator mostra qualityScore"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioQualityCheck",
+    "test_type": "manual",
+    "test": "centralizar tudo e conferir alerta"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioQualityCheck",
+    "test_type": "acceptance",
+    "test": "custo baixo não apaga risco alto"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioSimulator",
+    "test_type": "unit",
+    "test": "test_phase3_logic.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioSimulator",
+    "test_type": "integration",
+    "test": "test_phase3_http_server.py"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioSimulator",
+    "test_type": "manual",
+    "test": "checklist na página /fase-3-cenarios/"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioSimulator",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioValidator",
+    "test_type": "unit",
+    "test": "sem CD ativo é inválido"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioValidator",
+    "test_type": "unit",
+    "test": "empresa misturada é inválida"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioValidator",
+    "test_type": "integration",
+    "test": "ScenarioBuilder chama validator antes de salvar"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioValidator",
+    "test_type": "manual",
+    "test": "tentar cenário absurdo e ver bloqueio"
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioValidator",
+    "test_type": "acceptance",
+    "test": "nenhum cenário inválido entra no ranking"
+  },
+  {
+    "phase": 4,
+    "module": "CandidateScenarioGenerator",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "CandidateScenarioGenerator",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "CandidateScenarioGenerator",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "CandidateScenarioGenerator",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "CandidateScenarioGenerator",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "ConstraintEngine",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ConstraintEngine",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ConstraintEngine",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "ConstraintEngine",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "ConstraintEngine",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "MetricNormalizer",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "MetricNormalizer",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "MetricNormalizer",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "MetricNormalizer",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "MetricNormalizer",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveBuilder",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveBuilder",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveBuilder",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveBuilder",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveBuilder",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveProfileLibrary",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveProfileLibrary",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveProfileLibrary",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveProfileLibrary",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveProfileLibrary",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveValidator",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveValidator",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveValidator",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveValidator",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "ObjectiveValidator",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4Dashboard",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4TestPanel",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4TestPanel",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4TestPanel",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4TestPanel",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "Phase4TestPanel",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "RankingExplainer",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "RankingExplainer",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "RankingExplainer",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "RankingExplainer",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "RankingExplainer",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioMetricExtractor",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioMetricExtractor",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioMetricExtractor",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioMetricExtractor",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioMetricExtractor",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioOptimizer",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioScoring",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioScoring",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioScoring",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioScoring",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "ScenarioScoring",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "SearchLogPanel",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "SearchLogPanel",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "SearchLogPanel",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "SearchLogPanel",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "SearchLogPanel",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 4,
+    "module": "TradeoffFrontier",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "TradeoffFrontier",
+    "test_type": "unit",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+  },
+  {
+    "phase": 4,
+    "module": "TradeoffFrontier",
+    "test_type": "integration",
+    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+  },
+  {
+    "phase": 4,
+    "module": "TradeoffFrontier",
+    "test_type": "manual",
+    "test": "checklist na página /fase-4-score-otimizador/"
+  },
+  {
+    "phase": 4,
+    "module": "TradeoffFrontier",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrail",
+    "test_type": "unit",
+    "test": "audit tem empresa, cenário, versão e premissas"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrail",
+    "test_type": "unit",
+    "test": "hash muda quando input muda"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrail",
+    "test_type": "integration",
+    "test": "relatório exporta audit trail"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrail",
+    "test_type": "manual",
+    "test": "abrir JSON de auditoria e conferir fontes"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrail",
+    "test_type": "acceptance",
+    "test": "nenhuma simulação final sem audit trail"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "AuditTrailEngine",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReport",
+    "test_type": "unit",
+    "test": "relatório tem empresa e cenário"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReport",
+    "test_type": "unit",
+    "test": "relatório inclui saving e premissas"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReport",
+    "test_type": "integration",
+    "test": "relatório gera após stress"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReport",
+    "test_type": "manual",
+    "test": "ler relatório e ver se conta a história"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReport",
+    "test_type": "acceptance",
+    "test": "relatório não pode faltar audit trail"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "ExecutiveReportBuilder",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "ExplainabilityEngine",
+    "test_type": "unit",
+    "test": "se armazenagem cai, texto menciona queda"
+  },
+  {
+    "phase": 5,
+    "module": "ExplainabilityEngine",
+    "test_type": "unit",
+    "test": "se risco alto, texto menciona risco"
+  },
+  {
+    "phase": 5,
+    "module": "ExplainabilityEngine",
+    "test_type": "integration",
+    "test": "relatório inclui explicação"
+  },
+  {
+    "phase": 5,
+    "module": "ExplainabilityEngine",
+    "test_type": "manual",
+    "test": "ler explicação e conferir com gráficos"
+  },
+  {
+    "phase": 5,
+    "module": "ExplainabilityEngine",
+    "test_type": "acceptance",
+    "test": "não dizer que é melhor se score/robustez não sustentam"
+  },
+  {
+    "phase": 5,
+    "module": "ExportCenter",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "ExportCenter",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "ExportCenter",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "ExportCenter",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "ExportCenter",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "ExportCenter",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "ExportCenter",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "ExportEngine",
+    "test_type": "unit",
+    "test": "JSON exportado é parseável"
+  },
+  {
+    "phase": 5,
+    "module": "ExportEngine",
+    "test_type": "unit",
+    "test": "CSV contém cabeçalho"
+  },
+  {
+    "phase": 5,
+    "module": "ExportEngine",
+    "test_type": "integration",
+    "test": "botão exportar gera arquivo"
+  },
+  {
+    "phase": 5,
+    "module": "ExportEngine",
+    "test_type": "manual",
+    "test": "baixar arquivo e abrir"
+  },
+  {
+    "phase": 5,
+    "module": "ExportEngine",
+    "test_type": "acceptance",
+    "test": "export não pode sair vazio"
+  },
+  {
+    "phase": 5,
+    "module": "FinalQAChecker",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "FinalQAChecker",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "FinalQAChecker",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "FinalQAChecker",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "FinalQAChecker",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "FinalQAChecker",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "FinalQAChecker",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "FinalScenarioSelector",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "FinalScenarioSelector",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "FinalScenarioSelector",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "FinalScenarioSelector",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "FinalScenarioSelector",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "FinalScenarioSelector",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "FinalScenarioSelector",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5Dashboard",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "Phase5TestPanel",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationEngine",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationPanel",
+    "test_type": "unit",
+    "test": "cenário com score alto e stress ruim recebe ressalva"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationPanel",
+    "test_type": "unit",
+    "test": "sem evidência suficiente => confiança baixa"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationPanel",
+    "test_type": "integration",
+    "test": "recomendação aparece no relatório"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationPanel",
+    "test_type": "manual",
+    "test": "conferir se recomendação não ignora riscos"
+  },
+  {
+    "phase": 5,
+    "module": "RecommendationPanel",
+    "test_type": "acceptance",
+    "test": "recomendação precisa citar caveats quando existirem"
+  },
+  {
+    "phase": 5,
+    "module": "ReleaseValidator",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "ReleaseValidator",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "ReleaseValidator",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "ReleaseValidator",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "ReleaseValidator",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "ReleaseValidator",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "ReleaseValidator",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "RobustnessScorer",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "RobustnessScorer",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "RobustnessScorer",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "RobustnessScorer",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "RobustnessScorer",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "RobustnessScorer",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "RobustnessScorer",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "SensitivityEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "SensitivityEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "SensitivityEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "SensitivityEngine",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "SensitivityEngine",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "SensitivityEngine",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "SensitivityEngine",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "StressCaseLibrary",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "StressCaseLibrary",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
+  },
+  {
+    "phase": 5,
+    "module": "StressCaseLibrary",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
+  },
+  {
+    "phase": 5,
+    "module": "StressCaseLibrary",
+    "test_type": "unit",
+    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+  },
+  {
+    "phase": 5,
+    "module": "StressCaseLibrary",
+    "test_type": "integration",
+    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+  },
+  {
+    "phase": 5,
+    "module": "StressCaseLibrary",
+    "test_type": "manual",
+    "test": "checklist na página /fase-5-entrega-final/"
+  },
+  {
+    "phase": 5,
+    "module": "StressCaseLibrary",
+    "test_type": "acceptance",
+    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+  },
+  {
+    "phase": 5,
+    "module": "StressTestEngine",
+    "test_type": "unit",
+    "test": "frete +20% aumenta transporte"
+  },
+  {
+    "phase": 5,
+    "module": "StressTestEngine",
+    "test_type": "unit",
+    "test": "demanda +15% aumenta volume/custo variável"
+  },
+  {
+    "phase": 5,
+    "module": "StressTestEngine",
+    "test_type": "integration",
+    "test": "stress roda nos top cenários"
+  },
+  {
+    "phase": 5,
+    "module": "StressTestEngine",
+    "test_type": "manual",
+    "test": "rodar stress no cenário vencedor"
+  },
+  {
+    "phase": 5,
+    "module": "StressTestEngine",
+    "test_type": "acceptance",
+    "test": "saving negativo em stress gera alerta"
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "id": "ManualChecklist",
+  "phase": 1,
+  "status": "implemented_phase_1",
+  "page": "/ e /fase-1-validacao/",
+  "purpose": "Permite ao usuário marcar manualmente validações da Fase 1 e salvar o progresso no navegador.",
+  "inputs": {
+    "phase": 1,
+    "checks": [
+      {
+        "id": "empresa1_datasets",
+        "label": "Empresa 1 mostra demanda, distância e premissas"
+      }
+    ]
+  },
+  "outputs": {
+    "completed": 1,
+    "total": 7,
+    "storageKey": "phase1ManualChecklist"
+  },
+  "internal_functions": [
+    [
+      "loadChecklistState(key)",
+      "Lê checks salvos no localStorage."
+    ],
+    [
+      "toggleCheck(checkId)",
+      "Marca/desmarca uma validação."
+    ],
+    [
+      "saveChecklistState(key, state)",
+      "Persiste o progresso localmente."
+    ],
+    [
+      "resetChecklist()",
+      "Limpa o checklist manual."
+    ]
+  ],
+  "external_calls": [],
+  "tests": {
+    "unit": [
+      "toggleCheck alterna boolean",
+      "reset limpa todos"
+    ],
+    "integration": [
+      "estado persiste após reload"
+    ],
+    "manual": [
+      "marcar checklist, recarregar página, conferir permanência"
+    ],
+    "acceptance": [
+      "usuário consegue auditar manualmente a Fase 1 sem abrir código"
+    ]
+  }
+}

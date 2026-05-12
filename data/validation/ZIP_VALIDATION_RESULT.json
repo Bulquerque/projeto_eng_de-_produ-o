@@ -1,0 +1,8 @@
+{
+  "created_at_utc": "2026-05-06T20:11:09.360549+00:00",
+  "zip_file": "visagio_static_simulator_FASE1_ORGANIZADO_v4.zip",
+  "root_folder": "visagio_static_simulator_FASE1_ORGANIZADO_v4",
+  "testzip_bad_file": null,
+  "file_count": 267,
+  "note": "Self-referential ZIP hashes are reported in the chat response, not stored inside this file, because writing the hash into the ZIP changes the ZIP hash."
+}

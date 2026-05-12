@@ -1,0 +1,517 @@
+{
+  "generated_at_utc": "2026-05-07T01:44:50.770164Z",
+  "modules": [
+    {
+      "phase": 1,
+      "module": "AppBootstrap",
+      "page": "/ e /fase-1-validacao/",
+      "implementation": null,
+      "module_docs": "phases/phase-01-*/modules/AppBootstrap/README.md",
+      "status": "implemented_phase_1"
+    },
+    {
+      "phase": 1,
+      "module": "CompanySelector",
+      "page": "/ e /fase-1-validacao/",
+      "implementation": null,
+      "module_docs": "phases/phase-01-*/modules/CompanySelector/README.md",
+      "status": "implemented_phase_1"
+    },
+    {
+      "phase": 1,
+      "module": "DataLoader",
+      "page": "global",
+      "implementation": null,
+      "module_docs": "phases/phase-01-*/modules/DataLoader/README.md",
+      "status": "implemented_phase_1"
+    },
+    {
+      "phase": 1,
+      "module": "DataQualityPanel",
+      "page": "/ e /fase-1-validacao/",
+      "implementation": null,
+      "module_docs": "phases/phase-01-*/modules/DataQualityPanel/README.md",
+      "status": "implemented_phase_1"
+    },
+    {
+      "phase": 1,
+      "module": "DatasetPanel",
+      "page": "/ e /fase-1-validacao/",
+      "implementation": null,
+      "module_docs": "phases/phase-01-*/modules/DatasetPanel/README.md",
+      "status": "implemented_phase_1"
+    },
+    {
+      "phase": 1,
+      "module": "ManualChecklist",
+      "page": "/ e /fase-1-validacao/",
+      "implementation": null,
+      "module_docs": "phases/phase-01-*/modules/ManualChecklist/README.md",
+      "status": "implemented_phase_1"
+    },
+    {
+      "phase": 1,
+      "module": "PathAuditPanel",
+      "page": "/ e /fase-1-validacao/",
+      "implementation": null,
+      "module_docs": "phases/phase-01-*/modules/PathAuditPanel/README.md",
+      "status": "implemented_phase_1"
+    },
+    {
+      "phase": 1,
+      "module": "Phase1TestPanel",
+      "page": "/ e /fase-1-validacao/",
+      "implementation": null,
+      "module_docs": "phases/phase-01-*/modules/Phase1TestPanel/README.md",
+      "status": "implemented_phase_1"
+    },
+    {
+      "phase": 1,
+      "module": "WorkbookInventoryPanel",
+      "page": "/ e /fase-1-validacao/",
+      "implementation": null,
+      "module_docs": "phases/phase-01-*/modules/WorkbookInventoryPanel/README.md",
+      "status": "implemented_phase_1"
+    },
+    {
+      "phase": 2,
+      "module": "BaseFitScore",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/base-fit-score.js",
+      "module_docs": "phases/phase-02-*/modules/BaseFitScore/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 2,
+      "module": "BaselineBuilder",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/baseline-builder.js",
+      "module_docs": "phases/phase-02-*/modules/BaselineBuilder/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 2,
+      "module": "BaselineDashboard",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/baseline-dashboard.js",
+      "module_docs": "phases/phase-02-*/modules/BaselineDashboard/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 2,
+      "module": "BaselineDataAdapter",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/baseline-data-adapter.js",
+      "module_docs": "phases/phase-02-*/modules/BaselineDataAdapter/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 2,
+      "module": "CalibrationPanel",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/calibration-panel.js",
+      "module_docs": "phases/phase-02-*/modules/CalibrationPanel/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 2,
+      "module": "CostEngine",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/cost-engine.js",
+      "module_docs": "phases/phase-02-*/modules/CostEngine/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 2,
+      "module": "DistanceResolver",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/distance-resolver.js",
+      "module_docs": "phases/phase-02-*/modules/DistanceResolver/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 2,
+      "module": "FlowBuilder",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/flow-builder.js",
+      "module_docs": "phases/phase-02-*/modules/FlowBuilder/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 2,
+      "module": "Phase2TestPanel",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/phase2-tests.js",
+      "module_docs": "phases/phase-02-*/modules/Phase2TestPanel/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 2,
+      "module": "ReferenceResultExtractor",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/reference-result-extractor.js",
+      "module_docs": "phases/phase-02-*/modules/ReferenceResultExtractor/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 2,
+      "module": "TaxEngineBasic",
+      "page": "/fase-2-baseline/",
+      "implementation": "assets/js/phase2/tax-engine-basic.js",
+      "module_docs": "phases/phase-02-*/modules/TaxEngineBasic/README.md",
+      "status": "implemented_refactored_polish_v2"
+    },
+    {
+      "phase": 3,
+      "module": "Phase3TestPanel",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/phase3-tests.js",
+      "module_docs": "phases/phase-03-*/modules/Phase3TestPanel/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioArenaDashboard",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-arena-dashboard.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioArenaDashboard/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioBuilder",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-builder.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioBuilder/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioChangeExplainer",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-change-explainer.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioChangeExplainer/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioComparator",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-comparator.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioComparator/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioFlowRebuilder",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-flow-rebuilder.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioFlowRebuilder/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioImportExport",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-import-export.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioImportExport/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioLibrary",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-library.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioLibrary/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioPersistence",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-persistence.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioPersistence/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioQualityCheck",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-quality-check.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioQualityCheck/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioSimulator",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-simulator.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioSimulator/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 3,
+      "module": "ScenarioValidator",
+      "page": "/fase-3-cenarios/",
+      "implementation": "assets/js/phase3/scenario-validator.js",
+      "module_docs": "phases/phase-03-*/modules/ScenarioValidator/README.md",
+      "status": "implemented_phase_3"
+    },
+    {
+      "phase": 4,
+      "module": "CandidateScenarioGenerator",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/candidate-scenario-generator.js",
+      "module_docs": "phases/phase-04-*/modules/CandidateScenarioGenerator/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "ConstraintEngine",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/constraint-engine.js",
+      "module_docs": "phases/phase-04-*/modules/ConstraintEngine/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "MetricNormalizer",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/metric-normalizer.js",
+      "module_docs": "phases/phase-04-*/modules/MetricNormalizer/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "ObjectiveBuilder",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/objective-builder.js",
+      "module_docs": "phases/phase-04-*/modules/ObjectiveBuilder/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "ObjectiveProfileLibrary",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/objective-profile-library.js",
+      "module_docs": "phases/phase-04-*/modules/ObjectiveProfileLibrary/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "ObjectiveValidator",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/objective-validator.js",
+      "module_docs": "phases/phase-04-*/modules/ObjectiveValidator/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "Phase4Dashboard",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/phase4-dashboard.js",
+      "module_docs": "phases/phase-04-*/modules/Phase4Dashboard/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "Phase4TestPanel",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/phase4-tests.js",
+      "module_docs": "phases/phase-04-*/modules/Phase4TestPanel/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "RankingExplainer",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/ranking-explainer.js",
+      "module_docs": "phases/phase-04-*/modules/RankingExplainer/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "ScenarioMetricExtractor",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/scenario-metric-extractor.js",
+      "module_docs": "phases/phase-04-*/modules/ScenarioMetricExtractor/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "ScenarioOptimizer",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/scenario-optimizer.js",
+      "module_docs": "phases/phase-04-*/modules/ScenarioOptimizer/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "ScenarioScoring",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/scenario-scoring.js",
+      "module_docs": "phases/phase-04-*/modules/ScenarioScoring/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "SearchLogPanel",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/search-log-panel.js",
+      "module_docs": "phases/phase-04-*/modules/SearchLogPanel/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 4,
+      "module": "TradeoffFrontier",
+      "page": "/fase-4-score-otimizador/",
+      "implementation": "assets/js/phase4/tradeoff-frontier.js",
+      "module_docs": "phases/phase-04-*/modules/TradeoffFrontier/README.md",
+      "status": "implemented_phase_4"
+    },
+    {
+      "phase": 5,
+      "module": "AuditTrail",
+      "page": "/fase-5-entrega-final e global",
+      "implementation": null,
+      "module_docs": "phases/phase-05-*/modules/AuditTrail/README.md",
+      "status": "planned_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "AuditTrailEngine",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/audit-trail-engine.js",
+      "module_docs": "phases/phase-05-*/modules/AuditTrailEngine/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "ExecutiveReport",
+      "page": "/fase-5-entrega-final",
+      "implementation": null,
+      "module_docs": "phases/phase-05-*/modules/ExecutiveReport/README.md",
+      "status": "planned_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "ExecutiveReportBuilder",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/executive-report-builder.js",
+      "module_docs": "phases/phase-05-*/modules/ExecutiveReportBuilder/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "ExplainabilityEngine",
+      "page": "/fase-5-entrega-final",
+      "implementation": null,
+      "module_docs": "phases/phase-05-*/modules/ExplainabilityEngine/README.md",
+      "status": "planned_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "ExportCenter",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/export-center.js",
+      "module_docs": "phases/phase-05-*/modules/ExportCenter/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "ExportEngine",
+      "page": "/fase-5-entrega-final",
+      "implementation": null,
+      "module_docs": "phases/phase-05-*/modules/ExportEngine/README.md",
+      "status": "planned_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "FinalQAChecker",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/final-qa-checker.js",
+      "module_docs": "phases/phase-05-*/modules/FinalQAChecker/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "FinalScenarioSelector",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/final-scenario-selector.js",
+      "module_docs": "phases/phase-05-*/modules/FinalScenarioSelector/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "Phase5Dashboard",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/phase5-dashboard.js",
+      "module_docs": "phases/phase-05-*/modules/Phase5Dashboard/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "Phase5TestPanel",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/phase5-tests.js",
+      "module_docs": "phases/phase-05-*/modules/Phase5TestPanel/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "RecommendationEngine",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/recommendation-engine.js",
+      "module_docs": "phases/phase-05-*/modules/RecommendationEngine/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "RecommendationPanel",
+      "page": "/fase-5-entrega-final",
+      "implementation": null,
+      "module_docs": "phases/phase-05-*/modules/RecommendationPanel/README.md",
+      "status": "planned_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "ReleaseValidator",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/release-validator.js",
+      "module_docs": "phases/phase-05-*/modules/ReleaseValidator/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "RobustnessScorer",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/robustness-scorer.js",
+      "module_docs": "phases/phase-05-*/modules/RobustnessScorer/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "SensitivityEngine",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/sensitivity-engine.js",
+      "module_docs": "phases/phase-05-*/modules/SensitivityEngine/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "StressCaseLibrary",
+      "page": "/fase-5-entrega-final/",
+      "implementation": "assets/js/phase5/stress-case-library.js",
+      "module_docs": "phases/phase-05-*/modules/StressCaseLibrary/README.md",
+      "status": "implemented_phase_5"
+    },
+    {
+      "phase": 5,
+      "module": "StressTestEngine",
+      "page": "/fase-5-entrega-final",
+      "implementation": null,
+      "module_docs": "phases/phase-05-*/modules/StressTestEngine/README.md",
+      "status": "planned_phase_5"
+    }
+  ]
+}

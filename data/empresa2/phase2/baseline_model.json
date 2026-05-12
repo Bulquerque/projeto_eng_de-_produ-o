@@ -1,0 +1,61 @@
+{
+  "scenario_id": "baseline_empresa2",
+  "scenario_type": "baseline",
+  "company_id": "empresa2",
+  "baseline_ready": true,
+  "baseline_status": "workbook_baseline_reconstructed",
+  "calculation_mode": "scenario_totals_reconstruction_with_raw_evidence",
+  "active_cds": [
+    "Red-RJ",
+    "Red-SP",
+    "Red-ES",
+    "Red-MG"
+  ],
+  "origins": [
+    "RJ / Suelym",
+    "RJ / Terceirista2",
+    "SP / Terceirista1"
+  ],
+  "destinations": [
+    "-",
+    "AC",
+    "AL",
+    "AM",
+    "AP",
+    "BA",
+    "CE",
+    "DF",
+    "ES",
+    "GO",
+    "MA",
+    "MG",
+    "MS",
+    "MT",
+    "PA",
+    "PB",
+    "PE",
+    "PI",
+    "PR",
+    "RJ",
+    "RN",
+    "RO",
+    "RR",
+    "RS",
+    "SC",
+    "SE",
+    "SP",
+    "TO"
+  ],
+  "metadata": {
+    "created_by": "build_phase2_baseline.py",
+    "phase": 2,
+    "generated_at_utc": "2026-05-12T15:31:34.216323+00:00",
+    "methodology": "Cenário 1 da aba Cenários/scenario_totals é o baseline canônico. Abas auxiliares são usadas como evidência operacional, não como solver independente nesta fase."
+  },
+  "warnings": [
+    "Cenário 1 do workbook é a referência canônica para reconstrução nesta fase.",
+    "Sem benchmark independente consolidado no pacote; Base Fit Score fica pendente.",
+    "A aba Cenários é em blocos; usar scenario_blocks/scenario_totals."
+  ],
+  "errors": []
+}

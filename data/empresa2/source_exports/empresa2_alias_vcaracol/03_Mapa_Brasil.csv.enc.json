@@ -1,0 +1,1 @@
+{"version":1,"algorithm":"AES-GCM","kdf":"PBKDF2-SHA-256","iterations":310000,"salt":"Ibt62LeCrPXi8V4l85zKKw==","iv":"PACNzL4QogtuqQLS","aad":"data/empresa2/source_exports/empresa2_alias_vcaracol/03_Mapa_Brasil.csv","ciphertext":"JVRQ3sJm/r5FjeAg5sB64m8HpdKwqBFSgjKQwIu+T0Sgo0kgNg7JgumedPYa5DeEuqiwVNVy+Y768oyu2ZK3m1zmYTPPCrMcWPbEFb+TBMzLNU6y"}

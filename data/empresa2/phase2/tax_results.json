@@ -1,0 +1,56 @@
+{
+  "scenario_id": "baseline_empresa2",
+  "company_id": "empresa2",
+  "tax_results": {
+    "icms_estimated": null,
+    "difal_estimated": null,
+    "total_tax_impact": 26081451.576414526,
+    "tax_effect_from_matrix_raw": 25567543.94315701,
+    "tax_effect_from_matrix": 26081451.57641452,
+    "difference_matrix_vs_scenario_total": -3.725290298461914e-09,
+    "difference_raw_matrix_vs_scenario_total": -513907.6332575157,
+    "workbook_adjustment_factor": 0.010000000000001119,
+    "tax_reconciliation": {
+      "canonical_total": 26081451.576414526,
+      "raw_matrix_total": 25567543.94315701,
+      "matrix_total": 26081451.57641452,
+      "raw_difference": -513907.6332575157,
+      "raw_difference_pct": -1.970395059308136,
+      "difference": -3.725290298461914e-09,
+      "difference_pct": -1.428329357952874e-14,
+      "tolerance_pct": 1.0,
+      "status": "within_tolerance",
+      "warning": null,
+      "adjustment_factor": 0.010000000000001119,
+      "notes": [
+        "A matriz tributária foi conciliada com Δ Faturamento=0.010000000000 conforme a fórmula da aba Cenários."
+      ]
+    }
+  },
+  "tax_reconciliation": {
+    "canonical_total": 26081451.576414526,
+    "raw_matrix_total": 25567543.94315701,
+    "matrix_total": 26081451.57641452,
+    "raw_difference": -513907.6332575157,
+    "raw_difference_pct": -1.970395059308136,
+    "difference": -3.725290298461914e-09,
+    "difference_pct": -1.428329357952874e-14,
+    "tolerance_pct": 1.0,
+    "status": "within_tolerance",
+    "warning": null,
+    "adjustment_factor": 0.010000000000001119,
+    "notes": [
+      "A matriz tributária foi conciliada com Δ Faturamento=0.010000000000 conforme a fórmula da aba Cenários."
+    ]
+  },
+  "tax_coverage": {
+    "flows_with_tax_data": 278,
+    "flows_without_tax_data": 0,
+    "coverage_pct": 100
+  },
+  "warnings": [
+    "TaxEngineBasic usa Efeitos Tributários do Cenário 1 como valor canônico e reconcilia a matriz tributária pela fórmula da aba Cenários.",
+    "A matriz tributária foi conciliada com Δ Faturamento=0.010000000000 conforme a fórmula da aba Cenários."
+  ],
+  "errors": []
+}

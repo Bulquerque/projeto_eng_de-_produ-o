@@ -1,0 +1,1372 @@
+{
+  "generated_at_utc": "2026-05-06T17:32:37.670724+00:00",
+  "package_version": "7.0-phase1-static-ui-implemented",
+  "companies": {
+    "empresa1": {
+      "required_sources": [
+        "Dados de Demanda(3).xlsx",
+        "Dados de Distância(3).xlsx",
+        "Premissas Gerais(4).xlsx"
+      ],
+      "core_files": [
+        {
+          "id": "demand_records",
+          "csv": "data/empresa1/core/demand_records.csv",
+          "json": "data/empresa1/core/demand_records.json",
+          "rows": 60311,
+          "columns": 10,
+          "headers": [
+            "UF",
+            "CENTROIDE",
+            "CODIGO",
+            "CATEGORIA",
+            "SUBCATEGORIA",
+            "FORNECEDOR",
+            "PESO_DEMANDA_KG",
+            "QTD_ITENS_UNID",
+            "FATURAMENTO_MENSAL"
+          ],
+          "description": "Demanda mensal por UF, centroide, SKU/código, categoria, fornecedor, peso, quantidade e faturamento."
+        },
+        {
+          "id": "distance_matrix",
+          "csv": "data/empresa1/core/distance_matrix.csv",
+          "json": "data/empresa1/core/distance_matrix.json",
+          "rows": 576,
+          "columns": 11,
+          "headers": [
+            "UF_ORIGEM",
+            "ORIGEM",
+            "UF_DESTINO",
+            "DESTINO",
+            "Latitude_Origem",
+            "Longitude_Origem",
+            "Latitude_Destino",
+            "Longitude_Destino",
+            "Distancia(KM)",
+            "Frete (R$/Kg)"
+          ],
+          "description": "Matriz origem-destino com UF, centroide/cidade, coordenadas, distância em km e frete R$/kg."
+        },
+        {
+          "id": "premissas",
+          "csv": "data/empresa1/core/premissas.csv",
+          "json": "data/empresa1/core/premissas.json",
+          "rows": 3,
+          "columns": 4,
+          "headers": [
+            "premissa",
+            "valor",
+            "unidade"
+          ],
+          "description": "Premissas gerais do modelo da Empresa 1."
+        },
+        {
+          "id": "demand_summary_by_uf",
+          "json": "data/empresa1/core/demand_summary_by_uf.json",
+          "rows": 21,
+          "description": "Resumo agregado da demanda por UF."
+        },
+        {
+          "id": "network_summary",
+          "json": "data/empresa1/core/network_summary.json",
+          "rows": 52,
+          "description": "Resumo da rede de origens e destinos da Empresa 1."
+        }
+      ]
+    },
+    "empresa2": {
+      "required_sources": [
+        "Analise_Malha_Empresa2(1).xlsx"
+      ],
+      "core_files": [
+        {
+          "id": "faturamento_uf",
+          "sheet": "Faturamento_UF",
+          "csv": "data/empresa2/core/faturamento_uf.csv",
+          "json": "data/empresa2/core/faturamento_uf.json",
+          "rows": 28,
+          "columns": 4,
+          "headers": [
+            "UF",
+            "Méd. Vendas 2025",
+            "Participação UF 2025"
+          ],
+          "description": "Faturamento por UF de destino em 2025."
+        },
+        {
+          "id": "distribuicao_fabrica_cd",
+          "sheet": "Distribuição Fábrica_CD",
+          "csv": "data/empresa2/core/distribuicao_fabrica_cd.csv",
+          "json": "data/empresa2/core/distribuicao_fabrica_cd.json",
+          "rows": 14,
+          "columns": 10,
+          "headers": [
+            "Origem",
+            "Origem UF",
+            "Destino",
+            "Destino UF",
+            "Quantidade",
+            "Batelada",
+            "$",
+            "% Qtd",
+            "% Batelada"
+          ],
+          "description": "Fluxos de fábrica/terceirista para CDs."
+        },
+        {
+          "id": "faturamento_filial_uf",
+          "sheet": "Faturamento por Filial x UF",
+          "csv": "data/empresa2/core/faturamento_filial_uf.csv",
+          "json": "data/empresa2/core/faturamento_filial_uf.json",
+          "rows": 168,
+          "columns": 5,
+          "headers": [
+            "Filial Origem",
+            "UF Destino",
+            "Faturamento 2025",
+            "%"
+          ],
+          "description": "Faturamento por filial origem e UF destino."
+        },
+        {
+          "id": "tabela_logistica",
+          "sheet": "Tabela Logística",
+          "csv": "data/empresa2/core/tabela_logistica.csv",
+          "json": "data/empresa2/core/tabela_logistica.json",
+          "rows": 159,
+          "columns": 17,
+          "headers": [
+            "CÓDIGO",
+            "DESCRIÇÃO",
+            "ML/G",
+            "CX",
+            "CAIXA (CxLxA)",
+            "PESO CX (kg)",
+            "NCM",
+            "CEST",
+            "EAN13",
+            "DUN14",
+            "N º DE PROCESSO",
+            "P.Líq. (g)",
+            "P.Brt. (g)",
+            "Alt.",
+            "Larg.",
+            "Compr."
+          ],
+          "description": "Cadastro logístico/fiscal de produtos."
+        },
+        {
+          "id": "parametros",
+          "sheet": "Parâmetros",
+          "csv": "data/empresa2/core/parametros.csv",
+          "json": "data/empresa2/core/parametros.json",
+          "rows": 14,
+          "columns": 4,
+          "headers": [
+            "Parâmetro",
+            "Valor",
+            "col_D"
+          ],
+          "description": "Parâmetros gerais do modelo da Empresa 2."
+        },
+        {
+          "id": "cenarios",
+          "sheet": "Cenários",
+          "csv": "data/empresa2/core/cenarios.csv",
+          "json": "data/empresa2/core/cenarios.json",
+          "rows": 25,
+          "columns": 11,
+          "headers": [
+            "Cenário 1",
+            "4 CDs",
+            "col_C",
+            "col_D",
+            "col_E",
+            "col_F",
+            "col_G",
+            "col_H",
+            "Sim",
+            "col_J"
+          ],
+          "description": "Resultados e decomposição de cenários do workbook."
+        },
+        {
+          "id": "dados_tributario",
+          "sheet": "Dados_Tributário",
+          "csv": "data/empresa2/core/dados_tributario.csv",
+          "json": "data/empresa2/core/dados_tributario.json",
+          "rows": 556,
+          "columns": 41,
+          "headers": [
+            "# Cenário",
+            "Categoria NCM",
+            "Tipo Emissão",
+            "UF Origem",
+            "Filial Origem",
+            "UF Destino",
+            "Vlr. Total SD2",
+            "Vlr ST Ext - Original",
+            "Vlr ST - Original",
+            "Vlr PIS - Original",
+            "Vlr COFINS - Original",
+            "Vlr IPI - Original",
+            "Vlr ICMS - Original",
+            "Vlr FCP - Original",
+            "Alq ST Ext - Original",
+            "Alq ST - Original",
+            "Alq PIS - Original",
+            "Alq COFINS - Original",
+            "Alq IPI - Original",
+            "Alq ICMS - Original",
+            "Alq FCP - Original",
+            "Receita Líquida",
+            "Alq ST Ext - Cenário",
+            "Alq FCP - Cenário",
+            "Alq ICMS - Cenário",
+            "Alq IPI - Cenário",
+            "Alq COFINS - Cenário",
+            "Alq PIS - Cenário",
+            "Alq ST - Cenário",
+            "Vlr ST Ext - Cenário",
+            "Vlr FCP - Cenário",
+            "Vlr ICMS - Cenário",
+            "Vlr IPI - Cenário",
+            "Vlr COFINS - Cenário",
+            "Vlr PIS - Cenário",
+            "Vlr ST - Cenário",
+            "Efeitos Débitos",
+            "Efeitos Créditos",
+            "Alq ICMS Efetiva",
+            "Alq Outros Efetiva"
+          ],
+          "description": "Matriz tributária e decomposição de impostos."
+        },
+        {
+          "id": "estoque",
+          "sheet": "Estoque",
+          "csv": "data/empresa2/core/estoque.csv",
+          "json": "data/empresa2/core/estoque.json",
+          "rows": 633,
+          "columns": 21,
+          "headers": [
+            "col_A",
+            "col_B",
+            "col_C",
+            "col_D",
+            "col_E",
+            "col_F",
+            "col_G",
+            "col_H",
+            "col_I",
+            "col_J",
+            "col_K",
+            "col_L",
+            "col_M",
+            "col_N",
+            "col_O",
+            "col_P",
+            "col_Q",
+            "col_R",
+            "col_S",
+            "col_T"
+          ],
+          "description": "Estoque médio por filial/produto."
+        },
+        {
+          "id": "dados_roteamento",
+          "sheet": "Dados_Roteamento",
+          "csv": "data/empresa2/core/dados_roteamento.csv",
+          "json": "data/empresa2/core/dados_roteamento.json",
+          "rows": 18,
+          "columns": 15,
+          "headers": [
+            "Indústria",
+            "CD",
+            "Destino",
+            "Observação",
+            "Rota + Obs",
+            "Participação Rota Hoje",
+            "Frete Transferência",
+            "Custo Armazenagem",
+            "Frete Distribuição",
+            "Custo Logístico",
+            "ICMS",
+            "Outros Tributos",
+            "Efeitos Tributários",
+            "Impacto total"
+          ],
+          "description": "Dados de apoio de roteamento."
+        },
+        {
+          "id": "tabelas_cif_dist",
+          "sheet": "Tabelas_CIF_Dist",
+          "csv": "data/empresa2/core/tabelas_cif_dist.csv",
+          "json": "data/empresa2/core/tabelas_cif_dist.json",
+          "rows": 61,
+          "columns": 13,
+          "headers": [
+            "Origem",
+            "UF",
+            "Destino",
+            "Até 10kg",
+            "10 a 20kg",
+            "20 a 30kg",
+            "30 a 50kg",
+            "50 a 70kg",
+            "70 a 100kg",
+            "Acima 100kg (R$/kg)",
+            "Frete Valor (Decimal)",
+            "col_L"
+          ],
+          "description": "Tabelas CIF de distribuição."
+        },
+        {
+          "id": "aux_custo_transferencia",
+          "sheet": "Aux_Custo_Transferência",
+          "csv": "data/empresa2/core/aux_custo_transferencia.csv",
+          "json": "data/empresa2/core/aux_custo_transferencia.json",
+          "rows": 192,
+          "columns": 15,
+          "headers": [
+            "DATA",
+            "NF",
+            "ORIGEM",
+            "ORIGEM UF",
+            "CLIENTE",
+            "DESTINO UF",
+            "VOLUME",
+            "PESO",
+            "VALOR NOTA",
+            "FRETE VALOR",
+            "FRETE %",
+            "TRANSPORTADORA",
+            "CONFERENCIA DE FRETE",
+            "OBS."
+          ],
+          "description": "Base auxiliar de custo de transferência."
+        },
+        {
+          "id": "aux_custo_armazenagem",
+          "sheet": "Aux_Custo_Armaz",
+          "csv": "data/empresa2/core/aux_custo_armazenagem.csv",
+          "json": "data/empresa2/core/aux_custo_armazenagem.json",
+          "rows": 67,
+          "columns": 12,
+          "headers": [
+            "Filial",
+            "Cód Filial",
+            "Itens",
+            "Tipo",
+            "Tarifas",
+            "UN",
+            "Qtd. Setembro",
+            "Qtd. Outubro",
+            "Qtd. Novembro",
+            "Qtd. Média 3M",
+            "Custo"
+          ],
+          "description": "Base auxiliar de custo de armazenagem."
+        },
+        {
+          "id": "aux_custo_distribuicao",
+          "sheet": "Aux_ Custo_Distribuição",
+          "csv": "data/empresa2/core/aux_custo_distribuicao.csv",
+          "json": "data/empresa2/core/aux_custo_distribuicao.json",
+          "rows": 11445,
+          "columns": 39,
+          "headers": [
+            "FILIAL",
+            "PEDIDO",
+            "INTEGRAÇÃO",
+            "DATA WMS",
+            "NF",
+            "CLIENTE",
+            "UF",
+            "MUNICIPIO",
+            "REGIÕES",
+            "VOLUME",
+            "PESO",
+            "VALOR NOTA",
+            "CTE",
+            "NFs",
+            "FRETE VALOR",
+            "FRETE %",
+            "TDE",
+            "AG",
+            "TDA",
+            "CARRO DEDICADO",
+            "REENTREGA",
+            "DEVOLUÇÃO",
+            "TAXA PALETIZAÇÃO",
+            "%",
+            "CONFERENCIA  DE FRETE",
+            "TRANSPORTADORA",
+            "PEDIDO/NF EXPEDIDO",
+            "PREVISÃO NF",
+            "PEDIDO/NF ENTREGUE",
+            "TEMPO REAL DA ENTREGA(DIAS)",
+            "Lead Time Entrega",
+            "OCOCRENCIA FALTA",
+            "OCORRENCIA AVARIA",
+            "OBS.",
+            "STATUS",
+            "SLA",
+            "Lead Time (Dias)",
+            "OBS"
+          ],
+          "description": "Base auxiliar de custo de distribuição e SLA."
+        },
+        {
+          "id": "lat_long",
+          "sheet": "Lat & Long",
+          "csv": "data/empresa2/core/lat_long.csv",
+          "json": "data/empresa2/core/lat_long.json",
+          "rows": 16,
+          "columns": 5,
+          "headers": [
+            "UF",
+            "Cidade",
+            "Lat",
+            "Long"
+          ],
+          "description": "Coordenadas de UFs/cidades."
+        },
+        {
+          "id": "rotas_mapa",
+          "sheet": "Rotas_Mapa",
+          "csv": "data/empresa2/core/rotas_mapa.csv",
+          "json": "data/empresa2/core/rotas_mapa.json",
+          "rows": 30,
+          "columns": 8,
+          "headers": [
+            "Cidade origem",
+            "Cidade Destino",
+            "Rota",
+            "Cenário",
+            "col_E",
+            "Cidade origem_2",
+            "Cidade Destino_2"
+          ],
+          "description": "Rotas para mapa."
+        },
+        {
+          "id": "scenario_totals",
+          "json": "data/empresa2/core/scenario_totals.json",
+          "rows": 3,
+          "description": "Linhas Total dos cenários extraídas da aba Cenários.",
+          "csv": "data/empresa2/core/scenario_totals.csv"
+        },
+        {
+          "id": "scenario_blocks",
+          "json": "data/empresa2/core/scenario_blocks.json",
+          "rows": 3,
+          "description": "Blocos estruturados da aba Cenários."
+        }
+      ]
+    }
+  },
+  "workbooks": [
+    {
+      "file": "Dados de Demanda(3).xlsx",
+      "size_bytes": 4632746,
+      "sha256": "df6c3c49f83f54366f9b6148218d402d91ea6658e99d268b9b973b38e31e71f4",
+      "valid_zip": true,
+      "sheets": [
+        {
+          "name": "Planilha1",
+          "dimension": "A1:K60318",
+          "rows_with_cells": 60312,
+          "max_excel_row": 60318,
+          "max_col": 11,
+          "cells": 542785,
+          "formulas": 3
+        }
+      ],
+      "source_id": "empresa1_demanda"
+    },
+    {
+      "file": "Dados de Distância(3).xlsx",
+      "size_bytes": 47817,
+      "sha256": "dbc50759ff41970f042a4d30c7889399c230606fa6c43b1b569e8f20a2438ad8",
+      "valid_zip": true,
+      "sheets": [
+        {
+          "name": "Sheet1",
+          "dimension": "A1:J577",
+          "rows_with_cells": 577,
+          "max_excel_row": 577,
+          "max_col": 10,
+          "cells": 5770,
+          "formulas": 576
+        }
+      ],
+      "source_id": "empresa1_distancias"
+    },
+    {
+      "file": "Premissas Gerais(4).xlsx",
+      "size_bytes": 8723,
+      "sha256": "5123df4cb2886d718c4e05b2a30183177ca6c24edd7c642a5472db4b6b7a74a7",
+      "valid_zip": true,
+      "sheets": [
+        {
+          "name": "Planilha1",
+          "dimension": "A1:C7",
+          "rows_with_cells": 4,
+          "max_excel_row": 7,
+          "max_col": 3,
+          "cells": 9,
+          "formulas": 0
+        }
+      ],
+      "source_id": "empresa1_premissas"
+    },
+    {
+      "file": "Analise_Malha_Empresa2(1).xlsx",
+      "size_bytes": 5106541,
+      "sha256": "95ecd04ed818ae0e25ea99ad28785c3f033ba1678d00cc55c1ff12e221b1709f",
+      "valid_zip": true,
+      "sheets": [
+        {
+          "name": "Início",
+          "dimension": "A1:I20",
+          "rows_with_cells": 18,
+          "max_excel_row": 20,
+          "max_col": 9,
+          "cells": 90,
+          "formulas": 0
+        },
+        {
+          "name": "Parâmetros",
+          "dimension": "B1:E39",
+          "rows_with_cells": 27,
+          "max_excel_row": 30,
+          "max_col": 5,
+          "cells": 52,
+          "formulas": 6
+        },
+        {
+          "name": "Mapa Brasil",
+          "dimension": "A1:B6",
+          "rows_with_cells": 4,
+          "max_excel_row": 6,
+          "max_col": 2,
+          "cells": 6,
+          "formulas": 0
+        },
+        {
+          "name": "Cenários",
+          "dimension": "A1:T42",
+          "rows_with_cells": 33,
+          "max_excel_row": 42,
+          "max_col": 20,
+          "cells": 244,
+          "formulas": 104
+        },
+        {
+          "name": "Sensibilidade 1",
+          "dimension": "B1:R20",
+          "rows_with_cells": 16,
+          "max_excel_row": 20,
+          "max_col": 18,
+          "cells": 108,
+          "formulas": 3
+        },
+        {
+          "name": "Sensibilidade 2",
+          "dimension": "B1:K21",
+          "rows_with_cells": 18,
+          "max_excel_row": 21,
+          "max_col": 11,
+          "cells": 106,
+          "formulas": 6
+        },
+        {
+          "name": "Roteamento",
+          "dimension": "B1:K30",
+          "rows_with_cells": 22,
+          "max_excel_row": 30,
+          "max_col": 11,
+          "cells": 103,
+          "formulas": 0
+        },
+        {
+          "name": "Dados_OPLs",
+          "dimension": "A1:S164",
+          "rows_with_cells": 163,
+          "max_excel_row": 164,
+          "max_col": 19,
+          "cells": 1412,
+          "formulas": 326
+        },
+        {
+          "name": "Dados_Tributário",
+          "dimension": "A1:AN562",
+          "rows_with_cells": 562,
+          "max_excel_row": 562,
+          "max_col": 40,
+          "cells": 22396,
+          "formulas": 14456
+        },
+        {
+          "name": "Dados_Roteamento",
+          "dimension": "A1:N23",
+          "rows_with_cells": 22,
+          "max_excel_row": 23,
+          "max_col": 14,
+          "cells": 272,
+          "formulas": 180
+        },
+        {
+          "name": "Tabelas_CIF_Dist",
+          "dimension": "A1:L72",
+          "rows_with_cells": 63,
+          "max_excel_row": 72,
+          "max_col": 12,
+          "cells": 605,
+          "formulas": 60
+        },
+        {
+          "name": "Aux_ Custo_Distribuição",
+          "dimension": "A2:AM1041182",
+          "rows_with_cells": 11736,
+          "max_excel_row": 1041182,
+          "max_col": 39,
+          "cells": 307221,
+          "formulas": 0
+        },
+        {
+          "name": "TB_Distribuição",
+          "dimension": "A3:AG72",
+          "rows_with_cells": 67,
+          "max_excel_row": 72,
+          "max_col": 33,
+          "cells": 738,
+          "formulas": 3
+        },
+        {
+          "name": "Aux_Custo_Transferência",
+          "dimension": "A1:N193",
+          "rows_with_cells": 193,
+          "max_excel_row": 193,
+          "max_col": 14,
+          "cells": 2702,
+          "formulas": 112
+        },
+        {
+          "name": "TB_Transferência",
+          "dimension": "A1:M49",
+          "rows_with_cells": 44,
+          "max_excel_row": 49,
+          "max_col": 13,
+          "cells": 230,
+          "formulas": 1
+        },
+        {
+          "name": "Aux_Custo_Armaz",
+          "dimension": "A1:K72",
+          "rows_with_cells": 70,
+          "max_excel_row": 72,
+          "max_col": 11,
+          "cells": 750,
+          "formulas": 134
+        },
+        {
+          "name": "Dados_Brasil",
+          "dimension": "A1:F24",
+          "rows_with_cells": 21,
+          "max_excel_row": 24,
+          "max_col": 6,
+          "cells": 116,
+          "formulas": 108
+        },
+        {
+          "name": "Lat & Long",
+          "dimension": "A1:D21",
+          "rows_with_cells": 19,
+          "max_excel_row": 21,
+          "max_col": 4,
+          "cells": 70,
+          "formulas": 0
+        },
+        {
+          "name": "Rotas_Mapa",
+          "dimension": "A1:G35",
+          "rows_with_cells": 33,
+          "max_excel_row": 35,
+          "max_col": 7,
+          "cells": 169,
+          "formulas": 0
+        },
+        {
+          "name": "SD2_Atualizar",
+          "dimension": "A1:K59433",
+          "rows_with_cells": 59432,
+          "max_excel_row": 59433,
+          "max_col": 11,
+          "cells": 475749,
+          "formulas": 1
+        },
+        {
+          "name": "Estoque",
+          "dimension": "A1:T636",
+          "rows_with_cells": 635,
+          "max_excel_row": 636,
+          "max_col": 20,
+          "cells": 6356,
+          "formulas": 1264
+        },
+        {
+          "name": "Faturamento_UF",
+          "dimension": "A1:C30",
+          "rows_with_cells": 30,
+          "max_excel_row": 30,
+          "max_col": 3,
+          "cells": 88,
+          "formulas": 0
+        },
+        {
+          "name": "Distribuição Fábrica_CD",
+          "dimension": "A1:I16",
+          "rows_with_cells": 16,
+          "max_excel_row": 16,
+          "max_col": 9,
+          "cells": 136,
+          "formulas": 28
+        },
+        {
+          "name": "Faturamento por Filial x UF",
+          "dimension": "A1:D170",
+          "rows_with_cells": 170,
+          "max_excel_row": 170,
+          "max_col": 4,
+          "cells": 677,
+          "formulas": 0
+        },
+        {
+          "name": "Tabela Logística",
+          "dimension": "A1:P160",
+          "rows_with_cells": 160,
+          "max_excel_row": 160,
+          "max_col": 16,
+          "cells": 2560,
+          "formulas": 0
+        }
+      ],
+      "source_id": "empresa2_malha"
+    },
+    {
+      "file": "Análise Malha Logística - vCaracol(3).xlsx",
+      "size_bytes": 5106541,
+      "sha256": "95ecd04ed818ae0e25ea99ad28785c3f033ba1678d00cc55c1ff12e221b1709f",
+      "valid_zip": true,
+      "sheets": [
+        {
+          "name": "Início",
+          "dimension": "A1:I20",
+          "rows_with_cells": 18,
+          "max_excel_row": 20,
+          "max_col": 9,
+          "cells": 90,
+          "formulas": 0
+        },
+        {
+          "name": "Parâmetros",
+          "dimension": "B1:E39",
+          "rows_with_cells": 27,
+          "max_excel_row": 30,
+          "max_col": 5,
+          "cells": 52,
+          "formulas": 6
+        },
+        {
+          "name": "Mapa Brasil",
+          "dimension": "A1:B6",
+          "rows_with_cells": 4,
+          "max_excel_row": 6,
+          "max_col": 2,
+          "cells": 6,
+          "formulas": 0
+        },
+        {
+          "name": "Cenários",
+          "dimension": "A1:T42",
+          "rows_with_cells": 33,
+          "max_excel_row": 42,
+          "max_col": 20,
+          "cells": 244,
+          "formulas": 104
+        },
+        {
+          "name": "Sensibilidade 1",
+          "dimension": "B1:R20",
+          "rows_with_cells": 16,
+          "max_excel_row": 20,
+          "max_col": 18,
+          "cells": 108,
+          "formulas": 3
+        },
+        {
+          "name": "Sensibilidade 2",
+          "dimension": "B1:K21",
+          "rows_with_cells": 18,
+          "max_excel_row": 21,
+          "max_col": 11,
+          "cells": 106,
+          "formulas": 6
+        },
+        {
+          "name": "Roteamento",
+          "dimension": "B1:K30",
+          "rows_with_cells": 22,
+          "max_excel_row": 30,
+          "max_col": 11,
+          "cells": 103,
+          "formulas": 0
+        },
+        {
+          "name": "Dados_OPLs",
+          "dimension": "A1:S164",
+          "rows_with_cells": 163,
+          "max_excel_row": 164,
+          "max_col": 19,
+          "cells": 1412,
+          "formulas": 326
+        },
+        {
+          "name": "Dados_Tributário",
+          "dimension": "A1:AN562",
+          "rows_with_cells": 562,
+          "max_excel_row": 562,
+          "max_col": 40,
+          "cells": 22396,
+          "formulas": 14456
+        },
+        {
+          "name": "Dados_Roteamento",
+          "dimension": "A1:N23",
+          "rows_with_cells": 22,
+          "max_excel_row": 23,
+          "max_col": 14,
+          "cells": 272,
+          "formulas": 180
+        },
+        {
+          "name": "Tabelas_CIF_Dist",
+          "dimension": "A1:L72",
+          "rows_with_cells": 63,
+          "max_excel_row": 72,
+          "max_col": 12,
+          "cells": 605,
+          "formulas": 60
+        },
+        {
+          "name": "Aux_ Custo_Distribuição",
+          "dimension": "A2:AM1041182",
+          "rows_with_cells": 11736,
+          "max_excel_row": 1041182,
+          "max_col": 39,
+          "cells": 307221,
+          "formulas": 0
+        },
+        {
+          "name": "TB_Distribuição",
+          "dimension": "A3:AG72",
+          "rows_with_cells": 67,
+          "max_excel_row": 72,
+          "max_col": 33,
+          "cells": 738,
+          "formulas": 3
+        },
+        {
+          "name": "Aux_Custo_Transferência",
+          "dimension": "A1:N193",
+          "rows_with_cells": 193,
+          "max_excel_row": 193,
+          "max_col": 14,
+          "cells": 2702,
+          "formulas": 112
+        },
+        {
+          "name": "TB_Transferência",
+          "dimension": "A1:M49",
+          "rows_with_cells": 44,
+          "max_excel_row": 49,
+          "max_col": 13,
+          "cells": 230,
+          "formulas": 1
+        },
+        {
+          "name": "Aux_Custo_Armaz",
+          "dimension": "A1:K72",
+          "rows_with_cells": 70,
+          "max_excel_row": 72,
+          "max_col": 11,
+          "cells": 750,
+          "formulas": 134
+        },
+        {
+          "name": "Dados_Brasil",
+          "dimension": "A1:F24",
+          "rows_with_cells": 21,
+          "max_excel_row": 24,
+          "max_col": 6,
+          "cells": 116,
+          "formulas": 108
+        },
+        {
+          "name": "Lat & Long",
+          "dimension": "A1:D21",
+          "rows_with_cells": 19,
+          "max_excel_row": 21,
+          "max_col": 4,
+          "cells": 70,
+          "formulas": 0
+        },
+        {
+          "name": "Rotas_Mapa",
+          "dimension": "A1:G35",
+          "rows_with_cells": 33,
+          "max_excel_row": 35,
+          "max_col": 7,
+          "cells": 169,
+          "formulas": 0
+        },
+        {
+          "name": "SD2_Atualizar",
+          "dimension": "A1:K59433",
+          "rows_with_cells": 59432,
+          "max_excel_row": 59433,
+          "max_col": 11,
+          "cells": 475749,
+          "formulas": 1
+        },
+        {
+          "name": "Estoque",
+          "dimension": "A1:T636",
+          "rows_with_cells": 635,
+          "max_excel_row": 636,
+          "max_col": 20,
+          "cells": 6356,
+          "formulas": 1264
+        },
+        {
+          "name": "Faturamento_UF",
+          "dimension": "A1:C30",
+          "rows_with_cells": 30,
+          "max_excel_row": 30,
+          "max_col": 3,
+          "cells": 88,
+          "formulas": 0
+        },
+        {
+          "name": "Distribuição Fábrica_CD",
+          "dimension": "A1:I16",
+          "rows_with_cells": 16,
+          "max_excel_row": 16,
+          "max_col": 9,
+          "cells": 136,
+          "formulas": 28
+        },
+        {
+          "name": "Faturamento por Filial x UF",
+          "dimension": "A1:D170",
+          "rows_with_cells": 170,
+          "max_excel_row": 170,
+          "max_col": 4,
+          "cells": 677,
+          "formulas": 0
+        },
+        {
+          "name": "Tabela Logística",
+          "dimension": "A1:P160",
+          "rows_with_cells": 160,
+          "max_excel_row": 160,
+          "max_col": 16,
+          "cells": 2560,
+          "formulas": 0
+        }
+      ],
+      "source_id": "empresa2_malha_vcaracol_referencia"
+    }
+  ],
+  "source_manifest": [
+    {
+      "id": "empresa1_demanda",
+      "filename": "Dados de Demanda(3).xlsx",
+      "package_path": "references/raw_sources/Dados de Demanda(3).xlsx",
+      "size_bytes": 4632746,
+      "sha256": "df6c3c49f83f54366f9b6148218d402d91ea6658e99d268b9b973b38e31e71f4",
+      "zip_valid": null
+    },
+    {
+      "id": "empresa1_distancias",
+      "filename": "Dados de Distância(3).xlsx",
+      "package_path": "references/raw_sources/Dados de Distância(3).xlsx",
+      "size_bytes": 47817,
+      "sha256": "dbc50759ff41970f042a4d30c7889399c230606fa6c43b1b569e8f20a2438ad8",
+      "zip_valid": null
+    },
+    {
+      "id": "empresa1_premissas",
+      "filename": "Premissas Gerais(4).xlsx",
+      "package_path": "references/raw_sources/Premissas Gerais(4).xlsx",
+      "size_bytes": 8723,
+      "sha256": "5123df4cb2886d718c4e05b2a30183177ca6c24edd7c642a5472db4b6b7a74a7",
+      "zip_valid": null
+    },
+    {
+      "id": "empresa2_malha",
+      "filename": "Analise_Malha_Empresa2(1).xlsx",
+      "package_path": "references/raw_sources/Analise_Malha_Empresa2(1).xlsx",
+      "size_bytes": 5106541,
+      "sha256": "95ecd04ed818ae0e25ea99ad28785c3f033ba1678d00cc55c1ff12e221b1709f",
+      "zip_valid": null
+    },
+    {
+      "id": "empresa2_malha_vcaracol_referencia",
+      "filename": "Análise Malha Logística - vCaracol(3).xlsx",
+      "package_path": "references/raw_sources/Análise Malha Logística - vCaracol(3).xlsx",
+      "size_bytes": 5106541,
+      "sha256": "95ecd04ed818ae0e25ea99ad28785c3f033ba1678d00cc55c1ff12e221b1709f",
+      "zip_valid": null
+    },
+    {
+      "id": "icms_216",
+      "filename": "icms_216_linhas.csv",
+      "package_path": "references/raw_sources/icms_216_linhas.csv",
+      "size_bytes": 23689,
+      "sha256": "03ea1c20709fc98e7ba3329f5a88c774fe24e44207676eb274910be486dcbbd4",
+      "zip_valid": null
+    },
+    {
+      "id": "capstone_pdf",
+      "filename": "PUC-Rio EP Capstone - Desafio Visagio Malha Logística com RefTrib(1).pdf",
+      "package_path": "references/raw_sources/PUC-Rio EP Capstone - Desafio Visagio Malha Logística com RefTrib(1).pdf",
+      "size_bytes": 3921250,
+      "sha256": "b2dff5359b68733764ed3f67efc2e0ff011e60c95922c23c350ede71aeb8b1c1",
+      "zip_valid": null
+    },
+    {
+      "id": "icms_resumo_pdf",
+      "filename": "me ajuda com uma dúvida resumo do ICMS atual brasi.pdf",
+      "package_path": "references/raw_sources/me ajuda com uma dúvida resumo do ICMS atual brasi.pdf",
+      "size_bytes": 537186,
+      "sha256": "332efd6be0e6a5a15eea75e3693884a9a89100b69a1c5b38d98023ada0606aac",
+      "zip_valid": null
+    },
+    {
+      "id": "mapa_analise",
+      "filename": "mapa_analise_exploratoria.md",
+      "package_path": "references/raw_sources/mapa_analise_exploratoria.md",
+      "size_bytes": 7982,
+      "sha256": "2281342e1b23925e53ceae87861cdc6c4edc6e5886f4ebe77e3a308a58b25f80",
+      "zip_valid": null
+    },
+    {
+      "id": "notas_reuniao",
+      "filename": "notas_reuniao.md",
+      "package_path": "references/raw_sources/notas_reuniao.md",
+      "size_bytes": 1079,
+      "sha256": "7207f72e7e3ce0ce3dfb663eeabc086869eba6405f888d2cd24e7977a72c19f3",
+      "zip_valid": null
+    },
+    {
+      "id": "observacoes",
+      "filename": "observacoes.md",
+      "package_path": "references/raw_sources/observacoes.md",
+      "size_bytes": 752,
+      "sha256": "ce1ab05b05cb57a1809c7e1c6e4410a26ae49f0474dc0fa4f48ec8d9221d0aa1",
+      "zip_valid": null
+    },
+    {
+      "id": "deepresearch_visagiana",
+      "filename": "DeepResearch Visagiana.pdf",
+      "package_path": "references/raw_sources/DeepResearch Visagiana.pdf",
+      "size_bytes": 125753,
+      "sha256": "355b2a98d11b123bc71a6a872e8f0a3cad4bf89a116b18174a8af097d393ac45",
+      "zip_valid": null
+    },
+    {
+      "id": "perpl_v1",
+      "filename": "perpl deep research estrutura trubutaria_empresa de (shampoo e cremes de - v1.pdf",
+      "package_path": "references/raw_sources/perpl deep research estrutura trubutaria_empresa de (shampoo e cremes de - v1.pdf",
+      "size_bytes": 947082,
+      "sha256": "d4b0e8c6b51dd8646c438efaa5478465126ba114f75f2a60147f7b38360df06a",
+      "zip_valid": null
+    },
+    {
+      "id": "perpl_v2_compete",
+      "filename": "perpl deep research estrutura trubutaria_empresa de (shampoo e cremes  - v2 COMPETE.pdf",
+      "package_path": "references/raw_sources/perpl deep research estrutura trubutaria_empresa de (shampoo e cremes  - v2 COMPETE.pdf",
+      "size_bytes": 727100,
+      "sha256": "4a0008898de605b0a16c5d8593afa85b589740f87a05d6b42eaf07f0b0d98744",
+      "zip_valid": null
+    },
+    {
+      "id": "perpl_v3_sem_efeito",
+      "filename": "perpl deep research estrutura trubutaria_empresa de (shampoo e cremes  - v3 SEM EFEITO TRIBUTARIO.pdf",
+      "package_path": "references/raw_sources/perpl deep research estrutura trubutaria_empresa de (shampoo e cremes  - v3 SEM EFEITO TRIBUTARIO.pdf",
+      "size_bytes": 723218,
+      "sha256": "14b517ac99a3f3797612582156d55064c9136ee7a2434c2b40299b48e4fceeb8",
+      "zip_valid": null
+    },
+    {
+      "id": "refs_visagio_pptx",
+      "filename": "202509_RefsVisagio_Apoio Malha Log com efeito tributário.pptx",
+      "package_path": "references/raw_sources/202509_RefsVisagio_Apoio Malha Log com efeito tributário.pptx",
+      "size_bytes": 44316082,
+      "sha256": "c90266741133111ec663a6f44d4d9537bfdc322e0b6d7a908f84f730d0fbaca0",
+      "zip_valid": null
+    },
+    {
+      "id": "icms_resumo_zip",
+      "filename": "ICMS Resumo.zip",
+      "package_path": "references/raw_sources/ICMS Resumo.zip",
+      "size_bytes": 326297,
+      "sha256": "bc5c96c2eeab6b22c24b50f6a89ab6b78afeba7cd7f1d08035f18eb12bfb2ddf",
+      "zip_valid": true
+    },
+    {
+      "id": "tributario_genais_zip",
+      "filename": "Tributário e GenAIs.zip",
+      "package_path": "references/raw_sources/Tributário e GenAIs.zip",
+      "size_bytes": 1493728,
+      "sha256": "1697410129a45c0c1dc6edd761b23fc1f5a04f3a590126301a28d9ab9ab578bf",
+      "zip_valid": true
+    }
+  ],
+  "exports": [
+    {
+      "source_id": "empresa1_demanda",
+      "sheet": "Planilha1",
+      "kind": "raw_csv",
+      "rows": 60312,
+      "columns": 12,
+      "path": "data/empresa1/raw_exports/Planilha1.csv"
+    },
+    {
+      "source_id": "empresa1_distancias",
+      "sheet": "Sheet1",
+      "kind": "raw_csv",
+      "rows": 577,
+      "columns": 11,
+      "path": "data/empresa1/raw_exports/Sheet1.csv"
+    },
+    {
+      "source_id": "empresa1_premissas",
+      "sheet": "Planilha1",
+      "kind": "raw_csv",
+      "rows": 4,
+      "columns": 4,
+      "path": "data/empresa1/raw_exports/Planilha1.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Início",
+      "kind": "raw_csv",
+      "rows": 18,
+      "columns": 10,
+      "path": "data/empresa2/raw_exports/In_cio.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Parâmetros",
+      "kind": "raw_csv",
+      "rows": 27,
+      "columns": 6,
+      "path": "data/empresa2/raw_exports/Par_metros.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Mapa Brasil",
+      "kind": "raw_csv",
+      "rows": 4,
+      "columns": 3,
+      "path": "data/empresa2/raw_exports/Mapa_Brasil.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Cenários",
+      "kind": "raw_csv",
+      "rows": 33,
+      "columns": 21,
+      "path": "data/empresa2/raw_exports/Cen_rios.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Sensibilidade 1",
+      "kind": "raw_csv",
+      "rows": 16,
+      "columns": 19,
+      "path": "data/empresa2/raw_exports/Sensibilidade_1.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Sensibilidade 2",
+      "kind": "raw_csv",
+      "rows": 18,
+      "columns": 12,
+      "path": "data/empresa2/raw_exports/Sensibilidade_2.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Roteamento",
+      "kind": "raw_csv",
+      "rows": 22,
+      "columns": 12,
+      "path": "data/empresa2/raw_exports/Roteamento.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Dados_OPLs",
+      "kind": "raw_csv",
+      "rows": 163,
+      "columns": 20,
+      "path": "data/empresa2/raw_exports/Dados_OPLs.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Dados_Tributário",
+      "kind": "raw_csv",
+      "rows": 562,
+      "columns": 41,
+      "path": "data/empresa2/raw_exports/Dados_Tribut_rio.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Dados_Roteamento",
+      "kind": "raw_csv",
+      "rows": 22,
+      "columns": 15,
+      "path": "data/empresa2/raw_exports/Dados_Roteamento.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Tabelas_CIF_Dist",
+      "kind": "raw_csv",
+      "rows": 63,
+      "columns": 13,
+      "path": "data/empresa2/raw_exports/Tabelas_CIF_Dist.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Aux_ Custo_Distribuição",
+      "kind": "raw_csv",
+      "rows": 11736,
+      "columns": 40,
+      "path": "data/empresa2/raw_exports/Aux__Custo_Distribui_o.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "TB_Distribuição",
+      "kind": "raw_csv",
+      "rows": 67,
+      "columns": 34,
+      "path": "data/empresa2/raw_exports/TB_Distribui_o.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Aux_Custo_Transferência",
+      "kind": "raw_csv",
+      "rows": 193,
+      "columns": 15,
+      "path": "data/empresa2/raw_exports/Aux_Custo_Transfer_ncia.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "TB_Transferência",
+      "kind": "raw_csv",
+      "rows": 44,
+      "columns": 14,
+      "path": "data/empresa2/raw_exports/TB_Transfer_ncia.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Aux_Custo_Armaz",
+      "kind": "raw_csv",
+      "rows": 70,
+      "columns": 12,
+      "path": "data/empresa2/raw_exports/Aux_Custo_Armaz.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Dados_Brasil",
+      "kind": "raw_csv",
+      "rows": 21,
+      "columns": 7,
+      "path": "data/empresa2/raw_exports/Dados_Brasil.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Lat & Long",
+      "kind": "raw_csv",
+      "rows": 19,
+      "columns": 5,
+      "path": "data/empresa2/raw_exports/Lat_Long.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Rotas_Mapa",
+      "kind": "raw_csv",
+      "rows": 33,
+      "columns": 8,
+      "path": "data/empresa2/raw_exports/Rotas_Mapa.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "SD2_Atualizar",
+      "kind": "raw_csv",
+      "rows": 59432,
+      "columns": 12,
+      "path": "data/empresa2/raw_exports/SD2_Atualizar.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Estoque",
+      "kind": "raw_csv",
+      "rows": 635,
+      "columns": 21,
+      "path": "data/empresa2/raw_exports/Estoque.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Faturamento_UF",
+      "kind": "raw_csv",
+      "rows": 30,
+      "columns": 4,
+      "path": "data/empresa2/raw_exports/Faturamento_UF.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Distribuição Fábrica_CD",
+      "kind": "raw_csv",
+      "rows": 16,
+      "columns": 10,
+      "path": "data/empresa2/raw_exports/Distribui_o_F_brica_CD.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Faturamento por Filial x UF",
+      "kind": "raw_csv",
+      "rows": 170,
+      "columns": 5,
+      "path": "data/empresa2/raw_exports/Faturamento_por_Filial_x_UF.csv"
+    },
+    {
+      "source_id": "empresa2_malha",
+      "sheet": "Tabela Logística",
+      "kind": "raw_csv",
+      "rows": 160,
+      "columns": 17,
+      "path": "data/empresa2/raw_exports/Tabela_Log_stica.csv"
+    },
+    {
+      "source_id": "icms_216",
+      "kind": "reference_csv",
+      "rows": 216,
+      "path": "data/references/icms_216_linhas.csv"
+    }
+  ],
+  "phase_1_frontend_implemented": true
+}

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cenário Base e Paridade</title>
+  <meta name="description" content="Módulo de baseline do simulador estático: fluxos, custos, tributo básico e Base Fit Score.">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script type="importmap">
+    { "imports": { "chart.js": "../assets/vendor/chart.esm.js" } }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <header class="hero phase2-hero">
+    <nav class="topbar" aria-label="Navegação principal">
+      <a class="brand-mark" href="../index.html" aria-label="Voltar para início">V</a>
+      <div><p class="eyebrow">Capstone Visagio · Baseline</p><h1>Cenário Base e Paridade</h1><span style="position:absolute;left:-9999px;">Fase 2</span></div>
+      <div class="topbar-actions">
+        <a href="../index.html" class="ghost-button">Validação</a>
+        <a href="../fase-2-baseline/" class="ghost-button active" aria-current="page">Baseline</a>
+        <a href="../fase-3-cenarios/" class="ghost-button">Simulação</a>
+        <a href="../fase-4-score-otimizador/" class="ghost-button">Otimização</a>
+        <a href="../fase-5-entrega-final/" class="ghost-button">Entrega</a>
+        <a href="../debug/" class="ghost-button">Debug</a>
+      </div>
+    </nav>
+    <section class="hero-grid">
+      <div class="hero-copy">
+        <span class="status-chip status-ok" id="phase2Status">carregando módulo</span>
+        <h2>O simulador agora monta o baseline e mede paridade</h2>
+        <p>Esta página usa os dados já auditados na Validação para reconstruir o cenário base de cada empresa, exibir fluxos, calcular custos principais e mostrar Base Fit Score quando existe referência no pacote.</p>
+        <div class="hero-actions company-toggle" role="tablist" aria-label="Selecionar empresa">
+          <button type="button" class="company-tab active" data-company="empresa1" role="tab" aria-selected="true">Empresa 1</button>
+          <button type="button" class="company-tab" data-company="empresa2" role="tab" aria-selected="false">Empresa 2</button>
+        </div>
+      </div>
+      <aside class="hero-card" aria-label="Resumo técnico do pacote">
+        <dl class="summary-list">
+          <div><dt>Pacote</dt><dd id="packageName">—</dd></div>
+          <div><dt>Versão</dt><dd id="packageVersion">—</dd></div>
+          <div><dt>Utilidade</dt><dd>Baseline</dd></div>
+          <div><dt>Contexto</dt><dd>fluxos, custos, tributo e paridade</dd></div>
+        </dl>
+      </aside>
+    </section>
+  </header>
+  <main id="main">
+    <section class="section"><div class="section-heading"><p class="eyebrow">contexto inicial</p><h2>Empresas disponíveis no baseline</h2><p>Visão lado a lado dos dados disponíveis. A análise operacional abaixo continua focada apenas na empresa selecionada.</p></div><div class="two-column-grid" id="phase2ProofCards"></div></section>
+    <section class="section" id="baseline">
+      <div class="section-heading row-heading"><div><p class="eyebrow">empresa selecionada</p><h2><span id="currentCompanyLabel">Empresa 1</span> · <span id="currentScenarioLabel">baseline</span></h2><p>Status: <span class="status-chip" id="currentStatus">—</span></p></div><div class="company-toggle" role="tablist" aria-label="Selecionar empresa"><button type="button" class="company-tab active" data-company="empresa1">Empresa 1</button><button type="button" class="company-tab" data-company="empresa2">Empresa 2</button></div></div>
+      <div id="phase2Loading" class="card"><strong>Carregando baseline...</strong></div>
+      <div id="phase2Workspace" class="hidden">
+        <div class="metric-grid" id="baselineSummaryCards"></div>
+        <p class="small-note" id="phase2CheckSummary">—</p>
+        <div class="check-list phase2-grid-spaced" id="phase2AutoChecks"></div>
+        <div class="two-column-grid phase2-grid-spaced"><article class="card" id="methodologyBox"></article><article class="card" id="warningPanel"></article></div>
+      </div>
+    </section>
+    <section class="section"><div class="section-heading"><p class="eyebrow">custos</p><h2>Custos principais do cenário base</h2><p>O total logístico e o total com tributo são checados nos testes automáticos.</p></div><div class="metric-grid" id="costCards"></div>
+      <div class="two-column-grid phase2-grid-spaced">
+        <article class="card chart-card"><h3>Custos por componente</h3><canvas id="costBreakdownChart" class="chart-canvas"></canvas></article>
+        <article class="card"><h3>Decomposição de custo</h3><div id="costBreakdown" class="breakdown-list"></div></article>
+      </div>
+    </section>
+    <section class="section"><div class="section-heading"><p class="eyebrow">fluxos</p><h2>Fluxos do baseline</h2><p>A tabela mostra uma amostra dos fluxos construídos para a empresa selecionada.</p></div>
+      <div class="metric-grid compact" id="flowSummaryCards"></div>
+      <div class="two-column-grid phase2-grid-spaced" style="margin-bottom:18px;">
+        <article class="card chart-card"><h3>CDs por volume</h3><canvas id="cdVolumeChart" class="chart-canvas"></canvas></article>
+        <article class="card chart-card"><h3>Distâncias dos fluxos</h3><canvas id="distanceHistogramChart" class="chart-canvas"></canvas></article>
+      </div>
+      <article class="card"><div class="table-wrap" id="flowTable"></div></article>
+    </section>
+    <section class="section"><div class="section-heading"><p class="eyebrow">tributário</p><h2>Camada tributária básica</h2><p>Nesta etapa, a camada tributária é básica e auditável. O detalhamento completo fica para as próximas etapas.</p></div><article class="card" id="taxPanel"></article></section>
+    <section class="section"><div class="section-heading"><p class="eyebrow">paridade</p><h2>Base Fit Score</h2><p>Empresa 2 tem referência no workbook. Empresa 1 fica como benchmark pendente para não inventar custo histórico.</p></div><article class="card" id="calibrationPanel"></article></section>
+    <section class="section"><div class="section-heading"><p class="eyebrow">evidência</p><h2>Evidência operacional auxiliar</h2><p>Quando existe, mostra somas das abas auxiliares para auditar o baseline.</p></div><article class="card"><div class="table-wrap" id="rawEvidencePanel"></div></article></section>
+
+  </main>
+  <footer class="footer"><p>Módulo de baseline implementado para análise logística.</p></footer>
+  <script type="module" src="../assets/js/phase2/main.js"></script>
+</body>
+</html>

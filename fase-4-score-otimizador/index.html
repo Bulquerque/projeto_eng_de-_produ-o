@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Otimizador de Malha</title>
+  <meta name="description" content="Módulo de otimização: scoring, ranking, restrições e busca por cenários ideais.">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script type="importmap">
+    { "imports": { "chart.js": "../assets/vendor/chart.esm.js" } }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <header class="hero phase4-hero">
+    <nav class="topbar" aria-label="Navegação principal">
+      <a class="brand-mark" href="../index.html" aria-label="Voltar para início">V</a>
+      <div><p class="eyebrow">Capstone Visagio · Otimização</p><h1>Score, Ranking e Otimização Exata</h1><span style="position:absolute;left:-9999px;">Fase 4</span></div>
+      <div class="topbar-actions">
+        <a href="../index.html" class="ghost-button">Validação</a>
+        <a href="../fase-2-baseline/" class="ghost-button">Baseline</a>
+        <a href="../fase-3-cenarios/" class="ghost-button">Simulação</a>
+        <a href="../fase-4-score-otimizador/" class="ghost-button active" aria-current="page">Otimização</a>
+        <a href="../fase-5-entrega-final/" class="ghost-button">Entrega</a>
+        <a href="../debug/" class="ghost-button">Debug</a>
+      </div>
+    </nav>
+    <section class="hero-grid">
+      <div class="hero-copy">
+        <span class="status-chip status-ok" id="phase4Status">módulo ativo</span>
+        <h2>Agora o simulador ranqueia cenários pela métrica que você escolher</h2>
+        <p>Crie uma função objetivo, aplique restrições, gere candidatos automaticamente e rode uma otimização exata no navegador, sem backend.</p>
+        <div class="hero-actions company-toggle" role="tablist" aria-label="Selecionar empresa">
+          <button type="button" class="company-tab active" data-company="empresa1" role="tab" aria-selected="true">Empresa 1</button>
+          <button type="button" class="company-tab" data-company="empresa2" role="tab" aria-selected="false">Empresa 2</button>
+        </div>
+      </div>
+      <aside class="hero-card" aria-label="Resumo técnico do pacote">
+        <dl class="summary-list">
+          <div><dt>Pacote</dt><dd id="packageName">—</dd></div>
+          <div><dt>Versão</dt><dd id="packageVersion">—</dd></div>
+          <div><dt>Utilidade</dt><dd>Otimização</dd></div>
+          <div><dt>Contexto</dt><dd>score, ranking e restrições</dd></div>
+        </dl>
+      </aside>
+    </section>
+  </header>
+
+  <main id="main">
+    <section class="section" id="arena4">
+      <div class="section-heading row-heading">
+        <div><p class="eyebrow">empresa selecionada</p><h2><span id="phase4CompanyLabel">Empresa 1</span> · Motor de decisão</h2><p>O Otimizador usa a base processada e o simulador para enumerar o espaço discreto, aplicar restrições e sugerir o melhor cenário.</p></div>
+        <div class="company-toggle" role="tablist" aria-label="Selecionar empresa"><button type="button" class="company-tab active" data-company="empresa1">Empresa 1</button><button type="button" class="company-tab" data-company="empresa2">Empresa 2</button></div>
+      </div>
+      <div id="phase4Loading" class="card"><strong>Carregando Fase 4...</strong></div>
+      <div class="metric-grid" id="baselinePhase4Cards"></div>
+      <article class="card phase2-grid-spaced"><h3>Resumo dos dados usados pelo otimizador</h3><div class="table-wrap" id="optimizerInputTable"></div></article>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">objetivo</p><h2>Objective Builder</h2><p>Escolha um perfil ou defina pesos. Os pesos são normalizados para somar 100%.</p></div>
+      <div class="two-column-grid">
+        <article class="card objective-builder">
+          <h3>Perfis prontos</h3>
+          <div id="objectiveProfiles" class="profile-grid"></div>
+        </article>
+        <article class="card objective-builder">
+          <h3>Pesos customizados</h3>
+          <label>Nome do objetivo<input id="objectiveName" type="text" value="Perfil Balanceado Customizado"></label>
+          <label>Custo total (%)<small>Prioriza menor total com tributo.</small><input id="weight_total_cost" type="number" min="0" max="100" step="1" value="30"></label>
+          <label>Qualidade de serviço (%)<small>Premia menor concentração e menos realocação.</small><input id="weight_service_quality" type="number" min="0" max="100" step="1" value="25"></label>
+          <label>Risco operacional (%)<small>Reduz preferência por cenários mais arriscados.</small><input id="weight_operational_risk" type="number" min="0" max="100" step="1" value="20"></label>
+          <label>Impacto tributário (%)<small>Considera efeito tributário estimado no custo final.</small><input id="weight_tax_impact" type="number" min="0" max="100" step="1" value="15"></label>
+          <label>Eficiência de estoque (%)<small>Considera capital empatado em estoque.</small><input id="weight_inventory_efficiency" type="number" min="0" max="100" step="1" value="10"></label>
+          <div id="objectivePreview" class="alert-box neutral"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">restrições e busca</p><h2>Configuração do Otimizador Exato</h2><p>O otimizador enumera o espaço discreto modelado e só aceita o melhor cenário viável.</p></div>
+      <div class="two-column-grid">
+        <article class="card constraint-panel">
+          <h3>Restrições de Malha</h3>
+          <label>Mínimo de CDs ativos<small>Menor malha permitida para o cenário ser viável.</small><input id="minActiveCds" type="number" min="1" step="1" value="1"></label>
+          <label>Máximo de CDs ativos<small>Maior malha permitida para o cenário ser viável.</small><input id="maxActiveCds" type="number" min="1" step="1" value="999"></label>
+          <label>Limite de volume por CD (%)<small>Concentração máxima permitida em uma única unidade.</small><input id="maxCdShare" type="number" min="1" max="100" step="1" value="100"></label>
+          <label>Nível de risco aceitável<select id="maxRiskLevel"><option value="high">Aceitar qualquer risco (Alto/Médio/Baixo)</option><option value="medium">Até Risco Médio</option><option value="low">Somente Risco Baixo</option></select></label>
+          <label>Regime Tributário Base<small>Otimizar considerando este regime fiscal.</small><select id="optimizationTaxMode"><option value="current">Atual / canônico</option><option value="disabled">Desligado</option><optgroup label="Reforma Tributária"><option value="reform_2026">2026 (Ano teste)</option><option value="reform_2027">2027 (CBS plena)</option><option value="reform_2028">2028 (CBS plena)</option><option value="reform_2029">2029 (Transição 10%)</option><option value="reform_2030">2030 (Transição 20%)</option><option value="reform_2031">2031 (Transição 30%)</option><option value="reform_2032">2032 (Transição 40%)</option><option value="reform_2033">2033 (Regime pleno)</option></optgroup></select></label>
+          <label class="inline-check"><input id="allowTaxDisabled" type="checkbox"> Permitir alternar entre Atual e Desligado (comparação)</label>
+        </article>
+        <article class="card optimizer-panel">
+          <h3>Busca</h3>
+          <label>Método<select id="optimizerMethod"><option value="exact_discrete">busca exata nos cenários modelados</option></select></label>
+          <label>Limite de cenários avaliados<small>Trava de segurança para execução no navegador.</small><input id="maxCandidates" type="number" min="100" max="10000" step="100" value="2000"></label>
+          <label>Identificador da execução<small>Mantém a enumeração reproduzível.</small><input id="optimizerSeed" type="number" step="1" value="42"></label>
+          <button type="button" class="primary-button" id="runOptimizer">Rodar otimização exata</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">resultado</p><h2>Ranking e log da otimização</h2></div>
+      <div class="two-column-grid">
+        <article class="card"><h3>Search log</h3><div id="searchLogPanel"></div></article>
+        <article class="card"><h3>Por que o melhor cenário ganhou?</h3><div id="rankingExplanation"></div></article>
+      </div>
+      <article class="card phase2-grid-spaced"><h3>Top cenários por score</h3><canvas id="rankingChart" class="chart-canvas"></canvas><div class="table-wrap" id="rankingPanel"></div></article>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">trade-off</p><h2>Fronteira simples de custo vs qualidade</h2><p>Mostra quais cenários não são claramente dominados por outros em custo e qualidade.</p></div>
+      <article class="card"><canvas id="tradeoffChart" class="chart-canvas"></canvas><div class="table-wrap" id="tradeoffPanel"></div></article>
+    </section>
+
+  </main>
+  <footer class="footer"><p>Módulo de otimização implementado para análise logística.</p></footer>
+  <script type="module" src="../assets/js/phase4/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador Estático de Malha Logística — Painel Global</title>
+  <meta name="description" content="Dashboard integrado do simulador estático: seleção de empresa, catálogo, baseline, cenários, score e entrega final.">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+  <header class="hero" id="topo">
+    <nav class="topbar" aria-label="Navegação principal">
+      <a class="brand-mark" href="#topo" aria-label="Voltar ao topo">V</a>
+      <div>
+        <p class="eyebrow">Capstone Visagio · Validação</p>
+        <h1>Simulador Estático de Malha Logística</h1>
+      </div>
+      <div class="topbar-actions">
+        <a href="#fase-1-validacao" class="ghost-button active" aria-current="page">Validação</a>
+        <a href="fase-2-baseline/" class="ghost-button">Baseline</a>
+        <a href="fase-3-cenarios/" class="ghost-button">Simulação</a>
+        <a href="fase-4-score-otimizador/" class="ghost-button">Otimização</a>
+        <a href="fase-5-entrega-final/" class="ghost-button">Entrega</a>
+        <a href="debug/" class="ghost-button">Debug</a>
+      </div>
+    </nav>
+
+    <section class="hero-grid" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <span class="status-chip status-ok" id="heroStatus">carregando base</span>
+        <h2 id="hero-title">Controle de Malha e Auditoria de Dados</h2>
+        <p>
+          Esta página concentra a fundação, a auditoria e a análise técnica do projeto. As demais etapas continuam acessíveis,
+          mas a leitura de status, caminhos e validações fica centralizada na etapa de Validação.
+        </p>
+        <div class="hero-actions">
+          <button type="button" class="primary-button" id="selectEmpresa1">Abrir Empresa 1</button>
+          <button type="button" class="secondary-button" id="selectEmpresa2">Abrir Empresa 2</button>
+        </div>
+      </div>
+
+      <aside class="hero-card" aria-label="Resumo técnico do pacote">
+        <dl class="summary-list">
+          <div><dt>Pacote</dt><dd id="packageName">—</dd></div>
+          <div><dt>Versão</dt><dd id="packageVersion">—</dd></div>
+          <div><dt>Gerado em</dt><dd id="generatedAt">—</dd></div>
+          <div><dt>Utilidade</dt><dd>Validação</dd></div>
+          <div><dt>Contexto</dt><dd>integridade, caminhos e auditoria</dd></div>
+        </dl>
+      </aside>
+    </section>
+  </header>
+
+  <main id="main">
+    <section class="section" id="visao-geral" aria-labelledby="visao-geral-title">
+      <div class="section-heading">
+        <p class="eyebrow">indicadores de integridade</p>
+        <h2 id="visao-geral-title">O que a Validação já prova</h2>
+        <p>Esses cards são alimentados pelos arquivos de validação do pacote, não por texto solto no HTML.</p>
+      </div>
+      <div class="metric-grid" id="proofCards" aria-live="polite"></div>
+    </section>
+
+    <section class="section company-workspace" id="dados" aria-labelledby="dados-title">
+      <div class="section-heading row-heading">
+        <div>
+          <p class="eyebrow">seleção de empresa</p>
+          <h2 id="dados-title">Dados carregados por empresa</h2>
+          <p>O painel troca a empresa sem misturar bases. Empresa 1 e Empresa 2 ficam isoladas desde a Validação.</p>
+        </div>
+        <div class="company-toggle" role="tablist" aria-label="Selecionar empresa">
+          <button type="button" class="company-tab active" data-company="empresa1" role="tab" aria-selected="true">Empresa 1</button>
+          <button type="button" class="company-tab" data-company="empresa2" role="tab" aria-selected="false">Empresa 2</button>
+        </div>
+      </div>
+
+      <div class="company-panel">
+        <aside class="company-summary-card" aria-labelledby="companyTitle">
+          <span class="status-chip" id="companyStatus">selecionada</span>
+          <h3 id="companyTitle">—</h3>
+          <p id="companyRule">—</p>
+          <div class="mini-metrics" id="companyMiniMetrics"></div>
+          <div class="source-box">
+            <h4>Fontes originais preservadas</h4>
+            <div id="companySources" class="source-list"></div>
+          </div>
+        </aside>
+
+        <section class="data-panel" aria-label="Datasets da empresa selecionada">
+          <div class="panel-toolbar">
+            <div>
+              <h3>Dados Estruturados</h3>
+              <p>Arquivos que o simulador deverá consumir nas próximas fases.</p>
+            </div>
+            <button type="button" class="secondary-button small-button" id="runLivePathCheck">Checar paths core agora</button>
+          </div>
+          <div class="dataset-grid" id="datasetCards"></div>
+          <details class="details-card">
+            <summary>Ver tabela técnica dos datasets</summary>
+            <div id="datasetTable" class="table-wrap"></div>
+          </details>
+        </section>
+      </div>
+    </section>
+
+    <section class="section validation-grid-section" id="qualidade" aria-labelledby="qualidade-title">
+      <div class="section-heading">
+        <p class="eyebrow">qualidade e auditoria</p>
+        <h2 id="qualidade-title">Painéis de validação automática</h2>
+        <p>Esta parte mostra se os arquivos, paths, abas e regras mínimas da Validação estão consistentes.</p>
+      </div>
+      <div class="two-column-grid">
+        <article class="card" id="dataQualityPanel"></article>
+        <article class="card" id="pathAuditPanel"></article>
+      </div>
+    </section>
+
+    <section class="section" id="abas" aria-labelledby="abas-title">
+      <div class="section-heading row-heading">
+        <div>
+          <p class="eyebrow">planilhas e abas</p>
+          <h2 id="abas-title">Inventário das abas mapeadas</h2>
+          <p>Resumo do CSV <code>workbook_sheet_inventory.csv</code>, usado para provar que as planilhas foram varridas.</p>
+        </div>
+        <button type="button" class="secondary-button small-button" id="toggleSheetTable">Mostrar/ocultar abas</button>
+      </div>
+      <div class="card">
+        <div class="metric-grid compact" id="sheetInventorySummary"></div>
+        <div class="table-wrap hidden" id="sheetInventoryTable"></div>
+      </div>
+    </section>
+
+    <section class="section phase-validation" id="fase-1-validacao" aria-labelledby="fase1-title">
+      <div class="section-heading">
+        <p class="eyebrow">auditoria técnica</p>
+        <h2 id="fase1-title">Painel de Integridade e Validação</h2>
+        <p>Use esta seção para auditar integridade, rastrear inconsistências e validar os dados que alimentam as demais etapas.</p>
+      </div>
+      <div class="two-column-grid">
+        <article class="card">
+          <div class="panel-toolbar">
+            <div>
+              <h3>Validações automáticas</h3>
+              <p>Rodados no navegador a partir dos dados carregados.</p>
+            </div>
+            <button type="button" class="primary-button small-button" id="rerunPhase1Checks">Reexecutar</button>
+          </div>
+          <div id="phase1AutoChecks" class="check-list"></div>
+        </article>
+        <article class="card">
+          <div class="panel-toolbar">
+            <div>
+              <h3>Auditoria manual guiada</h3>
+              <p>As marcações ficam salvas no navegador com <code>localStorage</code>.</p>
+            </div>
+            <button type="button" class="secondary-button small-button" id="clearManualChecklist">Limpar</button>
+          </div>
+          <div id="manualChecklist" class="check-list"></div>
+          <p class="small-note" id="manualChecklistProgress">—</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="fase-2-validacao" aria-labelledby="fase2-title">
+      <div class="section-heading row-heading">
+        <div>
+          <p class="eyebrow">testes e auditoria</p>
+          <h2 id="fase2-title">Validações automáticas e checklist manual da Fase 2</h2>
+          <p>Esses testes saem da página Baseline e passam a viver aqui, junto da Validação central do pacote.</p>
+        </div>
+        <button type="button" class="secondary-button small-button" id="rerunPhase2Checks">Reexecutar testes</button>
+      </div>
+      <div class="two-column-grid phase2-grid-spaced">
+        <article class="card">
+          <h3>Validações automáticas</h3>
+          <p class="small-note" id="phase2CheckSummary">—</p>
+          <div id="phase2AutoChecks" class="check-list"></div>
+        </article>
+        <article class="card">
+          <div class="panel-toolbar">
+            <div>
+              <h3>Checklist manual</h3>
+              <p>As marcações ficam salvas no navegador com <code>localStorage</code>.</p>
+            </div>
+            <button type="button" class="secondary-button small-button" id="clearPhase2ManualChecklist">Limpar</button>
+          </div>
+          <div id="phase2ManualChecklist" class="check-list"></div>
+          <p class="small-note" id="phase2ManualProgress">—</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="proximas-fases" aria-labelledby="proximas-fases-title">
+      <div class="section-heading">
+        <p class="eyebrow">jornada de simulação</p>
+        <h2 id="proximas-fases-title">Mapa central do projeto</h2>
+        <p>A Validação reúne o inventário de páginas, checagens e atalhos para inspeção rápida do pacote inteiro.</p>
+      </div>
+      <div class="metric-grid" id="phaseRoadmap"></div>
+    </section>
+
+    <section class="section" id="erros" aria-labelledby="erros-title">
+      <div class="section-heading">
+        <p class="eyebrow">logs de sistema</p>
+        <h2 id="erros-title">Console de Auditoria</h2>
+      </div>
+      <pre class="debug-console" id="debugConsole">iniciando...</pre>
+      <div class="debug-structured" id="sharedDebugFeed">
+        <p class="small-note">Logs compartilhados das etapas do simulador aparecerão aqui.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Simulador Estático de Malha Logística implementado. Use <code>python -m http.server 8000</code> e abra no navegador.</p>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

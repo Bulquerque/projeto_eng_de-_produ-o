@@ -1,0 +1,50 @@
+{
+  "id": "Phase4Dashboard",
+  "phase": 4,
+  "status": "implemented_phase_4",
+  "page": "/fase-4-score-otimizador/",
+  "file": "assets/js/phase4/phase4-dashboard.js",
+  "purpose": "Renderiza a página /fase-4-score-otimizador/ com objective builder, ranking, otimizador e validação.",
+  "inputs": {
+    "company_id": "empresa1|empresa2",
+    "objective": "{}",
+    "scenario_results": "[]",
+    "constraints": "{}",
+    "optimizer_config": "{}"
+  },
+  "outputs": {
+    "result": "{}",
+    "scored_scenarios": "[]",
+    "search_log": "{}",
+    "warnings": "[]",
+    "errors": "[]"
+  },
+  "internal_functions": [
+    "setupPhase4",
+    "loadPhase4Company"
+  ],
+  "external_calls": [
+    "ObjectiveBuilder",
+    "ObjectiveProfileLibrary",
+    "ScenarioOptimizer",
+    "SearchLogPanel",
+    "RankingExplainer",
+    "TradeoffFrontier",
+    "Phase4TestPanel"
+  ],
+  "tests": {
+    "unit": [
+      "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+      "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+    ],
+    "integration": [
+      "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+    ],
+    "manual": [
+      "checklist na página /fase-4-score-otimizador/"
+    ],
+    "acceptance": [
+      "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+    ]
+  }
+}

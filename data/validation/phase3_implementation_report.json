@@ -1,0 +1,35 @@
+{
+  "result": "OK",
+  "phase": 3,
+  "implemented_at_utc": "2026-05-06T22:26:28.232775+00:00",
+  "modules": [
+    "ScenarioBuilder",
+    "ScenarioValidator",
+    "ScenarioFlowRebuilder",
+    "ScenarioSimulator",
+    "ScenarioComparator",
+    "ScenarioQualityCheck",
+    "ScenarioChangeExplainer",
+    "ScenarioPersistence",
+    "ScenarioImportExport",
+    "ScenarioArenaDashboard",
+    "Phase3TestPanel"
+  ],
+  "page": "fase-3-cenarios/index.html",
+  "companies": {
+    "empresa1": {
+      "sample_count": 5,
+      "active_cds_count": 15,
+      "baseline_scenario_id": "baseline_empresa1"
+    },
+    "empresa2": {
+      "sample_count": 5,
+      "active_cds_count": 4,
+      "baseline_scenario_id": "baseline_empresa2"
+    }
+  },
+  "notes": [
+    "Fase 3 usa bundles da Fase 2 como baseline canônico; cenários são manuais e não otimizados.",
+    "Realocação padrão usa nearest_available_cd com heurística auditável, não solver ótimo."
+  ]
+}

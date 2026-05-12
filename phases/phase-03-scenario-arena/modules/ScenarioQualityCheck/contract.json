@@ -1,0 +1,74 @@
+{
+  "id": "ScenarioQualityCheck",
+  "phase": 3,
+  "status": "implemented_phase_3",
+  "page": "/fase-3-cenarios/",
+  "purpose": "Avalia plausibilidade operacional do cenário, separando cenário barato de cenário realmente executável.",
+  "inputs": {
+    "scenario": {},
+    "results": {},
+    "constraints": {
+      "maxConcentration": 0.65,
+      "maxCdUtilization": 0.9,
+      "maxDistanceIncreasePct": 20
+    }
+  },
+  "outputs": {
+    "qualityScore": 78,
+    "alerts": [
+      {
+        "severity": "warning",
+        "message": "CD ES concentra 82% do volume"
+      }
+    ],
+    "riskFlags": []
+  },
+  "internal_functions": [
+    [
+      "calculateConcentrationRisk(scenario)",
+      "Mede dependência de poucos CDs."
+    ],
+    [
+      "calculateCapacityRisk(scenario, constraints)",
+      "Mede estouro de capacidade."
+    ],
+    [
+      "calculateServiceProxy(scenario)",
+      "Usa distância/lead time proxy."
+    ],
+    [
+      "aggregateQualityScore(parts)",
+      "Agrega qualidade 0-100."
+    ]
+  ],
+  "external_calls": [
+    [
+      "ScenarioValidator",
+      "Recebe validade básica."
+    ],
+    [
+      "ScenarioScoring",
+      "Entrega qualityScore para ranking."
+    ],
+    [
+      "ExplainabilityEngine",
+      "Entrega alertas para explicação."
+    ]
+  ],
+  "tests": {
+    "unit": [
+      "100% volume em um CD gera alerta",
+      "capacidade acima do limite gera severidade alta"
+    ],
+    "integration": [
+      "Comparator mostra qualityScore"
+    ],
+    "manual": [
+      "centralizar tudo e conferir alerta"
+    ],
+    "acceptance": [
+      "custo baixo não apaga risco alto"
+    ]
+  },
+  "file": "assets/js/phase3/scenario-quality-check.js"
+}

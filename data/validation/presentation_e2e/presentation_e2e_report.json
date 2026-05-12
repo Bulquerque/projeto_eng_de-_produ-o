@@ -1,0 +1,46 @@
+[
+  {
+    "step": "home",
+    "status": "ok"
+  },
+  {
+    "step": "baseline",
+    "status": "ok",
+    "prompts": 1
+  },
+  {
+    "step": "scenario",
+    "status": "ok",
+    "prompts": 1
+  },
+  {
+    "step": "optimizer",
+    "status": "ok",
+    "prompts": 1
+  },
+  {
+    "step": "final_delivery",
+    "status": "ok",
+    "prompts": 1
+  },
+  {
+    "step": "mobile_home",
+    "status": "ok"
+  },
+  {
+    "step": "mobile_baseline",
+    "status": "ok"
+  },
+  {
+    "step": "mobile_scenario",
+    "status": "ok"
+  },
+  {
+    "step": "mobile_optimizer",
+    "status": "ok"
+  },
+  {
+    "step": "mobile_final_delivery",
+    "status": "ok"
+  }
+]

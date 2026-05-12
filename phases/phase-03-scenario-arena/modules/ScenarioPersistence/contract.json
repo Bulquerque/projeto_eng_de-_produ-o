@@ -1,0 +1,65 @@
+{
+  "id": "ScenarioPersistence",
+  "phase": 3,
+  "status": "implemented_phase_3",
+  "page": "/fase-3-cenarios/",
+  "purpose": "Salva cenários criados pelo usuário no navegador e permite exportar/importar JSON de cenário.",
+  "inputs": {
+    "scenario": {},
+    "storageKey": "savedScenarios_empresa1",
+    "operation": "save|load|delete|export|import"
+  },
+  "outputs": {
+    "savedScenarios": [],
+    "exportJson": {},
+    "status": "OK"
+  },
+  "internal_functions": [
+    [
+      "saveScenario(scenario)",
+      "Salva no localStorage por empresa."
+    ],
+    [
+      "loadScenarios(company)",
+      "Lê cenários da empresa."
+    ],
+    [
+      "deleteScenario(id)",
+      "Remove cenário."
+    ],
+    [
+      "exportScenario(id)",
+      "Gera JSON baixável."
+    ],
+    [
+      "importScenario(json)",
+      "Importa e valida cenário."
+    ]
+  ],
+  "external_calls": [
+    [
+      "ScenarioValidator",
+      "Valida antes de salvar/importar."
+    ],
+    [
+      "AuditTrail",
+      "Registra origem do cenário importado/exportado."
+    ]
+  ],
+  "tests": {
+    "unit": [
+      "salva e carrega por empresa",
+      "delete remove só o cenário escolhido"
+    ],
+    "integration": [
+      "cenário salvo aparece após reload"
+    ],
+    "manual": [
+      "salvar cenário, recarregar, conferir"
+    ],
+    "acceptance": [
+      "cenários da Empresa 1 não aparecem na Empresa 2"
+    ]
+  },
+  "file": "assets/js/phase3/scenario-persistence.js"
+}

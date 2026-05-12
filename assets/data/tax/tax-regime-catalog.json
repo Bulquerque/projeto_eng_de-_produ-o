@@ -1,0 +1,116 @@
+{
+  "default_tax_mode": "current",
+  "default_tax_regime": "legacy_2025",
+  "regimes": {
+    "legacy_2025": {
+      "id": "legacy_2025",
+      "year": 2025,
+      "label": "Sistema atual",
+      "tax_mode_aliases": ["current"],
+      "calculation_mode": "top_down_fallback",
+      "legacy_weight": 1,
+      "cbs_weight": 0,
+      "ibs_weight": 0,
+      "selective_weight": 0
+    },
+    "reform_test_2026": {
+      "id": "reform_test_2026",
+      "year": 2026,
+      "label": "Ano-teste 2026",
+      "tax_mode_aliases": ["reform_2026"],
+      "calculation_mode": "bottom_up_flow",
+      "legacy_weight": 0.995,
+      "cbs_weight": 0.009,
+      "ibs_weight": 0.001,
+      "selective_weight": 0
+    },
+    "reform_2027": {
+      "id": "reform_2027",
+      "year": 2027,
+      "label": "Reforma 2027",
+      "tax_mode_aliases": ["reform_2027"],
+      "calculation_mode": "bottom_up_flow",
+      "legacy_weight": 0.72,
+      "cbs_weight": 0.088,
+      "ibs_weight": 0,
+      "selective_weight": 0.01
+    },
+    "reform_2028": {
+      "id": "reform_2028",
+      "year": 2028,
+      "label": "Reforma 2028",
+      "tax_mode_aliases": ["reform_2028"],
+      "calculation_mode": "bottom_up_flow",
+      "legacy_weight": 0.72,
+      "cbs_weight": 0.088,
+      "ibs_weight": 0,
+      "selective_weight": 0.01
+    },
+    "transition_2029": {
+      "id": "transition_2029",
+      "year": 2029,
+      "label": "Transição 2029",
+      "tax_mode_aliases": ["reform_2029"],
+      "calculation_mode": "bottom_up_flow",
+      "legacy_weight": 0.9,
+      "cbs_weight": 0.088,
+      "ibs_weight": 0.177,
+      "selective_weight": 0.01
+    },
+    "transition_2030": {
+      "id": "transition_2030",
+      "year": 2030,
+      "label": "Transição 2030",
+      "tax_mode_aliases": ["reform_2030"],
+      "calculation_mode": "bottom_up_flow",
+      "legacy_weight": 0.8,
+      "cbs_weight": 0.088,
+      "ibs_weight": 0.177,
+      "selective_weight": 0.01
+    },
+    "transition_2031": {
+      "id": "transition_2031",
+      "year": 2031,
+      "label": "Transição 2031",
+      "tax_mode_aliases": ["reform_2031"],
+      "calculation_mode": "bottom_up_flow",
+      "legacy_weight": 0.7,
+      "cbs_weight": 0.088,
+      "ibs_weight": 0.177,
+      "selective_weight": 0.01
+    },
+    "transition_2032": {
+      "id": "transition_2032",
+      "year": 2032,
+      "label": "Transição 2032",
+      "tax_mode_aliases": ["reform_2032"],
+      "calculation_mode": "bottom_up_flow",
+      "legacy_weight": 0.6,
+      "cbs_weight": 0.088,
+      "ibs_weight": 0.177,
+      "selective_weight": 0.01
+    },
+    "reform_full_2033": {
+      "id": "reform_full_2033",
+      "year": 2033,
+      "label": "Regime integral 2033",
+      "tax_mode_aliases": ["reform_2033"],
+      "calculation_mode": "bottom_up_flow",
+      "legacy_weight": 0,
+      "cbs_weight": 0.088,
+      "ibs_weight": 0.177,
+      "selective_weight": 0.02
+    },
+    "disabled": {
+      "id": "disabled",
+      "year": 2025,
+      "label": "Tributário desligado",
+      "tax_mode_aliases": ["disabled"],
+      "calculation_mode": "top_down_fallback",
+      "legacy_weight": 0,
+      "cbs_weight": 0,
+      "ibs_weight": 0,
+      "selective_weight": 0
+    }
+  }
+}

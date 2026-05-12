@@ -1,0 +1,19 @@
+id,filename,package_path,size_bytes,sha256,zip_valid
+empresa1_demanda,Dados de Demanda(3).xlsx,references/raw_sources/Dados de Demanda(3).xlsx,4632746,df6c3c49f83f54366f9b6148218d402d91ea6658e99d268b9b973b38e31e71f4,
+empresa1_distancias,Dados de Distância(3).xlsx,references/raw_sources/Dados de Distância(3).xlsx,47817,dbc50759ff41970f042a4d30c7889399c230606fa6c43b1b569e8f20a2438ad8,
+empresa1_premissas,Premissas Gerais(4).xlsx,references/raw_sources/Premissas Gerais(4).xlsx,8723,5123df4cb2886d718c4e05b2a30183177ca6c24edd7c642a5472db4b6b7a74a7,
+empresa2_malha,Analise_Malha_Empresa2(1).xlsx,references/raw_sources/Analise_Malha_Empresa2(1).xlsx,5106541,95ecd04ed818ae0e25ea99ad28785c3f033ba1678d00cc55c1ff12e221b1709f,
+empresa2_malha_vcaracol_referencia,Análise Malha Logística - vCaracol(3).xlsx,references/raw_sources/Análise Malha Logística - vCaracol(3).xlsx,5106541,95ecd04ed818ae0e25ea99ad28785c3f033ba1678d00cc55c1ff12e221b1709f,
+icms_216,icms_216_linhas.csv,references/raw_sources/icms_216_linhas.csv,23689,03ea1c20709fc98e7ba3329f5a88c774fe24e44207676eb274910be486dcbbd4,
+capstone_pdf,PUC-Rio EP Capstone - Desafio Visagio Malha Logística com RefTrib(1).pdf,references/raw_sources/PUC-Rio EP Capstone - Desafio Visagio Malha Logística com RefTrib(1).pdf,3921250,b2dff5359b68733764ed3f67efc2e0ff011e60c95922c23c350ede71aeb8b1c1,
+icms_resumo_pdf,me ajuda com uma dúvida resumo do ICMS atual brasi.pdf,references/raw_sources/me ajuda com uma dúvida resumo do ICMS atual brasi.pdf,537186,332efd6be0e6a5a15eea75e3693884a9a89100b69a1c5b38d98023ada0606aac,
+mapa_analise,mapa_analise_exploratoria.md,references/raw_sources/mapa_analise_exploratoria.md,7982,2281342e1b23925e53ceae87861cdc6c4edc6e5886f4ebe77e3a308a58b25f80,
+notas_reuniao,notas_reuniao.md,references/raw_sources/notas_reuniao.md,1079,7207f72e7e3ce0ce3dfb663eeabc086869eba6405f888d2cd24e7977a72c19f3,
+observacoes,observacoes.md,references/raw_sources/observacoes.md,752,ce1ab05b05cb57a1809c7e1c6e4410a26ae49f0474dc0fa4f48ec8d9221d0aa1,
+deepresearch_visagiana,DeepResearch Visagiana.pdf,references/raw_sources/DeepResearch Visagiana.pdf,125753,355b2a98d11b123bc71a6a872e8f0a3cad4bf89a116b18174a8af097d393ac45,
+perpl_v1,perpl deep research estrutura trubutaria_empresa de (shampoo e cremes de - v1.pdf,references/raw_sources/perpl deep research estrutura trubutaria_empresa de (shampoo e cremes de - v1.pdf,947082,d4b0e8c6b51dd8646c438efaa5478465126ba114f75f2a60147f7b38360df06a,
+perpl_v2_compete,perpl deep research estrutura trubutaria_empresa de (shampoo e cremes  - v2 COMPETE.pdf,references/raw_sources/perpl deep research estrutura trubutaria_empresa de (shampoo e cremes  - v2 COMPETE.pdf,727100,4a0008898de605b0a16c5d8593afa85b589740f87a05d6b42eaf07f0b0d98744,
+perpl_v3_sem_efeito,perpl deep research estrutura trubutaria_empresa de (shampoo e cremes  - v3 SEM EFEITO TRIBUTARIO.pdf,references/raw_sources/perpl deep research estrutura trubutaria_empresa de (shampoo e cremes  - v3 SEM EFEITO TRIBUTARIO.pdf,723218,14b517ac99a3f3797612582156d55064c9136ee7a2434c2b40299b48e4fceeb8,
+refs_visagio_pptx,202509_RefsVisagio_Apoio Malha Log com efeito tributário.pptx,references/raw_sources/202509_RefsVisagio_Apoio Malha Log com efeito tributário.pptx,44316082,c90266741133111ec663a6f44d4d9537bfdc322e0b6d7a908f84f730d0fbaca0,
+icms_resumo_zip,ICMS Resumo.zip,references/raw_sources/ICMS Resumo.zip,326297,bc5c96c2eeab6b22c24b50f6a89ab6b78afeba7cd7f1d08035f18eb12bfb2ddf,True
+tributario_genais_zip,Tributário e GenAIs.zip,references/raw_sources/Tributário e GenAIs.zip,1493728,1697410129a45c0c1dc6edd761b23fc1f5a04f3a590126301a28d9ab9ab578bf,True

@@ -1,0 +1,64 @@
+{
+  "id": "ExportEngine",
+  "phase": 5,
+  "status": "planned_phase_5",
+  "page": "/fase-5-entrega-final",
+  "purpose": "Exporta resultados, cenários, auditoria e relatórios em formatos simples para entrega ou reuso.",
+  "inputs": {
+    "payload": {},
+    "format": "json|csv|html",
+    "filename": "resultado_empresa1_cenario3.json"
+  },
+  "outputs": {
+    "downloadReady": true,
+    "filename": "resultado_empresa1_cenario3.json",
+    "mimeType": "application/json"
+  },
+  "internal_functions": [
+    [
+      "toJson(payload)",
+      "Serializa JSON."
+    ],
+    [
+      "toCsv(rows)",
+      "Converte linhas para CSV."
+    ],
+    [
+      "toHtml(report)",
+      "Gera HTML exportável."
+    ],
+    [
+      "triggerDownload(blob, filename)",
+      "Dispara download no navegador."
+    ]
+  ],
+  "external_calls": [
+    [
+      "ExecutiveReport",
+      "Exporta relatório."
+    ],
+    [
+      "AuditTrail",
+      "Exporta auditoria."
+    ],
+    [
+      "ScenarioPersistence",
+      "Exporta/importa cenários."
+    ]
+  ],
+  "tests": {
+    "unit": [
+      "JSON exportado é parseável",
+      "CSV contém cabeçalho"
+    ],
+    "integration": [
+      "botão exportar gera arquivo"
+    ],
+    "manual": [
+      "baixar arquivo e abrir"
+    ],
+    "acceptance": [
+      "export não pode sair vazio"
+    ]
+  }
+}

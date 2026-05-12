@@ -1,0 +1,3386 @@
+{
+  "version": "12.0-final-polish-debug-modular-phase2",
+  "scope": "Contratos documentais para todas as 5 fases do simulador estático de malha logística.",
+  "rules": {
+    "company_isolation": "Empresa 1 e Empresa 2 nunca podem ser misturadas em dados, cenários, baseline, ranking ou relatório.",
+    "static_site": "Todos os paths usados em runtime devem ser relativos à raiz do pacote.",
+    "auditability": "Toda simulação final precisa registrar dados, premissas, versão e cenário.",
+    "no_silent_failures": "Erro ou warning relevante deve aparecer na interface ou no relatório."
+  },
+  "modules": [
+    {
+      "id": "AppBootstrap",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Inicializa o site estático, carrega os artefatos mínimos da Fase 1 e dispara a primeira renderização segura da interface.",
+      "inputs": {
+        "rootElementId": "app",
+        "paths": {
+          "catalog": "data/catalog.json",
+          "qualitySummary": "data/data_quality_summary.json",
+          "pathReport": "data/validation/path_resolution_report.json",
+          "auditSummary": "data/validation/final_v6_audit_summary.json",
+          "workbookInventory": "data/validation/workbook_sheet_inventory.csv"
+        },
+        "defaultCompany": "empresa1"
+      },
+      "outputs": {
+        "appState": {
+          "selectedCompany": "empresa1",
+          "loaded": true,
+          "loadErrors": []
+        },
+        "renderedSections": [
+          "company-selector",
+          "dataset-panel",
+          "quality-panel",
+          "audit-panel",
+          "manual-checklist"
+        ]
+      },
+      "internal_functions": [
+        [
+          "initApp()",
+          "Cria o estado inicial e coordena a sequência de carregamento."
+        ],
+        [
+          "loadPhase1Artifacts(paths)",
+          "Busca catálogo, qualidade, auditoria e inventário."
+        ],
+        [
+          "renderApp(state)",
+          "Renderiza a interface conforme a empresa selecionada."
+        ],
+        [
+          "showFatalError(error)",
+          "Mostra erro visível quando a inicialização falha."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DataLoader.fetchJson",
+          "Carregar JSONs declarados em paths."
+        ],
+        [
+          "CompanySelector.render",
+          "Renderizar seleção Empresa 1 / Empresa 2."
+        ],
+        [
+          "DatasetPanel.render",
+          "Mostrar datasets da empresa selecionada."
+        ],
+        [
+          "PathAuditPanel.render",
+          "Mostrar status dos caminhos auditados."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "initApp cria estado inicial com empresa1",
+          "showFatalError não deixa a página em branco"
+        ],
+        "integration": [
+          "site abre via http.server",
+          "todos os artefatos da Fase 1 são carregados"
+        ],
+        "manual": [
+          "abrir / e confirmar que os painéis aparecem",
+          "abrir /fase-1-validacao/ e confirmar que redireciona/mostra o mesmo app"
+        ],
+        "acceptance": [
+          "não usa path absoluto",
+          "não quebra se um painel tiver warning"
+        ]
+      }
+    },
+    {
+      "id": "CompanySelector",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Permite alternar entre Empresa 1 e Empresa 2 mantendo isolamento total de datasets, indicadores e mensagens.",
+      "inputs": {
+        "companies": [
+          {
+            "id": "empresa1",
+            "name": "Empresa 1",
+            "description": "Demanda + Distância + Premissas"
+          },
+          {
+            "id": "empresa2",
+            "name": "Empresa 2",
+            "description": "Workbook de malha logística"
+          }
+        ],
+        "selectedCompany": "empresa1"
+      },
+      "outputs": {
+        "selectedCompany": "empresa2",
+        "selectionChanged": true
+      },
+      "internal_functions": [
+        [
+          "renderCompanyCards(companies)",
+          "Monta os cards/botões das empresas."
+        ],
+        [
+          "selectCompany(companyId)",
+          "Atualiza estado global e solicita rerender."
+        ],
+        [
+          "getSelectedCompany(state)",
+          "Retorna a empresa ativa de forma segura."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DatasetPanel.render",
+          "Re-renderizar datasets da empresa."
+        ],
+        [
+          "DataQualityPanel.render",
+          "Re-renderizar qualidade da empresa."
+        ],
+        [
+          "ManualChecklist.render",
+          "Atualizar checklist sem perder estado."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "empresa1 é padrão",
+          "selectCompany troca para empresa2"
+        ],
+        "integration": [
+          "trocar empresa muda cards de datasets",
+          "trocar empresa não mistura paths"
+        ],
+        "manual": [
+          "clicar Empresa 1 e depois Empresa 2",
+          "confirmar que os títulos/datasets mudam"
+        ],
+        "acceptance": [
+          "nenhum dataset da Empresa 2 aparece quando Empresa 1 está selecionada"
+        ]
+      }
+    },
+    {
+      "id": "DataLoader",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "global",
+      "purpose": "Centraliza a leitura dos arquivos estáticos JSON/CSV usados pela interface. É o módulo que garante que os dados vêm dos caminhos relativos corretos.",
+      "inputs": {
+        "requests": [
+          {
+            "key": "catalog",
+            "path": "data/catalog.json",
+            "type": "json"
+          },
+          {
+            "key": "inventory",
+            "path": "data/validation/workbook_sheet_inventory.csv",
+            "type": "csv"
+          }
+        ]
+      },
+      "outputs": {
+        "loaded": {
+          "catalog": {},
+          "inventory": []
+        },
+        "errors": [],
+        "missing": []
+      },
+      "internal_functions": [
+        [
+          "fetchJson(path)",
+          "Carrega JSON e retorna objeto parseado com erro amigável."
+        ],
+        [
+          "fetchText(path)",
+          "Carrega CSV/texto sem tentar converter automaticamente."
+        ],
+        [
+          "parseCsv(text)",
+          "Converte CSV simples para array de objetos quando necessário."
+        ],
+        [
+          "loadAll(requests)",
+          "Executa as leituras essenciais e acumula erros."
+        ]
+      ],
+      "external_calls": [],
+      "tests": {
+        "unit": [
+          "fetchJson rejeita JSON inválido com mensagem clara",
+          "parseCsv preserva cabeçalhos"
+        ],
+        "integration": [
+          "catalog.json carrega",
+          "workbook_sheet_inventory.csv carrega"
+        ],
+        "manual": [
+          "abrir DevTools e confirmar ausência de 404 nos arquivos principais"
+        ],
+        "acceptance": [
+          "falha de um arquivo aparece na tela e não some silenciosamente"
+        ]
+      }
+    },
+    {
+      "id": "DataQualityPanel",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Exibe score de qualidade, contagens, warnings e erros já apurados na preparação dos dados.",
+      "inputs": {
+        "selectedCompany": "empresa1",
+        "qualitySummary": {
+          "empresa1": {
+            "score": 92,
+            "errors": [],
+            "warnings": []
+          }
+        }
+      },
+      "outputs": {
+        "qualityViewModel": {
+          "score": 92,
+          "status": "OK",
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "internal_functions": [
+        [
+          "getQualityForCompany(summary, companyId)",
+          "Obtém o bloco de qualidade da empresa."
+        ],
+        [
+          "classifyQualityStatus(score, errors)",
+          "Traduz score e erros em OK/warning/error."
+        ],
+        [
+          "renderQualityMetric(metric)",
+          "Renderiza indicador principal."
+        ],
+        [
+          "renderWarnings(warnings)",
+          "Lista alertas sem esconder informação."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DatasetPanel.getCompanyDatasets",
+          "Cruzar qualidade com datasets exibidos, se necessário."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "erro gera status error",
+          "score baixo gera warning"
+        ],
+        "integration": [
+          "painel muda ao trocar empresa"
+        ],
+        "manual": [
+          "verificar se warnings aparecem em amarelo e erros em vermelho"
+        ],
+        "acceptance": [
+          "não esconder problemas de dados"
+        ]
+      }
+    },
+    {
+      "id": "DatasetPanel",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Mostra os datasets core e arquivos brutos vinculados à empresa selecionada, com caminhos relativos visíveis para auditoria manual.",
+      "inputs": {
+        "selectedCompany": "empresa1",
+        "catalog": {
+          "companies": {
+            "empresa1": {
+              "coreDatasets": []
+            }
+          }
+        },
+        "pathReport": {
+          "missing_paths": []
+        }
+      },
+      "outputs": {
+        "visibleDatasets": [
+          {
+            "name": "demand_records",
+            "path": "data/empresa1/core/demand_records.json",
+            "status": "OK"
+          }
+        ],
+        "missingDatasets": []
+      },
+      "internal_functions": [
+        [
+          "getCompanyDatasets(catalog, companyId)",
+          "Filtra datasets pela empresa selecionada."
+        ],
+        [
+          "normalizeDatasetRecord(record)",
+          "Padroniza nome, descrição, formato e path."
+        ],
+        [
+          "renderDatasetCard(dataset)",
+          "Cria o card visual do dataset."
+        ],
+        [
+          "markDatasetStatus(dataset, pathReport)",
+          "Marca OK/warning/error conforme auditoria de paths."
+        ]
+      ],
+      "external_calls": [
+        [
+          "PathAuditPanel.getPathStatus",
+          "Checar se o caminho está em missing_paths."
+        ],
+        [
+          "DataLoader.fetchJson",
+          "Opcionalmente carregar metadados dos datasets."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "getCompanyDatasets filtra corretamente",
+          "path absoluto é sinalizado"
+        ],
+        "integration": [
+          "Empresa 1 mostra demanda/distância/premissas",
+          "Empresa 2 mostra tabelas core e scenario_blocks"
+        ],
+        "manual": [
+          "copiar um caminho exibido e conferir que existe na pasta"
+        ],
+        "acceptance": [
+          "todo dataset obrigatório tem path visível"
+        ]
+      }
+    },
+    {
+      "id": "ManualChecklist",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Permite ao usuário marcar manualmente validações da Fase 1 e salvar o progresso no navegador.",
+      "inputs": {
+        "phase": 1,
+        "checks": [
+          {
+            "id": "empresa1_datasets",
+            "label": "Empresa 1 mostra demanda, distância e premissas"
+          }
+        ]
+      },
+      "outputs": {
+        "completed": 1,
+        "total": 7,
+        "storageKey": "phase1ManualChecklist"
+      },
+      "internal_functions": [
+        [
+          "loadChecklistState(key)",
+          "Lê checks salvos no localStorage."
+        ],
+        [
+          "toggleCheck(checkId)",
+          "Marca/desmarca uma validação."
+        ],
+        [
+          "saveChecklistState(key, state)",
+          "Persiste o progresso localmente."
+        ],
+        [
+          "resetChecklist()",
+          "Limpa o checklist manual."
+        ]
+      ],
+      "external_calls": [],
+      "tests": {
+        "unit": [
+          "toggleCheck alterna boolean",
+          "reset limpa todos"
+        ],
+        "integration": [
+          "estado persiste após reload"
+        ],
+        "manual": [
+          "marcar checklist, recarregar página, conferir permanência"
+        ],
+        "acceptance": [
+          "usuário consegue auditar manualmente a Fase 1 sem abrir código"
+        ]
+      }
+    },
+    {
+      "id": "PathAuditPanel",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Mostra a auditoria dos caminhos do pacote: quantidade checada, faltantes, abas auditadas e arquivos core obrigatórios.",
+      "inputs": {
+        "pathReport": {
+          "result": "OK",
+          "path_count_checked": 55,
+          "missing_paths": []
+        },
+        "auditSummary": {
+          "workbooks_checked": 5,
+          "sheets_checked": 53
+        }
+      },
+      "outputs": {
+        "auditStatus": "OK",
+        "missingCount": 0,
+        "checkedPaths": 55,
+        "workbooksChecked": 5,
+        "sheetsChecked": 53
+      },
+      "internal_functions": [
+        [
+          "getPathStatus(path, report)",
+          "Retorna OK/missing para um path."
+        ],
+        [
+          "summarizeAudit(report, summary)",
+          "Cria indicadores de auditoria."
+        ],
+        [
+          "renderAuditBadges(summary)",
+          "Mostra badges visuais de OK/warning/error."
+        ],
+        [
+          "renderMissingPaths(paths)",
+          "Lista paths faltantes quando existirem."
+        ]
+      ],
+      "external_calls": [],
+      "tests": {
+        "unit": [
+          "missing_paths vazio gera OK",
+          "missing_paths > 0 gera error"
+        ],
+        "integration": [
+          "path report é exibido na página"
+        ],
+        "manual": [
+          "confirmar visualmente missing_paths = 0"
+        ],
+        "acceptance": [
+          "nenhum caminho crítico pode ficar invisível"
+        ]
+      }
+    },
+    {
+      "id": "Phase1TestPanel",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Mostra no navegador os testes automáticos básicos da Fase 1, permitindo checagem rápida sem terminal.",
+      "inputs": {
+        "appState": {},
+        "loadedArtifacts": {},
+        "selectedCompany": "empresa1"
+      },
+      "outputs": {
+        "browserTests": [
+          {
+            "name": "catalog_loaded",
+            "status": "pass"
+          }
+        ],
+        "summary": {
+          "passed": 8,
+          "failed": 0
+        }
+      },
+      "internal_functions": [
+        [
+          "runBrowserChecks(state)",
+          "Executa testes simples no estado carregado."
+        ],
+        [
+          "assertCondition(name, condition)",
+          "Converte condição em resultado pass/fail."
+        ],
+        [
+          "renderTestResults(results)",
+          "Mostra os testes em cards/tabela."
+        ],
+        [
+          "computeTestSummary(results)",
+          "Conta passes/fails."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DataLoader",
+          "Usa estado carregado pelo DataLoader."
+        ],
+        [
+          "CompanySelector",
+          "Confirma empresa selecionada."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "assertCondition false gera fail",
+          "summary conta resultados"
+        ],
+        "integration": [
+          "painel aparece depois do carregamento"
+        ],
+        "manual": [
+          "confirmar que todos os testes do navegador passam"
+        ],
+        "acceptance": [
+          "falha precisa aparecer visualmente"
+        ]
+      }
+    },
+    {
+      "id": "WorkbookInventoryPanel",
+      "phase": 1,
+      "status": "implemented_phase_1",
+      "page": "/ e /fase-1-validacao/",
+      "purpose": "Mostra o inventário de abas dos workbooks, especialmente para provar que as abas da Empresa 2 foram exportadas e mapeadas.",
+      "inputs": {
+        "inventoryRows": [
+          {
+            "empresa": "empresa2",
+            "workbook": "Analise_Malha_Empresa2(1).xlsx",
+            "sheet": "Cenários",
+            "csv_export_path": "data/empresa2/source_exports/.../Cenários.csv"
+          }
+        ],
+        "selectedCompany": "empresa2"
+      },
+      "outputs": {
+        "visibleSheets": [
+          {
+            "sheet": "Cenários",
+            "status": "mapped",
+            "coreMapping": [
+              "scenario_blocks.json",
+              "scenario_totals.json"
+            ]
+          }
+        ],
+        "sheetCount": 25
+      },
+      "internal_functions": [
+        [
+          "parseWorkbookInventory(csvText)",
+          "Converte o inventário CSV em linhas."
+        ],
+        [
+          "filterInventoryByCompany(rows, companyId)",
+          "Filtra abas por empresa."
+        ],
+        [
+          "detectSpecialSheets(rows)",
+          "Marca abas com tratamento especial, como Cenários."
+        ],
+        [
+          "renderSheetInventoryTable(rows)",
+          "Mostra tabela compacta de abas e exports."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DataLoader.fetchText",
+          "Carregar workbook_sheet_inventory.csv."
+        ],
+        [
+          "PathAuditPanel.getPathStatus",
+          "Validar paths de exports."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "Cenários é detectada como special sheet",
+          "filtro por empresa não mistura workbooks"
+        ],
+        "integration": [
+          "inventário mostra 53 abas auditadas",
+          "Empresa 2 mostra 25 abas por workbook"
+        ],
+        "manual": [
+          "verificar se Cenários mostra scenario_blocks/scenario_totals"
+        ],
+        "acceptance": [
+          "toda aba auditada precisa ter export ou justificativa"
+        ]
+      }
+    },
+    {
+      "id": "BaseFitScore",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/base-fit-score.js",
+      "purpose": "Valida se o score de paridade do baseline está coerente com a referência.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "validateBaseFit"
+      ],
+      "external_calls": [
+        "ReferenceResultExtractor",
+        "CostEngine"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "BaselineBuilder",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/baseline-builder.js",
+      "purpose": "Constrói o objeto de cenário base a partir do input normalizado.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "buildBaselineScenario",
+        "checkBaselineCompleteness"
+      ],
+      "external_calls": [
+        "BaselineDataAdapter"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "BaselineDashboard",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/baseline-dashboard.js",
+      "purpose": "Renderiza resumo, custos, fluxos, tributo, evidências e warnings do baseline.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "renderDashboard",
+        "renderSummary",
+        "renderCosts",
+        "renderFlows",
+        "renderFit",
+        "renderTax",
+        "renderEvidence",
+        "renderWarnings"
+      ],
+      "external_calls": [
+        "BaselineBuilder",
+        "FlowBuilder",
+        "TaxEngineBasic",
+        "CalibrationPanel"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "BaselineDataAdapter",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/baseline-data-adapter.js",
+      "purpose": "Normaliza o bundle da Fase 2 para um contrato comum entre Empresa 1 e Empresa 2.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "normalizePhase2Bundle",
+        "validateNormalizedInput"
+      ],
+      "external_calls": [
+        "DataLoader",
+        "DataQualityPanel"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "CalibrationPanel",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/calibration-panel.js",
+      "purpose": "Renderiza Base Fit Score, tabela de erro e warnings de calibração.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "renderCalibrationPanel",
+        "buildCalibrationWarnings"
+      ],
+      "external_calls": [
+        "BaseFitScore",
+        "ReferenceResultExtractor"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "CostEngine",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/cost-engine.js",
+      "purpose": "Valida o fechamento dos custos logísticos e total com tributo.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "validateCostClosure"
+      ],
+      "external_calls": [
+        "FlowBuilder"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "DistanceResolver",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/distance-resolver.js",
+      "purpose": "Resolve e valida distâncias entre origem e destino quando necessário.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "normalizeLocationName",
+        "validateDistanceValue",
+        "resolveDistance"
+      ],
+      "external_calls": [
+        "FlowBuilder",
+        "CostEngine"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "FlowBuilder",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/flow-builder.js",
+      "purpose": "Resume e valida os fluxos físicos do baseline.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "summarizeFlows",
+        "validateFlowCoverage"
+      ],
+      "external_calls": [
+        "BaselineBuilder"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "Phase2TestPanel",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/phase2-tests.js",
+      "purpose": "Executa e renderiza testes automáticos da Fase 2 no navegador.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "runPhase2Checks",
+        "renderChecks"
+      ],
+      "external_calls": [
+        "CostEngine",
+        "BaseFitScore",
+        "BaselineBuilder"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "ReferenceResultExtractor",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/reference-result-extractor.js",
+      "purpose": "Extrai a referência de baseline usada para Base Fit Score.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "extractReferenceResults",
+        "validateReferenceCompleteness"
+      ],
+      "external_calls": [
+        "BaseFitScore"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "TaxEngineBasic",
+      "phase": 2,
+      "status": "implemented_refactored_polish_v2",
+      "page": "/fase-2-baseline/",
+      "file": "assets/js/phase2/tax-engine-basic.js",
+      "purpose": "Resume e valida a camada tributária básica da Fase 2.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+      },
+      "outputs": {
+        "result": "objeto/tabela/renderização específica do módulo",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "summarizeTaxResults",
+        "validateTaxResults"
+      ],
+      "external_calls": [
+        "FlowBuilder",
+        "CostEngine"
+      ],
+      "tests": {
+        "unit": [
+          "tests/05_fase2_baseline/test_phase2_static_site.py",
+          "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+        ],
+        "integration": [
+          "tests/05_fase2_baseline/test_phase2_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-2-baseline/"
+        ],
+        "acceptance": [
+          "python tests/run_all_tests.py"
+        ]
+      }
+    },
+    {
+      "id": "Phase3TestPanel",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "file": "assets/js/phase3/phase3-tests.js",
+      "purpose": "Executa testes automáticos da Fase 3 na interface.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "scenario": "{}",
+        "baseline_bundle": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "ver arquivo JS para funções exportadas e helpers internos"
+      ],
+      "external_calls": [
+        "módulos phase2/phase3 conforme implementação"
+      ],
+      "tests": {
+        "unit": [
+          "test_phase3_logic.py"
+        ],
+        "integration": [
+          "test_phase3_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-3-cenarios/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioArenaDashboard",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "file": "assets/js/phase3/scenario-arena-dashboard.js",
+      "purpose": "Renderiza a página principal da Fase 3.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "scenario": "{}",
+        "baseline_bundle": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "ver arquivo JS para funções exportadas e helpers internos"
+      ],
+      "external_calls": [
+        "módulos phase2/phase3 conforme implementação"
+      ],
+      "tests": {
+        "unit": [
+          "test_phase3_logic.py"
+        ],
+        "integration": [
+          "test_phase3_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-3-cenarios/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioBuilder",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "purpose": "Permite criar cenários manuais a partir do baseline, mudando CDs ativos, alocação, frete, estoque, demanda, modo tributário e outras premissas controladas.",
+      "inputs": {
+        "baselineScenario": {
+          "scenarioId": "baseline_empresa1"
+        },
+        "changes": {
+          "activeCds": [
+            "RJ",
+            "SP",
+            "ES"
+          ],
+          "freightMultiplier": 1.1,
+          "inventoryDays": 35,
+          "taxMode": "current"
+        }
+      },
+      "outputs": {
+        "scenario": {
+          "scenarioId": "empresa1_custom_001",
+          "company": "empresa1",
+          "isBaseline": false,
+          "changesApplied": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        }
+      },
+      "internal_functions": [
+        [
+          "createScenarioFromBaseline(baseline)",
+          "Clona baseline com versionamento."
+        ],
+        [
+          "applyScenarioChanges(scenario, changes)",
+          "Aplica alterações do usuário."
+        ],
+        [
+          "rebuildScenarioFlows(scenario)",
+          "Recalcula fluxos quando CD/alocação muda."
+        ],
+        [
+          "nameScenario(scenario, name)",
+          "Define nome legível e ID."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioValidator",
+          "Valida alterações."
+        ],
+        [
+          "FlowBuilder",
+          "Recria fluxos."
+        ],
+        [
+          "CostEngine",
+          "Calcula custos do cenário."
+        ],
+        [
+          "TaxEngine",
+          "Calcula tributos se ligado."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "cenário mantém company",
+          "changesApplied registra mudanças"
+        ],
+        "integration": [
+          "cenário criado aparece no comparador"
+        ],
+        "manual": [
+          "fechar um CD e conferir mudança visual"
+        ],
+        "acceptance": [
+          "cenário inválido gera erro claro"
+        ]
+      },
+      "file": "assets/js/phase3/scenario-builder.js"
+    },
+    {
+      "id": "ScenarioChangeExplainer",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "file": "assets/js/phase3/scenario-change-explainer.js",
+      "purpose": "Gera explicação textual do que mudou e por que o cenário ganhou ou perdeu.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "scenario": "{}",
+        "baseline_bundle": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "ver arquivo JS para funções exportadas e helpers internos"
+      ],
+      "external_calls": [
+        "módulos phase2/phase3 conforme implementação"
+      ],
+      "tests": {
+        "unit": [
+          "test_phase3_logic.py"
+        ],
+        "integration": [
+          "test_phase3_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-3-cenarios/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioComparator",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "purpose": "Compara múltiplos cenários da mesma empresa contra o baseline correto, mostrando custo, saving, serviço, risco e tributo.",
+      "inputs": {
+        "baselineScenarioId": "baseline_empresa1",
+        "scenarios": [
+          {
+            "scenarioId": "baseline_empresa1"
+          },
+          {
+            "scenarioId": "empresa1_custom_001"
+          }
+        ],
+        "metrics": [
+          "cost",
+          "saving",
+          "service",
+          "risk",
+          "tax"
+        ]
+      },
+      "outputs": {
+        "comparisonTable": [],
+        "deltaVsBaseline": [],
+        "bestByCost": "empresa1_custom_001",
+        "warnings": []
+      },
+      "internal_functions": [
+        [
+          "assertSameCompany(scenarios)",
+          "Impede comparação entre empresas."
+        ],
+        [
+          "computeScenarioDelta(baseline, scenario)",
+          "Calcula diferença contra base."
+        ],
+        [
+          "buildComparisonTable(scenarios)",
+          "Monta tabela lado a lado."
+        ],
+        [
+          "rankByMetric(scenarios, metric)",
+          "Ordena por métrica escolhida."
+        ]
+      ],
+      "external_calls": [
+        [
+          "CostEngine",
+          "Usa custos calculados."
+        ],
+        [
+          "TaxEngine",
+          "Usa tributos calculados."
+        ],
+        [
+          "ScenarioQualityCheck",
+          "Usa scores e alertas."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "baseline saving = 0",
+          "cross-company bloqueado"
+        ],
+        "integration": [
+          "cenários criados aparecem na tabela"
+        ],
+        "manual": [
+          "comparar Base, 3 CDs e ES"
+        ],
+        "acceptance": [
+          "saving sempre usa baseline da mesma empresa"
+        ]
+      },
+      "file": "assets/js/phase3/scenario-comparator.js"
+    },
+    {
+      "id": "ScenarioFlowRebuilder",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "file": "assets/js/phase3/scenario-flow-rebuilder.js",
+      "purpose": "Reconstrói fluxos quando CDs são fechados e registra realocações.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "scenario": "{}",
+        "baseline_bundle": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "ver arquivo JS para funções exportadas e helpers internos"
+      ],
+      "external_calls": [
+        "módulos phase2/phase3 conforme implementação"
+      ],
+      "tests": {
+        "unit": [
+          "test_phase3_logic.py"
+        ],
+        "integration": [
+          "test_phase3_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-3-cenarios/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioImportExport",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "file": "assets/js/phase3/scenario-import-export.js",
+      "purpose": "Exporta e importa cenários em JSON.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "scenario": "{}",
+        "baseline_bundle": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "ver arquivo JS para funções exportadas e helpers internos"
+      ],
+      "external_calls": [
+        "módulos phase2/phase3 conforme implementação"
+      ],
+      "tests": {
+        "unit": [
+          "test_phase3_logic.py"
+        ],
+        "integration": [
+          "test_phase3_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-3-cenarios/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioLibrary",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "file": "assets/js/phase3/scenario-library.js",
+      "purpose": "Carrega baseline, cenários exemplo e cenários salvos por empresa.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "scenario": "{}",
+        "baseline_bundle": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "ver arquivo JS para funções exportadas e helpers internos"
+      ],
+      "external_calls": [
+        "módulos phase2/phase3 conforme implementação"
+      ],
+      "tests": {
+        "unit": [
+          "test_phase3_logic.py"
+        ],
+        "integration": [
+          "test_phase3_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-3-cenarios/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioPersistence",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "purpose": "Salva cenários criados pelo usuário no navegador e permite exportar/importar JSON de cenário.",
+      "inputs": {
+        "scenario": {},
+        "storageKey": "savedScenarios_empresa1",
+        "operation": "save|load|delete|export|import"
+      },
+      "outputs": {
+        "savedScenarios": [],
+        "exportJson": {},
+        "status": "OK"
+      },
+      "internal_functions": [
+        [
+          "saveScenario(scenario)",
+          "Salva no localStorage por empresa."
+        ],
+        [
+          "loadScenarios(company)",
+          "Lê cenários da empresa."
+        ],
+        [
+          "deleteScenario(id)",
+          "Remove cenário."
+        ],
+        [
+          "exportScenario(id)",
+          "Gera JSON baixável."
+        ],
+        [
+          "importScenario(json)",
+          "Importa e valida cenário."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioValidator",
+          "Valida antes de salvar/importar."
+        ],
+        [
+          "AuditTrail",
+          "Registra origem do cenário importado/exportado."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "salva e carrega por empresa",
+          "delete remove só o cenário escolhido"
+        ],
+        "integration": [
+          "cenário salvo aparece após reload"
+        ],
+        "manual": [
+          "salvar cenário, recarregar, conferir"
+        ],
+        "acceptance": [
+          "cenários da Empresa 1 não aparecem na Empresa 2"
+        ]
+      },
+      "file": "assets/js/phase3/scenario-persistence.js"
+    },
+    {
+      "id": "ScenarioQualityCheck",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "purpose": "Avalia plausibilidade operacional do cenário, separando cenário barato de cenário realmente executável.",
+      "inputs": {
+        "scenario": {},
+        "results": {},
+        "constraints": {
+          "maxConcentration": 0.65,
+          "maxCdUtilization": 0.9,
+          "maxDistanceIncreasePct": 20
+        }
+      },
+      "outputs": {
+        "qualityScore": 78,
+        "alerts": [
+          {
+            "severity": "warning",
+            "message": "CD ES concentra 82% do volume"
+          }
+        ],
+        "riskFlags": []
+      },
+      "internal_functions": [
+        [
+          "calculateConcentrationRisk(scenario)",
+          "Mede dependência de poucos CDs."
+        ],
+        [
+          "calculateCapacityRisk(scenario, constraints)",
+          "Mede estouro de capacidade."
+        ],
+        [
+          "calculateServiceProxy(scenario)",
+          "Usa distância/lead time proxy."
+        ],
+        [
+          "aggregateQualityScore(parts)",
+          "Agrega qualidade 0-100."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioValidator",
+          "Recebe validade básica."
+        ],
+        [
+          "ScenarioScoring",
+          "Entrega qualityScore para ranking."
+        ],
+        [
+          "ExplainabilityEngine",
+          "Entrega alertas para explicação."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "100% volume em um CD gera alerta",
+          "capacidade acima do limite gera severidade alta"
+        ],
+        "integration": [
+          "Comparator mostra qualityScore"
+        ],
+        "manual": [
+          "centralizar tudo e conferir alerta"
+        ],
+        "acceptance": [
+          "custo baixo não apaga risco alto"
+        ]
+      },
+      "file": "assets/js/phase3/scenario-quality-check.js"
+    },
+    {
+      "id": "ScenarioSimulator",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "file": "assets/js/phase3/scenario-simulator.js",
+      "purpose": "Executa cenário validado, recalcula fluxos, custos e tributo básico.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "scenario": "{}",
+        "baseline_bundle": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "ver arquivo JS para funções exportadas e helpers internos"
+      ],
+      "external_calls": [
+        "módulos phase2/phase3 conforme implementação"
+      ],
+      "tests": {
+        "unit": [
+          "test_phase3_logic.py"
+        ],
+        "integration": [
+          "test_phase3_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-3-cenarios/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioValidator",
+      "phase": 3,
+      "status": "implemented_phase_3",
+      "page": "/fase-3-cenarios/",
+      "purpose": "Bloqueia ou alerta cenários impossíveis: sem CD ativo, demanda sem atendimento, capacidade estourada, distância ausente ou empresa misturada.",
+      "inputs": {
+        "scenario": {},
+        "constraints": {
+          "minCds": 1,
+          "maxCdUtilization": 0.9,
+          "allowCrossCompanyComparison": false
+        }
+      },
+      "outputs": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "blockingReasons": []
+      },
+      "internal_functions": [
+        [
+          "validateCompanyIsolation(scenario)",
+          "Garante que a empresa é única."
+        ],
+        [
+          "validateActiveCds(scenario)",
+          "Confere CDs ativos."
+        ],
+        [
+          "validateDemandCoverage(scenario)",
+          "Confere atendimento da demanda."
+        ],
+        [
+          "validateCapacity(scenario, constraints)",
+          "Confere capacidade."
+        ],
+        [
+          "validateDistances(scenario)",
+          "Confere rotas com distância."
+        ]
+      ],
+      "external_calls": [
+        [
+          "DataQualityPanel",
+          "Usa diagnóstico de dados."
+        ],
+        [
+          "ScenarioQualityCheck",
+          "Envia warnings não bloqueantes."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "sem CD ativo é inválido",
+          "empresa misturada é inválida"
+        ],
+        "integration": [
+          "ScenarioBuilder chama validator antes de salvar"
+        ],
+        "manual": [
+          "tentar cenário absurdo e ver bloqueio"
+        ],
+        "acceptance": [
+          "nenhum cenário inválido entra no ranking"
+        ]
+      },
+      "file": "assets/js/phase3/scenario-validator.js"
+    },
+    {
+      "id": "CandidateScenarioGenerator",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/candidate-scenario-generator.js",
+      "purpose": "Gera candidatos automaticamente combinando CDs ativos, frete, estoque, demanda e modo tributário.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "generateCandidateScenarios"
+      ],
+      "external_calls": [
+        "ScenarioBuilder",
+        "ConstraintEngine"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ConstraintEngine",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/constraint-engine.js",
+      "purpose": "Aplica restrições de CDs, concentração, risco e modo tributário antes de ranquear cenários.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "evaluateConstraints",
+        "validateConstraintConfig"
+      ],
+      "external_calls": [
+        "ScenarioQualityCheck",
+        "ScenarioValidator"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "MetricNormalizer",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/metric-normalizer.js",
+      "purpose": "Normaliza métricas heterogêneas para escala 0-100 usando min-max e direção de preferência.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "normalizeMetrics",
+        "defaultMetricDirections"
+      ],
+      "external_calls": [
+        "ScenarioMetricExtractor",
+        "ObjectiveValidator"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ObjectiveBuilder",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/objective-builder.js",
+      "purpose": "Cria função objetivo com pesos customizados, normaliza pesos e gera preview da fórmula.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "normalizeWeightInput",
+        "calculateWeightsSum",
+        "buildObjective",
+        "buildObjectivePreviewText"
+      ],
+      "external_calls": [
+        "ObjectiveValidator",
+        "ObjectiveProfileLibrary"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ObjectiveProfileLibrary",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/objective-profile-library.js",
+      "purpose": "Fornece perfis prontos de decisão: CFO, Supply, Fiscal, Conservador, Crescimento e Balanceado.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "loadDefaultProfiles",
+        "getProfileById",
+        "cloneProfileAsObjective",
+        "validateProfileWeights"
+      ],
+      "external_calls": [
+        "ObjectiveBuilder"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ObjectiveValidator",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/objective-validator.js",
+      "purpose": "Valida se a função objetivo tem empresa, métricas conhecidas e pesos coerentes.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "validateObjective",
+        "knownMetrics"
+      ],
+      "external_calls": [
+        "ObjectiveBuilder",
+        "MetricNormalizer"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "Phase4Dashboard",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/phase4-dashboard.js",
+      "purpose": "Renderiza a página /fase-4-score-otimizador/ com objective builder, ranking, otimizador e validação.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "setupPhase4",
+        "loadPhase4Company"
+      ],
+      "external_calls": [
+        "ObjectiveBuilder",
+        "ObjectiveProfileLibrary",
+        "ScenarioOptimizer",
+        "SearchLogPanel",
+        "RankingExplainer",
+        "TradeoffFrontier",
+        "Phase4TestPanel"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "Phase4TestPanel",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/phase4-tests.js",
+      "purpose": "Executa testes automáticos da Fase 4 na interface.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "runPhase4BrowserChecks",
+        "renderPhase4Checks"
+      ],
+      "external_calls": [
+        "ObjectiveBuilder",
+        "MetricNormalizer",
+        "ScenarioScoring",
+        "CandidateScenarioGenerator",
+        "ScenarioOptimizer"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "RankingExplainer",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/ranking-explainer.js",
+      "purpose": "Explica por que o cenário ranqueado venceu ou quais componentes pesaram no score.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "explainRanking"
+      ],
+      "external_calls": [
+        "ScenarioScoring",
+        "ScenarioComparator"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioMetricExtractor",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/scenario-metric-extractor.js",
+      "purpose": "Extrai métricas comparáveis dos cenários simulados: custo, qualidade, risco, tributo e eficiência de estoque.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "extractScenarioMetrics"
+      ],
+      "external_calls": [
+        "ScenarioSimulator",
+        "ScenarioQualityCheck"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioOptimizer",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/scenario-optimizer.js",
+      "purpose": "Roda busca leve no navegador, simula candidatos, aplica restrições, normaliza métricas e ranqueia.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "runOptimization"
+      ],
+      "external_calls": [
+        "CandidateScenarioGenerator",
+        "ScenarioSimulator",
+        "ConstraintEngine",
+        "ScenarioMetricExtractor",
+        "MetricNormalizer",
+        "ScenarioScoring"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ScenarioScoring",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/scenario-scoring.js",
+      "purpose": "Calcula score ponderado e ranking final dos cenários.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "scoreScenarios",
+        "getBestScenario"
+      ],
+      "external_calls": [
+        "ObjectiveValidator",
+        "MetricNormalizer"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "SearchLogPanel",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/search-log-panel.js",
+      "purpose": "Renderiza log da busca com candidatos gerados, simulados, válidos, inválidos e melhor score.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "renderSearchLog"
+      ],
+      "external_calls": [
+        "ScenarioOptimizer"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "TradeoffFrontier",
+      "phase": 4,
+      "status": "implemented_phase_4",
+      "page": "/fase-4-score-otimizador/",
+      "file": "assets/js/phase4/tradeoff-frontier.js",
+      "purpose": "Monta uma fronteira simples de trade-off entre custo total e qualidade.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "objective": "{}",
+        "scenario_results": "[]",
+        "constraints": "{}",
+        "optimizer_config": "{}"
+      },
+      "outputs": {
+        "result": "{}",
+        "scored_scenarios": "[]",
+        "search_log": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "buildTradeoffFrontier"
+      ],
+      "external_calls": [
+        "ScenarioScoring",
+        "ScenarioQualityCheck"
+      ],
+      "tests": {
+        "unit": [
+          "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py",
+          "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
+        ],
+        "integration": [
+          "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-4-score-otimizador/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "AuditTrail",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final e global",
+      "purpose": "Registra dados, premissas, versão do modelo, cenário, objetivo e resultados para cada simulação exportável.",
+      "inputs": {
+        "company": "empresa1",
+        "scenario": {},
+        "assumptions": {},
+        "dataVersions": {},
+        "modelVersion": "1.0.0",
+        "results": {}
+      },
+      "outputs": {
+        "auditRecord": {
+          "auditId": "audit_001",
+          "company": "empresa1",
+          "scenarioId": "cenario_3cds",
+          "dataSources": [],
+          "assumptionsUsed": {},
+          "modelVersion": "1.0.0"
+        }
+      },
+      "internal_functions": [
+        [
+          "createAuditRecord(payload)",
+          "Cria registro de auditoria."
+        ],
+        [
+          "hashScenarioInput(scenario)",
+          "Gera hash reprodutível."
+        ],
+        [
+          "attachDataSources(record, sources)",
+          "Anexa paths e hashes de fontes."
+        ],
+        [
+          "exportAuditJson(record)",
+          "Gera JSON exportável."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioPersistence",
+          "Recebe cenários salvos/importados."
+        ],
+        [
+          "ScenarioOptimizer",
+          "Recebe search log."
+        ],
+        [
+          "ExecutiveReport",
+          "Inclui auditoria no relatório."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "audit tem empresa, cenário, versão e premissas",
+          "hash muda quando input muda"
+        ],
+        "integration": [
+          "relatório exporta audit trail"
+        ],
+        "manual": [
+          "abrir JSON de auditoria e conferir fontes"
+        ],
+        "acceptance": [
+          "nenhuma simulação final sem audit trail"
+        ]
+      }
+    },
+    {
+      "id": "AuditTrailEngine",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/audit-trail-engine.js",
+      "purpose": "Gera trilha de auditoria com fontes, baseline, objetivo e cenário.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "buildAuditTrail",
+        "validateAuditTrail"
+      ],
+      "external_calls": [
+        "DataLoader",
+        "ScenarioPersistence",
+        "ObjectiveBuilder",
+        "RecommendationEngine"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ExecutiveReport",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final",
+      "purpose": "Monta relatório executivo do cenário: resumo, comparação, saving, riscos, stress, premissas e recomendação defendível.",
+      "inputs": {
+        "company": "empresa1",
+        "baseline": {},
+        "selectedScenario": {},
+        "comparison": {},
+        "stress": {},
+        "explanation": {},
+        "audit": {}
+      },
+      "outputs": {
+        "report": {
+          "title": "Relatório Executivo - Empresa 1",
+          "sections": [
+            "Resumo",
+            "Comparação",
+            "Riscos",
+            "Stress",
+            "Premissas"
+          ]
+        },
+        "exportFormats": [
+          "html",
+          "json",
+          "csv_summary"
+        ]
+      },
+      "internal_functions": [
+        [
+          "buildExecutiveSummary(inputs)",
+          "Cria resumo de decisão."
+        ],
+        [
+          "buildCostWaterfallData(comparison)",
+          "Prepara decomposição de saving."
+        ],
+        [
+          "buildRiskSection(alerts)",
+          "Monta seção de riscos."
+        ],
+        [
+          "buildAssumptionsSection(audit)",
+          "Lista premissas."
+        ],
+        [
+          "renderReport(report)",
+          "Renderiza relatório."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ExplainabilityEngine",
+          "Recebe narrativa."
+        ],
+        [
+          "AuditTrail",
+          "Recebe premissas/fontes."
+        ],
+        [
+          "ExportEngine",
+          "Exporta arquivos."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "relatório tem empresa e cenário",
+          "relatório inclui saving e premissas"
+        ],
+        "integration": [
+          "relatório gera após stress"
+        ],
+        "manual": [
+          "ler relatório e ver se conta a história"
+        ],
+        "acceptance": [
+          "relatório não pode faltar audit trail"
+        ]
+      }
+    },
+    {
+      "id": "ExecutiveReportBuilder",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/executive-report-builder.js",
+      "purpose": "Gera relatório executivo HTML.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "buildExecutiveReportHtml"
+      ],
+      "external_calls": [
+        "RecommendationEngine",
+        "StressTestEngine",
+        "RobustnessScorer",
+        "AuditTrailEngine"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ExplainabilityEngine",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final",
+      "purpose": "Gera explicações textuais simples e auditáveis sobre por que um cenário ganhou, perdeu ou ficou arriscado.",
+      "inputs": {
+        "baselineResults": {},
+        "scenarioResults": {},
+        "delta": {},
+        "qualityAlerts": [],
+        "stressResults": []
+      },
+      "outputs": {
+        "explanation": "O cenário reduziu armazenagem, mas aumentou distribuição.",
+        "mainDrivers": [
+          "redução de armazenagem",
+          "aumento de distância média"
+        ],
+        "riskNarrative": "Cenário concentra volume em um CD."
+      },
+      "internal_functions": [
+        [
+          "identifyMainDrivers(delta)",
+          "Escolhe maiores variações."
+        ],
+        [
+          "describeTradeoffs(delta, alerts)",
+          "Gera texto de trade-off."
+        ],
+        [
+          "describeStressBehavior(stressResults)",
+          "Resume robustez."
+        ],
+        [
+          "guardAgainstOverclaim(text, evidence)",
+          "Evita afirmações sem dado."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioComparator",
+          "Recebe delta."
+        ],
+        [
+          "ScenarioQualityCheck",
+          "Recebe alertas."
+        ],
+        [
+          "StressTestEngine",
+          "Recebe stress."
+        ],
+        [
+          "ExecutiveReport",
+          "Envia narrativa final."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "se armazenagem cai, texto menciona queda",
+          "se risco alto, texto menciona risco"
+        ],
+        "integration": [
+          "relatório inclui explicação"
+        ],
+        "manual": [
+          "ler explicação e conferir com gráficos"
+        ],
+        "acceptance": [
+          "não dizer que é melhor se score/robustez não sustentam"
+        ]
+      }
+    },
+    {
+      "id": "ExportCenter",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/export-center.js",
+      "purpose": "Prepara exportações JSON, CSV e HTML.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "buildExportPackage",
+        "triggerBrowserDownload"
+      ],
+      "external_calls": [
+        "ExecutiveReportBuilder",
+        "AuditTrailEngine",
+        "StressTestEngine"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "ExportEngine",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final",
+      "purpose": "Exporta resultados, cenários, auditoria e relatórios em formatos simples para entrega ou reuso.",
+      "inputs": {
+        "payload": {},
+        "format": "json|csv|html",
+        "filename": "resultado_empresa1_cenario3.json"
+      },
+      "outputs": {
+        "downloadReady": true,
+        "filename": "resultado_empresa1_cenario3.json",
+        "mimeType": "application/json"
+      },
+      "internal_functions": [
+        [
+          "toJson(payload)",
+          "Serializa JSON."
+        ],
+        [
+          "toCsv(rows)",
+          "Converte linhas para CSV."
+        ],
+        [
+          "toHtml(report)",
+          "Gera HTML exportável."
+        ],
+        [
+          "triggerDownload(blob, filename)",
+          "Dispara download no navegador."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ExecutiveReport",
+          "Exporta relatório."
+        ],
+        [
+          "AuditTrail",
+          "Exporta auditoria."
+        ],
+        [
+          "ScenarioPersistence",
+          "Exporta/importa cenários."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "JSON exportado é parseável",
+          "CSV contém cabeçalho"
+        ],
+        "integration": [
+          "botão exportar gera arquivo"
+        ],
+        "manual": [
+          "baixar arquivo e abrir"
+        ],
+        "acceptance": [
+          "export não pode sair vazio"
+        ]
+      }
+    },
+    {
+      "id": "FinalQAChecker",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/final-qa-checker.js",
+      "purpose": "Executa checagens finais do simulador e isolamento de empresas.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "runFinalQAChecks"
+      ],
+      "external_calls": [
+        "DataLoader",
+        "Phase5TestPanel"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "FinalScenarioSelector",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/final-scenario-selector.js",
+      "purpose": "Seleciona o cenário final por score, custo, robustez ou escolha manual.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "selectBestByScore",
+        "selectBestByCost",
+        "selectBestByRobustness",
+        "selectManualScenario",
+        "validateSelectedScenario"
+      ],
+      "external_calls": [
+        "ScenarioScoring",
+        "ScenarioOptimizer",
+        "ScenarioComparator"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "Phase5Dashboard",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/phase5-dashboard.js",
+      "purpose": "Renderiza a página final da Fase 5.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "setupPhase5",
+        "loadPhase5Company"
+      ],
+      "external_calls": [
+        "FinalScenarioSelector",
+        "StressTestEngine",
+        "SensitivityEngine",
+        "RobustnessScorer",
+        "RecommendationEngine",
+        "AuditTrailEngine",
+        "ExecutiveReportBuilder",
+        "ExportCenter",
+        "FinalQAChecker",
+        "ReleaseValidator",
+        "Phase5TestPanel"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "Phase5TestPanel",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/phase5-tests.js",
+      "purpose": "Executa testes automáticos da Fase 5 no navegador.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "runPhase5BrowserChecks",
+        "renderPhase5Checks"
+      ],
+      "external_calls": [
+        "StressTestEngine",
+        "RobustnessScorer",
+        "RecommendationEngine",
+        "AuditTrailEngine",
+        "ExecutiveReportBuilder",
+        "ExportCenter",
+        "FinalQAChecker"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "RecommendationEngine",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/recommendation-engine.js",
+      "purpose": "Gera recomendação executiva explicável.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "buildRecommendation"
+      ],
+      "external_calls": [
+        "ScenarioScoring",
+        "ScenarioComparator",
+        "ScenarioQualityCheck",
+        "RobustnessScorer"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "RecommendationPanel",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final",
+      "purpose": "Apresenta recomendação final com ressalvas: melhor cenário por objetivo, robustez, riscos e próximos passos.",
+      "inputs": {
+        "rankedScenarios": [],
+        "stressResults": [],
+        "explanations": [],
+        "objective": {}
+      },
+      "outputs": {
+        "recommendation": {
+          "recommendedScenarioId": "cenario_3cds",
+          "confidence": "medium",
+          "why": [],
+          "caveats": []
+        }
+      },
+      "internal_functions": [
+        [
+          "selectRecommendedScenario(ranked, stress)",
+          "Seleciona cenário equilibrando score e robustez."
+        ],
+        [
+          "buildCaveats(alerts)",
+          "Monta ressalvas."
+        ],
+        [
+          "classifyConfidence(evidence)",
+          "Classifica confiança."
+        ],
+        [
+          "renderRecommendation(rec)",
+          "Mostra recomendação visual."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioScoring",
+          "Recebe ranking."
+        ],
+        [
+          "StressTestEngine",
+          "Recebe robustez."
+        ],
+        [
+          "ExplainabilityEngine",
+          "Recebe drivers e trade-offs."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "cenário com score alto e stress ruim recebe ressalva",
+          "sem evidência suficiente => confiança baixa"
+        ],
+        "integration": [
+          "recomendação aparece no relatório"
+        ],
+        "manual": [
+          "conferir se recomendação não ignora riscos"
+        ],
+        "acceptance": [
+          "recomendação precisa citar caveats quando existirem"
+        ]
+      }
+    },
+    {
+      "id": "ReleaseValidator",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/release-validator.js",
+      "purpose": "Define se o release final está pronto ou bloqueado.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "validateRelease"
+      ],
+      "external_calls": [
+        "FinalQAChecker"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "RobustnessScorer",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/robustness-scorer.js",
+      "purpose": "Calcula score de robustez a partir de stress test, qualidade e risco.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "calculateRobustness"
+      ],
+      "external_calls": [
+        "StressTestEngine",
+        "ScenarioQualityCheck"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "SensitivityEngine",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/sensitivity-engine.js",
+      "purpose": "Varia uma premissa e mede impacto de custo e saving.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "runSensitivity"
+      ],
+      "external_calls": [
+        "ScenarioSimulator",
+        "ScenarioComparator"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "StressCaseLibrary",
+      "phase": 5,
+      "status": "implemented_phase_5",
+      "page": "/fase-5-entrega-final/",
+      "file": "assets/js/phase5/stress-case-library.js",
+      "purpose": "Fornece casos padrão e conservadores de stress test.",
+      "inputs": {
+        "company_id": "empresa1|empresa2",
+        "selected_scenario": "{}",
+        "baseline_bundle": "{}",
+        "objective": "{}",
+        "stress_cases": "[]"
+      },
+      "outputs": {
+        "decision_package": "{}",
+        "recommendation": "{}",
+        "stress_results": "[]",
+        "audit": "{}",
+        "warnings": "[]",
+        "errors": "[]"
+      },
+      "internal_functions": [
+        "getDefaultStressCases",
+        "buildStressCaseLibrary"
+      ],
+      "external_calls": [
+        "StressTestEngine"
+      ],
+      "tests": {
+        "unit": [
+          "tests/08_fase5_entrega_final/test_phase5_stress_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py",
+          "tests/08_fase5_entrega_final/test_phase5_audit_export.py",
+          "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
+        ],
+        "integration": [
+          "tests/08_fase5_entrega_final/test_phase5_http_server.py"
+        ],
+        "manual": [
+          "checklist na página /fase-5-entrega-final/"
+        ],
+        "acceptance": [
+          "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
+        ]
+      }
+    },
+    {
+      "id": "StressTestEngine",
+      "phase": 5,
+      "status": "planned_phase_5",
+      "page": "/fase-5-entrega-final",
+      "purpose": "Aplica choques de frete, demanda, WACC, armazenagem, capacidade e tributo para testar robustez do cenário.",
+      "inputs": {
+        "scenario": {},
+        "stressCases": [
+          {
+            "name": "frete_mais_20",
+            "changes": {
+              "freightMultiplier": 1.2
+            }
+          }
+        ],
+        "baseline": {}
+      },
+      "outputs": {
+        "stressResults": [
+          {
+            "case": "frete_mais_20",
+            "totalCost": 11000000,
+            "savingVsBase": 0.03,
+            "stillPositive": true
+          }
+        ],
+        "robustnessScore": 74,
+        "alerts": []
+      },
+      "internal_functions": [
+        [
+          "applyStressCase(scenario, stressCase)",
+          "Cria versão estressada."
+        ],
+        [
+          "runStressCase(stressedScenario)",
+          "Calcula cenário sob choque."
+        ],
+        [
+          "compareStressVsBaseline(result)",
+          "Mede saving e piora."
+        ],
+        [
+          "calculateRobustnessScore(results)",
+          "Agrega robustez."
+        ]
+      ],
+      "external_calls": [
+        [
+          "ScenarioBuilder",
+          "Aplicar mudanças temporárias."
+        ],
+        [
+          "CostEngine",
+          "Recalcular custos."
+        ],
+        [
+          "TaxEngine",
+          "Recalcular tributo."
+        ],
+        [
+          "ScenarioComparator",
+          "Comparar contra base."
+        ]
+      ],
+      "tests": {
+        "unit": [
+          "frete +20% aumenta transporte",
+          "demanda +15% aumenta volume/custo variável"
+        ],
+        "integration": [
+          "stress roda nos top cenários"
+        ],
+        "manual": [
+          "rodar stress no cenário vencedor"
+        ],
+        "acceptance": [
+          "saving negativo em stress gera alerta"
+        ]
+      }
+    }
+  ],
+  "updated_at_utc": "2026-05-07T01:44:50.682847Z"
+}

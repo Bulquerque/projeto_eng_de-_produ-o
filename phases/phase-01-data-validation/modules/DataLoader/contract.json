@@ -1,0 +1,64 @@
+{
+  "id": "DataLoader",
+  "phase": 1,
+  "status": "implemented_phase_1",
+  "page": "global",
+  "purpose": "Centraliza a leitura dos arquivos estáticos JSON/CSV usados pela interface. É o módulo que garante que os dados vêm dos caminhos relativos corretos.",
+  "inputs": {
+    "requests": [
+      {
+        "key": "catalog",
+        "path": "data/catalog.json",
+        "type": "json"
+      },
+      {
+        "key": "inventory",
+        "path": "data/validation/workbook_sheet_inventory.csv",
+        "type": "csv"
+      }
+    ]
+  },
+  "outputs": {
+    "loaded": {
+      "catalog": {},
+      "inventory": []
+    },
+    "errors": [],
+    "missing": []
+  },
+  "internal_functions": [
+    [
+      "fetchJson(path)",
+      "Carrega JSON e retorna objeto parseado com erro amigável."
+    ],
+    [
+      "fetchText(path)",
+      "Carrega CSV/texto sem tentar converter automaticamente."
+    ],
+    [
+      "parseCsv(text)",
+      "Converte CSV simples para array de objetos quando necessário."
+    ],
+    [
+      "loadAll(requests)",
+      "Executa as leituras essenciais e acumula erros."
+    ]
+  ],
+  "external_calls": [],
+  "tests": {
+    "unit": [
+      "fetchJson rejeita JSON inválido com mensagem clara",
+      "parseCsv preserva cabeçalhos"
+    ],
+    "integration": [
+      "catalog.json carrega",
+      "workbook_sheet_inventory.csv carrega"
+    ],
+    "manual": [
+      "abrir DevTools e confirmar ausência de 404 nos arquivos principais"
+    ],
+    "acceptance": [
+      "falha de um arquivo aparece na tela e não some silenciosamente"
+    ]
+  }
+}

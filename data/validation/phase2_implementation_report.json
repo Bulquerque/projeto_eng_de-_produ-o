@@ -1,0 +1,34 @@
+{
+  "result": "OK",
+  "phase": 2,
+  "implemented_at_utc": "2026-05-12T15:31:34.225108+00:00",
+  "companies": {
+    "empresa1": {
+      "baseline_ready": true,
+      "flow_count": 36,
+      "total_with_tax": 31319475.32442116,
+      "base_fit_status": "benchmark_pending"
+    },
+    "empresa2": {
+      "baseline_ready": true,
+      "flow_count": 76,
+      "total_with_tax": 49655885.58961008,
+      "base_fit_status": "benchmark_pending",
+      "base_fit_score": null
+    }
+  },
+  "generated_files": [
+    "data/empresa1/phase2/baseline_model.json",
+    "data/empresa1/phase2/baseline_flows.json",
+    "data/empresa1/phase2/baseline_costs.json",
+    "data/empresa1/phase2/tax_results.json",
+    "data/empresa1/phase2/base_fit.json",
+    "data/empresa1/phase2/phase2_bundle.json",
+    "data/empresa2/phase2/baseline_model.json",
+    "data/empresa2/phase2/baseline_flows.json",
+    "data/empresa2/phase2/baseline_costs.json",
+    "data/empresa2/phase2/tax_results.json",
+    "data/empresa2/phase2/base_fit.json",
+    "data/empresa2/phase2/phase2_bundle.json"
+  ]
+}

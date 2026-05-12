@@ -1,0 +1,18 @@
+project:
+  name: Simulador Estático de Malha Logística
+  companies[2]:
+    - id: empresa1
+      data: demanda + distancias + premissas
+    - id: empresa2
+      data: workbook_malha_empresa2
+  rules[3]:
+    - no_cross_company_mixing
+    - baseline_before_optimization
+    - every_module_has_input_output_tests
+
+phases[5]{id,goal,validation_page}:
+  phase_1, dados e fundação, /fase-1-validacao
+  phase_2, baseline e paridade, /fase-2-baseline
+  phase_3, cenarios e comparacao, /fase-3-cenarios
+  phase_4, score e otimizador, /fase-4-score-otimizador
+  phase_5, stress e auditoria, /fase-5-entrega-final

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador de Cenários</title>
+  <meta name="description" content="Módulo de simulação: criar, validar e comparar cenários de malha logística.">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script type="importmap">
+    { "imports": { "chart.js": "../assets/vendor/chart.esm.js" } }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <header class="hero phase3-hero">
+    <nav class="topbar" aria-label="Navegação principal">
+      <a class="brand-mark" href="../index.html" aria-label="Voltar para início">V</a>
+      <div><p class="eyebrow">Capstone Visagio · Simulação</p><h1>Criador e Comparador de Cenários</h1><span style="position:absolute;left:-9999px;">Fase 3</span></div>
+      <div class="topbar-actions">
+        <a href="../index.html" class="ghost-button">Validação</a>
+        <a href="../fase-2-baseline/" class="ghost-button">Baseline</a>
+        <a href="../fase-3-cenarios/" class="ghost-button active" aria-current="page">Simulação</a>
+        <a href="../fase-4-score-otimizador/" class="ghost-button">Otimização</a>
+        <a href="../fase-5-entrega-final/" class="ghost-button">Entrega</a>
+        <a href="../debug/" class="ghost-button">Debug</a>
+      </div>
+    </nav>
+    <section class="hero-grid">
+      <div class="hero-copy">
+        <span class="status-chip status-ok" id="phase3Status">carregando módulo</span>
+        <h2>Agora o baseline vira laboratório de cenários</h2>
+        <p>Crie cenários manuais, feche CDs, altere frete, estoque, demanda e tributação, simule o resultado e compare contra o baseline da própria empresa.</p>
+        <p class="small-note">A realocação é heurística e auditável, não um solver ótimo.</p>
+        <div class="hero-actions company-toggle" role="tablist" aria-label="Selecionar empresa">
+          <button type="button" class="company-tab active" data-company="empresa1" role="tab" aria-selected="true">Empresa 1</button>
+          <button type="button" class="company-tab" data-company="empresa2" role="tab" aria-selected="false">Empresa 2</button>
+        </div>
+      </div>
+      <aside class="hero-card" aria-label="Resumo técnico do pacote">
+        <dl class="summary-list">
+          <div><dt>Pacote</dt><dd id="packageName">—</dd></div>
+          <div><dt>Versão</dt><dd id="packageVersion">—</dd></div>
+          <div><dt>Utilidade</dt><dd>Simulação</dd></div>
+          <div><dt>Contexto</dt><dd>cenários, comparação e persistência</dd></div>
+        </dl>
+      </aside>
+    </section>
+  </header>
+
+  <main id="main">
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">contexto da simulação</p><h2>Dados disponíveis para os cenários</h2><p>Resumo dos insumos que alimentam a criação e comparação de cenários.</p></div>
+      <div class="metric-grid" id="phase3ProofCards"></div>
+    </section>
+
+    <section class="section" id="arena">
+      <div class="section-heading row-heading">
+        <div><p class="eyebrow">empresa selecionada</p><h2><span id="phase3CompanyLabel">Empresa 1</span> · Arena de cenários</h2><p>Todos os cenários usam o baseline da etapa Baseline da própria empresa.</p></div>
+        <div class="company-toggle" role="tablist" aria-label="Selecionar empresa"><button type="button" class="company-tab active" data-company="empresa1">Empresa 1</button><button type="button" class="company-tab" data-company="empresa2">Empresa 2</button></div>
+      </div>
+      <div id="phase3Loading" class="card"><strong>Carregando Fase 3...</strong></div>
+      <div class="metric-grid" id="baselineCards"></div>
+      <article class="card phase2-grid-spaced"><h3>Componentes financeiros do baseline</h3><div class="table-wrap" id="baselineFinanceTable"></div></article>
+    </section>
+
+    <section class="section scenario-arena-grid">
+      <article class="card">
+        <div class="panel-toolbar"><div><h3>Biblioteca de cenários</h3><p>Baseline, cenários exemplo e cenários salvos no navegador.</p></div></div>
+        <div class="scenario-library" id="scenarioLibrary"></div>
+      </article>
+      <article class="card">
+        <div class="panel-toolbar"><div><h3>Cenários salvos</h3><p>Persistência local por empresa.</p></div><button type="button" class="secondary-button small-button" id="clearSavedScenarios">Limpar salvos</button></div>
+        <div id="savedScenarios" class="saved-scenarios"></div>
+      </article>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">builder</p><h2>Criar cenário manual</h2><p>Altere premissas e clique em simular. Cenários inválidos são bloqueados antes do cálculo.</p></div>
+      <div class="scenario-workbench-grid">
+        <article class="card scenario-form">
+          <label>Nome do cenário<input id="scenarioName" type="text" value="Cenário customizado"></label>
+          <div><strong>CDs ativos</strong><div class="chip-check-grid" id="cdSelector"></div></div>
+          <label>Multiplicador de frete<input id="freightMultiplier" type="number" step="0.01" min="0.01" value="1"></label>
+          <label>Multiplicador de demanda<input id="demandMultiplier" type="number" step="0.01" min="0.01" value="1"></label>
+          <label>Dias de estoque<input id="inventoryDays" type="number" step="1" min="0" value="45"></label>
+          <label>WACC<input id="waccValue" type="number" step="0.01" min="0" value="0.15"></label>
+          <label>Modo tributário<select id="taxMode"><option value="current">Atual / canônico</option><option value="disabled">Desligado</option><optgroup label="Reforma Tributária"><option value="reform_2026">2026 (Ano teste)</option><option value="reform_2027">2027 (CBS plena)</option><option value="reform_2028">2028 (CBS plena)</option><option value="reform_2029">2029 (Transição 10%)</option><option value="reform_2030">2030 (Transição 20%)</option><option value="reform_2031">2031 (Transição 30%)</option><option value="reform_2032">2032 (Transição 40%)</option><option value="reform_2033">2033 (Regime pleno)</option></optgroup></select></label>
+          <div id="taxAssumptionsPanel" class="tax-assumptions-panel"></div>
+          <label>Regra de realocação<select id="reallocationRule"><option value="nearest_available_cd">CD ativo mais compatível</option><option value="first_available_cd">Primeiro CD ativo</option><option value="keep_if_active_else_first">Manter se ativo, senão primeiro</option></select></label>
+          <div class="scenario-actions"><button type="button" class="primary-button" id="simulateScenario" disabled title="Carregue a empresa antes de simular.">Simular cenário</button><button type="button" class="secondary-button" id="saveScenario">Salvar</button><button type="button" class="secondary-button" id="exportScenario">Exportar JSON</button><label class="secondary-button import-button">Importar JSON<input id="importScenarioFile" type="file" accept="application/json,.json" hidden></label></div>
+        </article>
+        <article class="card scenario-live-dashboard">
+          <h3>Resultado do cenário atual</h3>
+          <div id="scenarioValidationPanel" class="empty-state">Aguardando simulação.</div>
+          <div class="metric-grid compact-grid" id="scenarioResultCards"></div>
+          <div class="table-wrap phase2-grid-spaced" id="scenarioExecutiveTable"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">comparador</p><h2>Comparação contra baseline</h2><p>Saving e variações percentuais são sempre calculados contra o baseline da empresa selecionada.</p></div>
+      <article class="card"><div class="table-wrap" id="comparisonTable"></div></article>
+      <article class="card phase2-grid-spaced"><h3>Comparação com cenários da biblioteca</h3><div class="table-wrap" id="scenarioLibraryComparisonTable"></div></article>
+      <article class="card phase2-grid-spaced"><h3>Delta por componente</h3><div id="componentDeltaPanel" class="breakdown-list"></div></article>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><p class="eyebrow">resultado visual</p><h2>Custos do cenário atual</h2></div>
+      <article class="card phase2-grid-spaced">
+        <h3>Visão Geral de Custos (Cenário vs Baseline)</h3>
+        <canvas id="scenarioComparisonChart" class="chart-canvas"></canvas>
+      </article>
+      <div class="two-column-grid phase2-grid-spaced"><article class="card" id="qualityPanel"></article><article class="card" id="changeExplainer"></article></div>
+    </section>
+
+  </main>
+  <footer class="footer"><p>Módulo de simulação implementado para análise logística.</p></footer>
+  <script type="module" src="../assets/js/phase3/main.js"></script>
+</body>
+</html>

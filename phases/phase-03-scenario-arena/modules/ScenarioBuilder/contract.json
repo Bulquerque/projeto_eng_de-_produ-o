@@ -1,0 +1,87 @@
+{
+  "id": "ScenarioBuilder",
+  "phase": 3,
+  "status": "implemented_phase_3",
+  "page": "/fase-3-cenarios/",
+  "purpose": "Permite criar cenários manuais a partir do baseline, mudando CDs ativos, alocação, frete, estoque, demanda, modo tributário e outras premissas controladas.",
+  "inputs": {
+    "baselineScenario": {
+      "scenarioId": "baseline_empresa1"
+    },
+    "changes": {
+      "activeCds": [
+        "RJ",
+        "SP",
+        "ES"
+      ],
+      "freightMultiplier": 1.1,
+      "inventoryDays": 35,
+      "taxMode": "current"
+    }
+  },
+  "outputs": {
+    "scenario": {
+      "scenarioId": "empresa1_custom_001",
+      "company": "empresa1",
+      "isBaseline": false,
+      "changesApplied": []
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    }
+  },
+  "internal_functions": [
+    [
+      "createScenarioFromBaseline(baseline)",
+      "Clona baseline com versionamento."
+    ],
+    [
+      "applyScenarioChanges(scenario, changes)",
+      "Aplica alterações do usuário."
+    ],
+    [
+      "rebuildScenarioFlows(scenario)",
+      "Recalcula fluxos quando CD/alocação muda."
+    ],
+    [
+      "nameScenario(scenario, name)",
+      "Define nome legível e ID."
+    ]
+  ],
+  "external_calls": [
+    [
+      "ScenarioValidator",
+      "Valida alterações."
+    ],
+    [
+      "FlowBuilder",
+      "Recria fluxos."
+    ],
+    [
+      "CostEngine",
+      "Calcula custos do cenário."
+    ],
+    [
+      "TaxEngine",
+      "Calcula tributos se ligado."
+    ]
+  ],
+  "tests": {
+    "unit": [
+      "cenário mantém company",
+      "changesApplied registra mudanças"
+    ],
+    "integration": [
+      "cenário criado aparece no comparador"
+    ],
+    "manual": [
+      "fechar um CD e conferir mudança visual"
+    ],
+    "acceptance": [
+      "cenário inválido gera erro claro"
+    ]
+  },
+  "file": "assets/js/phase3/scenario-builder.js"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "BaselineBuilder",
+  "phase": 2,
+  "status": "implemented_refactored_polish_v2",
+  "page": "/fase-2-baseline/",
+  "file": "assets/js/phase2/baseline-builder.js",
+  "purpose": "Constrói o objeto de cenário base a partir do input normalizado.",
+  "inputs": {
+    "company_id": "empresa1|empresa2",
+    "phase2_bundle": "data/{company}/phase2/phase2_bundle.json"
+  },
+  "outputs": {
+    "result": "objeto/tabela/renderização específica do módulo",
+    "warnings": "[]",
+    "errors": "[]"
+  },
+  "internal_functions": [
+    "buildBaselineScenario",
+    "checkBaselineCompleteness"
+  ],
+  "external_calls": [
+    "BaselineDataAdapter"
+  ],
+  "tests": {
+    "unit": [
+      "tests/05_fase2_baseline/test_phase2_static_site.py",
+      "tests/05_fase2_baseline/test_phase2_data_contracts.py"
+    ],
+    "integration": [
+      "tests/05_fase2_baseline/test_phase2_http_server.py"
+    ],
+    "manual": [
+      "checklist na página /fase-2-baseline/"
+    ],
+    "acceptance": [
+      "python tests/run_all_tests.py"
+    ]
+  }
+}

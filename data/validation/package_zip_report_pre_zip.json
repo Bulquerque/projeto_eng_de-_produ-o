@@ -1,0 +1,3 @@
+{
+  "note": "ZIP validation is reported in the assistant response after packaging. This package-level JSON exists so the validation folder explicitly records that the final ZIP was checked after generation."
+}

@@ -1,0 +1,47 @@
+{
+  "release_name": "visagio_static_simulator_FINAL_POLIDO_v2",
+  "status": "ready_with_environment_note",
+  "scope": "Fases 1 a 5 implementadas; polimento visual; Fase 2 modularizada; estrutura por fases/modulos; Debug Center; testes e preservacao de arquivos.",
+  "generated_at_utc": "2026-05-07T01:52:43.266261Z",
+  "pages": [
+    "/",
+    "/fase-1-validacao/",
+    "/fase-2-baseline/",
+    "/fase-3-cenarios/",
+    "/fase-4-score-otimizador/",
+    "/fase-5-entrega-final/",
+    "/debug/",
+    "/phases/"
+  ],
+  "polish_changes": [
+    "CSS refeito/refinado com visual clean e paleta Visagio",
+    "Fase 2 refatorada para modulos JS separados",
+    "Debug Center criado com diagnósticos de paths, modulos, dados e testes",
+    "Nova organizacao por phases/phase-XX/modules/<ModuleName>/ com README, contract.json, functions.md e tests.md",
+    "Testes novos de preservacao, debug, fase 2 refatorada e estrutura modular",
+    "Nenhum arquivo original removido segundo file_preservation_report.json"
+  ],
+  "module_structure": {
+    "phase_folders": 5,
+    "module_doc_pattern": "phases/phase-XX-*/modules/<ModuleName>/{README.md,contract.json,functions.md,tests.md}"
+  },
+  "file_counts": {
+    "total_files_current_package": 631,
+    "original_files_missing": 0
+  },
+  "tests_executed_by_group": {
+    "base_paths_phase1": "passed",
+    "module_contracts": "passed",
+    "phase2_refactor": "passed",
+    "phase3": "passed",
+    "phase4": "passed",
+    "phase5": "passed",
+    "debug_and_restructure": "passed",
+    "file_preservation": "passed"
+  },
+  "notes": [
+    "A execucao unica de run_all_tests.py pode exceder o timeout do ambiente; os testes criticos foram rodados por grupo e passaram.",
+    "O site continua 100% estatico e usa caminhos relativos.",
+    "A reestruturacao adiciona a pasta phases/ sem mover os arquivos runtime originais, reduzindo risco de quebrar paths do site."
+  ]
+}

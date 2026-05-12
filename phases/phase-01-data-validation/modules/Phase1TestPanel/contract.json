@@ -1,0 +1,67 @@
+{
+  "id": "Phase1TestPanel",
+  "phase": 1,
+  "status": "implemented_phase_1",
+  "page": "/ e /fase-1-validacao/",
+  "purpose": "Mostra no navegador os testes automáticos básicos da Fase 1, permitindo checagem rápida sem terminal.",
+  "inputs": {
+    "appState": {},
+    "loadedArtifacts": {},
+    "selectedCompany": "empresa1"
+  },
+  "outputs": {
+    "browserTests": [
+      {
+        "name": "catalog_loaded",
+        "status": "pass"
+      }
+    ],
+    "summary": {
+      "passed": 8,
+      "failed": 0
+    }
+  },
+  "internal_functions": [
+    [
+      "runBrowserChecks(state)",
+      "Executa testes simples no estado carregado."
+    ],
+    [
+      "assertCondition(name, condition)",
+      "Converte condição em resultado pass/fail."
+    ],
+    [
+      "renderTestResults(results)",
+      "Mostra os testes em cards/tabela."
+    ],
+    [
+      "computeTestSummary(results)",
+      "Conta passes/fails."
+    ]
+  ],
+  "external_calls": [
+    [
+      "DataLoader",
+      "Usa estado carregado pelo DataLoader."
+    ],
+    [
+      "CompanySelector",
+      "Confirma empresa selecionada."
+    ]
+  ],
+  "tests": {
+    "unit": [
+      "assertCondition false gera fail",
+      "summary conta resultados"
+    ],
+    "integration": [
+      "painel aparece depois do carregamento"
+    ],
+    "manual": [
+      "confirmar que todos os testes do navegador passam"
+    ],
+    "acceptance": [
+      "falha precisa aparecer visualmente"
+    ]
+  }
+}

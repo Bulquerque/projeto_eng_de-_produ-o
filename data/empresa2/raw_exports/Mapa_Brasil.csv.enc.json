@@ -1,0 +1,1 @@
+{"version":1,"algorithm":"AES-GCM","kdf":"PBKDF2-SHA-256","iterations":310000,"salt":"E/eGvRA50v3W96X7OWUsnw==","iv":"lcGtIZDzjpE3owCU","aad":"data/empresa2/raw_exports/Mapa_Brasil.csv","ciphertext":"T2qr3NyLl25rGi/6Lw8VkvFvhzQeAIO6ZiJHT3Kfa+thS9TNclWMSkxNehcCoxscVYuO75ExiWOumbMcz15jYXc5yVp7o+a7ng=="}
