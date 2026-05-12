@@ -182,15 +182,17 @@ function statusChip(label, ok = true, warn = false) {
 }
 
 async function fetchJson(path) {
-  const response = await fetch(path, { cache: 'no-cache' });
-  if (!response.ok) throw new Error(`Falha ao carregar ${path}: HTTP ${response.status}`);
-  return response.json();
+  return (await fetchResource(path)).json();
 }
 
 async function fetchText(path) {
+  return (await fetchResource(path)).text();
+}
+
+async function fetchResource(path) {
   const response = await fetch(path, { cache: 'no-cache' });
   if (!response.ok) throw new Error(`Falha ao carregar ${path}: HTTP ${response.status}`);
-  return response.text();
+  return response;
 }
 
 function parseCsv(text) {

@@ -22,18 +22,20 @@ function isCompanyDataPath(path) {
   return /^data\/empresa[12]\//.test(normalizeDataPath(path));
 }
 
+async function fetchResource(path) {
+  const response = await fetch(path, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
+  return response;
+}
+
 export async function fetchJson(path) {
   if (isCompanyDataPath(path)) return fetchEncryptedJson(path);
-  const r = await fetch(path, { cache: 'no-store' });
-  if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
-  return r.json();
+  return (await fetchResource(path)).json();
 }
 
 export async function fetchText(path) {
   if (isCompanyDataPath(path)) return fetchEncryptedText(path);
-  const r = await fetch(path, { cache: 'no-store' });
-  if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
-  return r.text();
+  return (await fetchResource(path)).text();
 }
 
 export async function loadEncryptedManifest(prefix = '../') {
@@ -73,8 +75,8 @@ export async function loadPhase2Bundle(companyId) {
   assertCompanyPath(companyId, path);
   const bundle = await fetchEncryptedJson(`../${path}`);
   if (bundle?.model?.company_id !== companyId) throw new CryptoDataError('CRYPTO_006', `Bundle descriptografado não pertence a ${companyId}.`);
-  
-  // REAL FORMULA FIX: Attach core data for physical simulation
+
+  // Attach derived core data needed by the physical simulation path.
   bundle.core_data = bundle.core_data || {};
   const loadCore = async (id, fileName) => {
     try {
