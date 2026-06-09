@@ -5,6 +5,7 @@ import {
   renderDebugEntries,
   summarizeDebugEntries,
 } from '../shared/debug-tools.js';
+import { requireHttpRuntime } from '../shared/runtime-env.js';
 const debug = createDebugSession({ phase: 'debug', module: 'DebugCenter', enabled: false });
 const criticalPaths = [
   'index.html',
@@ -27,6 +28,7 @@ const criticalPaths = [
 ];
 async function fetchText(path) {
   try {
+    requireHttpRuntime('Debug Center');
     const r = await fetch('../' + path, { cache: 'no-store' });
     return { path, ok: r.ok, status: r.status, size: Number(r.headers.get('content-length') || 0) };
   } catch (e) {

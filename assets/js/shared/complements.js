@@ -1,3 +1,5 @@
+import { requireHttpRuntime } from './runtime-env.js';
+
 const COMPLEMENTS_ROOT = '../data/complements';
 const COMPANY_TENANT_MAP = {
   empresa1: 'empresa_1',
@@ -50,6 +52,7 @@ function pickPreferredSource(candidates = []) {
 }
 
 async function fetchComplementJson(path) {
+  requireHttpRuntime('Pacote de complementos');
   if (complementJsonCache.has(path)) return cloneValue(complementJsonCache.get(path));
   const response = await fetch(`${COMPLEMENTS_ROOT}/${path}`, { cache: 'no-store' });
   if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
