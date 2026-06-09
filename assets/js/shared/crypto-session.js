@@ -1,7 +1,14 @@
 import { appendSharedDebugEntry } from './debug-tools.js';
 import {
+  listStorageKeys,
+  readStorageValue,
+  removeStorageKey,
+  writeStorageValue,
+} from './browser-storage.js';
+import {
   CryptoDataError,
   deriveAesKey,
+  exportAesKey,
   decryptEnvelopeText,
   importAesKey,
 } from './data-decryptor.js';
@@ -27,20 +34,11 @@ function logCrypto(level, event, detail = {}, error = null) {
 }
 
 function readSessionPassword() {
-  try {
-    return localStorage.getItem(PASSWORD_KEY) || null;
-  } catch {
-    return null;
-  }
+  return readStorageValue('local', PASSWORD_KEY, null);
 }
 
 function writeSessionPassword(password) {
-  try {
-    if (password) localStorage.setItem(PASSWORD_KEY, password);
-    else localStorage.removeItem(PASSWORD_KEY);
-  } catch {
-    // localStorage unavailable: keep the password only in memory.
-  }
+  writeStorageValue('local', PASSWORD_KEY, password || null);
 }
 
 function ensureStyles() {
@@ -91,7 +89,7 @@ function showPasswordPrompt(entry, errorMessage = '') {
 async function keyFromSession(entry) {
   const id = keyId(entry);
   if (memoryKeys.has(id)) return memoryKeys.get(id);
-  const raw = sessionStorage.getItem(id);
+  const raw = readStorageValue('session', id, null);
   if (!raw) return null;
   const key = await importAesKey(raw, false);
   memoryKeys.set(id, key);
@@ -101,15 +99,19 @@ async function keyFromSession(entry) {
 async function storeKey(entry, key) {
   const id = keyId(entry);
   memoryKeys.set(id, key);
+  try {
+    const raw = await exportAesKey(key);
+    writeStorageValue('session', id, raw);
+  } catch {
+    // Session cache is opportunistic; in-memory cache still keeps the session usable.
+  }
 }
 
 export function lockCryptoSession() {
   memoryKeys.clear();
   memoryPassword = null;
   writeSessionPassword(null);
-  Object.keys(sessionStorage)
-    .filter((key) => key.startsWith(KEY_PREFIX))
-    .forEach((key) => sessionStorage.removeItem(key));
+  listStorageKeys('session', KEY_PREFIX).forEach((key) => removeStorageKey('session', key));
   logCrypto('warn', 'CRYPTO_008', { message: 'cache descriptografado limpo' });
   window.dispatchEvent(new CustomEvent('visagio:crypto-lock'));
 }
@@ -149,7 +151,7 @@ export async function decryptWithSession(entry, envelope) {
     try {
       return await decryptEnvelopeText(envelope, storedKey, aad);
     } catch {
-      sessionStorage.removeItem(keyId(entry));
+      removeStorageKey('session', keyId(entry));
       memoryKeys.delete(keyId(entry));
     }
   }
@@ -218,9 +220,7 @@ function lockCompanyKeys(companyId) {
   for (const key of [...memoryKeys.keys()]) {
     if (key.startsWith(safePrefix)) memoryKeys.delete(key);
   }
-  Object.keys(sessionStorage)
-    .filter((k) => k.startsWith(safePrefix))
-    .forEach((k) => sessionStorage.removeItem(k));
+  listStorageKeys('session', safePrefix).forEach((k) => removeStorageKey('session', k));
   logCrypto('info', 'CRYPTO_009', { company_evicted: companyId });
 }
 

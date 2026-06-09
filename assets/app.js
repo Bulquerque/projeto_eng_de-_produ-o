@@ -1,3 +1,11 @@
+import { requireHttpRuntime } from './js/shared/runtime-env.js';
+
+import {
+  canUseStorage,
+  readStorageJSON,
+  writeStorageJSON,
+} from './js/shared/browser-storage.js';
+
 /* Fase 1 — Simulador Estático de Malha Logística
    Escopo: carregamento de catálogo, separação de empresas, qualidade, paths e validação manual.
    Não implementa motor de custo/cenário ainda. */
@@ -44,13 +52,12 @@ const PHASE2_MANUAL_CHECKS = [
 ];
 
 function readSharedDebugEntries() {
-  try { return JSON.parse(localStorage.getItem(SHARED_DEBUG_FEED_KEY) || '[]'); }
-  catch { return []; }
+  return readStorageJSON('local', SHARED_DEBUG_FEED_KEY, []);
 }
 
 function appendSharedDebugEntry(entry) {
   try {
-    const current = readSharedDebugEntries();
+    const current = Array.isArray(readSharedDebugEntries()) ? readSharedDebugEntries() : [];
     current.push({
       session_id: String(entry.session_id || entry.sessionId || 'shared').replace(/[^a-zA-Z0-9_-]/g, '_'),
       timestamp: entry.timestamp || new Date().toISOString(),
@@ -65,7 +72,7 @@ function appendSharedDebugEntry(entry) {
         stack: entry.error.stack || null
       } : null
     });
-    localStorage.setItem(SHARED_DEBUG_FEED_KEY, JSON.stringify(current.slice(-SHARED_DEBUG_LIMIT)));
+    writeStorageJSON('local', SHARED_DEBUG_FEED_KEY, current.slice(-SHARED_DEBUG_LIMIT));
   } catch {
     // Keep the local console working if shared history cannot be written.
   }
@@ -92,12 +99,11 @@ function phase2ManualChecklistKey(companyId = state.selectedCompany) {
 }
 
 function loadPhase2ManualChecklist(companyId = state.selectedCompany) {
-  try { return JSON.parse(localStorage.getItem(phase2ManualChecklistKey(companyId)) || '{}'); }
-  catch { return {}; }
+  return readStorageJSON('local', phase2ManualChecklistKey(companyId), {});
 }
 
 function savePhase2ManualChecklist(companyId, values) {
-  localStorage.setItem(phase2ManualChecklistKey(companyId), JSON.stringify(values));
+  writeStorageJSON('local', phase2ManualChecklistKey(companyId), values);
 }
 
 function renderPhase2ManualChecklist(companyId = state.selectedCompany) {
@@ -164,11 +170,11 @@ function formatNumber(value) {
 
 function escapeHtml(value) {
   return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function statusClass(ok, warn = false) {
@@ -190,6 +196,7 @@ async function fetchText(path) {
 }
 
 async function fetchResource(path) {
+  requireHttpRuntime('O simulador');
   const response = await fetch(path, { cache: 'no-cache' });
   if (!response.ok) throw new Error(`Falha ao carregar ${path}: HTTP ${response.status}`);
   return response;
@@ -496,12 +503,11 @@ const manualChecks = [
 ];
 
 function loadManualChecklist() {
-  try { return JSON.parse(localStorage.getItem('visagio_phase1_manual_checks') || '{}'); }
-  catch { return {}; }
+  return readStorageJSON('local', 'visagio_phase1_manual_checks', {});
 }
 
 function saveManualChecklist(values) {
-  localStorage.setItem('visagio_phase1_manual_checks', JSON.stringify(values));
+  writeStorageJSON('local', 'visagio_phase1_manual_checks', values);
 }
 
 function renderManualChecklist() {
@@ -604,15 +610,7 @@ function runPhase1Checks() {
 }
 
 function testLocalStorage() {
-  try {
-    const key = 'visagio_phase1_storage_test';
-    localStorage.setItem(key, 'ok');
-    const ok = localStorage.getItem(key) === 'ok';
-    localStorage.removeItem(key);
-    return ok;
-  } catch {
-    return false;
-  }
+  return canUseStorage('local');
 }
 
 async function checkCorePathsLive() {
@@ -732,6 +730,7 @@ function bindEvents() {
 
 async function init() {
   try {
+    requireHttpRuntime('O simulador');
     log('Carregando arquivos principais da Fase 1');
     const [catalog, proof, quality, finalAudit, pathAudit, phaseTests, workbookCsv] = await Promise.all([
       fetchJson(PATHS.catalog),

@@ -99,8 +99,8 @@ export function runSensitivityMatrix({
     for (const xValue of cfg.xValues || []) {
       const scenario = clone(selectedScenario);
       scenario.scenario_id =
-        `${selectedScenario.scenario_id}__matrix_${cfg.xVariable}_${xValue}_${cfg.yVariable}_${yValue}`.replaceAll(
-          '.',
+        `${selectedScenario.scenario_id}__matrix_${cfg.xVariable}_${xValue}_${cfg.yVariable}_${yValue}`.replace(
+          /\./g,
           '_'
         );
       scenario.changes = {

@@ -1,3 +1,6 @@
+import { requireHttpRuntime } from './runtime-env.js';
+import { readStorageJSON, writeStorageJSON } from './browser-storage.js';
+
 export const DEBUG_LEVELS = Object.freeze({
   INFO: 'info',
   WARN: 'warn',
@@ -38,21 +41,10 @@ function normalizeSharedEntry(entry = {}) {
   };
 }
 function readStoredEntries() {
-  if (typeof localStorage === 'undefined') return [];
-  try {
-    return JSON.parse(localStorage.getItem(SHARED_DEBUG_FEED_KEY) || '[]');
-  } catch {
-    return [];
-  }
+  return readStorageJSON('local', SHARED_DEBUG_FEED_KEY, []);
 }
 function writeStoredEntries(entries) {
-  if (typeof localStorage === 'undefined') return false;
-  try {
-    localStorage.setItem(SHARED_DEBUG_FEED_KEY, JSON.stringify(entries.slice(-SHARED_DEBUG_LIMIT)));
-    return true;
-  } catch {
-    return false;
-  }
+  return writeStorageJSON('local', SHARED_DEBUG_FEED_KEY, entries.slice(-SHARED_DEBUG_LIMIT));
 }
 export function createDebugSession({ phase = 'global', module = 'unknown', enabled = true } = {}) {
   const entries = [];
@@ -134,11 +126,11 @@ export function buildDebugHint(entry) {
 }
 function escapeHtml(v) {
   return String(v ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 function escapeDebugJson(value) {
   return escapeHtml(JSON.stringify(value, null, 2));
@@ -168,6 +160,7 @@ export async function debugFetchJson(path, { phase = 'global', module = 'DataLoa
   const debug = createDebugSession({ phase, module, enabled: false });
   debug.info('fetch:start', { path });
   try {
+    requireHttpRuntime('Debug JSON');
     const response = await fetch(path, { cache: 'no-store' });
     if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
     const data = await response.json();
