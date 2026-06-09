@@ -109,6 +109,36 @@ function buildDerivedWarnings(...groups) {
   return [...new Set(flattened)];
 }
 
+function removeObsoleteEmpresa1Warnings(warnings = []) {
+  const obsoletePatterns = [
+    /transfer[eê]ncia e tributo n[aã]o s[aã]o inferidos/i,
+    /custo de transfer[eê]ncia e tributo n[aã]o foram inferidos/i,
+  ];
+  return warnings.filter((warning) => {
+    const text = String(warning || '');
+    return !obsoletePatterns.some((pattern) => pattern.test(text));
+  });
+}
+
+function refreshEmpresa1ModelMetadata(bundle) {
+  const currentMetadata = cloneValue(bundle.model?.metadata) || {};
+  bundle.model = {
+    ...(bundle.model || {}),
+    warnings: removeObsoleteEmpresa1Warnings(bundle.model?.warnings || []),
+    metadata: {
+      ...currentMetadata,
+      methodology:
+        'Baseline da Empresa 1 recalculado em runtime com matriz de distância, proxy quilométrico de transferência e referência tributária oficial. O pacote bruto é mantido em phase2_raw para auditoria.',
+      derived_baseline: {
+        active: true,
+        preserves_raw_snapshot: true,
+        transfer_source: 'distance_matrix_kilometric_transfer_proxy',
+        tax_source: 'official_tax_reference_recomputed',
+      },
+    },
+  };
+}
+
 export function recomputePhase2Baseline(bundle, companyId = bundle?.model?.company_id) {
   if (!bundle || companyId !== 'empresa1') return bundle;
 
@@ -118,6 +148,7 @@ export function recomputePhase2Baseline(bundle, companyId = bundle?.model?.compa
   };
 
   bundle.phase2_raw = rawSnapshot;
+  refreshEmpresa1ModelMetadata(bundle);
 
   const baselineScenario = buildBaselineScenario(bundle, companyId);
   const flows = Array.isArray(bundle.flows) ? bundle.flows : [];
