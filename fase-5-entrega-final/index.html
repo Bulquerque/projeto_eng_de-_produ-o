@@ -22,7 +22,7 @@
     </p>
   </div>
   <script>
-    if (location.protocol === 'file:') {
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') {
       document.getElementById('runtimeWarning')?.removeAttribute('hidden');
     }
   </script>
