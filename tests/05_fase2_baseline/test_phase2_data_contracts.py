@@ -80,6 +80,9 @@ def test_empresa1_baseline_contract():
     assert b['base_fit']['base_fit_score'] is None
     costs = b['costs']['costs']
     raw_costs = b['phase2_raw']['costs']['costs']
+    assert 'não são inferidos' not in b['model']['metadata']['methodology']
+    assert not any('não foram inferidos' in warning for warning in b['model']['warnings'])
+    assert b['model']['metadata']['derived_baseline']['active'] is True
     assert raw_costs['tax_impact'] == 0
     assert raw_costs['transfer_cost'] == 0
     assert costs['transfer_cost'] > 0

@@ -390,7 +390,7 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
     }
     if (missingDistCount > 0) {
       warnings.push(
-        `${missingDistCount} fluxo(s) sem distância na matrix; transferência estimada como 40% da distribuição.`
+        `${missingDistCount} fluxo(s) sem distância exata na matriz; transferência desses fluxos estimada proporcionalmente à distribuição (40%).`
       );
     }
 
