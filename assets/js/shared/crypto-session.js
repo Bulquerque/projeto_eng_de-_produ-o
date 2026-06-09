@@ -49,6 +49,12 @@ function ensureStyles() {
     .crypto-lock-card{position:fixed;inset:auto 24px 24px auto;z-index:10000;max-width:420px;background:#fff;border:1px solid rgba(15,23,42,.18);box-shadow:0 24px 80px rgba(15,23,42,.24);border-radius:18px;padding:18px;color:#14213d}
     .crypto-lock-card h2{margin:0 0 8px;font-size:1.1rem}.crypto-lock-card p{margin:0 0 12px;color:#4b5563}.crypto-lock-card input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:12px;margin-bottom:12px}
     .crypto-lock-card .crypto-actions{display:flex;gap:8px;align-items:center}.crypto-lock-card button{cursor:pointer}.crypto-error{color:#b42318;font-weight:700;margin-top:8px}.crypto-lock-button{position:fixed;right:24px;bottom:24px;z-index:9999}
+    @media (max-width:560px){
+      .crypto-lock-card{left:16px;right:16px;bottom:16px;max-width:none;width:auto;max-height:calc(100vh - 32px);overflow:auto}
+      .crypto-lock-card .crypto-actions{flex-direction:column;align-items:stretch}
+      .crypto-lock-card button{width:100%}
+      .crypto-lock-button{left:16px;right:16px;bottom:16px;width:auto}
+    }
   `;
   document.head.appendChild(style);
 }
