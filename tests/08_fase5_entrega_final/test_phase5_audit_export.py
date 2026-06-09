@@ -25,6 +25,10 @@ for (const companyId of ['empresa1','empresa2']) {
  const objective=buildObjective({companyId,objectiveName:'Teste',weights:{total_cost:30,service_quality:25,operational_risk:20,tax_impact:15,inventory_efficiency:10}});
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:11}});
  const selected=selectFinalScenario({companyId,optimizerResult:opt,selectionMode:'best_by_score'}).selected_scenario;
+ if(Number(selected.scenario?.changes?.freight_multiplier ?? 1)!==1) throw new Error('selected scenario changed freight');
+ if(Number(selected.scenario?.changes?.demand_multiplier ?? 1)!==1) throw new Error('selected scenario changed demand');
+ if(Number(selected.scenario?.changes?.inventory_days ?? 45)!==45) throw new Error('selected scenario changed inventory');
+ if((selected.scenario?.changes?.tax_mode || '')==='disabled') throw new Error('selected scenario disabled tax');
  const stress=runStressTests({companyId,selectedScenario:selected.scenario,baselineBundle:bundle});
  const robustness=calculateRobustness({companyId,scenarioId:selected.scenario_id,stressResults:stress.stress_results,quality:selected.quality});
  const rec=buildRecommendation({companyId,selectedScenario:selected,comparison:{saving_pct:1,saving_abs:1},quality:selected.quality,robustness,objective});

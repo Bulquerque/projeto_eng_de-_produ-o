@@ -3,10 +3,17 @@
  *
  * Calculates per-flow logistics costs from real data tables.
  *
- * Empresa 1 — distance_matrix  : weight_kg × Frete(R$/kg)
+ * Empresa 1 — distance_matrix       : weight_kg × Frete(R$/kg) for distribution
+ *             aux_custo_transferencia: kilometric rate (R$/kg-km) from Empresa 2
+ *               → Transfer = weight_kg × rate_per_kg_km[destUF] × distance_km
  * Empresa 2 — tabelas_cif_dist : weight-bracket rate lookup
  *             aux_custo_transferencia : real NF-based transfer rates
  *             aux_custo_armazenagem   : real storage tariffs per CD
+ *
+ * Kilometric rates for Empresa 1 transfer (calibrated from Empresa 2 NF data):
+ *   SP: 0.0083 R$/kg-km  |  MG: 0.0049 R$/kg-km
+ *   ES: 0.0176 R$/kg-km  |  RJ: 0.0133 R$/kg-km
+ *   fallback (cross-state): 0.0050 R$/kg-km
  */
 
 function toNum(value, fallback = 0) {
@@ -110,6 +117,29 @@ function calcFlowFreightE1(flow, maps, fm) {
   if (rate === null) return { cost: 0, method: 'missing_rate', rate: 0 };
 
   return { cost: weightKg * rate * toNum(fm, 1), method: 'distance_matrix', rate };
+}
+
+/** Looks up transfer distance (km) from the distance_matrix for a given flow. */
+function getTransferDistanceKmE1(flow, matrix) {
+  const origin = up(flow.origin || flow.cd || flow.origin_uf || flow.cd_uf || '');
+  const dest = up(flow.destination_uf || flow.cd_uf || flow.cd || '');
+  if (!origin || !dest) return 0;
+
+  for (const r of matrix) {
+    const rOrigin = up(r.ORIGEM || r.UF_ORIGEM || '');
+    const rDest = up(r.DESTINO || r.UF_DESTINO || '');
+    if (rOrigin === origin && rDest === dest) return toNum(r['Distancia(KM)']);
+  }
+
+  const originUf = origin.slice(0, 2);
+  const destUf = dest.slice(0, 2);
+  for (const r of matrix) {
+    const rOriginUf = up(r.UF_ORIGEM || r.ORIGEM || '').slice(0, 2);
+    const rDestUf = up(r.UF_DESTINO || r.DESTINO || '').slice(0, 2);
+    if (rOriginUf === originUf && rDestUf === destUf) return toNum(r['Distancia(KM)']);
+  }
+
+  return 0;
 }
 
 // ── Empresa 2 helpers ────────────────────────────────────────────────────────
@@ -302,49 +332,41 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
 
     const freightMaps = buildFreightMapE1(matrix);
 
-    // Build transfer rate proxy maps using Empresa 2's transfer table
-    const transferTable = coreData.aux_custo_transferencia || [];
-    if (!transferTable.length) {
-      warnings.push(
-        'aux_custo_transferencia da Empresa 2 não carregada; usando fallback heurístico de 40% para transferência.'
-      );
-    }
-    const transferRateMap = buildTransferRateMapE2(transferTable);
-    const destTransferRateMap = {};
-    const destCounts = {};
-    let grandTotalRate = 0;
-    let rateCount = 0;
-    for (const [key, rate] of Object.entries(transferRateMap)) {
-      if (rate > 0) {
-        grandTotalRate += rate;
-        rateCount++;
-        const parts = key.split('→');
-        if (parts.length === 2) {
-          const destUf = parts[1];
-          destTransferRateMap[destUf] = (destTransferRateMap[destUf] || 0) + rate;
-          destCounts[destUf] = (destCounts[destUf] || 0) + 1;
-        }
-      }
-    }
-    const overallAverageRate = rateCount > 0 ? grandTotalRate / rateCount : 2.5;
-    for (const destUf in destTransferRateMap) {
-      destTransferRateMap[destUf] /= destCounts[destUf];
-    }
+    // ── Kilometric transfer rates calibrated from Empresa 2 NF data ──────────
+    // Source: aux_custo_transferencia — weighted avg geodesic R$/kg-km per dest UF
+    // SP: 0.0083 | MG: 0.0049 | ES: 0.0176 | RJ: 0.0133
+    const KILOMETRIC_RATE_BY_UF = {
+      SP: 0.0083,
+      MG: 0.0049,
+      ES: 0.0176,
+      RJ: 0.0133,
+    };
+    // Conservative fallback: lowest observed cross-state rate
+    const KILOMETRIC_RATE_FALLBACK = 0.005;
 
     let totalDist = 0;
     let totalTransfer = 0;
     let missingCount = 0;
+    let missingDistCount = 0;
     const flowCostDetail = [];
 
     for (const flow of rebuilt.flows) {
       const { cost, method, rate } = calcFlowFreightE1(flow, freightMaps, fm);
       const distCost = cost * dm;
 
-      // Transfer rate lookup (destination UF of transfer leg = CD UF of distribution flow)
-      const cdUf = up(flow.cd_uf || flow.origin_uf || flow.cd || '').slice(0, 2);
-      const ratePerKg = destTransferRateMap[cdUf] || overallAverageRate;
       const wKg = flowWeight(flow);
-      const transferCost = wKg > 0 && ratePerKg > 0 ? wKg * ratePerKg * fm * dm : distCost * 0.4;
+      const destUf = up(flow.destination_uf || flow.cd_uf || flow.cd || '').slice(0, 2);
+      const ratePerKgKm = KILOMETRIC_RATE_BY_UF[destUf] || KILOMETRIC_RATE_FALLBACK;
+      const distKm = getTransferDistanceKmE1(flow, matrix);
+
+      let transferCost = 0;
+      if (wKg > 0 && distKm > 0) {
+        transferCost = wKg * ratePerKgKm * distKm * fm * dm;
+      } else if (wKg > 0 && distKm === 0) {
+        // Distance not found — estimate as 40% of distribution cost for this flow
+        transferCost = distCost * 0.4;
+        missingDistCount++;
+      }
 
       totalDist += distCost;
       totalTransfer += transferCost;
@@ -353,6 +375,9 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
         flow_id: flow.flow_id,
         distribution_cost: distCost,
         transfer_cost: transferCost,
+        transfer_dist_km: distKm,
+        transfer_rate_per_kg_km: ratePerKgKm,
+        dest_uf: destUf,
         method,
         rate,
       });
@@ -360,7 +385,12 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
 
     if (missingCount > 0) {
       warnings.push(
-        `${missingCount} fluxo(s) sem tarifa na distance_matrix; custo zerado nesses fluxos.`
+        `${missingCount} fluxo(s) sem tarifa na distance_matrix; custo de distribuição zerado nesses fluxos.`
+      );
+    }
+    if (missingDistCount > 0) {
+      warnings.push(
+        `${missingDistCount} fluxo(s) sem distância na matrix; transferência estimada como 40% da distribuição.`
       );
     }
 
@@ -382,7 +412,7 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
       distribution_cost: totalDist,
       storage_cost: storageRatioCost(base, activeCds, baselineCds, dm),
       inventory_cost: inventory,
-      calculation_method: anyPriced ? 'physical_distance_matrix' : 'heuristic_fallback',
+      calculation_method: anyPriced ? 'physical_distance_matrix_kilometric' : 'heuristic_fallback',
       flow_cost_detail: flowCostDetail,
       warnings,
     };

@@ -1,5 +1,11 @@
 import { escapeHtml, formatBRL, formatNumber, formatPct, metric } from '../shared/common.js';
 import { resolveTaxRegime, taxRegimeLabel } from '../shared/tax-reform-config.js';
+import { CANONICAL_OPTIMIZATION_POLICY } from '../shared/optimization-policy.js';
+import {
+  buildScenarioSummary,
+  formatInventoryDaysDisplay,
+  formatMultiplierDisplay,
+} from '../shared/scenario-summary.js';
 
 function row(label, value) {
   return `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`;
@@ -35,14 +41,18 @@ export function buildOptimizerInputTableHtml({
     ['Fluxos avaliados', formatNumber((bundle?.flows || []).length)],
     ['Total baseline', formatBRL(c.total_with_tax, true)],
     [
-      'Regime fiscal base',
+      'Regime fiscal fixo',
       taxRegimeLabel(
         resolveTaxRegime({
-          taxMode: optimizerConfig?.base_tax_mode,
-          taxRegime: optimizerConfig?.base_tax_regime,
+          taxMode: CANONICAL_OPTIMIZATION_POLICY.tax_mode,
+          taxRegime: CANONICAL_OPTIMIZATION_POLICY.tax_regime,
         })
       ),
     ],
+    ['Frete fixo', formatMultiplierDisplay(CANONICAL_OPTIMIZATION_POLICY.freight_multiplier)],
+    ['Demanda fixa', formatMultiplierDisplay(CANONICAL_OPTIMIZATION_POLICY.demand_multiplier)],
+    ['Estoque fixo', formatInventoryDaysDisplay(CANONICAL_OPTIMIZATION_POLICY.inventory_days)],
+    ['Variável da busca', 'Apenas CDs ativos'],
     [
       'Malha permitida',
       `${formatNumber(constraints.min_active_cds)} a ${formatNumber(constraints.max_active_cds)} CDs`,
@@ -68,12 +78,17 @@ export function buildOptimizerInputTableHtml({
 export function buildRankingTableHtml(bestScenarios = []) {
   const rows = bestScenarios
     .slice(0, 8)
-    .map(
-      (s) =>
-        `<tr><td>${escapeHtml(s.scenario_name || s.scenario_id)}</td><td>${Number(s.final_score).toFixed(1)}</td><td>${escapeHtml(s.result?.tax_results?.regime_label || taxRegimeLabel(s.result?.tax_results?.tax_regime || s.scenario?.changes?.tax_regime || s.scenario?.changes?.tax_mode || 'legacy_current'))}</td><td>${formatBRL(s.result?.total_with_tax, true)}</td><td>${escapeHtml(s.quality?.risk_level || '—')}</td><td>${formatNumber((s.scenario?.changes?.active_cds || []).length)}</td></tr>`
-    )
+    .map((s) => {
+      const summary = buildScenarioSummary({
+        scenario: s.scenario,
+        result: s.result,
+        quality: s.quality,
+        baselineTotal: Number(s.result?.baseline_total ?? 0),
+      });
+      return `<tr><td>${escapeHtml(summary.scenario_name || s.scenario_id)}</td><td>${Number(s.final_score).toFixed(1)}</td><td>${formatNumber(summary.active_cds_count)}</td><td>${escapeHtml(formatMultiplierDisplay(summary.freight_multiplier))}</td><td>${escapeHtml(formatMultiplierDisplay(summary.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(summary.inventory_days))}</td><td>${escapeHtml(summary.tax_regime_label)}</td><td>${formatBRL(summary.transfer_cost, true)}</td><td>${formatBRL(summary.tax_impact, true)}</td><td>${formatBRL(summary.total_with_tax, true)}</td><td>${escapeHtml(summary.risk_level || '—')}</td></tr>`;
+    })
     .join('');
-  return `<table><thead><tr><th>Cenário</th><th>Score</th><th>Regime</th><th>Total</th><th>Risco</th><th>CDs</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return `<table><thead><tr><th>Cenário</th><th>Score</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Risco</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 export function buildTradeoffTableHtml(frontier) {

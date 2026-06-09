@@ -6,12 +6,19 @@ export function renderCostBreakdownChart(costs) {
     return;
   }
 
-  const keys = ['distribution_cost', 'storage_cost', 'inventory_cost', 'tax_cost'];
+  const keys = [
+    'transfer_cost',
+    'distribution_cost',
+    'storage_cost',
+    'inventory_cost',
+    'tax_impact',
+  ];
   const labelsMap = {
+    transfer_cost: 'Transferência',
     distribution_cost: 'Distribuição',
     storage_cost: 'Armazenagem',
     inventory_cost: 'Estoque',
-    tax_cost: 'Tributo',
+    tax_impact: 'Tributo',
   };
 
   const data = [];
@@ -32,7 +39,7 @@ export function renderCostBreakdownChart(costs) {
   renderDonutChart('costBreakdownChart', {
     labels,
     datasets: [{ data }],
-    title: 'Mix de Custos Operacionais (%)',
+    title: 'Mix de Custos Logísticos e Tributários (%)',
   });
 }
 

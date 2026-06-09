@@ -16,6 +16,12 @@ import { validateRelease } from './release-validator.js';
 import { renderSensitivityChart, renderStressChart, renderRobustnessChart } from './charts.js';
 import { buildWorkbookParitySummary, renderWorkbookParityPanel } from './workbook-parity.js';
 import { appendSharedDebugEntry } from '../shared/debug-tools.js';
+import { buildCanonicalOptimizationConfig } from '../shared/optimization-policy.js';
+import {
+  buildScenarioSummary,
+  formatInventoryDaysDisplay,
+  formatMultiplierDisplay,
+} from '../shared/scenario-summary.js';
 
 const state = {
   companyId: 'empresa1',
@@ -82,7 +88,7 @@ function constraints() {
     max_active_cds: 999,
     max_cd_volume_share: 1,
     max_risk_level: 'high',
-    allow_tax_disabled: true,
+    allow_tax_disabled: false,
   };
 }
 function renderTabs() {
@@ -187,11 +193,11 @@ function runDecisionPipeline() {
     baselineBundle: state.bundle,
     objective: state.objective,
     constraints: constraints(),
-    optimizerConfig: {
+    optimizerConfig: buildCanonicalOptimizationConfig({
       method: 'exact_discrete',
       max_candidates: Number($('phase5MaxCandidates')?.value || 2000),
       seed: 42,
-    },
+    }),
   });
   if (state.optimizer.optimizer_status !== 'success') {
     state.selection = null;
@@ -368,10 +374,24 @@ function renderOverview() {
 }
 function renderFinalSituationTable(selected, comp) {
   const quality = selected?.quality || {};
+  const summary = buildScenarioSummary({
+    scenario: selected?.scenario,
+    result: selected?.result || selected,
+    quality,
+    baselineTotal: comp.baseline_total,
+  });
   const rows = [
     ['Empresa', label(state.companyId)],
     ['Baseline', state.bundle?.model?.scenario_id || '—'],
     ['Cenário selecionado', selected?.scenario_name || selected?.scenario_id || '—'],
+    ['CDs', String(summary.active_cds_count)],
+    ['Frete', formatMultiplierDisplay(summary.freight_multiplier)],
+    ['Demanda', formatMultiplierDisplay(summary.demand_multiplier)],
+    ['Estoque', formatInventoryDaysDisplay(summary.inventory_days)],
+    ['Regime tributário', summary.tax_regime_label],
+    ['Transferência', formatBRL(summary.transfer_cost, true)],
+    ['Tributo', formatBRL(summary.tax_impact, true)],
+    ['Total', formatBRL(summary.total_with_tax, true)],
     ['Total baseline', formatBRL(comp.baseline_total, true)],
     ['Total final', formatBRL(comp.scenario_total, true)],
     ['Saving absoluto', formatBRL(comp.saving_abs, true)],

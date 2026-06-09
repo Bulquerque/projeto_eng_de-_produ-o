@@ -86,7 +86,7 @@ export function buildRecommendation({
     main_risks,
     next_actions: [
       'validar capacidade operacional dos CDs usados',
-      'refinar premissas tributárias e de frete',
+      'revisar premissas de malha e realocação',
       'comparar contra dados reais atualizados antes de decisão executiva',
     ],
     warnings: [],

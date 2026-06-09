@@ -1,3 +1,9 @@
+import {
+  buildScenarioSummary,
+  formatInventoryDaysDisplay,
+  formatMultiplierDisplay,
+} from '../shared/scenario-summary.js';
+
 function esc(v) {
   return String(v ?? '')
     .replace(/&/g, '&amp;')
@@ -72,6 +78,30 @@ function monteCarloSection(selectedScenario = {}) {
     </tbody></table>
   `;
 }
+
+function scenarioConfigurationSection(selectedScenario = {}) {
+  const summary = buildScenarioSummary({
+    scenario: selectedScenario?.scenario,
+    result: selectedScenario?.result || selectedScenario,
+  });
+  const rows = [
+    ['CDs', `${summary.active_cds_count}`],
+    ['Frete', formatMultiplierDisplay(summary.freight_multiplier)],
+    ['Demanda', formatMultiplierDisplay(summary.demand_multiplier)],
+    ['Estoque', formatInventoryDaysDisplay(summary.inventory_days)],
+    ['Regime tributário', summary.tax_regime_label],
+    ['Transferência', brl(summary.transfer_cost)],
+    ['Tributo', brl(summary.tax_impact)],
+    ['Total', brl(summary.total_with_tax)],
+  ];
+
+  return `
+    <h3>Configuração do cenário</h3>
+    <table class="executive-table-premium"><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>
+      ${rows.map(([label, value]) => `<tr><td>${esc(label)}</td><td>${esc(value)}</td></tr>`).join('')}
+    </tbody></table>
+  `;
+}
 export function buildExecutiveReportHtml({
   companyId,
   selectedScenario,
@@ -104,6 +134,7 @@ export function buildExecutiveReportHtml({
       <tr><td>Score de Robustez</td><td>${esc(Math.round(Number(robustness?.robustness_score || 0)) + '/100')}</td></tr>
       <tr><td>Parecer Final</td><td>${esc(status(recommendation?.recommendation_status))}</td></tr>
     </tbody></table>
+    ${scenarioConfigurationSection(selectedScenario)}
     <h3>Stress test</h3>
     <p>${esc(stress?.summary?.cases_positive || 0)} de ${esc(stress?.summary?.cases_run || 0)} casos mantiveram resultado melhor ou igual ao baseline.</p>
     ${monteCarloSection(selectedScenario)}

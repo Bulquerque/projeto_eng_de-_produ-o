@@ -535,7 +535,7 @@
         <div class="section-heading">
           <p class="eyebrow">restrições e busca</p>
           <h2>Configuração do Otimizador Exato</h2>
-          <p>O otimizador enumera o espaço discreto modelado e só aceita o melhor cenário viável.</p>
+          <p>O otimizador enumera o espaço discreto modelado. Nesta versão, apenas a malha de CDs varia; frete e tributo ficam fixos.</p>
         </div>
         <div class="two-column-grid">
           <article class="card constraint-panel">
@@ -550,10 +550,9 @@
                 <option value="low">Somente Risco Baixo</option>
               </select>
             </label>
-            <label>Regime Tributário Base<small>Otimizar considerando este regime fiscal.</small>
-              <select id="optimizationTaxMode">
+            <label>Regime Tributário Base<small>Fixo nesta versão. A busca só altera CDs.</small>
+              <select id="optimizationTaxMode" disabled>
                 <option value="current">Atual / canônico</option>
-                <option value="disabled">Desligado</option>
                 <optgroup label="Reforma Tributária">
                   <option value="reform_2026">2026 (Ano teste)</option>
                   <option value="reform_2027">2027 (CBS plena)</option>
@@ -562,11 +561,11 @@
                   <option value="reform_2030">2030 (Transição 20%)</option>
                   <option value="reform_2031">2031 (Transição 30%)</option>
                   <option value="reform_2032">2032 (Transição 40%)</option>
-                  <option value="reform_2033">2033 (Regime pleno)</option>
+                  <option value="reform_2033" selected>2033 (Regime pleno)</option>
                 </optgroup>
               </select>
             </label>
-            <label class="inline-check"><input id="allowTaxDisabled" type="checkbox"> Permitir alternar entre Atual e Desligado (comparação)</label>
+            <label class="inline-check"><input id="allowTaxDisabled" type="checkbox" disabled> Tributo fixo nesta versão</label>
           </article>
           <article class="card optimizer-panel">
             <h3>Busca</h3>
