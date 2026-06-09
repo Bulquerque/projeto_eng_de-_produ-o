@@ -27,7 +27,16 @@ for (const companyId of ['empresa1','empresa2']) {
  if(opt.optimizer_status!=='success') throw new Error('optimizer failed');
  if(opt.search_log.valid_candidates+opt.search_log.invalid_candidates!==opt.search_log.simulated_candidates) throw new Error('search log inconsistent');
  if(opt.search_log.method_applied!=='exact_discrete' || opt.search_log.space_limited) throw new Error('optimizer not exact');
+ if(opt.scored_scenarios.some(s=>Number(s.scenario?.changes?.freight_multiplier ?? 1)!==1)) throw new Error('optimizer changed freight');
+ if(opt.scored_scenarios.some(s=>Number(s.scenario?.changes?.demand_multiplier ?? 1)!==1)) throw new Error('optimizer changed demand');
+ if(opt.scored_scenarios.some(s=>Number(s.scenario?.changes?.inventory_days ?? 45)!==45)) throw new Error('optimizer changed inventory');
+ if(opt.scored_scenarios.some(s=>(s.scenario?.changes?.tax_mode || '')==='disabled')) throw new Error('optimizer disabled tax');
  if(!opt.best_scenarios.length) throw new Error('no best scenarios');
+ const best = opt.best_scenarios[0];
+ if(Number(best.scenario?.changes?.freight_multiplier ?? 1)!==1) throw new Error('best scenario changed freight');
+ if(Number(best.scenario?.changes?.demand_multiplier ?? 1)!==1) throw new Error('best scenario changed demand');
+ if(Number(best.scenario?.changes?.inventory_days ?? 45)!==45) throw new Error('best scenario changed inventory');
+ if((best.scenario?.changes?.tax_mode || '')==='disabled') throw new Error('best scenario disabled tax');
  if(opt.best_scenarios[0].scenario_id!==opt2.best_scenarios[0].scenario_id) throw new Error('seed not reproducible');
  const frontier=buildTradeoffFrontier({companyId,scenarioRecords:opt.scenario_records,scoredScenarios:opt.scored_scenarios});
  if(frontier.frontier_points.some(p=>!p.scenario_id)) throw new Error('frontier without scenario_id');

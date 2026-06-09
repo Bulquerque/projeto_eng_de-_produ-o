@@ -20,6 +20,11 @@ import {
 import { buildMonteCarloConfig, runMonteCarloSimulation } from './monte-carlo-engine.js';
 import { appendSharedDebugEntry } from '../shared/debug-tools.js';
 import {
+  buildScenarioSummary,
+  formatInventoryDaysDisplay,
+  formatMultiplierDisplay,
+} from '../shared/scenario-summary.js';
+import {
   getTaxRegimeDefinition,
   resolveTaxRegime,
   resolveTaxModeForRegime,
@@ -509,13 +514,43 @@ function renderComparison() {
     return;
   }
 
-  const rows = state.comparison.comparison;
+  const rows = state.comparison.comparison.map((row) => ({
+    ...buildScenarioSummary({
+      scenario: {
+        scenario_id: row.scenario_id,
+        scenario_name: row.scenario_name,
+        scenario_type: row.scenario_type,
+        changes: {
+          active_cds: Array.from({ length: row.active_cds_count }, () => null),
+          freight_multiplier: row.freight_multiplier,
+          demand_multiplier: row.demand_multiplier,
+          inventory_days: row.inventory_days,
+          tax_mode: row.tax_mode,
+          tax_regime: row.tax_regime,
+        },
+      },
+      result: {
+        total_with_tax: row.total_with_tax,
+        costs: {
+          transfer_cost: row.transfer_cost,
+          tax_impact: row.tax_impact,
+        },
+        tax_results: {
+          tax_regime: row.tax_regime,
+          regime_label: row.tax_regime_label,
+        },
+      },
+      baselineTotal: state.comparison.comparison[0]?.total_with_tax || 0,
+    }),
+    rank_by_total_cost: row.rank_by_total_cost,
+    status: row.status,
+  }));
   setHtml(
     'comparisonTable',
-    `<table><thead><tr><th>Cenário</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Rank</th><th>Status</th></tr></thead><tbody>${rows
+    `<table><thead><tr><th>Cenário</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Rank</th><th>Status</th></tr></thead><tbody>${rows
       .map(
         (row) =>
-          `<tr><td>${escapeHtml(row.scenario_name)}</td><td>${formatBRL(row.total_with_tax)}</td><td class="${row.saving_abs >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving_abs)}</td><td>${formatPct(row.saving_pct, 2)}</td><td>${row.rank_by_total_cost}</td><td>${escapeHtml(row.status)}</td></tr>`
+          `<tr><td>${escapeHtml(row.scenario_name)}</td><td>${formatNumber(row.active_cds_count)}</td><td>${escapeHtml(formatMultiplierDisplay(row.freight_multiplier))}</td><td>${escapeHtml(formatMultiplierDisplay(row.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(row.inventory_days))}</td><td>${escapeHtml(row.tax_regime_label)}</td><td>${formatBRL(row.transfer_cost)}</td><td>${formatBRL(row.tax_impact)}</td><td>${formatBRL(row.total_with_tax)}</td><td class="${row.saving_abs >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving_abs)}</td><td>${formatPct(row.saving_pct, 2)}</td><td>${row.rank_by_total_cost}</td><td>${escapeHtml(row.status)}</td></tr>`
       )
       .join('')}</tbody></table>`
   );
@@ -529,61 +564,78 @@ function renderLibraryComparisonTable() {
     renderEmpty('scenarioLibraryComparisonTable', EMPTY_STATE.comparison);
     return;
   }
+  const formatMultiplier = (value) =>
+    `${Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}x`;
+  const isHiddenScenario = (scenario) =>
+    /apenas\s+malha/i.test(String(scenario?.scenario_name || scenario?.name || '')) ||
+    /apenas\s+malha/i.test(String(scenario?.scenario_id || ''));
   const baselineTotal = Number(state.library.baselineBundle.costs.costs.total_with_tax || 0);
   const rows = [
     {
-      name: 'Baseline',
+      ...buildScenarioSummary({
+        scenario: {
+          scenario_id: 'baseline',
+          scenario_name: 'Baseline',
+          scenario_type: 'referência',
+          changes: {
+            active_cds: state.library.baselineBundle.model?.active_cds || [],
+            freight_multiplier: 1,
+            demand_multiplier: 1,
+            inventory_days: 45,
+            tax_mode: 'current',
+          },
+        },
+        result: {
+          total_with_tax: baselineTotal,
+          costs: state.library.baselineBundle.costs.costs || {},
+          tax_results: state.library.baselineBundle.tax_results?.tax_results || {},
+        },
+        baselineTotal,
+      }),
       type: 'referência',
-      regime: taxRegimeLabel('legacy_current'),
-      total: baselineTotal,
-      saving: 0,
-      savingPct: 0,
-      quality: '—',
-      risk: '—',
     },
   ];
-  const libraryRows = (state.library.scenarios || []).slice(0, 8).map((scenario) => {
-    const result = runScenario({
-      companyId: state.companyId,
-      scenario,
-      baselineBundle: state.library.baselineBundle,
+  const libraryRows = (state.library.scenarios || [])
+    .filter((scenario) => !isHiddenScenario(scenario))
+    .slice(0, 8)
+    .map((scenario) => {
+      const result = runScenario({
+        companyId: state.companyId,
+        scenario,
+        baselineBundle: state.library.baselineBundle,
+      });
+      const quality = evaluateScenarioQuality({
+        scenarioResult: result,
+        baselineBundle: state.library.baselineBundle,
+      });
+      return {
+        ...buildScenarioSummary({
+          scenario,
+          result,
+          quality,
+          baselineTotal,
+        }),
+        type: scenario.scenario_type || 'biblioteca',
+      };
     });
-    const quality = evaluateScenarioQuality({
-      scenarioResult: result,
-      baselineBundle: state.library.baselineBundle,
-    });
-    const saving = baselineTotal - Number(result.total_with_tax || 0);
-    return {
-      name: scenario.scenario_name || scenario.scenario_id,
-      type: scenario.scenario_type || 'biblioteca',
-      regime: taxRegimeLabel(scenarioTaxRegime(scenario)),
-      total: result.total_with_tax,
-      saving,
-      savingPct: baselineTotal ? (saving / baselineTotal) * 100 : 0,
-      quality: quality.quality_score,
-      risk: riskLabel(quality.risk_level),
-    };
-  });
-  const current = state.currentResult
-    ? [
-        {
-          name: `${state.currentResult.scenario_name} (atual)`,
-          type: 'customizado',
-          regime: taxRegimeLabel(scenarioTaxRegime(state.currentResult.scenario)),
-          total: state.currentResult.total_with_tax,
-          saving: baselineTotal - Number(state.currentResult.total_with_tax || 0),
-          savingPct: baselineTotal
-            ? ((baselineTotal - Number(state.currentResult.total_with_tax || 0)) / baselineTotal) *
-              100
-            : 0,
-          quality: state.quality?.quality_score ?? '—',
-          risk: riskLabel(state.quality?.risk_level),
-        },
-      ]
-    : [];
+  const current =
+    state.currentResult && !isHiddenScenario(state.currentResult.scenario || state.currentResult)
+      ? [
+          {
+            ...buildScenarioSummary({
+              scenario: state.currentResult.scenario,
+              result: state.currentResult,
+              quality: state.quality,
+              baselineTotal,
+            }),
+            scenario_name: `${state.currentResult.scenario_name} (atual)`,
+            type: 'customizado',
+          },
+        ]
+      : [];
   setHtml(
     'scenarioLibraryComparisonTable',
-    `<table><thead><tr><th>Cenário</th><th>Tipo</th><th>Regime</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Quality</th><th>Risco</th></tr></thead><tbody>${[...rows, ...current, ...libraryRows].map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.type)}</td><td>${escapeHtml(row.regime || '—')}</td><td>${formatBRL(row.total, true)}</td><td class="${row.saving >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving, true)}</td><td>${formatPct(row.savingPct, 2)}</td><td>${escapeHtml(row.quality)}</td><td>${escapeHtml(row.risk)}</td></tr>`).join('')}</tbody></table>`
+    `<table><thead><tr><th>Cenário</th><th>Tipo</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Quality</th><th>Risco</th></tr></thead><tbody>${[...rows, ...current, ...libraryRows].map((row) => `<tr><td>${escapeHtml(row.scenario_name)}</td><td>${escapeHtml(row.type || '—')}</td><td>${escapeHtml(String(row.active_cds_count ?? '—'))}</td><td>${escapeHtml(formatMultiplier(row.freight_multiplier))}</td><td>${escapeHtml(formatMultiplier(row.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(row.inventory_days))}</td><td>${escapeHtml(row.tax_regime_label || '—')}</td><td>${formatBRL(row.transfer_cost, true)}</td><td>${formatBRL(row.tax_impact, true)}</td><td>${formatBRL(row.total_with_tax, true)}</td><td class="${row.saving_abs >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving_abs, true)}</td><td>${formatPct(row.saving_pct, 2)}</td><td>${escapeHtml(row.quality_score == null ? '—' : String(row.quality_score))}</td><td>${escapeHtml(row.risk_level || '—')}</td></tr>`).join('')}</tbody></table>`
   );
 }
 

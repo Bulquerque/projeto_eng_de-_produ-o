@@ -1,10 +1,10 @@
 import { parseDecryptedJson, CryptoDataError } from './data-decryptor.js';
 import { decryptWithSession, installLockButton } from './crypto-session.js';
 import { assertCompanyPath, setActiveCompany } from './company-context.js';
-import { buildBundleReconciliation } from './reconciliation-engine.js';
 import { loadComplementPackage } from './complements.js';
 import { requireHttpRuntime } from './runtime-env.js';
 import { resolveProjectPath, resolveProjectUrl } from './project-paths.js';
+import { recomputePhase2Baseline } from './phase2-baseline-deriver.js';
 
 let encryptedManifest = null;
 
@@ -170,7 +170,8 @@ export async function loadPhase2Bundle(companyId) {
         bundle.tax_source_context = null;
       }
 
-      bundle.reconciliation = buildBundleReconciliation(bundle);
+      recomputePhase2Baseline(bundle, companyId);
+
       installLockButton();
       bundleCache[companyId] = bundle;
       return bundle;

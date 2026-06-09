@@ -15,7 +15,10 @@ import {
   buildTradeoffTableHtml,
 } from './phase4-dashboard-templates.js';
 import { appendSharedDebugEntry } from '../shared/debug-tools.js';
-import { resolveTaxRegime } from '../shared/tax-reform-config.js';
+import {
+  CANONICAL_OPTIMIZATION_POLICY,
+  buildCanonicalOptimizationConfig,
+} from '../shared/optimization-policy.js';
 const state = {
   companyId: 'empresa1',
   bundle: null,
@@ -158,20 +161,27 @@ function constraints() {
     max_active_cds: Number($('maxActiveCds').value || 999),
     max_cd_volume_share: Number($('maxCdShare').value || 100) / 100,
     max_risk_level: $('maxRiskLevel').value,
-    allow_tax_disabled: $('allowTaxDisabled').checked,
+    allow_tax_disabled: false,
   };
 }
 function optimizerConfig() {
-  const taxMode = $('optimizationTaxMode').value;
-  const taxRegime = resolveTaxRegime({ taxMode });
-  return {
+  return buildCanonicalOptimizationConfig({
     method: 'exact_discrete',
     max_candidates: Number($('maxCandidates').value || 2000),
     seed: Number($('optimizerSeed').value || 42),
-    base_tax_mode: taxMode,
-    base_tax_regime: taxRegime,
-    allow_tax_disabled: $('allowTaxDisabled').checked,
-  };
+  });
+}
+function applyFixedOptimizationControls() {
+  const taxMode = $('optimizationTaxMode');
+  if (taxMode) {
+    taxMode.value = CANONICAL_OPTIMIZATION_POLICY.tax_mode;
+    taxMode.disabled = true;
+  }
+  const allowTaxDisabled = $('allowTaxDisabled');
+  if (allowTaxDisabled) {
+    allowTaxDisabled.checked = false;
+    allowTaxDisabled.disabled = true;
+  }
 }
 function runOpt() {
   renderObjectivePreview();
@@ -230,6 +240,7 @@ export async function loadPhase4Company(companyId) {
   state.isLoading = true;
   state.companyId = companyId;
   renderTabs();
+  applyFixedOptimizationControls();
   setCompanyButtonsDisabled(true);
   const loading = $('phase4Loading');
   if (loading) loading.classList.remove('hidden');
@@ -281,5 +292,8 @@ export function setupPhase4() {
     'maxCandidates',
     'optimizerSeed',
   ].forEach((id) => $(id)?.addEventListener('input', renderOptimizerInputTable));
+  ['optimizationTaxMode', 'allowTaxDisabled'].forEach((id) =>
+    $(id)?.setAttribute('disabled', 'true')
+  );
   $('runOptimizer')?.addEventListener('click', runOpt);
 }

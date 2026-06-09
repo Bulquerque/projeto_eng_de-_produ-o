@@ -15,6 +15,10 @@ import {
   uniqueByChanges,
 } from './optimizer-utils.js';
 import { buildRefinementVariants } from './optimizer-refinement.js';
+import {
+  CANONICAL_OPTIMIZATION_POLICY,
+  buildCanonicalOptimizationConfig,
+} from '../shared/optimization-policy.js';
 
 export function runOptimization({
   companyId,
@@ -23,19 +27,20 @@ export function runOptimization({
   constraints = {},
   optimizerConfig = {},
 }) {
-  const requestedMethod = String(optimizerConfig.method || 'exact_discrete');
-  const maxCandidates = Number(optimizerConfig.max_candidates ?? 2000);
+  const canonicalConfig = buildCanonicalOptimizationConfig(optimizerConfig);
+  const requestedMethod = String(canonicalConfig.method || 'exact_discrete');
+  const maxCandidates = Number(canonicalConfig.max_candidates ?? 2000);
   const refinementRounds = Math.max(0, Math.floor(Number(optimizerConfig.refinement_rounds ?? 2)));
   const refinementSeedCount = Math.max(
     1,
     Math.floor(Number(optimizerConfig.refinement_seed_count ?? 5))
   );
   const refinementConfig = {
-    allow_tax_toggle: optimizerConfig.allow_tax_toggle !== false,
-    freight_steps: optimizerConfig.refinement_freight_steps || [0.95, 1.05],
-    demand_steps: optimizerConfig.refinement_demand_steps || [0.95, 1.05],
-    inventory_steps: optimizerConfig.refinement_inventory_steps || [-15, 15],
-    wacc_steps: optimizerConfig.refinement_wacc_steps || [-0.02, 0.02],
+    allow_tax_toggle: false,
+    freight_steps: [],
+    demand_steps: [],
+    inventory_steps: [],
+    wacc_steps: [],
   };
 
   const constraintValidation = validateConstraintConfig(constraints);
@@ -58,13 +63,12 @@ export function runOptimization({
     baselineBundle,
     generationConfig: {
       max_candidates: maxCandidates,
-      freight_multipliers: [0.95, 1, 1.05, 1.1],
-      inventory_days_options: [30, 45, 60],
-      base_tax_mode: optimizerConfig.base_tax_mode || 'current',
-      base_tax_regime:
-        optimizerConfig.base_tax_regime || optimizerConfig.base_tax_mode || 'current',
-      allow_tax_disabled: optimizerConfig.allow_tax_disabled === true,
-      demand_multipliers: [0.95, 1, 1.05],
+      freight_multipliers: [CANONICAL_OPTIMIZATION_POLICY.freight_multiplier],
+      inventory_days_options: [CANONICAL_OPTIMIZATION_POLICY.inventory_days],
+      base_tax_mode: CANONICAL_OPTIMIZATION_POLICY.tax_mode,
+      base_tax_regime: CANONICAL_OPTIMIZATION_POLICY.tax_regime,
+      allow_tax_disabled: CANONICAL_OPTIMIZATION_POLICY.allow_tax_disabled,
+      demand_multipliers: [CANONICAL_OPTIMIZATION_POLICY.demand_multiplier],
     },
   });
 
