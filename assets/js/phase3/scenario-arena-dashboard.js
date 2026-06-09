@@ -887,7 +887,13 @@ function onImportScenarioFile(event) {
       const validation = validateImportedScenario(state.companyId, scenario);
       if (!validation.valid) throw new Error(validation.error);
 
-      saveScenario(state.companyId, scenario);
+      const result = saveScenario(state.companyId, scenario);
+      if (!result.saved) {
+        log('Persistência local indisponível', {
+          action: 'importScenario',
+          companyId: state.companyId,
+        });
+      }
       renderSaved();
       loadScenarioToForm(scenario);
       log('Cenário importado', scenario.scenario_id);
@@ -916,7 +922,13 @@ function onBodyClick(event) {
 
   const deleteSavedScenario = event.target.closest('[data-delete-saved]');
   if (deleteSavedScenario) {
-    deleteScenario(state.companyId, deleteSavedScenario.dataset.deleteSaved);
+    const result = deleteScenario(state.companyId, deleteSavedScenario.dataset.deleteSaved);
+    if (!result.deleted) {
+      log('Persistência local indisponível', {
+        action: 'deleteScenario',
+        companyId: state.companyId,
+      });
+    }
     renderSaved();
   }
 }
@@ -994,7 +1006,13 @@ export function setupPhase3() {
   $('taxMode')?.addEventListener('change', renderTaxAssumptions);
   $('saveScenario')?.addEventListener('click', () => {
     if (!state.currentScenario) return;
-    saveScenario(state.companyId, state.currentScenario);
+    const result = saveScenario(state.companyId, state.currentScenario);
+    if (!result.saved) {
+      log('Persistência local indisponível', {
+        action: 'saveScenario',
+        companyId: state.companyId,
+      });
+    }
     renderSaved();
     log('Cenário salvo', state.currentScenario.scenario_id);
   });
@@ -1005,7 +1023,13 @@ export function setupPhase3() {
   });
   $('importScenarioFile')?.addEventListener('change', onImportScenarioFile);
   $('clearSavedScenarios')?.addEventListener('click', () => {
-    clearCompanyScenarios(state.companyId);
+    const result = clearCompanyScenarios(state.companyId);
+    if (!result.cleared) {
+      log('Persistência local indisponível', {
+        action: 'clearSavedScenarios',
+        companyId: state.companyId,
+      });
+    }
     renderSaved();
   });
   document.body.addEventListener('click', onBodyClick);
