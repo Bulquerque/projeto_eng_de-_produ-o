@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-09T15:43:26.559671+00:00",
+  "generated_at": "2026-06-09T17:00:30.089864+00:00",
   "status": "ok",
   "logic_report_path": "data/validation/prova_bala_evidence/logic_report.json",
   "ui_report_path": "data/validation/prova_bala_evidence/ui_report.json",
   "logic": {
-    "generated_at": "2026-06-09T15:43:10.022Z",
+    "generated_at": "2026-06-09T17:00:08.571Z",
     "status": "ok",
     "command": "python tests/run_all_tests.py",
     "companies": [
@@ -72,7 +72,7 @@
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6t756l",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6vy4wu",
               "total_with_tax": 24139571.62888069,
               "total_logistics_cost": 24139571.62888069,
               "tax_impact": 0
@@ -80,7 +80,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6t756m",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6vy4wv",
               "total_with_tax": 26343607.941973165,
               "total_logistics_cost": 26343607.941973165,
               "tax_impact": 0
@@ -88,7 +88,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6t756n",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6vy4wy",
               "total_with_tax": 28547644.25506564,
               "total_logistics_cost": 28547644.25506564,
               "tax_impact": 0
@@ -96,7 +96,7 @@
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6t756p",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6vy4x0",
               "total_with_tax": 24139571.62888069,
               "total_logistics_cost": 24139571.62888069,
               "tax_impact": 0
@@ -104,7 +104,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6t756q",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6vy4x2",
               "total_with_tax": 26343607.941973165,
               "total_logistics_cost": 26343607.941973165,
               "tax_impact": 0
@@ -112,7 +112,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6t756q",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6vy4x3",
               "total_with_tax": 28547644.25506564,
               "total_logistics_cost": 28547644.25506564,
               "tax_impact": 0
@@ -120,7 +120,7 @@
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6t756r",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6vy4x4",
               "total_with_tax": 30774061.472144686,
               "total_logistics_cost": 30774061.472144686,
               "tax_impact": 0
@@ -128,7 +128,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6t756s",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6vy4x6",
               "total_with_tax": 32978097.78523716,
               "total_logistics_cost": 32978097.78523716,
               "tax_impact": 0
@@ -136,7 +136,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6t756u",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6vy4x9",
               "total_with_tax": 35182134.09832963,
               "total_logistics_cost": 35182134.09832963,
               "tax_impact": 0
@@ -144,7 +144,7 @@
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6t756v",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6vy4xa",
               "total_with_tax": 30774061.472144686,
               "total_logistics_cost": 30774061.472144686,
               "tax_impact": 0
@@ -152,7 +152,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6t756w",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6vy4xc",
               "total_with_tax": 32978097.78523716,
               "total_logistics_cost": 32978097.78523716,
               "tax_impact": 0
@@ -160,7 +160,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6t756w",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6vy4xd",
               "total_with_tax": 35182134.09832963,
               "total_logistics_cost": 35182134.09832963,
               "tax_impact": 0
@@ -172,7 +172,7 @@
           "export_roundtrip_ok": true,
           "invalid_json_rejected": true,
           "foreign_company_rejected": true,
-          "scenario_id": "empresa1_roundtrip_de_exportacao_mq6t758u"
+          "scenario_id": "empresa1_roundtrip_de_exportacao_mq6vy50p"
         },
         "phase4": {
           "objective_profiles_ok": true,
@@ -262,7 +262,7 @@
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6t76de",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6vy6wk",
               "total_with_tax": 43897468.8024587,
               "total_logistics_cost": 17816017.22604417,
               "tax_impact": 26081451.576414533
@@ -270,7 +270,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6t76df",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6vy6wl",
               "total_with_tax": 45515354.29036482,
               "total_logistics_cost": 19433902.713950284,
               "tax_impact": 26081451.576414533
@@ -278,7 +278,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6t76df",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6vy6wl",
               "total_with_tax": 47133239.77827093,
               "total_logistics_cost": 21051788.201856397,
               "tax_impact": 26081451.576414533
@@ -286,7 +286,7 @@
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6t76dg",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6vy6wm",
               "total_with_tax": 17816017.22604417,
               "total_logistics_cost": 17816017.22604417,
               "tax_impact": 0
@@ -294,7 +294,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6t76dg",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6vy6wn",
               "total_with_tax": 19433902.713950284,
               "total_logistics_cost": 19433902.713950284,
               "tax_impact": 0
@@ -302,7 +302,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6t76dg",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6vy6wn",
               "total_with_tax": 21051788.201856397,
               "total_logistics_cost": 21051788.201856397,
               "tax_impact": 0
@@ -310,7 +310,7 @@
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6t76dh",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6vy6wo",
               "total_with_tax": 49418177.20145239,
               "total_logistics_cost": 23336725.625037853,
               "tax_impact": 26081451.576414533
@@ -318,7 +318,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6t76dh",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6vy6wp",
               "total_with_tax": 51036062.6893585,
               "total_logistics_cost": 24954611.112943966,
               "tax_impact": 26081451.576414533
@@ -326,7 +326,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6t76di",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6vy6wr",
               "total_with_tax": 52653948.177264616,
               "total_logistics_cost": 26572496.60085008,
               "tax_impact": 26081451.576414533
@@ -334,7 +334,7 @@
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6t76di",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6vy6ws",
               "total_with_tax": 23336725.625037853,
               "total_logistics_cost": 23336725.625037853,
               "tax_impact": 0
@@ -342,7 +342,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6t76di",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6vy6ws",
               "total_with_tax": 24954611.112943966,
               "total_logistics_cost": 24954611.112943966,
               "tax_impact": 0
@@ -350,7 +350,7 @@
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6t76dj",
+              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6vy6wt",
               "total_with_tax": 26572496.60085008,
               "total_logistics_cost": 26572496.60085008,
               "tax_impact": 0
@@ -362,7 +362,7 @@
           "export_roundtrip_ok": true,
           "invalid_json_rejected": true,
           "foreign_company_rejected": true,
-          "scenario_id": "empresa2_roundtrip_de_exportacao_mq6t76eq"
+          "scenario_id": "empresa2_roundtrip_de_exportacao_mq6vy6yq"
         },
         "phase4": {
           "objective_profiles_ok": true,
@@ -398,7 +398,7 @@
     }
   },
   "ui": {
-    "generated_at": "2026-06-09T15:43:26.558881+00:00",
+    "generated_at": "2026-06-09T17:00:30.089212+00:00",
     "screenshots": [
       "ui_invalid_route_fallback_desktop.png",
       "ui_corrupted_storage_baseline_desktop.png",
