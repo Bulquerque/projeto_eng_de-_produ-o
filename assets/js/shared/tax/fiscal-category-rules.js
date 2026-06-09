@@ -56,9 +56,7 @@ export function getFiscalCategoryRule(category, rules = DEFAULT_RULES) {
   return rules.categories[normalized] || rules.categories[rules.default_category];
 }
 
-export async function loadFiscalCategoryRules(
-  path = '../assets/data/tax/fiscal-category-rules.json'
-) {
+export async function loadFiscalCategoryRules(path = 'assets/data/tax/fiscal-category-rules.json') {
   const { fetchJson } = await import('../data-loader.js');
   const loaded = await fetchJson(path);
   return {

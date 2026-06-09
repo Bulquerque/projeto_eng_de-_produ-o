@@ -484,7 +484,7 @@ export function listTaxModes(config = getTaxReformConfig()) {
   return [...values];
 }
 
-export async function loadTaxReformConfiguration(path = '../data/tax/tax_reform_config.json') {
+export async function loadTaxReformConfiguration(path = 'data/tax/tax_reform_config.json') {
   const { fetchJson } = await import('./data-loader.js');
   const loaded = await fetchJson(path);
   const normalized = normalizeTaxReformConfig(loaded);

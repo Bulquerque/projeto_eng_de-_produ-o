@@ -17,7 +17,7 @@ export function getTaxRegimeCatalog() {
 
 export { resolveTaxRegime, resolveTaxModeForRegime, taxRegimeLabel, setTaxReformConfig };
 
-export async function loadTaxRegimeCatalog(path = '../assets/data/tax/tax-regime-catalog.json') {
+export async function loadTaxRegimeCatalog(path = 'assets/data/tax/tax-regime-catalog.json') {
   const { fetchJson } = await import('../data-loader.js');
   const loaded = await fetchJson(path);
   const normalized = normalizeTaxReformConfig(loaded);
