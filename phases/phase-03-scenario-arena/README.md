@@ -9,6 +9,7 @@ Organização por feature da Fase 3.
 - [`ScenarioComparator`](modules/ScenarioComparator/README.md) — Compara múltiplos cenários da mesma empresa contra o baseline correto, mostrando custo, saving, serviço, risco e tributo.
 - [`ScenarioFlowRebuilder`](modules/ScenarioFlowRebuilder/README.md) — Reconstrói fluxos quando CDs são fechados e registra realocações.
 - [`ScenarioImportExport`](modules/ScenarioImportExport/README.md) — Exporta e importa cenários em JSON.
+- [`MonteCarloEngine`](modules/MonteCarloEngine/README.md) — Roda simulações probabilísticas reprodutíveis sobre o cenário selecionado e resume distribuição, percentis e risco.
 - [`ScenarioLibrary`](modules/ScenarioLibrary/README.md) — Carrega baseline, cenários exemplo e cenários salvos por empresa.
 - [`ScenarioPersistence`](modules/ScenarioPersistence/README.md) — Salva cenários criados pelo usuário no navegador e permite exportar/importar JSON de cenário.
 - [`ScenarioQualityCheck`](modules/ScenarioQualityCheck/README.md) — Avalia plausibilidade operacional do cenário, separando cenário barato de cenário realmente executável.

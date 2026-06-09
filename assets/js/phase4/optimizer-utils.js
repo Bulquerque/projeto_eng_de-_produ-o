@@ -1,8 +1,8 @@
-import {buildScenarioFromForm} from '../phase3/scenario-builder.js';
-import {resolveTaxRegime} from '../shared/tax-reform-config.js';
+import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
+import { resolveTaxRegime } from '../shared/tax-reform-config.js';
 
 export const SUPPORTED_METHOD = 'exact_discrete';
-const RISK_ORDER = {low: 1, baixo: 1, medium: 2, medio: 2, 'médio': 2, high: 3, alto: 3};
+const RISK_ORDER = { low: 1, baixo: 1, medium: 2, medio: 2, médio: 2, high: 3, alto: 3 };
 
 export function n(v, d = 0) {
   const x = Number(v);
@@ -51,7 +51,7 @@ export function emptyCollections() {
     scenario_metrics: [],
     normalized_metrics: [],
     warnings: [],
-    errors: []
+    errors: [],
   };
 }
 
@@ -69,14 +69,14 @@ export function buildBaselineScenario(companyId, baselineBundle) {
       inventory_days: 45,
       wacc: 0.15,
       tax_mode: 'current',
-      tax_regime: resolveTaxRegime({taxMode:'current'}),
+      tax_regime: resolveTaxRegime({ taxMode: 'current' }),
       reallocation_rule: 'nearest_available_cd',
-      scenario_type: 'baseline'
-    }
+      scenario_type: 'baseline',
+    },
   });
 }
 
-export function buildFailureResult({companyId, searchLog, errors = [], warnings = []}) {
+export function buildFailureResult({ companyId, searchLog, errors = [], warnings = [] }) {
   return {
     company_id: companyId,
     optimizer_status: 'error',
@@ -89,7 +89,7 @@ export function buildFailureResult({companyId, searchLog, errors = [], warnings 
     normalized: emptyCollections(),
     search_log: searchLog,
     warnings,
-    errors
+    errors,
   };
 }
 
@@ -113,7 +113,7 @@ export function buildSearchLog({
   bestByTotalCostValue = null,
   exactSearchSpace = true,
   spaceLimited = false,
-  invalidReasons = []
+  invalidReasons = [],
 }) {
   return {
     search_strategy: searchStrategy,
@@ -135,6 +135,6 @@ export function buildSearchLog({
     best_by_total_cost_value: bestByTotalCostValue,
     exact_search_space: exactSearchSpace,
     space_limited: spaceLimited,
-    invalid_reasons: invalidReasons
+    invalid_reasons: invalidReasons,
   };
 }

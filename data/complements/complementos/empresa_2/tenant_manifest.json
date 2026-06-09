@@ -1,0 +1,32 @@
+{
+  "tenant_id": "empresa_2",
+  "display_name": "Empresa 2",
+  "enabled": true,
+  "tenant_type": "visagio_case",
+  "raw_root": "data/raw/empresa_2",
+  "tenant_root": "data/tenants/empresa_2",
+  "canonical_root": "data/tenants/empresa_2/canonical",
+  "tax_root": "data/tenants/empresa_2/tax",
+  "allow_external_sources": true,
+  "uses_other_company_proxy": true,
+  "main_external_focus": "tax_reform",
+  "default_currency": "BRL",
+  "default_weight_unit": "kg",
+  "default_distance_unit": "km",
+  "data_status": "site_ready_initial_bundle",
+  "required_canonical_tables": [
+    "nodes",
+    "edges",
+    "products",
+    "demand",
+    "cost_inputs",
+    "scenario_baseline"
+  ],
+  "optional_canonical_tables": [
+    "inventory",
+    "tax_inputs",
+    "storage_inputs",
+    "coordinates"
+  ],
+  "created_at": "2026-06-09T02:05:16Z"
+}

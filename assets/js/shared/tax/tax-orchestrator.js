@@ -1,4 +1,9 @@
-import { resolveTaxModeForRegime, resolveTaxRegime, taxRegimeLabel, getTaxReformConfig } from '../tax-reform-config.js';
+import {
+  resolveTaxModeForRegime,
+  resolveTaxRegime,
+  taxRegimeLabel,
+  getTaxReformConfig,
+} from '../tax-reform-config.js';
 import { buildFiscalFlows } from './fiscal-flow-builder.js';
 import { auditTaxFlowCoverage } from './tax-quality-gate.js';
 import { calculateLegacyTax } from './legacy-tax-engine.js';
@@ -11,7 +16,14 @@ function n(value, fallback = 0) {
 }
 
 function normalizeInput(arg1, arg2, arg3) {
-  if (arg1 && typeof arg1 === 'object' && ('baselineBundle' in arg1 || 'scenario' in arg1 || 'rebuiltFlows' in arg1 || 'baseTaxBlock' in arg1)) {
+  if (
+    arg1 &&
+    typeof arg1 === 'object' &&
+    ('baselineBundle' in arg1 ||
+      'scenario' in arg1 ||
+      'rebuiltFlows' in arg1 ||
+      'baseTaxBlock' in arg1)
+  ) {
     return {
       baselineBundle: arg1.baselineBundle || null,
       scenario: arg1.scenario || null,
@@ -21,7 +33,7 @@ function normalizeInput(arg1, arg2, arg3) {
       taxMode: arg1.taxMode ?? arg1.tax_mode ?? null,
       taxRegime: arg1.taxRegime ?? arg1.tax_regime ?? null,
       parameters: arg1.parameters || null,
-      config: arg1.config || getTaxReformConfig()
+      config: arg1.config || getTaxReformConfig(),
     };
   }
 
@@ -34,17 +46,22 @@ function normalizeInput(arg1, arg2, arg3) {
     taxMode: arg3 || null,
     taxRegime: null,
     parameters: null,
-    config: getTaxReformConfig()
+    config: getTaxReformConfig(),
   };
 }
 
-function buildAuditTrace({ parameterVersion, qualityReport, regimeId, sourceVersion = 'official_reform_sources' }) {
+function buildAuditTrace({
+  parameterVersion,
+  qualityReport,
+  regimeId,
+  sourceVersion = 'official_reform_sources',
+}) {
   return {
     parameter_version: parameterVersion,
     source_version: sourceVersion,
     tax_parameter_hash: `${regimeId}:${parameterVersion}`,
     data_quality_score: qualityReport?.data_quality_score ?? 0,
-    precision_mode: qualityReport?.precision_mode || 'top_down_fallback'
+    precision_mode: qualityReport?.precision_mode || 'top_down_fallback',
   };
 }
 
@@ -55,20 +72,21 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     taxMode: input.taxMode,
     taxRegime: input.taxRegime,
     year: input.scenario?.changes?.tax_year,
-    config
+    config,
   });
   const regimeLabel = taxRegimeLabel(regimeId, config);
   const taxMode = resolveTaxModeForRegime(regimeId, config);
   const fiscal = buildFiscalFlows({
     baselineBundle: input.baselineBundle,
     scenario: input.scenario,
-    rebuiltFlows: input.rebuiltFlows
+    rebuiltFlows: input.rebuiltFlows,
   });
   const quality = auditTaxFlowCoverage(fiscal.fiscal_flows);
   const precisionMode = quality.precision_mode;
   const calculationMode = quality.blocked ? 'top_down_fallback' : precisionMode;
   const baseTax = input.baseTaxBlock || {};
   const disabled = regimeId === 'disabled' || input.taxMode === 'disabled';
+  const sourceContext = input.baselineBundle?.complements || null;
 
   if (disabled) {
     return {
@@ -86,14 +104,33 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       selective_tax_total: 0,
       credits_total: 0,
       tax_delta_vs_baseline: -n(baseTax.total_tax_impact, 0),
-      tax_breakdown_by_component: { legacy_tax: 0, cbs_total: 0, ibs_total: 0, selective_tax_total: 0, credits_total: 0 },
+      tax_breakdown_by_component: {
+        legacy_tax: 0,
+        cbs_total: 0,
+        ibs_total: 0,
+        selective_tax_total: 0,
+        credits_total: 0,
+      },
       tax_breakdown_by_destination_uf: {},
       tax_breakdown_by_fiscal_category: {},
       flow_breakdown: [],
       warnings: [...quality.warnings, ...(fiscal.warnings || [])],
       explanation: { summary: 'Camada tributária desligada.' },
-      audit_trace: buildAuditTrace({ parameterVersion: '2026-05', qualityReport: quality, regimeId }),
-      metadata: { regime_id: regimeId, regime_label: regimeLabel, ui_mode: taxMode, calculation_mode: 'top_down_fallback', precision_mode: precisionMode }
+      audit_trace: buildAuditTrace({
+        parameterVersion: '2026-05',
+        qualityReport: quality,
+        regimeId,
+        sourceVersion: sourceContext?.package_name || 'official_reform_sources',
+      }),
+      metadata: {
+        regime_id: regimeId,
+        regime_label: regimeLabel,
+        ui_mode: taxMode,
+        calculation_mode: 'top_down_fallback',
+        precision_mode: precisionMode,
+        source_context: sourceContext,
+      },
+      source_context: sourceContext,
     };
   }
 
@@ -101,17 +138,22 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     fiscalFlows: fiscal.fiscal_flows,
     baseTaxBlock: baseTax,
     demandMultiplier: input.demandMultiplier,
-    baselineBundle: input.baselineBundle
+    baselineBundle: input.baselineBundle,
   });
   const reformResult = calculateReformTax({
     fiscalFlows: fiscal.fiscal_flows,
     taxRegime: regimeId,
     demandMultiplier: input.demandMultiplier,
-    parameters: input.parameters
+    parameters: input.parameters,
   });
-  const combined = regimeId === 'legacy_current'
-    ? legacyResult
-    : combineTransitionTaxes({ legacyResult, reformResult, regime: config.regimes?.[regimeId] || {} });
+  const combined =
+    regimeId === 'legacy_current'
+      ? legacyResult
+      : combineTransitionTaxes({
+          legacyResult,
+          reformResult,
+          regime: config.regimes?.[regimeId] || {},
+        });
 
   const totalTax = n(combined.total_tax, n(baseTax.total_tax_impact, 0));
   return {
@@ -134,7 +176,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       cbs_total: reformResult.cbs_total,
       ibs_total: reformResult.ibs_total,
       selective_tax_total: reformResult.selective_tax_total,
-      credits_total: reformResult.credits_total
+      credits_total: reformResult.credits_total,
     },
     tax_breakdown_by_destination_uf: combined.tax_breakdown_by_destination_uf || {},
     tax_breakdown_by_fiscal_category: combined.tax_breakdown_by_fiscal_category || {},
@@ -143,16 +185,22 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     explanation: {
       summary: `Regime ${regimeLabel} calculado em modo ${calculationMode}.`,
       calculation_mode: calculationMode,
-      precision_mode: precisionMode
+      precision_mode: precisionMode,
     },
-    audit_trace: buildAuditTrace({ parameterVersion: '2026-05', qualityReport: quality, regimeId }),
+    audit_trace: buildAuditTrace({
+      parameterVersion: '2026-05',
+      qualityReport: quality,
+      regimeId,
+      sourceVersion: sourceContext?.package_name || 'official_reform_sources',
+    }),
     metadata: {
       regime_id: regimeId,
       regime_label: regimeLabel,
       ui_mode: taxMode,
       calculation_mode: calculationMode,
       precision_mode: precisionMode,
-      source: 'tax-orchestrator'
+      source: 'tax-orchestrator',
+      source_context: sourceContext,
     },
     mode: taxMode,
     breakdown: {
@@ -161,7 +209,8 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       ibs_component: n(combined.ibs_total, reformResult.ibs_total),
       selective_tax: n(combined.selective_tax_total, reformResult.selective_tax_total),
       credits: n(combined.credits_total, reformResult.credits_total),
-      baseline_reference_tax: n(baseTax.total_tax_impact, 0)
-    }
+      baseline_reference_tax: n(baseTax.total_tax_impact, 0),
+    },
+    source_context: sourceContext,
   };
 }

@@ -1,0 +1,4 @@
+tenant_id,assumption_id,description,source_confidence,source_ref
+empresa_2,tax_current_base,"Regime atual utiliza dados internos quando disponíveis, proxy da outra empresa quando necessário e matriz ICMS oficial como apoio.",manual_scenario,methodology
+empresa_2,tax_reform_focus,"Cenários de reforma modelados para 2027, 2030 e 2033 com base em fontes oficiais e sem caráter de parecer jurídico.",external_official,shared/tax_reference
+empresa_2,destination_principle,Cenário reforma integral considera deslocamento do efeito fiscal para o destino/consumo.,manual_scenario,tax_reform_timeline

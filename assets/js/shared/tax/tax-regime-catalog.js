@@ -4,7 +4,7 @@ import {
   resolveTaxModeForRegime,
   resolveTaxRegime,
   setTaxReformConfig,
-  taxRegimeLabel
+  taxRegimeLabel,
 } from '../tax-reform-config.js';
 
 function clone(value) {

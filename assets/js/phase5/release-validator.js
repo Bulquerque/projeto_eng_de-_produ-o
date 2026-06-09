@@ -12,7 +12,13 @@
  *   - Verificação de assinaturas ou integridade de dados.
  * Para auditoria completa, use o audit-trail-engine + export-center.
  */
-export function validateRelease({ finalQA, testResults = {}, zipMetadata = {}, exportPackage = null, decisionPackage = null } = {}) {
+export function validateRelease({
+  finalQA,
+  testResults = {},
+  zipMetadata = {},
+  exportPackage = null,
+  decisionPackage = null,
+} = {}) {
   const blocking = [...(finalQA?.blocking_issues || [])];
 
   if (finalQA?.final_qa_status !== 'passed') blocking.push('QA final não passou.');
@@ -35,7 +41,6 @@ export function validateRelease({ finalQA, testResults = {}, zipMetadata = {}, e
     warnings: [],
     ready_to_deliver: release_status === 'ready',
     zip_metadata: zipMetadata,
-    test_results: testResults
+    test_results: testResults,
   };
 }
-

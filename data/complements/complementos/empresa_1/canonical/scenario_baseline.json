@@ -1,0 +1,8 @@
+{
+  "tenant_id": "empresa_1",
+  "scenario_id": "baseline_atual",
+  "scenario_name": "Baseline atual",
+  "scenario_type": "baseline",
+  "source_confidence": "observed_tenant",
+  "created_at": "2026-06-09T02:05:16Z"
+}

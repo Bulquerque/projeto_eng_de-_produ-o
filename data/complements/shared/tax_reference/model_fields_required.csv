@@ -1,0 +1,15 @@
+campo,tipo,obrigatorio,fonte_preferencial,descricao,validacao
+scenario_id,texto,sim,simulador,Identificador único do cenário.,Não nulo; sem espaços.
+empresa,texto,sim,simulador,Empresa 1 ou Empresa 2.,"Valores permitidos: empresa1, empresa2."
+ano_cenario,inteiro,sim,timeline reforma,Ano de simulação fiscal.,Entre 2026 e 2033 para reforma.
+uf_origem,texto,sim,rota,UF de origem/fábrica/CD.,Deve existir em uf_reference.
+uf_cd,texto,condicional,rota/cenário,UF do centro de distribuição escolhido.,Deve existir em uf_reference; pode ser origem intermediária.
+uf_destino,texto,sim,demanda/roteamento,UF do cliente/mercado.,Deve existir em uf_reference.
+peso_kg,numérico,sim empresa1,Dados de Demanda,Peso alocado à rota.,>=0.
+frete_rs_kg,numérico,sim empresa1,Dados de Distância,Frete por kg da rota.,>=0; unidade documentada.
+custo_armazenagem_rs_kg_mes,numérico,sim se estoque,Premissas/Empresa2,Custo de armazenagem por kg/mês.,>=0; unidade explícita.
+woc_dias,numérico,condicional,Empresa2 / proxy,Cobertura/dias de estoque.,Marcar proxy se vier de outra empresa.
+icms_atual,numérico,condicional,Empresa2/external,Alíquota/efeito ICMS atual da rota.,Fonte e tipo de operação documentados.
+ibs_weight,numérico,sim reforma,reform_timeline,Peso do regime novo na transição.,0 a 1.
+current_tax_weight,numérico,sim reforma,reform_timeline,Peso do regime atual na transição.,0 a 1.
+source_confidence,texto,sim,catálogo,"interno, proxy_empresa2, externo_oficial, hipotese.",Não aceitar vazio.

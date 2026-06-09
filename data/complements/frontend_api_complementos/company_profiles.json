@@ -1,0 +1,43 @@
+[
+  {
+    "tenant_id": "empresa_1",
+    "display_name": "Empresa 1",
+    "role": "demanda_distancia_frete",
+    "main_strengths": [
+      "demanda",
+      "UF",
+      "centroide",
+      "SKU",
+      "peso",
+      "faturamento",
+      "distância",
+      "frete/kg",
+      "premissas gerais"
+    ],
+    "proxy_needs": [
+      "estoque/WOC",
+      "custo total",
+      "tributário atual quando faltar"
+    ],
+    "external_focus": "reforma_tributaria"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "display_name": "Empresa 2",
+    "role": "custo_estoque_cenarios_tributario",
+    "main_strengths": [
+      "estoque",
+      "WOC/cobertura se disponível",
+      "faturamento por UF",
+      "roteamento",
+      "custos",
+      "cenários",
+      "sensibilidade",
+      "tributário atual"
+    ],
+    "proxy_needs": [
+      "distância/frete se faltar"
+    ],
+    "external_focus": "reforma_tributaria"
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "tenant_id": "empresa_1",
+    "cost_input_id": "e1_storage_general",
+    "cost_type": "storage_brl_per_kg_month",
+    "node_id": "",
+    "edge_id": "",
+    "product_id": "",
+    "value": 0.4,
+    "unit": "BRL/kg/month",
+    "currency": "BRL",
+    "source_confidence": "observed_tenant",
+    "source_ref": "Premissas Gerais.xlsx:Planilha1"
+  }
+]

@@ -1,0 +1,73 @@
+# Regras de Desenvolvimento para Agentes de IA (Cursor)
+
+Você está atuando no repositório **Visagio Static Simulator**, um simulador logístico-tributário estático projetado para rodar 100% no navegador.
+
+Siga rigorosamente as instruções abaixo para garantir a qualidade, consistência e estabilidade das suas contribuições.
+
+---
+
+## 1. Arquitetura do Repositório
+
+O projeto é dividido em duas frentes fundamentais:
+1. **Front-end (Vanilla JS/HTML/CSS):** Lógica da simulação localizada em `assets/js/` (dividida por fases e módulos compartilhados em `assets/js/shared/`) e interface visual nos arquivos HTML correspondentes a cada fase (ex: `fase-2-baseline/`, `fase-3-cenarios/`, etc.).
+2. **ETL e Testes (Python 3.10+):** Scripts auxiliares em `etl/` e toda a suíte de testes unitários/integrados localizada em `tests/`.
+
+---
+
+## 2. Comandos Operacionais
+
+Sempre que precisar executar, validar ou formatar o projeto, use estes comandos padrão:
+
+### Executar o Servidor Estático
+```bash
+python -m http.server 8000
+```
+Acesse o simulador através de `http://localhost:8000`.
+
+### Executar a Suíte de Testes Completa
+```bash
+python tests/run_all_tests.py
+```
+*Observação: Os testes do sistema incluem checagens estáticas de estilo e um teste E2E opcional em Playwright.*
+
+### Formatação e Linting (JavaScript/HTML/CSS)
+```bash
+# Instalar dependências se necessário
+npm install
+
+# Validar linting e formatação
+npm run lint:js
+npm run format:js:check
+
+# Corrigir automaticamente formatação cosmética
+npm run format:js:write
+```
+
+### Formatação e Linting (Python)
+Usamos o **Ruff** para análise estática e formatação:
+```bash
+# Checar linting
+ruff check .
+
+# Aplicar correções automáticas de linting (ex: imports)
+ruff check --fix .
+
+# Formatar arquivos
+ruff format .
+```
+
+---
+
+## 3. Diretrizes de Segurança e Criptografia dos Dados
+
+* **Dados Criptografados:** As pastas `data/empresa1/` e `data/empresa2/` contêm dados criptografados em formato `.enc.json` que são carregados e descriptografados sob demanda pelo navegador.
+* **Manifesto:** O arquivo `data/encrypted_manifest.json` mapeia as origens dos arquivos reais para seus equivalentes criptografados.
+* **Chave de Acesso:** A frase de acesso está armazenada no arquivo `.env.local` na variável `VISAGIO_DATA_PASSWORD`.
+* **ATENÇÃO:** Nunca remova, corrompa ou crie novos mocks de dados sem garantir que eles estejam alinhados com o manifesto e os testes de integridade (`tests/00_basicos/check_package.py`).
+
+---
+
+## 4. Padrões de Código (Code Standards)
+
+Consulte o documento oficial [CODING_STANDARDS.md](file:///home/bulquerque/Downloads/visagio_static_simulator_FINAL_POLIDO_v2%20%282%29/docs/CODING_STANDARDS.md) para regras detalhadas sobre ESModules JavaScript, tipagem Python e variáveis CSS.
+Regra de ouro: **Seja limpo, explícito, tipado onde apropriado, evite placeholders (`TODO`) e garanta que todas as alterações tenham testes automatizados correspondentes.**

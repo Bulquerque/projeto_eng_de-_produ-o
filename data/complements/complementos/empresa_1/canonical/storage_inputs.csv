@@ -1,0 +1,2 @@
+tenant_id,cost_input_id,cost_type,node_id,edge_id,product_id,value,unit,currency,source_confidence,source_ref
+empresa_1,e1_storage_general,storage_brl_per_kg_month,,,,0.4,BRL/kg/month,BRL,observed_tenant,Premissas Gerais.xlsx:Planilha1

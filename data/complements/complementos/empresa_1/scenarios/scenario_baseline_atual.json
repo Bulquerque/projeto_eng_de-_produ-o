@@ -1,0 +1,20 @@
+{
+  "tenant_id": "empresa_1",
+  "scenario_id": "baseline_atual",
+  "scenario_name": "Baseline atual",
+  "scenario_type": "baseline_current",
+  "scenario_year": 2026,
+  "tax_bridge_path": "data/tenants/empresa_1/tax/tax_scenario_bridge.csv",
+  "canonical_root": "data/tenants/empresa_1/canonical",
+  "active_nodes": "read_from_canonical",
+  "active_edges": "read_from_canonical",
+  "enabled_features": [
+    "freight",
+    "storage",
+    "inventory",
+    "tax",
+    "scenario_compare"
+  ],
+  "source_confidence": "observed_tenant",
+  "notes": "Configuração pronta para frontend/simulador. Ajustar pesos/alíquotas específicas após validação tributária fina."
+}

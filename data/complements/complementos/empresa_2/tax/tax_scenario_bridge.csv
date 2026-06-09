@@ -1,0 +1,5 @@
+tenant_id,scenario_id,tax_regime,scenario_year,current_tax_profile_id,reform_tax_profile_id,uses_destination_principle,uses_credit_reform,uses_benefit_phaseout,source_confidence,source_ref
+empresa_2,baseline_atual,current,2026,current_default,,False,False,False,observed_tenant,tenant_tax_current_or_proxy
+empresa_2,reforma_2027,reform_transition,2027,current_default,reform_2027,True,True,True,external_official,tax_reform_timeline
+empresa_2,reforma_2030,reform_transition,2030,current_default,reform_2030,True,True,True,external_official,tax_reform_timeline
+empresa_2,reforma_2033,reform_full,2033,,reform_2033,True,True,True,external_official,tax_reform_timeline

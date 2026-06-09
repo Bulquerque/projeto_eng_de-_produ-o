@@ -1,0 +1,29 @@
+[
+  {
+    "tenant_id": "empresa_2",
+    "tax_table": "tax_inputs_current",
+    "field": "icms_interstate",
+    "source_type": "external_official",
+    "source_file": "shared/tax_reference/icms_interstate_matrix.csv",
+    "source_confidence": "external_official",
+    "notes": "Regra-base; validar alíquotas internas e benefícios específicos."
+  },
+  {
+    "tenant_id": "empresa_2",
+    "tax_table": "tax_inputs_reform",
+    "field": "ibs_cbs_is_transition",
+    "source_type": "external_official",
+    "source_file": "shared/tax_reference/tax_reform_timeline.csv",
+    "source_confidence": "external_official",
+    "notes": "Cenários de transição para simulação."
+  },
+  {
+    "tenant_id": "empresa_2",
+    "tax_table": "tax_inputs_current",
+    "field": "tax_benefits",
+    "source_type": "tenant_or_proxy",
+    "source_file": "Analise_Malha_Empresa2.xlsx:Dados_Tributário",
+    "source_confidence": "observed_tenant",
+    "notes": "Não substituir regra interna sem validação."
+  }
+]

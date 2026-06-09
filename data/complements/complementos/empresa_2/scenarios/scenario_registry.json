@@ -1,0 +1,42 @@
+[
+  {
+    "tenant_id": "empresa_2",
+    "scenario_id": "baseline_atual",
+    "scenario_name": "Baseline atual",
+    "scenario_type": "baseline_current",
+    "tax_regime": "current",
+    "scenario_year": 2026,
+    "tax_policy": "regime atual",
+    "source_confidence": "observed_tenant"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "scenario_id": "reforma_2027",
+    "scenario_name": "Reforma 2027",
+    "scenario_type": "tax_reform_transition",
+    "tax_regime": "reform_transition",
+    "scenario_year": 2027,
+    "tax_policy": "CBS/IBS/IS inicial conforme premissas",
+    "source_confidence": "external_official"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "scenario_id": "reforma_2030",
+    "scenario_name": "Reforma 2030",
+    "scenario_type": "tax_reform_transition",
+    "tax_regime": "reform_transition",
+    "scenario_year": 2030,
+    "tax_policy": "transição intermediária ICMS/ISS para IBS",
+    "source_confidence": "external_official"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "scenario_id": "reforma_2033",
+    "scenario_name": "Reforma 2033",
+    "scenario_type": "tax_reform_full",
+    "tax_regime": "reform_full",
+    "scenario_year": 2033,
+    "tax_policy": "novo regime integral",
+    "source_confidence": "external_official"
+  }
+]

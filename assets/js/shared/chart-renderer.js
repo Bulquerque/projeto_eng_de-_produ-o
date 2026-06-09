@@ -7,12 +7,8 @@ export const VG_PALETTE = [
   '#0F515C',
   '#b42318',
   '#92400e',
-  '#00363D'
+  '#00363D',
 ];
-
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
 
 function getCanvas(canvasId) {
   return document.getElementById(canvasId);
@@ -46,7 +42,13 @@ function destroyChart(canvasId) {
   clearCanvas(canvasId);
 }
 
-function text(ctx, value, x, y, { size = 12, weight = '400', color = '#526b70', align = 'left', baseline = 'alphabetic' } = {}) {
+function text(
+  ctx,
+  value,
+  x,
+  y,
+  { size = 12, weight = '400', color = '#526b70', align = 'left', baseline = 'alphabetic' } = {}
+) {
   ctx.save();
   ctx.fillStyle = color;
   ctx.font = `${weight} ${size}px Inter, system-ui, sans-serif`;
@@ -96,7 +98,10 @@ function formatValue(value, mode) {
   return Number(value || 0).toFixed(1);
 }
 
-function renderBarChart(canvasId, { labels = [], datasets = [], title, yFormat, xFormat, indexAxis = 'x' }) {
+function renderBarChart(
+  canvasId,
+  { labels = [], datasets = [], title, yFormat, xFormat: _xFormat, indexAxis = 'x' }
+) {
   destroyChart(canvasId);
   const canvas = getCanvas(canvasId);
   if (!canvas) return null;
@@ -130,7 +135,11 @@ function renderBarChart(canvasId, { labels = [], datasets = [], title, yFormat, 
     ctx.lineTo(pad.left + chartWidth, y);
     ctx.strokeStyle = i === 0 ? '#b9c7ca' : '#edf1f2';
     ctx.stroke();
-    text(ctx, formatValue(value, yFormat), pad.left - 8, y, { size: 11, align: 'right', baseline: 'middle' });
+    text(ctx, formatValue(value, yFormat), pad.left - 8, y, {
+      size: 11,
+      align: 'right',
+      baseline: 'middle',
+    });
   }
 
   if (indexAxis === 'y') {
@@ -154,7 +163,10 @@ function renderBarChart(canvasId, { labels = [], datasets = [], title, yFormat, 
     const barWidth = groupWidth / seriesCount;
     labels.forEach((label, index) => {
       const groupX = pad.left + band * index + (band - groupWidth) / 2;
-      text(ctx, label, groupX + groupWidth / 2, pad.top + chartHeight + 16, { size: 11, align: 'center' });
+      text(ctx, label, groupX + groupWidth / 2, pad.top + chartHeight + 16, {
+        size: 11,
+        align: 'center',
+      });
       datasets.forEach((dataset, dsIndex) => {
         const data = Number(dataset.data?.[index] || 0);
         const barHeight = (data / maxValue) * chartHeight;
@@ -169,12 +181,16 @@ function renderBarChart(canvasId, { labels = [], datasets = [], title, yFormat, 
 
   const legendItems = datasets.map((dataset, index) => ({
     label: dataset.label || `Série ${index + 1}`,
-    color: dataset.backgroundColor || VG_PALETTE[index % VG_PALETTE.length]
+    color: dataset.backgroundColor || VG_PALETTE[index % VG_PALETTE.length],
   }));
   drawLegend(ctx, legendItems, width, height);
   ctx.restore();
 
-  const instance = { destroy() { clearCanvas(canvasId); } };
+  const instance = {
+    destroy() {
+      clearCanvas(canvasId);
+    },
+  };
   _instances.set(canvasId, instance);
   return instance;
 }
@@ -210,7 +226,11 @@ function renderLineChart(canvasId, { labels = [], datasets = [], title, yFormat 
     ctx.lineTo(pad.left + chartWidth, y);
     ctx.strokeStyle = i === 0 ? '#b9c7ca' : '#edf1f2';
     ctx.stroke();
-    text(ctx, formatValue(value, yFormat), pad.left - 8, y, { size: 11, align: 'right', baseline: 'middle' });
+    text(ctx, formatValue(value, yFormat), pad.left - 8, y, {
+      size: 11,
+      align: 'right',
+      baseline: 'middle',
+    });
   }
 
   labels.forEach((label, index) => {
@@ -219,7 +239,8 @@ function renderLineChart(canvasId, { labels = [], datasets = [], title, yFormat 
   });
 
   datasets.forEach((dataset, dsIndex) => {
-    const color = dataset.borderColor || dataset.backgroundColor || VG_PALETTE[dsIndex % VG_PALETTE.length];
+    const color =
+      dataset.borderColor || dataset.backgroundColor || VG_PALETTE[dsIndex % VG_PALETTE.length];
     const data = (dataset.data || []).map((v) => Number(v) || 0);
     if (!data.length) return;
     ctx.save();
@@ -246,17 +267,24 @@ function renderLineChart(canvasId, { labels = [], datasets = [], title, yFormat 
 
   const legendItems = datasets.map((dataset, index) => ({
     label: dataset.label || `Série ${index + 1}`,
-    color: dataset.borderColor || dataset.backgroundColor || VG_PALETTE[index % VG_PALETTE.length]
+    color: dataset.borderColor || dataset.backgroundColor || VG_PALETTE[index % VG_PALETTE.length],
   }));
   drawLegend(ctx, legendItems, width, height);
   ctx.restore();
 
-  const instance = { destroy() { clearCanvas(canvasId); } };
+  const instance = {
+    destroy() {
+      clearCanvas(canvasId);
+    },
+  };
   _instances.set(canvasId, instance);
   return instance;
 }
 
-function renderScatterChart(canvasId, { datasets = [], xLabel, yLabel, title, xFormat, yFormat }) {
+function renderScatterChart(
+  canvasId,
+  { datasets = [], xLabel, yLabel, title, xFormat: _xFormat, yFormat: _yFormat }
+) {
   destroyChart(canvasId);
   const canvas = getCanvas(canvasId);
   if (!canvas) return null;
@@ -266,7 +294,13 @@ function renderScatterChart(canvasId, { datasets = [], xLabel, yLabel, title, xF
   const pad = { top: title ? 30 : 14, right: 20, bottom: 42, left: 60 };
   const chartWidth = width - pad.left - pad.right;
   const chartHeight = height - pad.top - pad.bottom;
-  const points = datasets.flatMap((ds) => (ds.data || []).map((p) => ({ ...p, color: ds.borderColor || ds.backgroundColor || VG_PALETTE[0], label: ds.label })));
+  const points = datasets.flatMap((ds) =>
+    (ds.data || []).map((p) => ({
+      ...p,
+      color: ds.borderColor || ds.backgroundColor || VG_PALETTE[0],
+      label: ds.label,
+    }))
+  );
   if (!points.length) return null;
   const maxX = niceMax(Math.max(...points.map((p) => Number(p.x) || 0), 1));
   const maxY = niceMax(Math.max(...points.map((p) => Number(p.y) || 0), 1));
@@ -290,18 +324,31 @@ function renderScatterChart(canvasId, { datasets = [], xLabel, yLabel, title, xF
 
   text(ctx, xLabel || '', pad.left + chartWidth / 2, height - 12, { size: 11, align: 'center' });
   text(ctx, yLabel || '', 12, pad.top + chartHeight / 2, { size: 11, align: 'center' });
-  drawLegend(ctx, datasets.map((dataset, index) => ({
-    label: dataset.label || `Série ${index + 1}`,
-    color: dataset.borderColor || dataset.backgroundColor || VG_PALETTE[index % VG_PALETTE.length]
-  })), width, height);
+  drawLegend(
+    ctx,
+    datasets.map((dataset, index) => ({
+      label: dataset.label || `Série ${index + 1}`,
+      color:
+        dataset.borderColor || dataset.backgroundColor || VG_PALETTE[index % VG_PALETTE.length],
+    })),
+    width,
+    height
+  );
   ctx.restore();
 
-  const instance = { destroy() { clearCanvas(canvasId); } };
+  const instance = {
+    destroy() {
+      clearCanvas(canvasId);
+    },
+  };
   _instances.set(canvasId, instance);
   return instance;
 }
 
-function renderDonutChart(canvasId, { labels = [], datasets = [], title, isHalf = false, centerText }) {
+function renderDonutChart(
+  canvasId,
+  { labels = [], datasets = [], title, isHalf = false, centerText }
+) {
   destroyChart(canvasId);
   const canvas = getCanvas(canvasId);
   if (!canvas) return null;
@@ -324,7 +371,9 @@ function renderDonutChart(canvasId, { labels = [], datasets = [], title, isHalf 
   ctx.lineWidth = 1;
   values.forEach((value, index) => {
     const slice = (value / total) * sweep;
-    const color = Array.isArray(colors) ? colors[index % colors.length] : colors || VG_PALETTE[index % VG_PALETTE.length];
+    const color = Array.isArray(colors)
+      ? colors[index % colors.length]
+      : colors || VG_PALETTE[index % VG_PALETTE.length];
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.fillStyle = color;
@@ -341,14 +390,22 @@ function renderDonutChart(canvasId, { labels = [], datasets = [], title, isHalf 
   ctx.globalCompositeOperation = 'source-over';
 
   if (centerText) {
-    text(ctx, centerText, cx, cy, { size: 15, weight: '700', color: '#00363D', align: 'center', baseline: 'middle' });
+    text(ctx, centerText, cx, cy, {
+      size: 15,
+      weight: '700',
+      color: '#00363D',
+      align: 'center',
+      baseline: 'middle',
+    });
   }
 
   const legendTop = isHalf ? height - 40 : height - 22;
   let x = 16;
   ctx.font = '12px Inter, system-ui, sans-serif';
   labels.forEach((label, index) => {
-    const color = Array.isArray(colors) ? colors[index % colors.length] : colors || VG_PALETTE[index % VG_PALETTE.length];
+    const color = Array.isArray(colors)
+      ? colors[index % colors.length]
+      : colors || VG_PALETTE[index % VG_PALETTE.length];
     ctx.fillStyle = color;
     ctx.fillRect(x, legendTop - 9, 10, 10);
     ctx.fillStyle = '#526b70';
@@ -357,7 +414,11 @@ function renderDonutChart(canvasId, { labels = [], datasets = [], title, isHalf 
   });
   ctx.restore();
 
-  const instance = { destroy() { clearCanvas(canvasId); } };
+  const instance = {
+    destroy() {
+      clearCanvas(canvasId);
+    },
+  };
   _instances.set(canvasId, instance);
   return instance;
 }

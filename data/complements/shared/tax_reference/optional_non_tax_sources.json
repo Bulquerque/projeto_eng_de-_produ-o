@@ -1,0 +1,34 @@
+[
+  {
+    "input": "Selic / WACC",
+    "prioridade": "baixa",
+    "usar_quando": "Somente para sensibilidade de custo de capital, caso o grupo queira comparar WACC interno vs taxa de referência.",
+    "fonte": "BCB SGS 11",
+    "url": "https://dadosabertos.bcb.gov.br/dataset/11-taxa-de-juros---selic",
+    "nao_fazer": "Não substituir WACC interno automaticamente."
+  },
+  {
+    "input": "Diesel",
+    "prioridade": "baixa",
+    "usar_quando": "Somente para validar/sensibilizar frete em cenário específico.",
+    "fonte": "ANP série histórica de combustíveis",
+    "url": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/serie-historica-de-precos-de-combustiveis",
+    "nao_fazer": "Não substituir frete/kg contratado."
+  },
+  {
+    "input": "Piso mínimo de frete",
+    "prioridade": "baixa",
+    "usar_quando": "Somente como benchmark/regulatório se houver rota sem referência.",
+    "fonte": "ANTT calculadora",
+    "url": "https://calculadorafrete.antt.gov.br/",
+    "nao_fazer": "Não usar como custo real da empresa."
+  },
+  {
+    "input": "Geografia oficial",
+    "prioridade": "média",
+    "usar_quando": "Padronizar UF/município/centroide e corrigir rotas sem match.",
+    "fonte": "IBGE Malha Municipal",
+    "url": "https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais/15774-malhas.html",
+    "nao_fazer": "Não trocar coordenadas internas se elas já forem consistentes."
+  }
+]

@@ -1,7 +1,13 @@
 import { appendSharedDebugEntry } from './debug-tools.js';
-import { CryptoDataError, deriveAesKey, decryptEnvelopeText, exportAesKey, importAesKey } from './data-decryptor.js';
+import {
+  CryptoDataError,
+  deriveAesKey,
+  decryptEnvelopeText,
+  importAesKey,
+} from './data-decryptor.js';
 
 const KEY_PREFIX = 'visagio_crypto_key_';
+const PASSWORD_KEY = 'visagio_crypto_password_session';
 const memoryKeys = new Map();
 let memoryPassword = null;
 
@@ -10,7 +16,31 @@ function keyId(entry) {
 }
 
 function logCrypto(level, event, detail = {}, error = null) {
-  appendSharedDebugEntry({ phase: 'crypto', module: 'crypto-session', level, event, detail, error });
+  appendSharedDebugEntry({
+    phase: 'crypto',
+    module: 'crypto-session',
+    level,
+    event,
+    detail,
+    error,
+  });
+}
+
+function readSessionPassword() {
+  try {
+    return localStorage.getItem(PASSWORD_KEY) || null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSessionPassword(password) {
+  try {
+    if (password) localStorage.setItem(PASSWORD_KEY, password);
+    else localStorage.removeItem(PASSWORD_KEY);
+  } catch {
+    // localStorage unavailable: keep the password only in memory.
+  }
 }
 
 function ensureStyles() {
@@ -63,7 +93,7 @@ async function keyFromSession(entry) {
   if (memoryKeys.has(id)) return memoryKeys.get(id);
   const raw = sessionStorage.getItem(id);
   if (!raw) return null;
-  const key = await importAesKey(raw);
+  const key = await importAesKey(raw, false);
   memoryKeys.set(id, key);
   return key;
 }
@@ -71,13 +101,15 @@ async function keyFromSession(entry) {
 async function storeKey(entry, key) {
   const id = keyId(entry);
   memoryKeys.set(id, key);
-  sessionStorage.setItem(id, await exportAesKey(key));
 }
 
 export function lockCryptoSession() {
   memoryKeys.clear();
   memoryPassword = null;
-  Object.keys(sessionStorage).filter((key) => key.startsWith(KEY_PREFIX)).forEach((key) => sessionStorage.removeItem(key));
+  writeSessionPassword(null);
+  Object.keys(sessionStorage)
+    .filter((key) => key.startsWith(KEY_PREFIX))
+    .forEach((key) => sessionStorage.removeItem(key));
   logCrypto('warn', 'CRYPTO_008', { message: 'cache descriptografado limpo' });
   window.dispatchEvent(new CustomEvent('visagio:crypto-lock'));
 }
@@ -97,8 +129,21 @@ export function installLockButton() {
   document.body.appendChild(button);
 }
 
+let activePromptPromise = null;
+
+function getCoalescedPassword(entry, errorMessage = '') {
+  if (activePromptPromise) {
+    return activePromptPromise;
+  }
+  activePromptPromise = showPasswordPrompt(entry, errorMessage).finally(() => {
+    activePromptPromise = null;
+  });
+  return activePromptPromise;
+}
+
 export async function decryptWithSession(entry, envelope) {
   const aad = entry.original_path;
+  if (!memoryPassword) memoryPassword = readSessionPassword();
   const storedKey = await keyFromSession(entry);
   if (storedKey) {
     try {
@@ -111,32 +156,52 @@ export async function decryptWithSession(entry, envelope) {
 
   if (memoryPassword) {
     try {
-      const key = await deriveAesKey(memoryPassword, envelope.salt, true);
+      const key = await deriveAesKey(memoryPassword, envelope.salt, false);
       const text = await decryptEnvelopeText(envelope, key, aad);
       await storeKey(entry, key);
       installLockButton();
-      logCrypto('success', 'crypto:unlock:cached-password', { company_id: entry.company_id, path: entry.original_path });
+      logCrypto('success', 'crypto:unlock:cached-password', {
+        company_id: entry.company_id,
+        path: entry.original_path,
+      });
       return text;
     } catch (error) {
       memoryPassword = null;
-      logCrypto('warn', 'CRYPTO_003', { company_id: entry.company_id, path: entry.original_path, cached_password_failed: true }, error);
+      writeSessionPassword(null);
+      logCrypto(
+        'warn',
+        'CRYPTO_003',
+        { company_id: entry.company_id, path: entry.original_path, cached_password_failed: true },
+        error
+      );
     }
   }
 
   let errorMessage = '';
-  while (true) {
-    const password = await showPasswordPrompt(entry, errorMessage);
+  let unlocked = 0;
+  while (unlocked < 1) {
+    const password = await getCoalescedPassword(entry, errorMessage);
     try {
-      const key = await deriveAesKey(password, envelope.salt, true);
+      const key = await deriveAesKey(password, envelope.salt, false);
       const text = await decryptEnvelopeText(envelope, key, aad);
       memoryPassword = password;
+      writeSessionPassword(password);
       await storeKey(entry, key);
       installLockButton();
-      logCrypto('success', 'crypto:unlock', { company_id: entry.company_id, path: entry.original_path });
+      logCrypto('success', 'crypto:unlock', {
+        company_id: entry.company_id,
+        path: entry.original_path,
+      });
+      unlocked = 1;
       return text;
     } catch (error) {
       errorMessage = 'Senha inválida ou dados corrompidos. Tente novamente.';
-      logCrypto('warn', 'CRYPTO_003', { company_id: entry.company_id, path: entry.original_path }, error);
+      logCrypto(
+        'warn',
+        'CRYPTO_003',
+        { company_id: entry.company_id, path: entry.original_path },
+        error
+      );
     }
   }
 }
@@ -154,8 +219,8 @@ function lockCompanyKeys(companyId) {
     if (key.startsWith(safePrefix)) memoryKeys.delete(key);
   }
   Object.keys(sessionStorage)
-    .filter(k => k.startsWith(safePrefix))
-    .forEach(k => sessionStorage.removeItem(k));
+    .filter((k) => k.startsWith(safePrefix))
+    .forEach((k) => sessionStorage.removeItem(k));
   logCrypto('info', 'CRYPTO_009', { company_evicted: companyId });
 }
 

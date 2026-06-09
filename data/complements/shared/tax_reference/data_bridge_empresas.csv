@@ -1,0 +1,11 @@
+bloco_modelo,empresa_1_fonte,empresa_2_fonte,fonte_externa,prioridade_uso,decisao_final,alerta
+Demanda / peso / faturamento,Dados de Demanda.xlsx,Faturamento_UF se necessário para Empresa 2,,Empresa própria,Usar cada empresa no seu contexto; não misturar faturamento/peso entre empresas.,Faturamento não substitui peso logístico.
+Distância / frete por kg,Dados de Distância.xlsx,Dados_Roteamento / custos de distribuição/transferência,,Empresa própria; outra empresa como proxy controlado,"Se faltar frete, usar proxy documentado e não média global sem rota.",Preservar origem-destino.
+Armazenagem,Premissas Gerais.xlsx,Aux_Custo_Armaz / Parâmetros,,Empresa própria; Empresa 2 como metodologia,Aplicar custo interno quando houver; Empresa 2 ajuda estrutura de cálculo.,Unidade R$/kg/mês precisa ficar explícita.
+Estoque / WOC / cobertura,"Ausente ou parcial, usar se existir",Estoque / Parâmetros,Não buscar externo no primeiro ciclo,Empresa 2 como proxy/metodologia,"Se aplicado à Empresa 1, marcar como proxy_empresa2.",Não tratar WOC proxy como observado da Empresa 1.
+Custo total,Calculado a partir de frete + armaz. + estoque + fiscal,Cenários / Dados_Roteamento,Não buscar externo,Empresa 2 como benchmark de estrutura,Baseline deve fechar antes de rodar cenário.,Evitar dupla contagem de frete.
+Tributário atual,Ausente/parcial,Dados_Tributário / ICMS atual,"Res. Senado 22/1989, Res. 13/2012, LC 87/1996, LC 190/2022",Empresa 2 + externo oficial,Criar matriz fiscal parametrizada e rastreável.,Benefício fiscal específico precisa fonte/hipótese.
+Reforma tributária,Não vem da empresa,Aplicar sobre base fiscal atual,"Receita, Fazenda, EC 132, LC 214",Externo oficial,"Criar cenários 2026, 2027, 2030 e 2033.",Objetivo central do projeto.
+Geografia/cadastro,Centroide/lat-long da Empresa 1,Lat & Long / Dados_Brasil,IBGE Malha Municipal,Empresa primeiro; IBGE validação,Usar IBGE para padronização e checagem de join.,Não trocar coordenada interna sem motivo.
+Selic/WACC,WACC em Premissas Gerais,Parâmetros WACC,BCB Selic SGS 11,Empresa primeiro; Selic só sensibilidade,Não substituir WACC interno sem decisão do grupo.,Converter anual/mensal corretamente.
+Diesel/ANTT,Frete interno existente,Frete/custos internos existentes,ANP/ANTT,Baixa prioridade,Usar apenas como validação/sensibilidade.,Não forçar variável externa.

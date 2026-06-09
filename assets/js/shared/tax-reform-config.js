@@ -14,7 +14,7 @@ function normalizeRegimes(regimes = {}) {
   for (const [regimeId, regime] of Object.entries(regimes)) {
     out[String(regimeId)] = {
       regime_id: String(regimeId),
-      ...clone(regime || {})
+      ...clone(regime || {}),
     };
   }
   return out;
@@ -34,7 +34,7 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
     reform_2030: 'transition_2030',
     reform_2031: 'transition_2031',
     reform_2032: 'transition_2032',
-    reform_2033: 'reform_full_2033'
+    reform_2033: 'reform_full_2033',
   }),
   regimes: normalizeRegimes({
     legacy_current: {
@@ -49,11 +49,31 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
       selective_rate: 0,
       credit_rate: 0,
       category_rules: {
-        default_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0, credit_rate: 0.12 },
-        essential_goods: { cbs_rate_multiplier: 0.7, ibs_rate_multiplier: 0.7, selective_rate_multiplier: 0, credit_rate: 0.15 },
-        services: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0, credit_rate: 0.08 },
-        selective_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 1, credit_rate: 0 }
-      }
+        default_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0,
+          credit_rate: 0.12,
+        },
+        essential_goods: {
+          cbs_rate_multiplier: 0.7,
+          ibs_rate_multiplier: 0.7,
+          selective_rate_multiplier: 0,
+          credit_rate: 0.15,
+        },
+        services: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0,
+          credit_rate: 0.08,
+        },
+        selective_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 1,
+          credit_rate: 0,
+        },
+      },
     },
     disabled: {
       label: 'Tributário desligado',
@@ -66,7 +86,7 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
       ibs_rate: 0,
       selective_rate: 0,
       credit_rate: 0,
-      category_rules: {}
+      category_rules: {},
     },
     reform_2026: {
       label: '2026, ano-teste',
@@ -80,11 +100,31 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
       selective_rate: 0,
       credit_rate: 0.02,
       category_rules: {
-        default_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0, credit_rate: 0.02 },
-        essential_goods: { cbs_rate_multiplier: 0.7, ibs_rate_multiplier: 0.7, selective_rate_multiplier: 0, credit_rate: 0.03 },
-        services: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0, credit_rate: 0.01 },
-        selective_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0, credit_rate: 0 }
-      }
+        default_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0,
+          credit_rate: 0.02,
+        },
+        essential_goods: {
+          cbs_rate_multiplier: 0.7,
+          ibs_rate_multiplier: 0.7,
+          selective_rate_multiplier: 0,
+          credit_rate: 0.03,
+        },
+        services: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0,
+          credit_rate: 0.01,
+        },
+        selective_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0,
+          credit_rate: 0,
+        },
+      },
     },
     reform_2027_2028: {
       label: '2027-2028, CBS em vigor',
@@ -99,11 +139,31 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
       selective_rate: 0.01,
       credit_rate: 0.15,
       category_rules: {
-        default_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0.4, credit_rate: 0.15 },
-        essential_goods: { cbs_rate_multiplier: 0.65, ibs_rate_multiplier: 1, selective_rate_multiplier: 0.2, credit_rate: 0.18 },
-        services: { cbs_rate_multiplier: 1.05, ibs_rate_multiplier: 1, selective_rate_multiplier: 0.2, credit_rate: 0.08 },
-        selective_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 1, credit_rate: 0 }
-      }
+        default_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0.4,
+          credit_rate: 0.15,
+        },
+        essential_goods: {
+          cbs_rate_multiplier: 0.65,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0.2,
+          credit_rate: 0.18,
+        },
+        services: {
+          cbs_rate_multiplier: 1.05,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0.2,
+          credit_rate: 0.08,
+        },
+        selective_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 1,
+          credit_rate: 0,
+        },
+      },
     },
     transition_2029: {
       label: 'Transição 2029',
@@ -118,11 +178,31 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
       selective_rate: 0.01,
       credit_rate: 0.15,
       category_rules: {
-        default_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0.5, credit_rate: 0.15 },
-        essential_goods: { cbs_rate_multiplier: 0.7, ibs_rate_multiplier: 0.8, selective_rate_multiplier: 0.25, credit_rate: 0.18 },
-        services: { cbs_rate_multiplier: 1.05, ibs_rate_multiplier: 1.05, selective_rate_multiplier: 0.25, credit_rate: 0.08 },
-        selective_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 1, credit_rate: 0 }
-      }
+        default_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0.5,
+          credit_rate: 0.15,
+        },
+        essential_goods: {
+          cbs_rate_multiplier: 0.7,
+          ibs_rate_multiplier: 0.8,
+          selective_rate_multiplier: 0.25,
+          credit_rate: 0.18,
+        },
+        services: {
+          cbs_rate_multiplier: 1.05,
+          ibs_rate_multiplier: 1.05,
+          selective_rate_multiplier: 0.25,
+          credit_rate: 0.08,
+        },
+        selective_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 1,
+          credit_rate: 0,
+        },
+      },
     },
     transition_2030: {
       label: 'Transição 2030',
@@ -137,11 +217,31 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
       selective_rate: 0.01,
       credit_rate: 0.15,
       category_rules: {
-        default_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0.5, credit_rate: 0.15 },
-        essential_goods: { cbs_rate_multiplier: 0.7, ibs_rate_multiplier: 0.8, selective_rate_multiplier: 0.25, credit_rate: 0.18 },
-        services: { cbs_rate_multiplier: 1.05, ibs_rate_multiplier: 1.05, selective_rate_multiplier: 0.25, credit_rate: 0.08 },
-        selective_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 1, credit_rate: 0 }
-      }
+        default_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0.5,
+          credit_rate: 0.15,
+        },
+        essential_goods: {
+          cbs_rate_multiplier: 0.7,
+          ibs_rate_multiplier: 0.8,
+          selective_rate_multiplier: 0.25,
+          credit_rate: 0.18,
+        },
+        services: {
+          cbs_rate_multiplier: 1.05,
+          ibs_rate_multiplier: 1.05,
+          selective_rate_multiplier: 0.25,
+          credit_rate: 0.08,
+        },
+        selective_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 1,
+          credit_rate: 0,
+        },
+      },
     },
     transition_2031: {
       label: 'Transição 2031',
@@ -156,11 +256,31 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
       selective_rate: 0.01,
       credit_rate: 0.15,
       category_rules: {
-        default_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0.5, credit_rate: 0.15 },
-        essential_goods: { cbs_rate_multiplier: 0.7, ibs_rate_multiplier: 0.8, selective_rate_multiplier: 0.25, credit_rate: 0.18 },
-        services: { cbs_rate_multiplier: 1.05, ibs_rate_multiplier: 1.05, selective_rate_multiplier: 0.25, credit_rate: 0.08 },
-        selective_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 1, credit_rate: 0 }
-      }
+        default_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0.5,
+          credit_rate: 0.15,
+        },
+        essential_goods: {
+          cbs_rate_multiplier: 0.7,
+          ibs_rate_multiplier: 0.8,
+          selective_rate_multiplier: 0.25,
+          credit_rate: 0.18,
+        },
+        services: {
+          cbs_rate_multiplier: 1.05,
+          ibs_rate_multiplier: 1.05,
+          selective_rate_multiplier: 0.25,
+          credit_rate: 0.08,
+        },
+        selective_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 1,
+          credit_rate: 0,
+        },
+      },
     },
     transition_2032: {
       label: 'Transição 2032',
@@ -175,11 +295,31 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
       selective_rate: 0.01,
       credit_rate: 0.15,
       category_rules: {
-        default_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0.5, credit_rate: 0.15 },
-        essential_goods: { cbs_rate_multiplier: 0.7, ibs_rate_multiplier: 0.8, selective_rate_multiplier: 0.25, credit_rate: 0.18 },
-        services: { cbs_rate_multiplier: 1.05, ibs_rate_multiplier: 1.05, selective_rate_multiplier: 0.25, credit_rate: 0.08 },
-        selective_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 1, credit_rate: 0 }
-      }
+        default_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0.5,
+          credit_rate: 0.15,
+        },
+        essential_goods: {
+          cbs_rate_multiplier: 0.7,
+          ibs_rate_multiplier: 0.8,
+          selective_rate_multiplier: 0.25,
+          credit_rate: 0.18,
+        },
+        services: {
+          cbs_rate_multiplier: 1.05,
+          ibs_rate_multiplier: 1.05,
+          selective_rate_multiplier: 0.25,
+          credit_rate: 0.08,
+        },
+        selective_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 1,
+          credit_rate: 0,
+        },
+      },
     },
     reform_full_2033: {
       label: '2033, regime integral',
@@ -194,19 +334,59 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
       selective_rate: 0.02,
       credit_rate: 0.2,
       category_rules: {
-        default_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0.7, credit_rate: 0.2 },
-        essential_goods: { cbs_rate_multiplier: 0.65, ibs_rate_multiplier: 0.75, selective_rate_multiplier: 0.3, credit_rate: 0.22 },
-        services: { cbs_rate_multiplier: 1.05, ibs_rate_multiplier: 1.05, selective_rate_multiplier: 0.3, credit_rate: 0.1 },
-        selective_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 1, credit_rate: 0 }
-      }
-    }
+        default_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 0.7,
+          credit_rate: 0.2,
+        },
+        essential_goods: {
+          cbs_rate_multiplier: 0.65,
+          ibs_rate_multiplier: 0.75,
+          selective_rate_multiplier: 0.3,
+          credit_rate: 0.22,
+        },
+        services: {
+          cbs_rate_multiplier: 1.05,
+          ibs_rate_multiplier: 1.05,
+          selective_rate_multiplier: 0.3,
+          credit_rate: 0.1,
+        },
+        selective_goods: {
+          cbs_rate_multiplier: 1,
+          ibs_rate_multiplier: 1,
+          selective_rate_multiplier: 1,
+          credit_rate: 0,
+        },
+      },
+    },
   }),
   category_rules: {
-    default_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 0, credit_rate: 0.1 },
-    essential_goods: { cbs_rate_multiplier: 0.7, ibs_rate_multiplier: 0.8, selective_rate_multiplier: 0, credit_rate: 0.15 },
-    services: { cbs_rate_multiplier: 1.05, ibs_rate_multiplier: 1.05, selective_rate_multiplier: 0, credit_rate: 0.08 },
-    selective_goods: { cbs_rate_multiplier: 1, ibs_rate_multiplier: 1, selective_rate_multiplier: 1, credit_rate: 0 }
-  }
+    default_goods: {
+      cbs_rate_multiplier: 1,
+      ibs_rate_multiplier: 1,
+      selective_rate_multiplier: 0,
+      credit_rate: 0.1,
+    },
+    essential_goods: {
+      cbs_rate_multiplier: 0.7,
+      ibs_rate_multiplier: 0.8,
+      selective_rate_multiplier: 0,
+      credit_rate: 0.15,
+    },
+    services: {
+      cbs_rate_multiplier: 1.05,
+      ibs_rate_multiplier: 1.05,
+      selective_rate_multiplier: 0,
+      credit_rate: 0.08,
+    },
+    selective_goods: {
+      cbs_rate_multiplier: 1,
+      ibs_rate_multiplier: 1,
+      selective_rate_multiplier: 1,
+      credit_rate: 0,
+    },
+  },
 };
 
 let activeTaxReformConfig = clone(DEFAULT_TAX_REFORM_CONFIG);
@@ -223,30 +403,37 @@ export function setTaxReformConfig(nextConfig = {}) {
 export function normalizeTaxReformConfig(input = {}) {
   const merged = {
     ...clone(DEFAULT_TAX_REFORM_CONFIG),
-    ...clone(input || {})
+    ...clone(input || {}),
   };
   merged.tax_mode_aliases = normalizeAliasMap({
     ...DEFAULT_TAX_REFORM_CONFIG.tax_mode_aliases,
-    ...(input.tax_mode_aliases || {})
+    ...(input.tax_mode_aliases || {}),
   });
   merged.regimes = normalizeRegimes({
     ...DEFAULT_TAX_REFORM_CONFIG.regimes,
-    ...(input.regimes || {})
+    ...(input.regimes || {}),
   });
   merged.category_rules = {
     ...clone(DEFAULT_TAX_REFORM_CONFIG.category_rules),
-    ...(input.category_rules || {})
+    ...(input.category_rules || {}),
   };
   return merged;
 }
 
-export function resolveTaxRegime({ taxMode = null, taxRegime = null, year = null, config = getTaxReformConfig() } = {}) {
+export function resolveTaxRegime({
+  taxMode = null,
+  taxRegime = null,
+  year = null,
+  config = getTaxReformConfig(),
+} = {}) {
   const normalizedMode = String(taxMode || '').trim();
   const normalizedRegime = String(taxRegime || '').trim();
   if (normalizedRegime && config.regimes[normalizedRegime]) return normalizedRegime;
   if (normalizedMode && config.regimes[normalizedMode]) return normalizedMode;
-  if (normalizedMode && config.tax_mode_aliases[normalizedMode]) return config.tax_mode_aliases[normalizedMode];
-  if (normalizedRegime && config.tax_mode_aliases[normalizedRegime]) return config.tax_mode_aliases[normalizedRegime];
+  if (normalizedMode && config.tax_mode_aliases[normalizedMode])
+    return config.tax_mode_aliases[normalizedMode];
+  if (normalizedRegime && config.tax_mode_aliases[normalizedRegime])
+    return config.tax_mode_aliases[normalizedRegime];
   const n = Number(year);
   if (Number.isFinite(n)) {
     if (n <= 2025) return 'legacy_current';
@@ -274,14 +461,22 @@ export function taxRegimeLabel(regimeId, config = getTaxReformConfig()) {
   return regime?.label || String(regimeId || config.default_tax_regime || 'legacy_current');
 }
 
-export function getTaxRegimeDefinition({ taxMode = null, taxRegime = null, year = null, config = getTaxReformConfig() } = {}) {
+export function getTaxRegimeDefinition({
+  taxMode = null,
+  taxRegime = null,
+  year = null,
+  config = getTaxReformConfig(),
+} = {}) {
   const regimeId = resolveTaxRegime({ taxMode, taxRegime, year, config });
   const regime = config.regimes[regimeId] || config.regimes[config.default_tax_regime] || null;
   return regime ? { ...clone(regime), regime_id: regimeId } : null;
 }
 
 export function listTaxModes(config = getTaxReformConfig()) {
-  const values = new Set([...Object.keys(config.tax_mode_aliases || {}), ...Object.keys(config.regimes || {})]);
+  const values = new Set([
+    ...Object.keys(config.tax_mode_aliases || {}),
+    ...Object.keys(config.regimes || {}),
+  ]);
   for (const regime of Object.values(config.regimes || {})) {
     if (regime.ui_mode) values.add(regime.ui_mode);
     if (regime.alt_ui_mode) values.add(regime.alt_ui_mode);

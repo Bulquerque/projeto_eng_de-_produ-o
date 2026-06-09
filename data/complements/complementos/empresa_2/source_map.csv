@@ -1,0 +1,7 @@
+tenant_id,canonical_table,canonical_field,source_type,source_file,source_sheet,source_column,source_confidence,transformation_rule,notes
+empresa_2,nodes,filiais/cidades/ufs,observed,Analise_Malha_Empresa2.xlsx,Lat & Long / Faturamento por Filial x UF,UF/Cidade/Lat/Long/Filial Origem,observed_tenant,normalize_as_nodes,Nós de malha da Empresa 2.
+empresa_2,demand,revenue_brl,observed,Analise_Malha_Empresa2.xlsx,Faturamento_UF / Faturamento por Filial x UF,Faturamento 2025,observed_tenant,normalize_revenue_flows,Faturamento por UF/filial.
+empresa_2,inventory,stock_units/inventory_value_brl,observed,Analise_Malha_Empresa2.xlsx,Estoque,Saldo Médio / $ Saldo,observed_tenant,normalize_inventory,Estoque observado.
+empresa_2,cost_inputs,logistics_costs,observed,Analise_Malha_Empresa2.xlsx,Dados_Roteamento / Aux_Custo_Armaz,Custo Logístico / Custo Armazenagem / Efeitos Tributários,observed_tenant,normalize_cost_inputs,Custos internos.
+empresa_2,tax,current/reform,observed_and_external,Analise_Malha_Empresa2.xlsx + shared/tax_reference,Dados_Tributário,alíquotas/efeitos tributários,observed_tenant_plus_external_official,tax_scenario_bridge,Manter dado interno e aplicar reforma como cenário.
+empresa_2,edges,distance/freight,proxy,Dados de Distância.xlsx,Sheet1,Distancia/Frete,proxy_other_company,proxy_controlled_if_missing,Só usar se distância/frete não estiver explícito na Empresa 2.

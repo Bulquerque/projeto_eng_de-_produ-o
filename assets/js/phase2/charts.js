@@ -11,13 +11,13 @@ export function renderCostBreakdownChart(costs) {
     distribution_cost: 'Distribuição',
     storage_cost: 'Armazenagem',
     inventory_cost: 'Estoque',
-    tax_cost: 'Tributo'
+    tax_cost: 'Tributo',
   };
 
   const data = [];
   const labels = [];
-  
-  keys.forEach(k => {
+
+  keys.forEach((k) => {
     if (costs[k]) {
       data.push(costs[k]);
       labels.push(labelsMap[k]);
@@ -32,7 +32,7 @@ export function renderCostBreakdownChart(costs) {
   renderDonutChart('costBreakdownChart', {
     labels,
     datasets: [{ data }],
-    title: 'Mix de Custos Operacionais (%)'
+    title: 'Mix de Custos Operacionais (%)',
   });
 }
 
@@ -43,20 +43,20 @@ export function renderCdVolumeChart(flows) {
   }
 
   const cdVols = {};
-  flows.forEach(f => {
+  flows.forEach((f) => {
     const cd = f.cd || 'Desconhecido';
     cdVols[cd] = (cdVols[cd] || 0) + (f.annual_weight_kg || 0);
   });
 
   const sorted = Object.entries(cdVols).sort((a, b) => b[1] - a[1]);
-  const labels = sorted.map(i => i[0]);
-  const data = sorted.map(i => i[1] / 1000); // Em toneladas para ficar legível
+  const labels = sorted.map((i) => i[0]);
+  const data = sorted.map((i) => i[1] / 1000); // Em toneladas para ficar legível
 
   renderBarChart('cdVolumeChart', {
     labels,
     datasets: [{ label: 'Volume (t)', data }],
     title: 'Concentração de Volume por Unidade (t)',
-    indexAxis: 'y'
+    indexAxis: 'y',
   });
 }
 
@@ -69,7 +69,7 @@ export function renderDistanceHistogramChart(flows) {
   const buckets = [0, 0, 0, 0];
   const labels = ['0-100 km', '100-300 km', '300-600 km', '600+ km'];
 
-  flows.forEach(f => {
+  flows.forEach((f) => {
     const d = f.distance_km || 0;
     if (d <= 100) buckets[0]++;
     else if (d <= 300) buckets[1]++;
@@ -81,6 +81,6 @@ export function renderDistanceHistogramChart(flows) {
     labels,
     datasets: [{ label: 'Qtd de Fluxos', data: buckets }],
     title: 'Capilaridade: Perfil de Distâncias',
-    indexAxis: 'x'
+    indexAxis: 'x',
   });
 }

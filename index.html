@@ -3,10 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Simulador Estático de Malha Logística — Painel Global</title>
-  <meta name="description" content="Dashboard integrado do simulador estático: seleção de empresa, catálogo, baseline, cenários, score e entrega final.">
+  <title>Simulador Estático de Malha Logística — Portal do Cliente</title>
+  <meta name="description" content="Portal integrado do simulador estático: diagnóstico, baseline, cenários, decisão e entrega final em uma jornada única.">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="assets/styles.css">
+  <script type="importmap">
+    { "imports": { "chart.js": "./assets/vendor/chart.esm.js" } }
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Pular para o conteúdo</a>
@@ -15,26 +18,23 @@
     <nav class="topbar" aria-label="Navegação principal">
       <a class="brand-mark" href="#topo" aria-label="Voltar ao topo">V</a>
       <div>
-        <p class="eyebrow">Capstone Visagio · Validação</p>
+        <p class="eyebrow">Capstone Visagio · Portal do Cliente</p>
         <h1>Simulador Estático de Malha Logística</h1>
       </div>
-      <div class="topbar-actions">
-        <a href="#fase-1-validacao" class="ghost-button active" aria-current="page">Validação</a>
-        <a href="fase-2-baseline/" class="ghost-button">Baseline</a>
-        <a href="fase-3-cenarios/" class="ghost-button">Simulação</a>
-        <a href="fase-4-score-otimizador/" class="ghost-button">Otimização</a>
-        <a href="fase-5-entrega-final/" class="ghost-button">Entrega</a>
-        <a href="debug/" class="ghost-button">Debug</a>
+      <div class="topbar-actions" id="spaTopbar">
+        <a href="#/diagnostico-baseline" class="ghost-button active" aria-current="page">1. Diagnóstico & Baseline</a>
+        <a href="#/simulacao-otimizacao" class="ghost-button">2. Cenários & Otimização</a>
+        <a href="#/homologacao-relatorio" class="ghost-button">3. Decisão & Entrega</a>
       </div>
     </nav>
 
     <section class="hero-grid" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <span class="status-chip status-ok" id="heroStatus">carregando base</span>
-        <h2 id="hero-title">Controle de Malha e Auditoria de Dados</h2>
+        <span class="status-chip status-ok" id="heroStatus">carregando diagnóstico</span>
+        <h2 id="hero-title">Resumo executivo, baseline e continuidade</h2>
         <p>
-          Esta página concentra a fundação, a auditoria e a análise técnica do projeto. As demais etapas continuam acessíveis,
-          mas a leitura de status, caminhos e validações fica centralizada na etapa de Validação.
+          Esta página começa pelo que o cliente precisa ver primeiro: situação atual, baseline, risco e próximos passos.
+          Os detalhes técnicos, auditorias e diagnóstico ficam acessíveis, mas fora da navegação principal.
         </p>
         <div class="hero-actions">
           <button type="button" class="primary-button" id="selectEmpresa1">Abrir Empresa 1</button>
@@ -47,7 +47,7 @@
           <div><dt>Pacote</dt><dd id="packageName">—</dd></div>
           <div><dt>Versão</dt><dd id="packageVersion">—</dd></div>
           <div><dt>Gerado em</dt><dd id="generatedAt">—</dd></div>
-          <div><dt>Utilidade</dt><dd>Validação</dd></div>
+          <div><dt>Utilidade</dt><dd>Diagnóstico</dd></div>
           <div><dt>Contexto</dt><dd>integridade, caminhos e auditoria</dd></div>
         </dl>
       </aside>
@@ -55,169 +55,707 @@
   </header>
 
   <main id="main">
-    <section class="section" id="visao-geral" aria-labelledby="visao-geral-title">
-      <div class="section-heading">
-        <p class="eyebrow">indicadores de integridade</p>
-        <h2 id="visao-geral-title">O que a Validação já prova</h2>
-        <p>Esses cards são alimentados pelos arquivos de validação do pacote, não por texto solto no HTML.</p>
-      </div>
-      <div class="metric-grid" id="proofCards" aria-live="polite"></div>
-    </section>
-
-    <section class="section company-workspace" id="dados" aria-labelledby="dados-title">
-      <div class="section-heading row-heading">
-        <div>
-          <p class="eyebrow">seleção de empresa</p>
-          <h2 id="dados-title">Dados carregados por empresa</h2>
-          <p>O painel troca a empresa sem misturar bases. Empresa 1 e Empresa 2 ficam isoladas desde a Validação.</p>
+    <!-- Pillar A: Diagnóstico & Baseline -->
+    <div id="sec-diagnostico-baseline" class="spa-pillar">
+      <section class="section" id="visao-geral" aria-labelledby="visao-geral-title">
+        <div class="section-heading">
+          <p class="eyebrow">indicadores de integridade</p>
+          <h2 id="visao-geral-title">O que o diagnóstico já prova</h2>
+          <p>Esses cards são alimentados pelos arquivos do pacote, não por texto solto no HTML.</p>
         </div>
-        <div class="company-toggle" role="tablist" aria-label="Selecionar empresa">
-          <button type="button" class="company-tab active" data-company="empresa1" role="tab" aria-selected="true">Empresa 1</button>
-          <button type="button" class="company-tab" data-company="empresa2" role="tab" aria-selected="false">Empresa 2</button>
-        </div>
-      </div>
+        <div class="metric-grid" id="proofCards" aria-live="polite"></div>
+      </section>
 
-      <div class="company-panel">
-        <aside class="company-summary-card" aria-labelledby="companyTitle">
-          <span class="status-chip" id="companyStatus">selecionada</span>
-          <h3 id="companyTitle">—</h3>
-          <p id="companyRule">—</p>
-          <div class="mini-metrics" id="companyMiniMetrics"></div>
-          <div class="source-box">
-            <h4>Fontes originais preservadas</h4>
-            <div id="companySources" class="source-list"></div>
+      <section class="section company-workspace" id="dados" aria-labelledby="dados-title">
+        <div class="section-heading row-heading">
+          <div>
+            <p class="eyebrow">seleção de empresa</p>
+            <h2 id="dados-title">Dados carregados por empresa</h2>
+            <p>O painel troca a empresa sem misturar bases. Empresa 1 e Empresa 2 ficam isoladas desde o diagnóstico.</p>
           </div>
-        </aside>
+          <div class="company-toggle" role="tablist" aria-label="Selecionar empresa">
+            <button type="button" class="company-tab active" data-company="empresa1" role="tab" aria-selected="true">Empresa 1</button>
+            <button type="button" class="company-tab" data-company="empresa2" role="tab" aria-selected="false">Empresa 2</button>
+          </div>
+        </div>
 
-        <section class="data-panel" aria-label="Datasets da empresa selecionada">
-          <div class="panel-toolbar">
-            <div>
-              <h3>Dados Estruturados</h3>
-              <p>Arquivos que o simulador deverá consumir nas próximas fases.</p>
+        <div class="company-panel">
+          <aside class="company-summary-card" aria-labelledby="companyTitle">
+            <span class="status-chip" id="companyStatus">selecionada</span>
+            <h3 id="companyTitle">—</h3>
+            <p id="companyRule">—</p>
+            <div class="mini-metrics" id="companyMiniMetrics"></div>
+            <div class="source-box">
+              <h4>Fontes originais preservadas</h4>
+              <div id="companySources" class="source-list"></div>
             </div>
-            <button type="button" class="secondary-button small-button" id="runLivePathCheck">Checar paths core agora</button>
-          </div>
-          <div class="dataset-grid" id="datasetCards"></div>
-          <details class="details-card">
-            <summary>Ver tabela técnica dos datasets</summary>
-            <div id="datasetTable" class="table-wrap"></div>
-          </details>
-        </section>
-      </div>
-    </section>
+          </aside>
 
-    <section class="section validation-grid-section" id="qualidade" aria-labelledby="qualidade-title">
-      <div class="section-heading">
-        <p class="eyebrow">qualidade e auditoria</p>
-        <h2 id="qualidade-title">Painéis de validação automática</h2>
-        <p>Esta parte mostra se os arquivos, paths, abas e regras mínimas da Validação estão consistentes.</p>
-      </div>
-      <div class="two-column-grid">
-        <article class="card" id="dataQualityPanel"></article>
-        <article class="card" id="pathAuditPanel"></article>
-      </div>
-    </section>
-
-    <section class="section" id="abas" aria-labelledby="abas-title">
-      <div class="section-heading row-heading">
-        <div>
-          <p class="eyebrow">planilhas e abas</p>
-          <h2 id="abas-title">Inventário das abas mapeadas</h2>
-          <p>Resumo do CSV <code>workbook_sheet_inventory.csv</code>, usado para provar que as planilhas foram varridas.</p>
-        </div>
-        <button type="button" class="secondary-button small-button" id="toggleSheetTable">Mostrar/ocultar abas</button>
-      </div>
-      <div class="card">
-        <div class="metric-grid compact" id="sheetInventorySummary"></div>
-        <div class="table-wrap hidden" id="sheetInventoryTable"></div>
-      </div>
-    </section>
-
-    <section class="section phase-validation" id="fase-1-validacao" aria-labelledby="fase1-title">
-      <div class="section-heading">
-        <p class="eyebrow">auditoria técnica</p>
-        <h2 id="fase1-title">Painel de Integridade e Validação</h2>
-        <p>Use esta seção para auditar integridade, rastrear inconsistências e validar os dados que alimentam as demais etapas.</p>
-      </div>
-      <div class="two-column-grid">
-        <article class="card">
-          <div class="panel-toolbar">
-            <div>
-              <h3>Validações automáticas</h3>
-              <p>Rodados no navegador a partir dos dados carregados.</p>
+          <section class="data-panel" aria-label="Datasets da empresa selecionada">
+            <div class="panel-toolbar">
+          <div>
+                <h3>Dados Estruturados</h3>
+                <p>Arquivos que o simulador deverá consumir nas próximas etapas.</p>
+              </div>
+              <button type="button" class="secondary-button small-button" id="runLivePathCheck">Checar paths core agora</button>
             </div>
-            <button type="button" class="primary-button small-button" id="rerunPhase1Checks">Reexecutar</button>
-          </div>
-          <div id="phase1AutoChecks" class="check-list"></div>
-        </article>
-        <article class="card">
-          <div class="panel-toolbar">
-            <div>
-              <h3>Auditoria manual guiada</h3>
-              <p>As marcações ficam salvas no navegador com <code>localStorage</code>.</p>
-            </div>
-            <button type="button" class="secondary-button small-button" id="clearManualChecklist">Limpar</button>
-          </div>
-          <div id="manualChecklist" class="check-list"></div>
-          <p class="small-note" id="manualChecklistProgress">—</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section" id="fase-2-validacao" aria-labelledby="fase2-title">
-      <div class="section-heading row-heading">
-        <div>
-          <p class="eyebrow">testes e auditoria</p>
-          <h2 id="fase2-title">Validações automáticas e checklist manual da Fase 2</h2>
-          <p>Esses testes saem da página Baseline e passam a viver aqui, junto da Validação central do pacote.</p>
+            <div class="dataset-grid" id="datasetCards"></div>
+            <details class="details-card">
+              <summary>Ver tabela técnica dos datasets</summary>
+              <div id="datasetTable" class="table-wrap"></div>
+            </details>
+          </section>
         </div>
-        <button type="button" class="secondary-button small-button" id="rerunPhase2Checks">Reexecutar testes</button>
-      </div>
-      <div class="two-column-grid phase2-grid-spaced">
-        <article class="card">
-          <h3>Validações automáticas</h3>
+      </section>
+
+      <section class="section validation-grid-section" id="qualidade" aria-labelledby="qualidade-title">
+        <div class="section-heading">
+          <p class="eyebrow">qualidade e auditoria</p>
+          <h2 id="qualidade-title">Painéis de verificação automática</h2>
+          <p>Esta parte mostra se os arquivos, paths, abas e regras mínimas do pacote estão consistentes.</p>
+        </div>
+        <div class="two-column-grid">
+          <article class="card" id="dataQualityPanel"></article>
+          <article class="card" id="pathAuditPanel"></article>
+        </div>
+      </section>
+
+      <section class="section" id="abas" aria-labelledby="abas-title">
+        <div class="section-heading row-heading">
+          <div>
+            <p class="eyebrow">planilhas e abas</p>
+            <h2 id="abas-title">Inventário das abas mapeadas</h2>
+            <p>Resumo do CSV <code>workbook_sheet_inventory.csv</code>, usado para provar que as planilhas foram varridas.</p>
+          </div>
+          <button type="button" class="secondary-button small-button" id="toggleSheetTable">Mostrar/ocultar abas</button>
+        </div>
+        <div class="card">
+          <div class="metric-grid compact" id="sheetInventorySummary"></div>
+          <div class="table-wrap hidden" id="sheetInventoryTable"></div>
+        </div>
+      </section>
+
+      <section class="section phase-validation" id="fase-1-validacao" aria-labelledby="fase1-title">
+        <div class="section-heading">
+            <p class="eyebrow">auditoria técnica</p>
+          <h2 id="fase1-title">Painel de integridade do pacote</h2>
+          <p>Use esta seção para auditar integridade, rastrear inconsistências e validar os dados que alimentam as demais etapas.</p>
+        </div>
+        <div class="two-column-grid">
+          <article class="card">
+            <div class="panel-toolbar">
+              <div>
+                <h3>Validações automáticas</h3>
+                <p>Rodados no navegador a partir dos dados carregados.</p>
+              </div>
+              <button type="button" class="primary-button small-button" id="rerunPhase1Checks">Reexecutar</button>
+            </div>
+            <div id="phase1AutoChecks" class="check-list"></div>
+          </article>
+          <article class="card">
+            <div class="panel-toolbar">
+              <div>
+                <h3>Auditoria manual guiada</h3>
+                <p>As marcações ficam salvas no navegador com <code>localStorage</code>.</p>
+              </div>
+              <button type="button" class="secondary-button small-button" id="clearManualChecklist">Limpar</button>
+            </div>
+            <div id="manualChecklist" class="check-list"></div>
+            <p class="small-note" id="manualChecklistProgress">—</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="baseline">
+        <div class="section-heading row-heading">
+          <div>
+            <p class="eyebrow">empresa selecionada</p>
+            <h2><span id="currentCompanyLabel">Empresa 1</span> · <span id="currentScenarioLabel">baseline</span></h2>
+            <p>Status: <span class="status-chip" id="currentStatus">—</span></p>
+          </div>
+        </div>
+        <div id="phase2Loading" class="card"><strong>Carregando baseline...</strong></div>
+        <div id="phase2Workspace" class="hidden">
+          <div class="metric-grid" id="baselineSummaryCards"></div>
           <p class="small-note" id="phase2CheckSummary">—</p>
-          <div id="phase2AutoChecks" class="check-list"></div>
+          <div class="check-list phase2-grid-spaced" id="phase2AutoChecks"></div>
+          <div class="two-column-grid phase2-grid-spaced">
+            <article class="card" id="methodologyBox"></article>
+            <article class="card" id="warningPanel"></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">custos</p>
+          <h2>Custos principais do cenário base</h2>
+          <p>O total logístico e o total com tributo são checados nos testes automáticos.</p>
+        </div>
+        <div class="metric-grid" id="costCards"></div>
+        <div class="two-column-grid phase2-grid-spaced">
+          <article class="card chart-card">
+            <h3>Custos por componente</h3>
+            <canvas id="costBreakdownChart" class="chart-canvas"></canvas>
+          </article>
+          <article class="card">
+            <h3>Decomposição de custo</h3>
+            <div id="costBreakdown" class="breakdown-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">fluxos</p>
+          <h2>Fluxos do baseline</h2>
+          <p>A tabela mostra uma amostra dos fluxos construídos para a empresa selecionada.</p>
+        </div>
+        <div class="metric-grid compact" id="flowSummaryCards"></div>
+        <div class="two-column-grid phase2-grid-spaced" style="margin-bottom:18px;">
+          <article class="card chart-card">
+            <h3>CDs por volume</h3>
+            <canvas id="cdVolumeChart" class="chart-canvas"></canvas>
+          </article>
+          <article class="card chart-card">
+            <h3>Distâncias dos fluxos</h3>
+            <canvas id="distanceHistogramChart" class="chart-canvas"></canvas>
+          </article>
+        </div>
+        <article class="card">
+          <div class="table-wrap" id="flowTable"></div>
+        </article>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">tributário</p>
+          <h2>Camada tributária básica</h2>
+          <p>Nesta etapa, a camada tributária é básica e auditável. O detalhamento completo fica para as próximas etapas.</p>
+        </div>
+        <article class="card" id="taxPanel"></article>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">paridade</p>
+          <h2>Base Fit Score</h2>
+          <p>Empresa 2 tem referência no workbook. Empresa 1 fica como benchmark pendente para não inventar custo histórico.</p>
+        </div>
+        <article class="card" id="calibrationPanel"></article>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">evidência</p>
+          <h2>Evidência operacional auxiliar</h2>
+          <p>Quando existe, mostra somas das abas auxiliares para auditar o baseline.</p>
+        </div>
+        <article class="card">
+          <div class="table-wrap" id="rawEvidencePanel"></div>
+        </article>
+      </section>
+
+      <section class="section" id="proximas-fases" aria-labelledby="proximas-fases-title">
+        <div class="section-heading">
+          <p class="eyebrow">jornada de simulação</p>
+          <h2 id="proximas-fases-title">Mapa central do projeto</h2>
+          <p>O diagnóstico reúne o inventário de páginas, checagens e atalhos para inspeção rápida do pacote inteiro.</p>
+        </div>
+        <div class="metric-grid" id="phaseRoadmap"></div>
+      </section>
+    </div>
+
+    <!-- Pillar B: Simulação & Otimização -->
+    <div id="sec-simulacao-otimizacao" class="spa-pillar hidden">
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">contexto da simulação</p>
+          <h2>Dados disponíveis para os cenários</h2>
+          <p>Resumo dos insumos que alimentam a criação e comparação de cenários.</p>
+        </div>
+        <div class="metric-grid" id="phase3ProofCards"></div>
+      </section>
+
+      <section class="section" id="arena">
+        <div class="section-heading row-heading">
+          <div>
+            <p class="eyebrow">empresa selecionada</p>
+            <h2><span id="phase3CompanyLabel">Empresa 1</span> · Cenários da empresa</h2>
+            <p>Todos os cenários usam o baseline da própria empresa.</p>
+          </div>
+        </div>
+        <div id="phase3Loading" class="card"><strong>Carregando cenários...</strong></div>
+        <div class="metric-grid" id="baselineCards"></div>
+        <article class="card phase2-grid-spaced">
+          <h3>Componentes financeiros do baseline</h3>
+          <div class="table-wrap" id="baselineFinanceTable"></div>
+        </article>
+      </section>
+
+      <section class="section scenario-arena-grid">
+        <article class="card">
+          <div class="panel-toolbar">
+            <div>
+              <h3>Biblioteca de cenários</h3>
+              <p>Baseline, cenários exemplo e cenários salvos no navegador.</p>
+            </div>
+          </div>
+          <div class="scenario-library" id="scenarioLibrary"></div>
         </article>
         <article class="card">
           <div class="panel-toolbar">
             <div>
-              <h3>Checklist manual</h3>
-              <p>As marcações ficam salvas no navegador com <code>localStorage</code>.</p>
+              <h3>Cenários salvos</h3>
+              <p>Persistência local por empresa.</p>
             </div>
-            <button type="button" class="secondary-button small-button" id="clearPhase2ManualChecklist">Limpar</button>
+            <button type="button" class="secondary-button small-button" id="clearSavedScenarios">Limpar salvos</button>
           </div>
-          <div id="phase2ManualChecklist" class="check-list"></div>
-          <p class="small-note" id="phase2ManualProgress">—</p>
+          <div id="savedScenarios" class="saved-scenarios"></div>
         </article>
-      </div>
-    </section>
+      </section>
 
-    <section class="section" id="proximas-fases" aria-labelledby="proximas-fases-title">
-      <div class="section-heading">
-        <p class="eyebrow">jornada de simulação</p>
-        <h2 id="proximas-fases-title">Mapa central do projeto</h2>
-        <p>A Validação reúne o inventário de páginas, checagens e atalhos para inspeção rápida do pacote inteiro.</p>
-      </div>
-      <div class="metric-grid" id="phaseRoadmap"></div>
-    </section>
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">builder</p>
+          <h2>Criar cenário manual</h2>
+          <p>Altere premissas e clique em simular. Cenários inválidos são bloqueados antes do cálculo.</p>
+        </div>
+        <div class="scenario-workbench-grid">
+          <article class="card scenario-form">
+            <label>Nome do cenário<input id="scenarioName" type="text" value="Cenário customizado"></label>
+            <div>
+              <strong>CDs ativos</strong>
+              <div class="chip-check-grid" id="cdSelector"></div>
+            </div>
+            <label>Multiplicador de frete<input id="freightMultiplier" type="number" step="0.01" min="0.01" value="1"></label>
+            <label>Multiplicador de demanda<input id="demandMultiplier" type="number" step="0.01" min="0.01" value="1"></label>
+            <label>Dias de estoque<input id="inventoryDays" type="number" step="1" min="0" value="45"></label>
+            <label>WACC<input id="waccValue" type="number" step="0.01" min="0" value="0.15"></label>
+            <label>Modo tributário
+              <select id="taxMode">
+                <option value="current">Atual / canônico</option>
+                <option value="disabled">Desligado</option>
+                <optgroup label="Reforma Tributária">
+                  <option value="reform_2026">2026 (Ano teste)</option>
+                  <option value="reform_2027">2027 (CBS plena)</option>
+                  <option value="reform_2028">2028 (CBS plena)</option>
+                  <option value="reform_2029">2029 (Transição 10%)</option>
+                  <option value="reform_2030">2030 (Transição 20%)</option>
+                  <option value="reform_2031">2031 (Transição 30%)</option>
+                  <option value="reform_2032">2032 (Transição 40%)</option>
+                  <option value="reform_2033">2033 (Regime pleno)</option>
+                </optgroup>
+              </select>
+            </label>
+            <div id="taxAssumptionsPanel" class="tax-assumptions-panel"></div>
+            <label>Regra de realocação
+              <select id="reallocationRule">
+                <option value="nearest_available_cd">CD ativo mais compatível</option>
+                <option value="first_available_cd">Primeiro CD ativo</option>
+                <option value="keep_if_active_else_first">Manter se ativo, senão primeiro</option>
+              </select>
+            </label>
+            <div class="alert-box neutral" style="margin-top:8px;">
+              <h4 style="margin-top:0;">Monte Carlo e incerteza</h4>
+              <label>Iterações<input id="phase3MonteCarloIterations" type="number" min="50" max="5000" step="50" value="300"></label>
+              <label>Seed<input id="phase3MonteCarloSeed" type="number" step="1" value="42"></label>
+              <label>Perfil de incerteza
+                <select id="phase3MonteCarloProfile">
+                  <option value="balanced">Equilibrado</option>
+                  <option value="conservative">Conservador</option>
+                  <option value="broad">Amplo</option>
+                </select>
+              </label>
+              <label>Driver do scatter
+                <select id="phase3MonteCarloDriver">
+                  <option value="freight_multiplier">Frete</option>
+                  <option value="demand_multiplier">Demanda</option>
+                  <option value="inventory_days">Dias de estoque</option>
+                  <option value="wacc">WACC</option>
+                  <option value="tax_multiplier">Tributo</option>
+                </select>
+              </label>
+              <button type="button" class="secondary-button" id="runMonteCarloScenario">Recalcular Monte Carlo</button>
+              <p class="small-note">O resumo probabilístico reaproveita o cenário atual e mostra faixa provável, percentis e chance de saving positivo.</p>
+            </div>
+            <div class="scenario-actions">
+              <button type="button" class="primary-button" id="simulateScenario" disabled title="Carregue a empresa antes de simular.">Simular cenário</button>
+              <button type="button" class="secondary-button" id="saveScenario">Salvar</button>
+              <button type="button" class="secondary-button" id="exportScenario">Exportar JSON</button>
+              <label class="secondary-button import-button">Importar JSON
+                <input id="importScenarioFile" type="file" accept="application/json,.json" hidden>
+              </label>
+            </div>
+          </article>
+          <article class="card scenario-live-dashboard">
+            <h3>Resultado do cenário atual</h3>
+            <div id="scenarioValidationPanel" class="empty-state">Aguardando simulação.</div>
+            <div class="metric-grid compact-grid" id="scenarioResultCards"></div>
+            <div class="table-wrap phase2-grid-spaced" id="scenarioExecutiveTable"></div>
+          </article>
+        </div>
+      </section>
 
-    <section class="section" id="erros" aria-labelledby="erros-title">
-      <div class="section-heading">
-        <p class="eyebrow">logs de sistema</p>
-        <h2 id="erros-title">Console de Auditoria</h2>
-      </div>
-      <pre class="debug-console" id="debugConsole">iniciando...</pre>
-      <div class="debug-structured" id="sharedDebugFeed">
-        <p class="small-note">Logs compartilhados das etapas do simulador aparecerão aqui.</p>
-      </div>
-    </section>
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">comparador</p>
+          <h2>Comparação contra baseline</h2>
+          <p>Saving e variações percentuais são sempre calculados contra o baseline da empresa selecionada.</p>
+        </div>
+        <article class="card">
+          <div class="table-wrap" id="comparisonTable"></div>
+        </article>
+        <article class="card phase2-grid-spaced">
+          <h3>Comparação com cenários da biblioteca</h3>
+          <div class="table-wrap" id="scenarioLibraryComparisonTable"></div>
+        </article>
+        <article class="card phase2-grid-spaced">
+          <h3>Delta por componente</h3>
+          <div id="componentDeltaPanel" class="breakdown-list"></div>
+        </article>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">resultado visual</p>
+          <h2>Custos do cenário atual</h2>
+        </div>
+        <article class="card phase2-grid-spaced">
+          <h3>Visão Geral de Custos (Cenário vs Baseline)</h3>
+          <canvas id="scenarioComparisonChart" class="chart-canvas"></canvas>
+        </article>
+        <div class="two-column-grid phase2-grid-spaced">
+          <article class="card" id="qualityPanel"></article>
+          <article class="card" id="changeExplainer"></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">incerteza</p>
+          <h2>Monte Carlo e faixa de possibilidades</h2>
+          <p>Esta leitura mostra o cenário como distribuição, não apenas como ponto único. Os gráficos abaixo destacam risco, faixa provável e drivers dominantes.</p>
+        </div>
+        <div class="two-column-grid">
+          <article class="card">
+            <h3>Resumo probabilístico</h3>
+            <div class="metric-grid compact-grid" id="monteCarloSummaryCards"></div>
+            <div class="table-wrap phase2-grid-spaced" id="monteCarloSummaryTable"></div>
+          </article>
+          <article class="card">
+            <h3>Probabilidade de saving</h3>
+            <canvas id="monteCarloRiskChart" class="chart-canvas"></canvas>
+          </article>
+        </div>
+        <div class="three-column-grid phase2-grid-spaced">
+          <article class="card">
+            <h3>Distribuição de saving</h3>
+            <canvas id="monteCarloHistogramChart" class="chart-canvas"></canvas>
+          </article>
+          <article class="card">
+            <h3>Curva percentílica do saving</h3>
+            <canvas id="monteCarloCdfChart" class="chart-canvas"></canvas>
+          </article>
+          <article class="card">
+            <h3>Curva percentílica do custo total</h3>
+            <canvas id="monteCarloTotalChart" class="chart-canvas"></canvas>
+          </article>
+        </div>
+        <div class="two-column-grid phase2-grid-spaced">
+          <article class="card">
+            <h3>Drivers mais influentes</h3>
+            <canvas id="monteCarloDriversChart" class="chart-canvas"></canvas>
+          </article>
+          <article class="card">
+            <h3>Driver x saving</h3>
+            <canvas id="monteCarloScatterChart" class="chart-canvas"></canvas>
+          </article>
+        </div>
+      </section>
+
+      <!-- FASE 4: Otimização de Malha -->
+      <section class="section" id="arena4">
+        <div class="section-heading row-heading">
+          <div>
+            <p class="eyebrow">empresa selecionada</p>
+            <h2><span id="phase4CompanyLabel">Empresa 1</span> · Decisão assistida</h2>
+            <p>O otimizador usa a base processada e o simulador para enumerar o espaço discreto, aplicar restrições e sugerir o melhor cenário.</p>
+          </div>
+        </div>
+        <div id="phase4Loading" class="card"><strong>Carregando otimização...</strong></div>
+        <div class="metric-grid" id="baselinePhase4Cards"></div>
+        <article class="card phase2-grid-spaced">
+          <h3>Resumo dos dados usados pelo otimizador</h3>
+          <div class="table-wrap" id="optimizerInputTable"></div>
+        </article>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">objetivo</p>
+            <h2>Construtor de objetivos</h2>
+          <p>Escolha um perfil ou defina pesos. Os pesos são normalizados para somar 100%.</p>
+        </div>
+        <div class="two-column-grid">
+          <article class="card objective-builder">
+            <h3>Perfis prontos</h3>
+            <div id="objectiveProfiles" class="profile-grid"></div>
+          </article>
+          <article class="card objective-builder">
+            <h3>Pesos customizados</h3>
+            <label>Nome do objetivo<input id="objectiveName" type="text" value="Perfil Balanceado Customizado"></label>
+            <label>Custo total (%)<small>Prioriza menor total com tributo.</small><input id="weight_total_cost" type="number" min="0" max="100" step="1" value="30"></label>
+            <label>Qualidade de serviço (%)<small>Premia menor concentração e menos realocação.</small><input id="weight_service_quality" type="number" min="0" max="100" step="1" value="25"></label>
+            <label>Risco operacional (%)<small>Reduz preferência por cenários mais arriscados.</small><input id="weight_operational_risk" type="number" min="0" max="100" step="1" value="20"></label>
+            <label>Impacto tributário (%)<small>Considera efeito tributário estimado no custo final.</small><input id="weight_tax_impact" type="number" min="0" max="100" step="1" value="15"></label>
+            <label>Eficiência de estoque (%)<small>Considera capital empatado em estoque.</small><input id="weight_inventory_efficiency" type="number" min="0" max="100" step="1" value="10"></label>
+            <div id="objectivePreview" class="alert-box neutral"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">restrições e busca</p>
+          <h2>Configuração do Otimizador Exato</h2>
+          <p>O otimizador enumera o espaço discreto modelado e só aceita o melhor cenário viável.</p>
+        </div>
+        <div class="two-column-grid">
+          <article class="card constraint-panel">
+            <h3>Restrições de Malha</h3>
+            <label>Mínimo de CDs ativos<small>Menor malha permitida para o cenário ser viável.</small><input id="minActiveCds" type="number" min="1" step="1" value="1"></label>
+            <label>Máximo de CDs ativos<small>Maior malha permitida para o cenário ser viável.</small><input id="maxActiveCds" type="number" min="1" step="1" value="999"></label>
+            <label>Limite de volume por CD (%)<small>Concentração máxima permitida em uma única unidade.</small><input id="maxCdShare" type="number" min="1" max="100" step="1" value="100"></label>
+            <label>Nível de risco aceitável
+              <select id="maxRiskLevel">
+                <option value="high">Aceitar qualquer risco (Alto/Médio/Baixo)</option>
+                <option value="medium">Até Risco Médio</option>
+                <option value="low">Somente Risco Baixo</option>
+              </select>
+            </label>
+            <label>Regime Tributário Base<small>Otimizar considerando este regime fiscal.</small>
+              <select id="optimizationTaxMode">
+                <option value="current">Atual / canônico</option>
+                <option value="disabled">Desligado</option>
+                <optgroup label="Reforma Tributária">
+                  <option value="reform_2026">2026 (Ano teste)</option>
+                  <option value="reform_2027">2027 (CBS plena)</option>
+                  <option value="reform_2028">2028 (CBS plena)</option>
+                  <option value="reform_2029">2029 (Transição 10%)</option>
+                  <option value="reform_2030">2030 (Transição 20%)</option>
+                  <option value="reform_2031">2031 (Transição 30%)</option>
+                  <option value="reform_2032">2032 (Transição 40%)</option>
+                  <option value="reform_2033">2033 (Regime pleno)</option>
+                </optgroup>
+              </select>
+            </label>
+            <label class="inline-check"><input id="allowTaxDisabled" type="checkbox"> Permitir alternar entre Atual e Desligado (comparação)</label>
+          </article>
+          <article class="card optimizer-panel">
+            <h3>Busca</h3>
+            <label>Método
+              <select id="optimizerMethod">
+                <option value="exact_discrete">busca exata nos cenários modelados</option>
+              </select>
+            </label>
+            <label>Limite de cenários avaliados<small>Trava de segurança para execução no navegador.</small><input id="maxCandidates" type="number" min="100" max="10000" step="100" value="2000"></label>
+            <label>Identificador da execução<small>Mantém a enumeração reproduzível.</small><input id="optimizerSeed" type="number" step="1" value="42"></label>
+            <button type="button" class="primary-button" id="runOptimizer">Rodar otimização exata</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">resultado</p>
+          <h2>Ranking e log da otimização</h2>
+        </div>
+        <div class="two-column-grid">
+          <article class="card">
+            <h3>Log de busca</h3>
+            <div id="searchLogPanel"></div>
+          </article>
+          <article class="card">
+            <h3>Por que o melhor cenário ganhou?</h3>
+            <div id="rankingExplanation"></div>
+          </article>
+        </div>
+        <article class="card phase2-grid-spaced">
+          <h3>Top cenários por score</h3>
+          <canvas id="rankingChart" class="chart-canvas"></canvas>
+          <div class="table-wrap" id="rankingPanel"></div>
+        </article>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">trade-off</p>
+          <h2>Fronteira simples de custo vs qualidade</h2>
+          <p>Mostra quais cenários não são claramente dominados por outros em custo e qualidade.</p>
+        </div>
+        <article class="card">
+          <canvas id="tradeoffChart" class="chart-canvas"></canvas>
+          <div class="table-wrap" id="tradeoffPanel"></div>
+        </article>
+      </section>
+    </div>
+
+    <!-- Pillar C: Homologação & Relatório -->
+    <div id="sec-homologacao-relatorio" class="spa-pillar hidden">
+      <section class="section final-dashboard">
+        <div class="section-heading row-heading">
+          <div>
+            <p class="eyebrow">empresa selecionada</p>
+            <h2><span id="phase5CompanyLabel">Empresa 1</span> · Decisão final</h2>
+            <p>Selecione a empresa, escolha o modo de recomendação e rode a análise final.</p>
+          </div>
+        </div>
+        <div id="phase5Loading" class="card"><strong>Carregando decisão final...</strong></div>
+        <div class="two-column-grid">
+          <article class="card">
+            <h3>Configuração final</h3>
+            <label>Selecionar cenário por
+              <select id="phase5SelectionMode">
+                <option value="best_by_score">maior score</option>
+                <option value="best_by_cost">menor custo</option>
+                <option value="best_by_robustness">melhor robustez/qualidade</option>
+                <option value="manual">manual (por ID)</option>
+              </select>
+            </label>
+            <label id="manualScenarioIdLabel" style="display:none">ID do cenário manual<input id="phase5ManualScenarioId" type="text" placeholder="ex: scenario_empresa1_001"></label>
+            <label>Perfil de stress
+              <select id="phase5StressProfile">
+                <option value="standard">padrão</option>
+                <option value="conservative">conservador</option>
+              </select>
+            </label>
+            <label>Variável de sensibilidade
+              <select id="phase5SensitivityVariable">
+                <option value="freight_multiplier">frete</option>
+                <option value="demand_multiplier">demanda</option>
+                <option value="inventory_days">dias de estoque</option>
+                <option value="wacc">WACC</option>
+              </select>
+            </label>
+            <label>Variável X da matriz
+              <select id="phase5SensitivityX">
+                <option value="freight_multiplier">frete</option>
+                <option value="demand_multiplier">demanda</option>
+                <option value="inventory_days">dias de estoque</option>
+                <option value="wacc">WACC</option>
+              </select>
+            </label>
+            <label>Variável Y da matriz
+              <select id="phase5SensitivityY">
+                <option value="demand_multiplier">demanda</option>
+                <option value="freight_multiplier">frete</option>
+                <option value="inventory_days">dias de estoque</option>
+                <option value="wacc">WACC</option>
+              </select>
+            </label>
+            <label>Limite de segurança da enumeração<input id="phase5MaxCandidates" type="number" min="100" max="10000" step="100" value="5000"></label>
+            <button type="button" class="primary-button" id="rerunPhase5">Reexecutar análise final</button>
+          </article>
+          <article class="card">
+            <h3>Resumo final</h3>
+            <canvas id="robustnessChart" class="chart-canvas" style="height:180px; margin-bottom:12px;"></canvas>
+            <div class="metric-grid compact-grid" id="phase5OverviewCards"></div>
+          </article>
+        </div>
+        <article class="card phase2-grid-spaced">
+          <h3>Paridade com workbook</h3>
+          <div id="workbookParityPanel"></div>
+        </article>
+        <article class="card phase2-grid-spaced">
+          <h3>Situação final da empresa</h3>
+          <div class="table-wrap" id="finalSituationTable"></div>
+        </article>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">robustez</p>
+          <h2>Stress test e sensibilidade</h2>
+          <p>O cenário selecionado é testado contra choques de frete, demanda, WACC, estoque e modo tributário.</p>
+        </div>
+        <div class="two-column-grid">
+          <article class="card">
+            <h3>Stress test</h3>
+            <canvas id="stressChart" class="chart-canvas"></canvas>
+            <div class="table-wrap" id="stressPanel"></div>
+          </article>
+          <article class="card">
+            <h3>Sensibilidade</h3>
+            <canvas id="sensitivityChart" class="chart-canvas"></canvas>
+            <div class="table-wrap" id="sensitivityPanel"></div>
+          </article>
+        </div>
+        <article class="card phase2-grid-spaced">
+          <h3>Matriz de sensibilidade</h3>
+          <div class="table-wrap" id="sensitivityMatrixPanel"></div>
+        </article>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">decisão</p>
+          <h2>Recomendação e relatório executivo</h2>
+        </div>
+        <div class="two-column-grid">
+          <article class="card recommendation-card">
+            <h3>Recomendação final</h3>
+            <div id="recommendationPanel"></div>
+          </article>
+          <article class="card executive-report">
+            <h3>Relatório executivo</h3>
+            <div id="executiveReportPanel"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">rastreabilidade</p>
+          <h2>Audit trail e exportação</h2>
+        </div>
+        <div class="two-column-grid">
+          <article class="card audit-trail-panel">
+            <h3>Audit trail</h3>
+            <div id="auditTrailPanel"></div>
+          </article>
+          <article class="card export-center">
+            <h3>Central de exportação</h3>
+            <p>Baixe o pacote de decisão em formatos simples para auditoria e apresentação.</p>
+            <div class="export-buttons" id="exportCenterPanel"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Centralized Console & Technical Log -->
+      <section class="section" id="erros" aria-labelledby="erros-title">
+        <div class="section-heading">
+          <p class="eyebrow">logs de sistema</p>
+          <h2>Área técnica</h2>
+        </div>
+        <pre class="debug-console" id="debugConsole">iniciando...</pre>
+        <div class="debug-structured" id="sharedDebugFeed">
+          <p class="small-note">Logs compartilhados do simulador aparecerão aqui.</p>
+        </div>
+      </section>
+    </div>
   </main>
 
   <footer class="footer">
     <p>Simulador Estático de Malha Logística implementado. Use <code>python -m http.server 8000</code> e abra no navegador.</p>
   </footer>
 
-  <script src="assets/app.js"></script>
+  <!-- Legacy entrypoint preserved for compatibility: assets/app.js -->
+  <script type="module" src="assets/js/features/phase-1/main.js"></script>
+  <script type="module" src="assets/js/features/phase-2/main.js"></script>
+  <script type="module" src="assets/js/features/phase-3/main.js"></script>
+  <script type="module" src="assets/js/features/phase-4/main.js"></script>
+  <script type="module" src="assets/js/features/phase-5/main.js"></script>
+  <script type="module" src="assets/js/shared/router.js"></script>
 </body>
 </html>

@@ -1,0 +1,49 @@
+{
+  "id": "MonteCarloEngine",
+  "phase": 3,
+  "status": "implemented_phase_3",
+  "page": "/#/simulacao-otimizacao",
+  "file": "assets/js/phase3/monte-carlo-engine.js",
+  "purpose": "Roda simulacoes probabilisticas reprodutiveis sobre o cenario selecionado e resume distribuicao, percentis e drivers.",
+  "inputs": {
+    "company_id": "empresa1|empresa2",
+    "selected_scenario": "{}",
+    "baseline_bundle": "{}",
+    "deterministic_result": "{}",
+    "iterations": 300,
+    "seed": 42,
+    "config": "{}"
+  },
+  "outputs": {
+    "company_id": "empresa1|empresa2",
+    "scenario_id": "scenario_id",
+    "monte_carlo_status": "success|blocked|error",
+    "config": "{}",
+    "samples": "[]",
+    "summary": "{}",
+    "warnings": "[]",
+    "errors": "[]"
+  },
+  "internal_functions": [
+    "buildMonteCarloConfig",
+    "runMonteCarloSimulation"
+  ],
+  "external_calls": [
+    "ScenarioSimulator"
+  ],
+  "tests": {
+    "unit": [
+      "tests/06_fase3_cenarios/test_phase3_logic.py"
+    ],
+    "integration": [
+      "tests/06_fase3_cenarios/test_phase3_file_structure.py"
+    ],
+    "manual": [
+      "checklist na pagina /#/simulacao-otimizacao"
+    ],
+    "acceptance": [
+      "mesma seed gera o mesmo resumo",
+      "o cenario original nao e mutado"
+    ]
+  }
+}

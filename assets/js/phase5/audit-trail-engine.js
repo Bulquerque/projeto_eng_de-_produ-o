@@ -1,11 +1,27 @@
-export function buildAuditTrail({ companyId, selectedScenario, baselineBundle, objective = {}, recommendation = {}, optimizerResult = null, extraSources = [] } = {}) {
-  const scenarioId = selectedScenario?.scenario_id || selectedScenario?.scenario?.scenario_id || selectedScenario?.result?.scenario_id;
+export function buildAuditTrail({
+  companyId,
+  selectedScenario,
+  baselineBundle,
+  objective = {},
+  recommendation = {},
+  optimizerResult = null,
+  extraSources = [],
+} = {}) {
+  const scenarioId =
+    selectedScenario?.scenario_id ||
+    selectedScenario?.scenario?.scenario_id ||
+    selectedScenario?.result?.scenario_id;
   const searchLog = optimizerResult?.search_log || null;
+  const monteCarlo =
+    selectedScenario?.monte_carlo?.summary ||
+    selectedScenario?.scenario?.monte_carlo?.summary ||
+    selectedScenario?.monte_carlo_summary ||
+    null;
   const sources = [
     `data/${companyId}/phase2/phase2_bundle.json.enc.json`,
     `data/${companyId}/phase3/sample_scenarios.json.enc.json`,
     `data/${companyId}/phase4/default_objectives.json.enc.json`,
-    ...extraSources
+    ...extraSources,
   ];
   return {
     audit_id: `${companyId}_audit_final_${scenarioId || 'sem_cenario'}`,
@@ -16,22 +32,46 @@ export function buildAuditTrail({ companyId, selectedScenario, baselineBundle, o
     assumptions: selectedScenario?.scenario?.changes || selectedScenario?.changes || {},
     objective,
     recommendation_status: recommendation.recommendation_status || null,
-    optimization: searchLog ? {
-      method_requested: searchLog.method_requested || null,
-      method_applied: searchLog.method_applied || null,
-      exact_search_space: Boolean(searchLog.exact_search_space),
-      generated_candidates: searchLog.generated_candidates ?? null,
-      valid_candidates: searchLog.valid_candidates ?? null,
-      best_scenario_id: searchLog.best_scenario_id || null
-    } : null,
-    model_versions: { phase1: 'implemented', phase2: 'implemented', phase3: 'implemented', phase4: 'implemented', phase5: 'implemented' },
+    probabilistic_summary: monteCarlo
+      ? {
+          iterations: monteCarlo.iterations ?? null,
+          seed: monteCarlo.seed ?? null,
+          profile: monteCarlo.profile || null,
+          probability_saving_positive: monteCarlo.probability_saving_positive ?? null,
+          p10_saving_pct: monteCarlo.p10_saving_pct ?? null,
+          median_saving_pct: monteCarlo.median_saving_pct ?? null,
+          p90_saving_pct: monteCarlo.p90_saving_pct ?? null,
+          risk_band: monteCarlo.risk_band || null,
+          most_sensitive_driver: monteCarlo.most_sensitive_driver || null,
+        }
+      : null,
+    optimization: searchLog
+      ? {
+          method_requested: searchLog.method_requested || null,
+          method_applied: searchLog.method_applied || null,
+          exact_search_space: Boolean(searchLog.exact_search_space),
+          generated_candidates: searchLog.generated_candidates ?? null,
+          valid_candidates: searchLog.valid_candidates ?? null,
+          best_scenario_id: searchLog.best_scenario_id || null,
+        }
+      : null,
+    model_versions: {
+      phase1: 'implemented',
+      phase2: 'implemented',
+      phase3: 'implemented',
+      phase4: 'implemented',
+      phase5: 'implemented',
+    },
     warnings: [],
-    created_at: 'browser_runtime'
+    created_at: 'browser_runtime',
   };
 }
 export function validateAuditTrail(audit) {
   const errors = [];
-  ['company_id', 'selected_scenario_id', 'baseline_scenario_id'].forEach(k => { if (!audit?.[k]) errors.push(`${k} ausente`); });
-  if (!Array.isArray(audit?.data_sources) || audit.data_sources.length === 0) errors.push('fontes de dados ausentes');
+  ['company_id', 'selected_scenario_id', 'baseline_scenario_id'].forEach((k) => {
+    if (!audit?.[k]) errors.push(`${k} ausente`);
+  });
+  if (!Array.isArray(audit?.data_sources) || audit.data_sources.length === 0)
+    errors.push('fontes de dados ausentes');
   return { valid: errors.length === 0, errors };
 }

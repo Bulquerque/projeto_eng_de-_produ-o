@@ -1,0 +1,54 @@
+[
+  {
+    "tenant_id": "empresa_1",
+    "scenario_id": "baseline_atual",
+    "tax_regime": "current",
+    "scenario_year": 2026,
+    "current_tax_profile_id": "current_default",
+    "reform_tax_profile_id": "",
+    "uses_destination_principle": false,
+    "uses_credit_reform": false,
+    "uses_benefit_phaseout": false,
+    "source_confidence": "proxy_other_company",
+    "source_ref": "tenant_tax_current_or_proxy"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "scenario_id": "reforma_2027",
+    "tax_regime": "reform_transition",
+    "scenario_year": 2027,
+    "current_tax_profile_id": "current_default",
+    "reform_tax_profile_id": "reform_2027",
+    "uses_destination_principle": true,
+    "uses_credit_reform": true,
+    "uses_benefit_phaseout": true,
+    "source_confidence": "external_official",
+    "source_ref": "tax_reform_timeline"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "scenario_id": "reforma_2030",
+    "tax_regime": "reform_transition",
+    "scenario_year": 2030,
+    "current_tax_profile_id": "current_default",
+    "reform_tax_profile_id": "reform_2030",
+    "uses_destination_principle": true,
+    "uses_credit_reform": true,
+    "uses_benefit_phaseout": true,
+    "source_confidence": "external_official",
+    "source_ref": "tax_reform_timeline"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "scenario_id": "reforma_2033",
+    "tax_regime": "reform_full",
+    "scenario_year": 2033,
+    "current_tax_profile_id": "",
+    "reform_tax_profile_id": "reform_2033",
+    "uses_destination_principle": true,
+    "uses_credit_reform": true,
+    "uses_benefit_phaseout": true,
+    "source_confidence": "external_official",
+    "source_ref": "tax_reform_timeline"
+  }
+]

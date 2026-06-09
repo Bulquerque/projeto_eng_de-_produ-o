@@ -1,0 +1,122 @@
+[
+  {
+    "source_id": "rf_entenda_reforma",
+    "tema": "reforma_tributaria",
+    "orgao": "Receita Federal",
+    "tipo": "página explicativa oficial",
+    "prioridade": "alta",
+    "url": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda",
+    "uso_no_modelo": "Cronograma de transição CBS/IBS/IS, extinção PIS/Cofins e ICMS/ISS, pesos 2029-2033.",
+    "limite_cuidado": "É resumo operacional; para texto legal usar LC/EC."
+  },
+  {
+    "source_id": "mf_regulamentacao",
+    "tema": "reforma_tributaria",
+    "orgao": "Ministério da Fazenda",
+    "tipo": "hub oficial de regulamentação",
+    "prioridade": "alta",
+    "url": "https://www.gov.br/fazenda/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria",
+    "uso_no_modelo": "Acompanhar regulamentação e LC 214/2025; fonte de atualização contínua.",
+    "limite_cuidado": "Pode mudar conforme novas LCs/decretos."
+  },
+  {
+    "source_id": "lc214_2025",
+    "tema": "reforma_tributaria",
+    "orgao": "Planalto",
+    "tipo": "lei complementar",
+    "prioridade": "alta",
+    "url": "https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm",
+    "uso_no_modelo": "Base legal que institui IBS, CBS e IS; usar para premissas formais.",
+    "limite_cuidado": "Texto legal extenso; não transformar em fórmula sem interpretação."
+  },
+  {
+    "source_id": "ec132_2023",
+    "tema": "reforma_tributaria",
+    "orgao": "Planalto",
+    "tipo": "emenda constitucional",
+    "prioridade": "alta",
+    "url": "https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm",
+    "uso_no_modelo": "Base constitucional da reforma; usar como referência do novo sistema.",
+    "limite_cuidado": "Necessita regulamentação infraconstitucional para cálculo."
+  },
+  {
+    "source_id": "senado_res22_1989",
+    "tema": "icms_atual",
+    "orgao": "Senado Federal",
+    "tipo": "resolução",
+    "prioridade": "alta",
+    "url": "https://legis.senado.leg.br/norma/586152/publicacao/15646891",
+    "uso_no_modelo": "Matriz de ICMS interestadual base 12%/7%.",
+    "limite_cuidado": "Não cobre alíquotas internas nem benefícios estaduais."
+  },
+  {
+    "source_id": "senado_res13_2012",
+    "tema": "icms_atual_importados",
+    "orgao": "Senado Federal",
+    "tipo": "resolução",
+    "prioridade": "média",
+    "url": "https://legis.senado.leg.br/norma/586999",
+    "uso_no_modelo": "Regra de 4% para bens/mercadorias importados em operações interestaduais.",
+    "limite_cuidado": "Aplicar só se houver informação de produto importado/conteúdo de importação."
+  },
+  {
+    "source_id": "lc87_1996",
+    "tema": "icms_atual",
+    "orgao": "Planalto",
+    "tipo": "lei complementar",
+    "prioridade": "média",
+    "url": "https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp87.htm",
+    "uso_no_modelo": "Lei Kandir; base geral do ICMS.",
+    "limite_cuidado": "Não substitui tabelas internas/estaduais."
+  },
+  {
+    "source_id": "lc190_2022",
+    "tema": "difal",
+    "orgao": "Planalto",
+    "tipo": "lei complementar",
+    "prioridade": "média",
+    "url": "https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp190.htm",
+    "uso_no_modelo": "DIFAL em operações a consumidor final não contribuinte.",
+    "limite_cuidado": "Só aplicar se operação e cliente se enquadrarem."
+  },
+  {
+    "source_id": "ibge_malha_municipal",
+    "tema": "geografia",
+    "orgao": "IBGE",
+    "tipo": "base geográfica oficial",
+    "prioridade": "média",
+    "url": "https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais/15774-malhas.html",
+    "uso_no_modelo": "Padronização de UF/município/centroide e validação de mapa/joins.",
+    "limite_cuidado": "Não substituir coordenadas internas se já estiverem alinhadas ao modelo."
+  },
+  {
+    "source_id": "bcb_selic_sgs11",
+    "tema": "financeiro",
+    "orgao": "Banco Central",
+    "tipo": "série temporal oficial",
+    "prioridade": "baixa",
+    "url": "https://dadosabertos.bcb.gov.br/dataset/11-taxa-de-juros---selic",
+    "uso_no_modelo": "Sensibilidade de WACC/custo de capital se necessário.",
+    "limite_cuidado": "Não substituir WACC interno automaticamente."
+  },
+  {
+    "source_id": "anp_combustiveis",
+    "tema": "frete_diesel",
+    "orgao": "ANP",
+    "tipo": "série histórica oficial",
+    "prioridade": "baixa",
+    "url": "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/serie-historica-de-precos-de-combustiveis",
+    "uso_no_modelo": "Sensibilidade/validação de frete por diesel.",
+    "limite_cuidado": "Não substituir frete contratado da empresa."
+  },
+  {
+    "source_id": "antt_piso_frete",
+    "tema": "frete",
+    "orgao": "ANTT",
+    "tipo": "calculadora/regulatório",
+    "prioridade": "baixa",
+    "url": "https://calculadorafrete.antt.gov.br/",
+    "uso_no_modelo": "Benchmark/piso mínimo de frete se necessário.",
+    "limite_cuidado": "Não usar como frete real da operação."
+  }
+]

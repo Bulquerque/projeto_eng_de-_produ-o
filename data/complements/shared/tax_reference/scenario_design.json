@@ -1,0 +1,74 @@
+[
+  {
+    "scenario_id": "baseline_atual",
+    "nome": "Baseline regime atual",
+    "ano_base": 2026,
+    "regime": "atual",
+    "o_que_muda": "Nada: reproduz situação atual com dados internos",
+    "empresa_1_uso": "Demanda, distância, frete, premissas",
+    "empresa_2_uso": "Custo total, estoque, tributário, roteamento",
+    "externo_uso": "ICMS oficial só para validação",
+    "saida_esperada": "Aderência observado x simulado",
+    "status_recomendado": "obrigatório"
+  },
+  {
+    "scenario_id": "reforma_2026_teste",
+    "nome": "Ano teste CBS/IBS",
+    "ano_base": 2026,
+    "regime": "reforma_teste",
+    "o_que_muda": "CBS 0,9% e IBS 0,1% compensados",
+    "empresa_1_uso": "Não altera malha; só registra parametrização",
+    "empresa_2_uso": "Não altera malha; só registra parametrização",
+    "externo_uso": "Receita Federal",
+    "saida_esperada": "Preparação tecnológica / documentação",
+    "status_recomendado": "opcional"
+  },
+  {
+    "scenario_id": "reforma_2027",
+    "nome": "Início CBS/IS",
+    "ano_base": 2027,
+    "regime": "transição",
+    "o_que_muda": "PIS/Cofins saem; CBS e IS entram quando aplicáveis; ICMS/ISS seguem",
+    "empresa_1_uso": "Aplicar se houver PIS/Cofins no modelo",
+    "empresa_2_uso": "Aplicar se houver camada federal no workbook",
+    "externo_uso": "Receita + LC 214",
+    "saida_esperada": "Cenário curto prazo",
+    "status_recomendado": "bom para texto, não foco"
+  },
+  {
+    "scenario_id": "reforma_2030",
+    "nome": "Meio de transição ICMS/ISS -> IBS",
+    "ano_base": 2030,
+    "regime": "transição",
+    "o_que_muda": "20% IBS / 80% ICMS-ISS",
+    "empresa_1_uso": "Fiscal misto com 20% destino",
+    "empresa_2_uso": "Fiscal misto com 20% destino",
+    "externo_uso": "Receita Federal",
+    "saida_esperada": "Entender mudança gradual de incentivo",
+    "status_recomendado": "recomendado"
+  },
+  {
+    "scenario_id": "reforma_2033",
+    "nome": "Regime novo integral",
+    "ano_base": 2033,
+    "regime": "novo_integral",
+    "o_que_muda": "100% IBS/CBS/IS aplicável; ICMS/ISS extintos",
+    "empresa_1_uso": "Fiscal por destino/consumo, sem efeito de origem atual",
+    "empresa_2_uso": "Substitui camada fiscal atual por lógica nova parametrizada",
+    "externo_uso": "Receita + LC 214 + EC 132",
+    "saida_esperada": "Comparação central contra baseline",
+    "status_recomendado": "obrigatório"
+  },
+  {
+    "scenario_id": "sem_efeito_tributario",
+    "nome": "Logística pura",
+    "ano_base": 2026,
+    "regime": "contrafactual",
+    "o_que_muda": "Remove camada fiscal para isolar transporte/estoque/armaz.",
+    "empresa_1_uso": "Testa custo logístico puro",
+    "empresa_2_uso": "Testa custo logístico puro",
+    "externo_uso": "Nenhum",
+    "saida_esperada": "Separar ganho logístico de ganho fiscal",
+    "status_recomendado": "recomendado"
+  }
+]

@@ -1,0 +1,2 @@
+tenant_id,inventory_id,node_id,product_id,period,stock_units,stock_kg,coverage_days,inventory_value_brl,source_confidence,source_ref
+empresa_1,e1_inventory_proxy_placeholder,,,,,,,,proxy_other_company,Empresa 2 quando necessário; ainda não observado na Empresa 1

@@ -1,0 +1,32 @@
+[
+  {
+    "test": "raw_is_read_only",
+    "status": "pass",
+    "notes": "Arquivos brutos copiados para data/raw; não editar."
+  },
+  {
+    "test": "tenant_manifest_valid",
+    "status": "pass",
+    "notes": "Manifesto criado."
+  },
+  {
+    "test": "source_map_complete_initial",
+    "status": "pass",
+    "notes": "Campos críticos mapeados; revisar após refinamento tributário."
+  },
+  {
+    "test": "canonical_schema_valid_initial",
+    "status": "pass",
+    "notes": "Tabelas canônicas criadas no padrão inicial."
+  },
+  {
+    "test": "tax_scenario_bridge_valid",
+    "status": "pass",
+    "notes": "Cenários baseline, 2027, 2030 e 2033 criados."
+  },
+  {
+    "test": "legal_tax_review",
+    "status": "pending",
+    "notes": "Camada tributária é simulação, não parecer jurídico."
+  }
+]

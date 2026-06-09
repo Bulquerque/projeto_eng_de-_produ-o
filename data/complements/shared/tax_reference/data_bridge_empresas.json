@@ -1,0 +1,92 @@
+[
+  {
+    "bloco_modelo": "Demanda / peso / faturamento",
+    "empresa_1_fonte": "Dados de Demanda.xlsx",
+    "empresa_2_fonte": "Faturamento_UF se necessário para Empresa 2",
+    "fonte_externa": null,
+    "prioridade_uso": "Empresa própria",
+    "decisao_final": "Usar cada empresa no seu contexto; não misturar faturamento/peso entre empresas.",
+    "alerta": "Faturamento não substitui peso logístico."
+  },
+  {
+    "bloco_modelo": "Distância / frete por kg",
+    "empresa_1_fonte": "Dados de Distância.xlsx",
+    "empresa_2_fonte": "Dados_Roteamento / custos de distribuição/transferência",
+    "fonte_externa": null,
+    "prioridade_uso": "Empresa própria; outra empresa como proxy controlado",
+    "decisao_final": "Se faltar frete, usar proxy documentado e não média global sem rota.",
+    "alerta": "Preservar origem-destino."
+  },
+  {
+    "bloco_modelo": "Armazenagem",
+    "empresa_1_fonte": "Premissas Gerais.xlsx",
+    "empresa_2_fonte": "Aux_Custo_Armaz / Parâmetros",
+    "fonte_externa": null,
+    "prioridade_uso": "Empresa própria; Empresa 2 como metodologia",
+    "decisao_final": "Aplicar custo interno quando houver; Empresa 2 ajuda estrutura de cálculo.",
+    "alerta": "Unidade R$/kg/mês precisa ficar explícita."
+  },
+  {
+    "bloco_modelo": "Estoque / WOC / cobertura",
+    "empresa_1_fonte": "Ausente ou parcial, usar se existir",
+    "empresa_2_fonte": "Estoque / Parâmetros",
+    "fonte_externa": "Não buscar externo no primeiro ciclo",
+    "prioridade_uso": "Empresa 2 como proxy/metodologia",
+    "decisao_final": "Se aplicado à Empresa 1, marcar como proxy_empresa2.",
+    "alerta": "Não tratar WOC proxy como observado da Empresa 1."
+  },
+  {
+    "bloco_modelo": "Custo total",
+    "empresa_1_fonte": "Calculado a partir de frete + armaz. + estoque + fiscal",
+    "empresa_2_fonte": "Cenários / Dados_Roteamento",
+    "fonte_externa": "Não buscar externo",
+    "prioridade_uso": "Empresa 2 como benchmark de estrutura",
+    "decisao_final": "Baseline deve fechar antes de rodar cenário.",
+    "alerta": "Evitar dupla contagem de frete."
+  },
+  {
+    "bloco_modelo": "Tributário atual",
+    "empresa_1_fonte": "Ausente/parcial",
+    "empresa_2_fonte": "Dados_Tributário / ICMS atual",
+    "fonte_externa": "Res. Senado 22/1989, Res. 13/2012, LC 87/1996, LC 190/2022",
+    "prioridade_uso": "Empresa 2 + externo oficial",
+    "decisao_final": "Criar matriz fiscal parametrizada e rastreável.",
+    "alerta": "Benefício fiscal específico precisa fonte/hipótese."
+  },
+  {
+    "bloco_modelo": "Reforma tributária",
+    "empresa_1_fonte": "Não vem da empresa",
+    "empresa_2_fonte": "Aplicar sobre base fiscal atual",
+    "fonte_externa": "Receita, Fazenda, EC 132, LC 214",
+    "prioridade_uso": "Externo oficial",
+    "decisao_final": "Criar cenários 2026, 2027, 2030 e 2033.",
+    "alerta": "Objetivo central do projeto."
+  },
+  {
+    "bloco_modelo": "Geografia/cadastro",
+    "empresa_1_fonte": "Centroide/lat-long da Empresa 1",
+    "empresa_2_fonte": "Lat & Long / Dados_Brasil",
+    "fonte_externa": "IBGE Malha Municipal",
+    "prioridade_uso": "Empresa primeiro; IBGE validação",
+    "decisao_final": "Usar IBGE para padronização e checagem de join.",
+    "alerta": "Não trocar coordenada interna sem motivo."
+  },
+  {
+    "bloco_modelo": "Selic/WACC",
+    "empresa_1_fonte": "WACC em Premissas Gerais",
+    "empresa_2_fonte": "Parâmetros WACC",
+    "fonte_externa": "BCB Selic SGS 11",
+    "prioridade_uso": "Empresa primeiro; Selic só sensibilidade",
+    "decisao_final": "Não substituir WACC interno sem decisão do grupo.",
+    "alerta": "Converter anual/mensal corretamente."
+  },
+  {
+    "bloco_modelo": "Diesel/ANTT",
+    "empresa_1_fonte": "Frete interno existente",
+    "empresa_2_fonte": "Frete/custos internos existentes",
+    "fonte_externa": "ANP/ANTT",
+    "prioridade_uso": "Baixa prioridade",
+    "decisao_final": "Usar apenas como validação/sensibilidade.",
+    "alerta": "Não forçar variável externa."
+  }
+]

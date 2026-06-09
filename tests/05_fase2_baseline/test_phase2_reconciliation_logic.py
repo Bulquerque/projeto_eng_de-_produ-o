@@ -1,13 +1,15 @@
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tests.crypto_helpers import NODE_DECRYPT_HELPER
 
 ROOT = Path(__file__).resolve().parents[2]
 
-code = NODE_DECRYPT_HELPER + r'''
+code = (
+    NODE_DECRYPT_HELPER
+    + r"""
 import {buildBundleReconciliation} from './assets/js/shared/reconciliation-engine.js';
 for (const companyId of ['empresa1','empresa2']) {
   const bundle = decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
@@ -22,7 +24,8 @@ for (const companyId of ['empresa1','empresa2']) {
   }
 }
 console.log('PHASE2_RECONCILIATION_OK');
-'''
+"""
+)
 
 result = subprocess.run(
     ['node', '--input-type=module', '-e', code],

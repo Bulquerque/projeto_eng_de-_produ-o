@@ -1,0 +1,18 @@
+[
+  {
+    "tenant_id": "empresa_1",
+    "proxy_id": "proxy_other_company_if_missing",
+    "field_scope": "inventory/freight/tax_as_needed",
+    "proxy_source": "empresa_2",
+    "allowed": true,
+    "limitation": "Usar como hipótese controlada, nunca como observado."
+  },
+  {
+    "tenant_id": "empresa_1",
+    "proxy_id": "external_official_tax",
+    "field_scope": "tax_reform/current_icms_reference",
+    "proxy_source": "official_sources",
+    "allowed": true,
+    "limitation": "Usar para simulação; validar regras específicas."
+  }
+]

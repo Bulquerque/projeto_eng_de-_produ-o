@@ -1,0 +1,114 @@
+[
+  {
+    "campo": "scenario_id",
+    "tipo": "texto",
+    "obrigatorio": "sim",
+    "fonte_preferencial": "simulador",
+    "descricao": "Identificador único do cenário.",
+    "validacao": "Não nulo; sem espaços."
+  },
+  {
+    "campo": "empresa",
+    "tipo": "texto",
+    "obrigatorio": "sim",
+    "fonte_preferencial": "simulador",
+    "descricao": "Empresa 1 ou Empresa 2.",
+    "validacao": "Valores permitidos: empresa1, empresa2."
+  },
+  {
+    "campo": "ano_cenario",
+    "tipo": "inteiro",
+    "obrigatorio": "sim",
+    "fonte_preferencial": "timeline reforma",
+    "descricao": "Ano de simulação fiscal.",
+    "validacao": "Entre 2026 e 2033 para reforma."
+  },
+  {
+    "campo": "uf_origem",
+    "tipo": "texto",
+    "obrigatorio": "sim",
+    "fonte_preferencial": "rota",
+    "descricao": "UF de origem/fábrica/CD.",
+    "validacao": "Deve existir em uf_reference."
+  },
+  {
+    "campo": "uf_cd",
+    "tipo": "texto",
+    "obrigatorio": "condicional",
+    "fonte_preferencial": "rota/cenário",
+    "descricao": "UF do centro de distribuição escolhido.",
+    "validacao": "Deve existir em uf_reference; pode ser origem intermediária."
+  },
+  {
+    "campo": "uf_destino",
+    "tipo": "texto",
+    "obrigatorio": "sim",
+    "fonte_preferencial": "demanda/roteamento",
+    "descricao": "UF do cliente/mercado.",
+    "validacao": "Deve existir em uf_reference."
+  },
+  {
+    "campo": "peso_kg",
+    "tipo": "numérico",
+    "obrigatorio": "sim empresa1",
+    "fonte_preferencial": "Dados de Demanda",
+    "descricao": "Peso alocado à rota.",
+    "validacao": ">=0."
+  },
+  {
+    "campo": "frete_rs_kg",
+    "tipo": "numérico",
+    "obrigatorio": "sim empresa1",
+    "fonte_preferencial": "Dados de Distância",
+    "descricao": "Frete por kg da rota.",
+    "validacao": ">=0; unidade documentada."
+  },
+  {
+    "campo": "custo_armazenagem_rs_kg_mes",
+    "tipo": "numérico",
+    "obrigatorio": "sim se estoque",
+    "fonte_preferencial": "Premissas/Empresa2",
+    "descricao": "Custo de armazenagem por kg/mês.",
+    "validacao": ">=0; unidade explícita."
+  },
+  {
+    "campo": "woc_dias",
+    "tipo": "numérico",
+    "obrigatorio": "condicional",
+    "fonte_preferencial": "Empresa2 / proxy",
+    "descricao": "Cobertura/dias de estoque.",
+    "validacao": "Marcar proxy se vier de outra empresa."
+  },
+  {
+    "campo": "icms_atual",
+    "tipo": "numérico",
+    "obrigatorio": "condicional",
+    "fonte_preferencial": "Empresa2/external",
+    "descricao": "Alíquota/efeito ICMS atual da rota.",
+    "validacao": "Fonte e tipo de operação documentados."
+  },
+  {
+    "campo": "ibs_weight",
+    "tipo": "numérico",
+    "obrigatorio": "sim reforma",
+    "fonte_preferencial": "reform_timeline",
+    "descricao": "Peso do regime novo na transição.",
+    "validacao": "0 a 1."
+  },
+  {
+    "campo": "current_tax_weight",
+    "tipo": "numérico",
+    "obrigatorio": "sim reforma",
+    "fonte_preferencial": "reform_timeline",
+    "descricao": "Peso do regime atual na transição.",
+    "validacao": "0 a 1."
+  },
+  {
+    "campo": "source_confidence",
+    "tipo": "texto",
+    "obrigatorio": "sim",
+    "fonte_preferencial": "catálogo",
+    "descricao": "interno, proxy_empresa2, externo_oficial, hipotese.",
+    "validacao": "Não aceitar vazio."
+  }
+]
