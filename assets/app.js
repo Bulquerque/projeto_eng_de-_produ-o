@@ -51,6 +51,20 @@ const PHASE2_MANUAL_CHECKS = [
   { id: 'fase2_no_mix', label: 'Conferi que as empresas não se misturam', detail: 'Dados da Empresa 1 e 2 precisam ficar separados.' }
 ];
 
+function isHttpRuntime() {
+  return window.location.protocol === 'http:' || window.location.protocol === 'https:';
+}
+
+function showRuntimeWarning(message) {
+  const warning = document.getElementById('runtimeWarning');
+  if (warning) warning.removeAttribute('hidden');
+  const heroStatus = $('heroStatus');
+  if (heroStatus) {
+    heroStatus.textContent = message;
+    heroStatus.className = 'status-chip status-error';
+  }
+}
+
 function readSharedDebugEntries() {
   return readStorageJSON('local', SHARED_DEBUG_FEED_KEY, []);
 }
@@ -730,7 +744,10 @@ function bindEvents() {
 
 async function init() {
   try {
-    requireHttpRuntime('O simulador');
+    if (!isHttpRuntime()) {
+      showRuntimeWarning('abra este pacote por HTTP/HTTPS');
+      return;
+    }
     log('Carregando arquivos principais da Fase 1');
     const [catalog, proof, quality, finalAudit, pathAudit, phaseTests, workbookCsv] = await Promise.all([
       fetchJson(PATHS.catalog),
@@ -773,8 +790,7 @@ async function init() {
       if (event.key === SHARED_DEBUG_FEED_KEY) renderSharedDebugFeed();
     });
   } catch (error) {
-    $('heroStatus').textContent = 'erro ao carregar';
-    $('heroStatus').className = 'status-chip status-error';
+    showRuntimeWarning('erro ao carregar');
     appendSharedDebugEntry({ phase: 'phase1', module: 'app', level: 'error', event: 'Erro crítico', detail: { message: error.message, stack: error.stack }, error });
     log('Erro crítico', { message: error.message, stack: error.stack });
     document.body.insertAdjacentHTML('beforeend', `<div class="card" style="margin:24px;color:#b42318"><h2>Erro ao carregar Fase 1</h2><pre>${escapeHtml(error.stack || error.message)}</pre></div>`);

@@ -116,7 +116,7 @@ main{max-width:1320px;margin:0 auto;padding:34px clamp(18px,4vw,48px)}
 .debug-console{background:#022a30;color:#d9fff1;border-radius:18px;padding:18px;min-height:90px;overflow:auto;white-space:pre-wrap;box-shadow:var(--shadow);max-width:100%}.footer{padding:28px clamp(18px,4vw,48px);text-align:center;color:#607276;border-top:1px solid var(--vg-line)}
 
 @media (max-width:920px){.hero-grid,.company-panel,.two-column-grid{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-wrap:wrap}.topbar > div:first-of-type{flex:1 1 100%}.topbar-actions{margin-left:0;max-width:100%;width:100%;flex-wrap:wrap}.row-heading{display:block}.company-toggle{margin-top:14px}.panel-toolbar{display:block}.panel-toolbar button{margin-top:10px}.hero-copy h2{font-size:42px}}
-@media (max-width:560px){main{padding-inline:16px}.hero{padding-inline:16px}.topbar-actions{width:100%;max-width:100%;contain:paint}.metric-grid{grid-template-columns:1fr}.mini-metrics{grid-template-columns:1fr}.hero-actions button{width:100%}}
+@media (max-width:560px){main{padding-inline:16px}.hero{padding-inline:16px}.topbar-actions{width:100%;max-width:100%;contain:paint;flex-wrap:wrap}.topbar-actions a{flex:1 1 100%;white-space:normal}.metric-grid{grid-template-columns:1fr}.mini-metrics{grid-template-columns:1fr}.hero-actions button{width:100%}}
 .check-list{min-width:0}.check-item{min-width:0}
 @media (max-width:560px){.check-item{grid-template-columns:1fr}.check-result{justify-self:start}}
 .palette-row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.palette-row span{display:inline-block;width:32px;height:32px;border-radius:10px;border:1px solid rgba(0,0,0,.12);box-shadow:0 4px 14px rgba(0,0,0,.08)}

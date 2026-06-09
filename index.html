@@ -13,6 +13,22 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <div class="alert-box error runtime-warning" id="runtimeWarning" hidden>
+    <strong>Abra este pacote por HTTP/HTTPS</strong>
+    <p>
+      Os módulos deste site carregam JSON e CSV com <code>fetch()</code>. Se você abrir o arquivo
+      direto do disco, o navegador bloqueia esses carregamentos e a interface não inicializa.
+    </p>
+    <p class="small-note">
+      Use <code>python -m http.server 8000</code> na pasta do projeto e acesse
+      <code>http://localhost:8000/</code>.
+    </p>
+  </div>
+  <script>
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') {
+      document.getElementById('runtimeWarning')?.removeAttribute('hidden');
+    }
+  </script>
 
   <header class="hero" id="topo">
     <nav class="topbar" aria-label="Navegação principal">
