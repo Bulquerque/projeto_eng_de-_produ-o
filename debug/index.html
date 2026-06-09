@@ -12,6 +12,21 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <div class="alert-box error runtime-warning" id="runtimeWarning" hidden>
+    <strong>Abra este pacote por HTTP/HTTPS</strong>
+    <p>
+      O Debug Center também depende de arquivos JSON/CSV carregados via navegador. Abrir o HTML
+      direto do disco bloqueia esses fetches.
+    </p>
+    <p class="small-note">
+      Use <code>python -m http.server 8000</code> e acesse <code>http://localhost:8000/debug/</code>.
+    </p>
+  </div>
+  <script>
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') {
+      document.getElementById('runtimeWarning')?.removeAttribute('hidden');
+    }
+  </script>
 
   <header class="hero">
     <nav class="topbar" aria-label="Navegação técnica">

@@ -4,10 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Diagnóstico inicial</title>
+  <link rel="stylesheet" href="../assets/styles.css">
   <meta http-equiv="refresh" content="0; url=../index.html#/diagnostico-baseline">
   <link rel="canonical" href="../index.html#/diagnostico-baseline">
 </head>
 <body>
+  <div class="alert-box error runtime-warning" id="runtimeWarning" hidden>
+    <strong>Abra este pacote por HTTP/HTTPS</strong>
+    <p>
+      Esta página de redirecionamento funciona melhor servida por HTTP. Abrir o HTML direto do
+      disco pode impedir o navegador de completar o redirecionamento corretamente.
+    </p>
+  </div>
+  <script>
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') {
+      document.getElementById('runtimeWarning')?.removeAttribute('hidden');
+    }
+  </script>
   <p>Redirecionando para <a href="../index.html#/diagnostico-baseline">a jornada de diagnóstico</a>.</p>
 </body>
 </html>
