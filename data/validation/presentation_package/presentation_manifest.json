@@ -1,0 +1,522 @@
+{
+  "generated_from": "local_presentation_capture",
+  "screenshots": [
+    {
+      "name": "01_empresa1_reform_2027_custo_controlado",
+      "company_id": "empresa1",
+      "company_label": "Empresa 1",
+      "tax_mode": "reform_2027",
+      "tax_label": "2027 (CBS plena)",
+      "objective_title": "Custo controlado",
+      "weights": {
+        "total_cost": 30,
+        "service_quality": 25,
+        "operational_risk": 20,
+        "tax_impact": 15,
+        "inventory_efficiency": 10
+      },
+      "top_ranking_rows": [
+        [
+          "Candidato 001 · 15 CD(s) · refino 1-demand_0_95",
+          "80.0",
+          "2027-2028, CBS em vigor",
+          "R$ 39,2 mi",
+          "low",
+          "15"
+        ],
+        [
+          "Candidato 541 · 14 CD(s) · refino 1-demand_0_95",
+          "79.7",
+          "2027-2028, CBS em vigor",
+          "R$ 39,02 mi",
+          "low",
+          "14"
+        ],
+        [
+          "Candidato 001 · 15 CD(s) · refino 1-inventory_m15",
+          "79.7",
+          "2027-2028, CBS em vigor",
+          "R$ 39,69 mi",
+          "low",
+          "15"
+        ]
+      ],
+      "top_tradeoff_rows": [
+        [
+          "Candidato 001 · 15 CD(s)",
+          "R$ 41,27 mi",
+          "90.0",
+          "não"
+        ],
+        [
+          "Candidato 002 · 15 CD(s)",
+          "R$ 43,44 mi",
+          "90.0",
+          "não"
+        ],
+        [
+          "Candidato 003 · 15 CD(s)",
+          "R$ 45,61 mi",
+          "90.0",
+          "não"
+        ]
+      ],
+      "console_errors": [],
+      "page_errors": [],
+      "request_failures": []
+    },
+    {
+      "name": "02_empresa1_reform_2027_mais_alcance",
+      "company_id": "empresa1",
+      "company_label": "Empresa 1",
+      "tax_mode": "reform_2027",
+      "tax_label": "2027 (CBS plena)",
+      "objective_title": "Mais alcance",
+      "weights": {
+        "total_cost": 20,
+        "service_quality": 45,
+        "operational_risk": 15,
+        "tax_impact": 10,
+        "inventory_efficiency": 10
+      },
+      "top_ranking_rows": [
+        [
+          "Candidato 001 · 15 CD(s) · refino 1-inventory_m15",
+          "86.4",
+          "2027-2028, CBS em vigor",
+          "R$ 39,69 mi",
+          "low",
+          "15"
+        ],
+        [
+          "Candidato 001 · 15 CD(s) · refino 1-demand_0_95",
+          "86.3",
+          "2027-2028, CBS em vigor",
+          "R$ 39,2 mi",
+          "low",
+          "15"
+        ],
+        [
+          "Candidato 541 · 14 CD(s) · refino 1-inventory_m15",
+          "85.7",
+          "2027-2028, CBS em vigor",
+          "R$ 39,5 mi",
+          "low",
+          "14"
+        ]
+      ],
+      "top_tradeoff_rows": [
+        [
+          "Candidato 001 · 15 CD(s)",
+          "R$ 41,27 mi",
+          "90.0",
+          "não"
+        ],
+        [
+          "Candidato 002 · 15 CD(s)",
+          "R$ 43,44 mi",
+          "90.0",
+          "não"
+        ],
+        [
+          "Candidato 003 · 15 CD(s)",
+          "R$ 45,61 mi",
+          "90.0",
+          "não"
+        ]
+      ],
+      "console_errors": [],
+      "page_errors": [],
+      "request_failures": []
+    },
+    {
+      "name": "03_empresa1_reform_2033_custo_controlado",
+      "company_id": "empresa1",
+      "company_label": "Empresa 1",
+      "tax_mode": "reform_2033",
+      "tax_label": "2033 (Regime pleno)",
+      "objective_title": "Custo controlado",
+      "weights": {
+        "total_cost": 30,
+        "service_quality": 25,
+        "operational_risk": 20,
+        "tax_impact": 15,
+        "inventory_efficiency": 10
+      },
+      "top_ranking_rows": [
+        [
+          "Candidato 001 · 15 CD(s) · refino 1-demand_0_95",
+          "63.3",
+          "2033, regime integral",
+          "R$ 137,17 mi",
+          "low",
+          "15"
+        ],
+        [
+          "Candidato 010 · 15 CD(s) · refino 1-demand_0_95",
+          "63.2",
+          "2033, regime integral",
+          "R$ 137,99 mi",
+          "low",
+          "15"
+        ],
+        [
+          "Candidato 019 · 15 CD(s) · refino 1-demand_0_95",
+          "63.0",
+          "2033, regime integral",
+          "R$ 138,81 mi",
+          "low",
+          "15"
+        ]
+      ],
+      "top_tradeoff_rows": [
+        [
+          "Candidato 001 · 15 CD(s)",
+          "R$ 144,38 mi",
+          "90.0",
+          "não"
+        ],
+        [
+          "Candidato 002 · 15 CD(s)",
+          "R$ 151,98 mi",
+          "90.0",
+          "não"
+        ],
+        [
+          "Candidato 003 · 15 CD(s)",
+          "R$ 159,58 mi",
+          "90.0",
+          "não"
+        ]
+      ],
+      "console_errors": [],
+      "page_errors": [],
+      "request_failures": []
+    },
+    {
+      "name": "04_empresa1_reform_2033_mais_alcance",
+      "company_id": "empresa1",
+      "company_label": "Empresa 1",
+      "tax_mode": "reform_2033",
+      "tax_label": "2033 (Regime pleno)",
+      "objective_title": "Mais alcance",
+      "weights": {
+        "total_cost": 20,
+        "service_quality": 45,
+        "operational_risk": 15,
+        "tax_impact": 10,
+        "inventory_efficiency": 10
+      },
+      "top_ranking_rows": [
+        [
+          "Candidato 001 · 15 CD(s) · refino 1-demand_0_95",
+          "75.1",
+          "2033, regime integral",
+          "R$ 137,17 mi",
+          "low",
+          "15"
+        ],
+        [
+          "Candidato 010 · 15 CD(s) · refino 1-demand_0_95",
+          "75.1",
+          "2033, regime integral",
+          "R$ 137,99 mi",
+          "low",
+          "15"
+        ],
+        [
+          "Candidato 019 · 15 CD(s) · refino 1-demand_0_95",
+          "75.0",
+          "2033, regime integral",
+          "R$ 138,81 mi",
+          "low",
+          "15"
+        ]
+      ],
+      "top_tradeoff_rows": [
+        [
+          "Candidato 001 · 15 CD(s)",
+          "R$ 144,38 mi",
+          "90.0",
+          "não"
+        ],
+        [
+          "Candidato 002 · 15 CD(s)",
+          "R$ 151,98 mi",
+          "90.0",
+          "não"
+        ],
+        [
+          "Candidato 003 · 15 CD(s)",
+          "R$ 159,58 mi",
+          "90.0",
+          "não"
+        ]
+      ],
+      "console_errors": [],
+      "page_errors": [],
+      "request_failures": []
+    },
+    {
+      "name": "05_empresa2_reform_2027_custo_controlado",
+      "company_id": "empresa2",
+      "company_label": "Empresa 2",
+      "tax_mode": "reform_2027",
+      "tax_label": "2027 (CBS plena)",
+      "objective_title": "Custo controlado",
+      "weights": {
+        "total_cost": 30,
+        "service_quality": 25,
+        "operational_risk": 20,
+        "tax_impact": 15,
+        "inventory_efficiency": 10
+      },
+      "top_ranking_rows": [
+        [
+          "Candidato 325 · 2 CD(s) · refino 1-demand_0_95",
+          "92.9",
+          "2027-2028, CBS em vigor",
+          "R$ 37,62 mi",
+          "medium",
+          "2"
+        ],
+        [
+          "Candidato 334 · 2 CD(s) · refino 1-demand_0_95",
+          "92.1",
+          "2027-2028, CBS em vigor",
+          "R$ 38,11 mi",
+          "medium",
+          "2"
+        ],
+        [
+          "Candidato 253 · 3 CD(s) · refino 1-demand_0_95",
+          "92.0",
+          "2027-2028, CBS em vigor",
+          "R$ 38,13 mi",
+          "medium",
+          "3"
+        ]
+      ],
+      "top_tradeoff_rows": [
+        [
+          "Candidato 001 · 4 CD(s)",
+          "R$ 42,9 mi",
+          "75.0",
+          "não"
+        ],
+        [
+          "Candidato 002 · 4 CD(s)",
+          "R$ 45,15 mi",
+          "75.0",
+          "não"
+        ],
+        [
+          "Candidato 003 · 4 CD(s)",
+          "R$ 47,41 mi",
+          "75.0",
+          "não"
+        ]
+      ],
+      "console_errors": [],
+      "page_errors": [],
+      "request_failures": []
+    },
+    {
+      "name": "06_empresa2_reform_2027_mais_alcance",
+      "company_id": "empresa2",
+      "company_label": "Empresa 2",
+      "tax_mode": "reform_2027",
+      "tax_label": "2027 (CBS plena)",
+      "objective_title": "Mais alcance",
+      "weights": {
+        "total_cost": 20,
+        "service_quality": 45,
+        "operational_risk": 15,
+        "tax_impact": 10,
+        "inventory_efficiency": 10
+      },
+      "top_ranking_rows": [
+        [
+          "Candidato 325 · 2 CD(s) · refino 1-demand_0_95",
+          "94.4",
+          "2027-2028, CBS em vigor",
+          "R$ 37,62 mi",
+          "medium",
+          "2"
+        ],
+        [
+          "Candidato 334 · 2 CD(s) · refino 1-demand_0_95",
+          "93.9",
+          "2027-2028, CBS em vigor",
+          "R$ 38,11 mi",
+          "medium",
+          "2"
+        ],
+        [
+          "Candidato 253 · 3 CD(s) · refino 1-demand_0_95",
+          "93.9",
+          "2027-2028, CBS em vigor",
+          "R$ 38,13 mi",
+          "medium",
+          "3"
+        ]
+      ],
+      "top_tradeoff_rows": [
+        [
+          "Candidato 001 · 4 CD(s)",
+          "R$ 42,9 mi",
+          "75.0",
+          "não"
+        ],
+        [
+          "Candidato 002 · 4 CD(s)",
+          "R$ 45,15 mi",
+          "75.0",
+          "não"
+        ],
+        [
+          "Candidato 003 · 4 CD(s)",
+          "R$ 47,41 mi",
+          "75.0",
+          "não"
+        ]
+      ],
+      "console_errors": [],
+      "page_errors": [],
+      "request_failures": []
+    },
+    {
+      "name": "07_empresa2_reform_2033_custo_controlado",
+      "company_id": "empresa2",
+      "company_label": "Empresa 2",
+      "tax_mode": "reform_2033",
+      "tax_label": "2033 (Regime pleno)",
+      "objective_title": "Custo controlado",
+      "weights": {
+        "total_cost": 30,
+        "service_quality": 25,
+        "operational_risk": 20,
+        "tax_impact": 15,
+        "inventory_efficiency": 10
+      },
+      "top_ranking_rows": [
+        [
+          "Candidato 325 · 2 CD(s) · refino 1-demand_0_95",
+          "61.1",
+          "2033, regime integral",
+          "R$ 71,04 mi",
+          "medium",
+          "2"
+        ],
+        [
+          "Candidato 334 · 2 CD(s) · refino 1-demand_0_95",
+          "60.9",
+          "2033, regime integral",
+          "R$ 71,53 mi",
+          "medium",
+          "2"
+        ],
+        [
+          "Candidato 253 · 3 CD(s) · refino 1-demand_0_95",
+          "60.9",
+          "2033, regime integral",
+          "R$ 71,55 mi",
+          "medium",
+          "3"
+        ]
+      ],
+      "top_tradeoff_rows": [
+        [
+          "Candidato 001 · 4 CD(s)",
+          "R$ 78,07 mi",
+          "65.0",
+          "não"
+        ],
+        [
+          "Candidato 002 · 4 CD(s)",
+          "R$ 82,18 mi",
+          "65.0",
+          "não"
+        ],
+        [
+          "Candidato 003 · 4 CD(s)",
+          "R$ 86,29 mi",
+          "65.0",
+          "não"
+        ]
+      ],
+      "console_errors": [],
+      "page_errors": [],
+      "request_failures": []
+    },
+    {
+      "name": "08_empresa2_reform_2033_mais_alcance",
+      "company_id": "empresa2",
+      "company_label": "Empresa 2",
+      "tax_mode": "reform_2033",
+      "tax_label": "2033 (Regime pleno)",
+      "objective_title": "Mais alcance",
+      "weights": {
+        "total_cost": 20,
+        "service_quality": 45,
+        "operational_risk": 15,
+        "tax_impact": 10,
+        "inventory_efficiency": 10
+      },
+      "top_ranking_rows": [
+        [
+          "Candidato 325 · 2 CD(s) · refino 1-demand_0_95",
+          "65.1",
+          "2033, regime integral",
+          "R$ 71,04 mi",
+          "medium",
+          "2"
+        ],
+        [
+          "Candidato 334 · 2 CD(s) · refino 1-demand_0_95",
+          "65.0",
+          "2033, regime integral",
+          "R$ 71,53 mi",
+          "medium",
+          "2"
+        ],
+        [
+          "Candidato 253 · 3 CD(s) · refino 1-demand_0_95",
+          "65.0",
+          "2033, regime integral",
+          "R$ 71,55 mi",
+          "medium",
+          "3"
+        ]
+      ],
+      "top_tradeoff_rows": [
+        [
+          "Candidato 001 · 4 CD(s)",
+          "R$ 78,07 mi",
+          "65.0",
+          "não"
+        ],
+        [
+          "Candidato 002 · 4 CD(s)",
+          "R$ 82,18 mi",
+          "65.0",
+          "não"
+        ],
+        [
+          "Candidato 003 · 4 CD(s)",
+          "R$ 86,29 mi",
+          "65.0",
+          "não"
+        ]
+      ],
+      "console_errors": [],
+      "page_errors": [],
+      "request_failures": []
+    }
+  ],
+  "notes": [
+    "Custo controlado: perfil mais próximo do otimizador puro e focado em custo/eficiência.",
+    "Mais alcance: ajuste dos pesos para privilegiar qualidade de serviço e robustez, aceitando um custo um pouco maior quando a fronteira de trade-off compensa.",
+    "As duas reformas mostradas são 2027 e 2033, para as duas empresas do modelo."
+  ]
+}

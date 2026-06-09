@@ -105,7 +105,33 @@ export async function loadPhase2Bundle(companyId) {
       };
 
       if (companyId === 'empresa1') {
-        await loadCore('distance_matrix', 'distance_matrix.json');
+        await Promise.all([
+          loadCore('distance_matrix', 'distance_matrix.json'),
+          (async () => {
+            try {
+              bundle.core_data.aux_custo_transferencia = await fetchEncryptedJson(
+                'data/empresa2/core/aux_custo_transferencia.json'
+              );
+            } catch (e) {
+              console.warn(
+                '[data-loader] Could not load proxy aux_custo_transferencia for Empresa 1:',
+                e.message
+              );
+            }
+          })(),
+          (async () => {
+            try {
+              bundle.core_data.tax_data = await fetchJson(
+                'data/complements/shared/tax_reference/icms_interstate_matrix.json'
+              );
+            } catch (e) {
+              console.warn(
+                '[data-loader] Could not load proxy icms_interstate_matrix for Empresa 1:',
+                e.message
+              );
+            }
+          })(),
+        ]);
       } else if (companyId === 'empresa2') {
         await Promise.all([
           loadCore('lat_long', 'lat_long.json'),

@@ -21,7 +21,8 @@ export function calculateLegacyTax({
 } = {}) {
   const totalTax = n(baseTaxBlock.total_tax_impact, 0);
   const totalRevenue = fiscalFlows.reduce((sum, flow) => sum + n(flow.gross_revenue), 0);
-  const referenceRate = totalRevenue > 0 ? totalTax / totalRevenue : 0.18;
+  const isEmpresa1 = baselineBundle?.model?.company_id === 'empresa1';
+  const referenceRate = totalRevenue > 0 && totalTax > 0 ? totalTax / totalRevenue : 0.18;
 
   const taxData = baselineBundle?.core_data?.tax_data || [];
   const hasDetailedTax = Array.isArray(taxData) && taxData.length > 0;
@@ -30,7 +31,28 @@ export function calculateLegacyTax({
     const grossRevenue = n(flow.gross_revenue);
     let legacy = 0;
 
-    if (hasDetailedTax) {
+    if (isEmpresa1 && hasDetailedTax) {
+      const originUf = String(flow.origin_uf || '')
+        .trim()
+        .toUpperCase();
+      const destUf = String(flow.destination_uf || '')
+        .trim()
+        .toUpperCase();
+      const match = taxData.find(
+        (row) =>
+          String(row.uf_origem || '')
+            .trim()
+            .toUpperCase() === originUf &&
+          String(row.uf_destino || '')
+            .trim()
+            .toUpperCase() === destUf
+      );
+      const alq =
+        match && match.aliquota_icms_interestadual_base != null
+          ? n(match.aliquota_icms_interestadual_base)
+          : 0.18;
+      legacy = grossRevenue * alq * n(demandMultiplier, 1);
+    } else if (hasDetailedTax) {
       // Look for a match in tax_data (dados_tributario)
       const match = taxData.find(
         (row) =>
