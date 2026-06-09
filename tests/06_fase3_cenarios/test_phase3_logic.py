@@ -39,7 +39,7 @@ for (const companyId of ['empresa1','empresa2']) {
     const fullResult = runScenario({companyId, scenario: fullScenario, baselineBundle: bundle});
     if ((fullResult.flow_summary.reallocated_flows || 0) !== 0) throw new Error('full baseline should not reallocate flows');
     if ((fullResult.flow_summary.uncovered_flows || 0) !== 0) throw new Error('full baseline should not uncover flows');
-    if (Math.abs(fullResult.costs.transfer_cost || 0) > 0.0001) throw new Error('full baseline should not create transfer cost');
+    if (Math.abs(fullResult.costs.transfer_cost || 0) < 0.0001) throw new Error('full baseline should create transfer cost');
   }
   const bad = buildScenarioFromForm({companyId, baselineBundle: bundle, formValues: {scenario_name:'bad', active_cds:[], freight_multiplier:-1, demand_multiplier:1, inventory_days:45, wacc:0.15, tax_mode:'current'}});
   const badValidation = validateScenario({companyId, scenario: bad, baselineBundle: bundle});

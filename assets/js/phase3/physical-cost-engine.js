@@ -35,10 +35,18 @@ function storageRatioCost(base, activeCds, baselineCds, dm) {
 }
 
 /** Heuristic baseline costs scaled by freight and demand multipliers. */
-function heuristicFallback(base, fm, dm) {
+function heuristicFallback(base, fm, dm, companyId = '') {
+  const baseDist = toNum(base.distribution_cost);
+  const baseTransfer = toNum(base.transfer_cost);
+  if (companyId === 'empresa1' && baseTransfer === 0) {
+    return {
+      transfer_cost: baseDist * fm * dm * 0.4,
+      distribution_cost: baseDist * fm * dm,
+    };
+  }
   return {
-    transfer_cost: toNum(base.transfer_cost) * fm * dm,
-    distribution_cost: toNum(base.distribution_cost) * fm * dm,
+    transfer_cost: baseTransfer * fm * dm,
+    distribution_cost: baseDist * fm * dm,
   };
 }
 
@@ -293,6 +301,36 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
       warnings.push('distance_matrix não disponível; usando fallback heurístico.');
 
     const freightMaps = buildFreightMapE1(matrix);
+
+    // Build transfer rate proxy maps using Empresa 2's transfer table
+    const transferTable = coreData.aux_custo_transferencia || [];
+    if (!transferTable.length) {
+      warnings.push(
+        'aux_custo_transferencia da Empresa 2 não carregada; usando fallback heurístico de 40% para transferência.'
+      );
+    }
+    const transferRateMap = buildTransferRateMapE2(transferTable);
+    const destTransferRateMap = {};
+    const destCounts = {};
+    let grandTotalRate = 0;
+    let rateCount = 0;
+    for (const [key, rate] of Object.entries(transferRateMap)) {
+      if (rate > 0) {
+        grandTotalRate += rate;
+        rateCount++;
+        const parts = key.split('→');
+        if (parts.length === 2) {
+          const destUf = parts[1];
+          destTransferRateMap[destUf] = (destTransferRateMap[destUf] || 0) + rate;
+          destCounts[destUf] = (destCounts[destUf] || 0) + 1;
+        }
+      }
+    }
+    const overallAverageRate = rateCount > 0 ? grandTotalRate / rateCount : 2.5;
+    for (const destUf in destTransferRateMap) {
+      destTransferRateMap[destUf] /= destCounts[destUf];
+    }
+
     let totalDist = 0;
     let totalTransfer = 0;
     let missingCount = 0;
@@ -301,8 +339,12 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
     for (const flow of rebuilt.flows) {
       const { cost, method, rate } = calcFlowFreightE1(flow, freightMaps, fm);
       const distCost = cost * dm;
-      // Reallocated flows carry an inbound transfer leg (≈40% of outbound).
-      const transferCost = flow.reallocation_status === 'reallocated' ? distCost * 0.4 : 0;
+
+      // Transfer rate lookup (destination UF of transfer leg = CD UF of distribution flow)
+      const cdUf = up(flow.cd_uf || flow.origin_uf || flow.cd || '').slice(0, 2);
+      const ratePerKg = destTransferRateMap[cdUf] || overallAverageRate;
+      const wKg = flowWeight(flow);
+      const transferCost = wKg > 0 && ratePerKg > 0 ? wKg * ratePerKg * fm * dm : distCost * 0.4;
 
       totalDist += distCost;
       totalTransfer += transferCost;
@@ -330,7 +372,8 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
       ({ transfer_cost: totalTransfer, distribution_cost: totalDist } = heuristicFallback(
         base,
         fm,
-        dm
+        dm,
+        companyId
       ));
     }
 
@@ -413,7 +456,8 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
       ({ transfer_cost: totalTransfer, distribution_cost: totalDist } = heuristicFallback(
         base,
         fm,
-        dm
+        dm,
+        companyId
       ));
     }
 
