@@ -3,6 +3,7 @@ import { decryptWithSession, installLockButton } from './crypto-session.js';
 import { assertCompanyPath, setActiveCompany } from './company-context.js';
 import { buildBundleReconciliation } from './reconciliation-engine.js';
 import { loadComplementPackage } from './complements.js';
+import { requireHttpRuntime } from './runtime-env.js';
 
 let encryptedManifest = null;
 
@@ -27,6 +28,7 @@ function isCompanyDataPath(path) {
 }
 
 async function fetchResource(path) {
+  requireHttpRuntime('Carregamento de dados');
   const response = await fetch(path, { cache: 'no-store' });
   if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
   return response;
@@ -43,6 +45,7 @@ export async function fetchText(path) {
 }
 
 export async function loadEncryptedManifest(prefix = '../') {
+  requireHttpRuntime('Manifesto criptografado');
   if (encryptedManifest) return encryptedManifest;
   const response = await fetch(`${prefix}data/encrypted_manifest.json`, { cache: 'no-store' });
   if (!response.ok)
@@ -77,6 +80,7 @@ async function fetchEncryptedJson(path) {
 
 let catalogCache = null;
 export async function loadCatalog() {
+  requireHttpRuntime('Catálogo do pacote');
   if (catalogCache) return catalogCache;
   catalogCache = await fetchJson('../data/catalog.json');
   return catalogCache;
