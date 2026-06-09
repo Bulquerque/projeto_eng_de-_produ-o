@@ -1,5 +1,6 @@
 import { requireHttpRuntime } from './runtime-env.js';
 import { readStorageJSON, writeStorageJSON } from './browser-storage.js';
+import { resolveProjectUrl } from './project-paths.js';
 
 export const DEBUG_LEVELS = Object.freeze({
   INFO: 'info',
@@ -161,7 +162,7 @@ export async function debugFetchJson(path, { phase = 'global', module = 'DataLoa
   debug.info('fetch:start', { path });
   try {
     requireHttpRuntime('Debug JSON');
-    const response = await fetch(path, { cache: 'no-store' });
+    const response = await fetch(resolveProjectUrl(path), { cache: 'no-store' });
     if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
     const data = await response.json();
     debug.success('fetch:success', {

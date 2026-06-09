@@ -4,32 +4,17 @@ import { assertCompanyPath, setActiveCompany } from './company-context.js';
 import { buildBundleReconciliation } from './reconciliation-engine.js';
 import { loadComplementPackage } from './complements.js';
 import { requireHttpRuntime } from './runtime-env.js';
+import { resolveProjectPath, resolveProjectUrl } from './project-paths.js';
 
 let encryptedManifest = null;
 
-function requestPrefix(path) {
-  return String(path).startsWith('../') ? '../' : '';
-}
-
-function normalizeDataPath(path) {
-  return String(path)
-    .replace(/^\.\.\//, '')
-    .replace(/^\.\//, '')
-    .replace(/^\/+/, '');
-}
-
-function requestPathFor(path, prefix = '../') {
-  const normalized = normalizeDataPath(path);
-  return `${prefix}${normalized}`;
-}
-
 function isCompanyDataPath(path) {
-  return /^data\/empresa[12]\//.test(normalizeDataPath(path));
+  return /^data\/empresa[12]\//.test(resolveProjectPath(path));
 }
 
 async function fetchResource(path) {
   requireHttpRuntime('Carregamento de dados');
-  const response = await fetch(path, { cache: 'no-store' });
+  const response = await fetch(resolveProjectUrl(path), { cache: 'no-store' });
   if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
   return response;
 }
@@ -44,19 +29,21 @@ export async function fetchText(path) {
   return (await fetchResource(path)).text();
 }
 
-export async function loadEncryptedManifest(prefix = '../') {
+export async function loadEncryptedManifest() {
   requireHttpRuntime('Manifesto criptografado');
   if (encryptedManifest) return encryptedManifest;
-  const response = await fetch(`${prefix}data/encrypted_manifest.json`, { cache: 'no-store' });
+  const response = await fetch(resolveProjectUrl('data/encrypted_manifest.json'), {
+    cache: 'no-store',
+  });
   if (!response.ok)
     throw new CryptoDataError('CRYPTO_001', 'encrypted_manifest.json não encontrado.');
   encryptedManifest = await response.json();
   return encryptedManifest;
 }
 
-async function findEncryptedEntry(path, prefix = '../') {
-  const originalPath = normalizeDataPath(path);
-  const manifest = await loadEncryptedManifest(prefix);
+async function findEncryptedEntry(path) {
+  const originalPath = resolveProjectPath(path);
+  const manifest = await loadEncryptedManifest();
   const entry = (manifest.entries || []).find((item) => item.original_path === originalPath);
   if (!entry)
     throw new CryptoDataError('CRYPTO_002', `Arquivo criptografado não mapeado: ${originalPath}`);
@@ -64,9 +51,8 @@ async function findEncryptedEntry(path, prefix = '../') {
 }
 
 async function fetchEncryptedText(path) {
-  const prefix = requestPrefix(path) || '../';
-  const entry = await findEncryptedEntry(path, prefix);
-  const response = await fetch(requestPathFor(entry.encrypted_path, prefix), { cache: 'no-store' });
+  const entry = await findEncryptedEntry(path);
+  const response = await fetch(resolveProjectUrl(entry.encrypted_path), { cache: 'no-store' });
   if (!response.ok)
     throw new CryptoDataError('CRYPTO_002', `Arquivo .enc não encontrado: ${entry.encrypted_path}`);
   const envelope = await response.json();
@@ -75,14 +61,14 @@ async function fetchEncryptedText(path) {
 
 async function fetchEncryptedJson(path) {
   const text = await fetchEncryptedText(path);
-  return parseDecryptedJson(text, normalizeDataPath(path));
+  return parseDecryptedJson(text, resolveProjectPath(path));
 }
 
 let catalogCache = null;
 export async function loadCatalog() {
   requireHttpRuntime('Catálogo do pacote');
   if (catalogCache) return catalogCache;
-  catalogCache = await fetchJson('../data/catalog.json');
+  catalogCache = await fetchJson('data/catalog.json');
   return catalogCache;
 }
 let bundleCache = {};
@@ -101,7 +87,7 @@ export async function loadPhase2Bundle(companyId) {
     try {
       const path = `data/${companyId}/phase2/phase2_bundle.json`;
       assertCompanyPath(companyId, path);
-      const bundle = await fetchEncryptedJson(`../${path}`);
+      const bundle = await fetchEncryptedJson(path);
       if (bundle?.model?.company_id !== companyId)
         throw new CryptoDataError(
           'CRYPTO_006',
@@ -112,7 +98,7 @@ export async function loadPhase2Bundle(companyId) {
       bundle.core_data = bundle.core_data || {};
       const loadCore = async (id, fileName) => {
         try {
-          bundle.core_data[id] = await fetchEncryptedJson(`../data/${companyId}/core/${fileName}`);
+          bundle.core_data[id] = await fetchEncryptedJson(`data/${companyId}/core/${fileName}`);
         } catch (e) {
           console.warn(`[data-loader] Could not load core ${id} for real formulas:`, e.message);
         }
@@ -170,14 +156,14 @@ export async function loadPhase2Bundle(companyId) {
   return bundlePromises[companyId];
 }
 export async function loadPhase2Report() {
-  return fetchJson('../data/validation/phase2_implementation_report.json');
+  return fetchJson('data/validation/phase2_implementation_report.json');
 }
 export async function loadPhase3Report() {
-  return fetchJson('../data/validation/phase3_implementation_report.json');
+  return fetchJson('data/validation/phase3_implementation_report.json');
 }
 export async function loadPhase3Samples(companyId) {
   setActiveCompany(companyId);
   const path = `data/${companyId}/phase3/sample_scenarios.json`;
   assertCompanyPath(companyId, path);
-  return fetchEncryptedJson(`../${path}`);
+  return fetchEncryptedJson(path);
 }
