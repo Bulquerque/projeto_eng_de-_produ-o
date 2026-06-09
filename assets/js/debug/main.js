@@ -48,12 +48,12 @@ function moduleRows(contracts) {
 async function init() {
   debug.info('debug:init:start');
   const [contractsRes, catalogRes, releaseRes] = await Promise.all([
-    debugFetchJson('../data/contracts/module_contracts_all_phases.json', {
+    debugFetchJson('data/contracts/module_contracts_all_phases.json', {
       phase: 'debug',
       module: 'contracts',
     }),
-    debugFetchJson('../data/catalog.json', { phase: 'debug', module: 'catalog' }),
-    debugFetchJson('../data/validation/final_release_report.json', {
+    debugFetchJson('data/catalog.json', { phase: 'debug', module: 'catalog' }),
+    debugFetchJson('data/validation/final_release_report.json', {
       phase: 'debug',
       module: 'release',
     }),

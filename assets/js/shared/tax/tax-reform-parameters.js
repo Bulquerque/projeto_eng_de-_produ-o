@@ -42,9 +42,7 @@ export function getRegimeTaxRates(regimeId, parameters = DEFAULT_PARAMETERS) {
   };
 }
 
-export async function loadTaxReformParameters(
-  path = '../assets/data/tax/tax-reform-parameters.json'
-) {
+export async function loadTaxReformParameters(path = 'assets/data/tax/tax-reform-parameters.json') {
   const { fetchJson } = await import('../data-loader.js');
   const loaded = await fetchJson(path);
   return {
