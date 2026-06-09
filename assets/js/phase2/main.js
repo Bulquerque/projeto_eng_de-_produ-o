@@ -181,6 +181,7 @@ async function init() {
     setup();
     [state.catalog, state.report] = await Promise.all([loadCatalog(), loadPhase2Report()]);
     renderProof();
+    await loadCompany(state.selectedCompany);
   } catch (e) {
     $('phase2Loading').innerHTML =
       `<div class="alert-box error"><strong>Falha ao inicializar</strong><p>${escapeHtml(e.message)}</p></div>`;
