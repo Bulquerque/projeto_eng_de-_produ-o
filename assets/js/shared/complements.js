@@ -1,6 +1,7 @@
 import { requireHttpRuntime } from './runtime-env.js';
+import { resolveProjectUrl, resolveProjectPath } from './project-paths.js';
 
-const COMPLEMENTS_ROOT = '../data/complements';
+const COMPLEMENTS_ROOT = 'data/complements';
 const COMPANY_TENANT_MAP = {
   empresa1: 'empresa_1',
   empresa2: 'empresa_2',
@@ -53,11 +54,13 @@ function pickPreferredSource(candidates = []) {
 
 async function fetchComplementJson(path) {
   requireHttpRuntime('Pacote de complementos');
-  if (complementJsonCache.has(path)) return cloneValue(complementJsonCache.get(path));
-  const response = await fetch(`${COMPLEMENTS_ROOT}/${path}`, { cache: 'no-store' });
+  const normalizedPath = resolveProjectPath(`${COMPLEMENTS_ROOT}/${path}`);
+  if (complementJsonCache.has(normalizedPath))
+    return cloneValue(complementJsonCache.get(normalizedPath));
+  const response = await fetch(resolveProjectUrl(normalizedPath), { cache: 'no-store' });
   if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
   const json = await response.json();
-  complementJsonCache.set(path, json);
+  complementJsonCache.set(normalizedPath, json);
   return cloneValue(json);
 }
 
