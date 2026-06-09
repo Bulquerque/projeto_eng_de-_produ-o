@@ -1,10 +1,14 @@
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tests.crypto_helpers import NODE_DECRYPT_HELPER
-ROOT=Path(__file__).resolve().parents[2]
-code=NODE_DECRYPT_HELPER + r'''
+
+ROOT = Path(__file__).resolve().parents[2]
+code = (
+    NODE_DECRYPT_HELPER
+    + r"""
 import fs from 'fs';
 import {buildObjective} from './assets/js/phase4/objective-builder.js';
 import {generateCandidateScenarios} from './assets/js/phase4/candidate-scenario-generator.js';
@@ -29,8 +33,9 @@ for (const companyId of ['empresa1','empresa2']) {
  if(frontier.frontier_points.some(p=>!p.scenario_id)) throw new Error('frontier without scenario_id');
 }
 console.log('PHASE4_NODE_OPTIMIZER_OK');
-'''
-res=subprocess.run(['node','--input-type=module','-e',code],cwd=ROOT,text=True,capture_output=True)
-assert res.returncode==0, res.stderr+res.stdout
+"""
+)
+res = subprocess.run(['node', '--input-type=module', '-e', code], cwd=ROOT, text=True, capture_output=True)
+assert res.returncode == 0, res.stderr + res.stdout
 print(res.stdout.strip())
 print('PHASE4_OPTIMIZER_LOGIC_OK')

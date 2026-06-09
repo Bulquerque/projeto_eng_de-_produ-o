@@ -1,16 +1,39 @@
-import {$, escapeHtml, formatBRL, formatNumber, formatPct, metric} from '../shared/common.js';
-import {loadScenarioLibrary} from './scenario-library.js';
-import {buildScenarioFromForm} from './scenario-builder.js';
-import {validateScenario} from './scenario-validator.js';
-import {runScenario} from './scenario-simulator.js';
-import {compareScenarios, componentDelta} from './scenario-comparator.js';
-import {evaluateScenarioQuality} from './scenario-quality-check.js';
-import {explainScenarioChanges} from './scenario-change-explainer.js';
-import {loadSavedScenarios, saveScenario, deleteScenario, clearCompanyScenarios} from './scenario-persistence.js';
-import {downloadScenarioJson, parseImportedScenario, validateImportedScenario} from './scenario-import-export.js';
-import {appendSharedDebugEntry} from '../shared/debug-tools.js';
-import { getTaxRegimeDefinition, resolveTaxRegime, resolveTaxModeForRegime, taxRegimeLabel } from '../shared/tax-reform-config.js';
-import {renderScenarioComparisonChart} from './charts.js';
+import { $, escapeHtml, formatBRL, formatNumber, formatPct, metric } from '../shared/common.js';
+import { loadScenarioLibrary } from './scenario-library.js';
+import { buildScenarioFromForm } from './scenario-builder.js';
+import { validateScenario } from './scenario-validator.js';
+import { runScenario } from './scenario-simulator.js';
+import { compareScenarios, componentDelta } from './scenario-comparator.js';
+import { evaluateScenarioQuality } from './scenario-quality-check.js';
+import { explainScenarioChanges } from './scenario-change-explainer.js';
+import {
+  loadSavedScenarios,
+  saveScenario,
+  deleteScenario,
+  clearCompanyScenarios,
+} from './scenario-persistence.js';
+import {
+  downloadScenarioJson,
+  parseImportedScenario,
+  validateImportedScenario,
+} from './scenario-import-export.js';
+import { buildMonteCarloConfig, runMonteCarloSimulation } from './monte-carlo-engine.js';
+import { appendSharedDebugEntry } from '../shared/debug-tools.js';
+import {
+  getTaxRegimeDefinition,
+  resolveTaxRegime,
+  resolveTaxModeForRegime,
+  taxRegimeLabel,
+} from '../shared/tax-reform-config.js';
+import {
+  renderScenarioComparisonChart,
+  renderMonteCarloHistogram,
+  renderMonteCarloPercentileCurve,
+  renderMonteCarloScatter,
+  renderMonteCarloRiskDonut,
+  renderMonteCarloTotalCurve,
+  renderMonteCarloDriverImportance,
+} from './charts.js';
 
 const EMPTY_STATE = {
   validation: 'Ainda não validado.',
@@ -19,7 +42,7 @@ const EMPTY_STATE = {
   delta: 'Simule um cenário para ver os deltas.',
   quality: 'Sem qualidade calculada.',
   explanation: 'Simule um cenário para gerar explicação.',
-  saved: 'Nenhum cenário salvo para esta empresa.'
+  saved: 'Nenhum cenário salvo para esta empresa.',
 };
 
 const DEFAULT_FORM_VALUES = {
@@ -29,7 +52,7 @@ const DEFAULT_FORM_VALUES = {
   inventory_days: 45,
   wacc: 0.15,
   tax_mode: 'current',
-  reallocation_rule: 'nearest_available_cd'
+  reallocation_rule: 'nearest_available_cd',
 };
 
 const COST_LABELS = {
@@ -38,8 +61,61 @@ const COST_LABELS = {
   storage_cost: 'Armazenagem',
   inventory_cost: 'Estoque',
   tax_impact: 'Tributo',
-  total_with_tax: 'Total com tributo'
+  total_with_tax: 'Total com tributo',
 };
+
+const MONTE_CARLO_DRIVER_LABELS = {
+  freight_multiplier: 'Frete',
+  demand_multiplier: 'Demanda',
+  inventory_days: 'Dias de estoque',
+  wacc: 'WACC',
+  tax_multiplier: 'Tributo',
+};
+
+function monteCarloProfileLabel(profile) {
+  return (
+    {
+      conservative: 'Conservador',
+      balanced: 'Equilibrado',
+      broad: 'Amplo',
+    }[profile] || 'Equilibrado'
+  );
+}
+
+function monteCarloDriverLabel(driver) {
+  return MONTE_CARLO_DRIVER_LABELS[driver] || driver || '—';
+}
+
+function monteCarloInterpretation(summary) {
+  if (!summary) return 'Rode o cenário para visualizar a leitura probabilística.';
+  if (summary.risk_band === 'high') {
+    return 'A distribuição indica risco relevante de perda de saving. Vale revisar premissas e drivers mais voláteis.';
+  }
+  if (summary.risk_band === 'medium') {
+    return 'O cenário mantém saving na maior parte das amostras, mas ainda existe dispersão que merece atenção.';
+  }
+  return 'O cenário mostra estabilidade razoável nas amostras e sustentação probabilística para a decisão.';
+}
+
+function readMonteCarloConfig() {
+  return buildMonteCarloConfig({
+    iterations: Number($('phase3MonteCarloIterations')?.value || 300),
+    seed: Number($('phase3MonteCarloSeed')?.value || 42),
+    profile: $('phase3MonteCarloProfile')?.value || 'balanced',
+    scatterDriver: $('phase3MonteCarloDriver')?.value || 'freight_multiplier',
+  });
+}
+
+function applyMonteCarloConfig(config = {}) {
+  if ($('phase3MonteCarloIterations'))
+    $('phase3MonteCarloIterations').value = config.iterations ?? 300;
+  if ($('phase3MonteCarloSeed')) $('phase3MonteCarloSeed').value = config.seed ?? 42;
+  if ($('phase3MonteCarloProfile'))
+    $('phase3MonteCarloProfile').value = config.profile || 'balanced';
+  if ($('phase3MonteCarloDriver'))
+    $('phase3MonteCarloDriver').value = config.scatter_driver || 'freight_multiplier';
+  state.monteCarloConfig = buildMonteCarloConfig(config);
+}
 
 const state = {
   companyId: 'empresa1',
@@ -49,8 +125,10 @@ const state = {
   comparison: null,
   quality: null,
   explanation: null,
+  monteCarlo: null,
+  monteCarloConfig: buildMonteCarloConfig(),
   logs: [],
-  isLoading: false
+  isLoading: false,
 };
 
 function setHtml(id, html) {
@@ -92,7 +170,7 @@ function scenarioTaxRegime(scenario) {
   return resolveTaxRegime({
     taxMode: scenario?.changes?.tax_mode,
     taxRegime: scenario?.changes?.tax_regime,
-    year: scenario?.changes?.tax_year
+    year: scenario?.changes?.tax_year,
   });
 }
 
@@ -112,7 +190,13 @@ function log(msg, data = null) {
   state.logs.push(
     `[${new Date().toLocaleTimeString('pt-BR')}] ${msg}${data ? `: ${JSON.stringify(data)}` : ''}`
   );
-  appendSharedDebugEntry({phase:'phase3',module:'scenario-arena',level:'info',event:msg,detail:data||{}});
+  appendSharedDebugEntry({
+    phase: 'phase3',
+    module: 'scenario-arena',
+    level: 'info',
+    event: msg,
+    detail: data || {},
+  });
   const el = $('phase3DebugConsole');
   if (el) el.textContent = state.logs.slice(-30).join('\n');
 }
@@ -121,7 +205,14 @@ function logError(msg, error, data = null) {
   state.logs.push(
     `[${new Date().toLocaleTimeString('pt-BR')}] [erro] ${msg}: ${error?.message || error}`
   );
-  appendSharedDebugEntry({phase:'phase3',module:'scenario-arena',level:'error',event:msg,detail:data||{},error});
+  appendSharedDebugEntry({
+    phase: 'phase3',
+    module: 'scenario-arena',
+    level: 'error',
+    event: msg,
+    detail: data || {},
+    error,
+  });
   const el = $('phase3DebugConsole');
   if (el) el.textContent = state.logs.slice(-30).join('\n');
 }
@@ -132,6 +223,7 @@ function resetAnalysisPanels() {
   state.comparison = null;
   state.quality = null;
   state.explanation = null;
+  state.monteCarlo = null;
   renderEmpty('scenarioValidationPanel', EMPTY_STATE.validation);
   renderEmpty('scenarioResultCards', EMPTY_STATE.result);
   renderEmpty('scenarioExecutiveTable', EMPTY_STATE.result);
@@ -141,18 +233,21 @@ function resetAnalysisPanels() {
   renderEmpty('componentDeltaPanel', EMPTY_STATE.delta);
   renderEmpty('qualityPanel', EMPTY_STATE.quality);
   renderEmpty('changeExplainer', EMPTY_STATE.explanation);
+  renderMonteCarlo();
 }
 
 function scenarioFormValues() {
   return {
     scenario_name: $('scenarioName').value,
-    active_cds: [...document.querySelectorAll('[data-cd-check]:checked')].map(input => input.value),
+    active_cds: [...document.querySelectorAll('[data-cd-check]:checked')].map(
+      (input) => input.value
+    ),
     freight_multiplier: Number($('freightMultiplier').value),
     demand_multiplier: Number($('demandMultiplier').value),
     inventory_days: Number($('inventoryDays').value),
     wacc: Number($('waccValue').value),
     tax_mode: $('taxMode').value,
-    reallocation_rule: $('reallocationRule').value
+    reallocation_rule: $('reallocationRule').value,
   };
 }
 
@@ -160,7 +255,10 @@ function renderTaxAssumptions() {
   const selectedMode = $('taxMode')?.value || DEFAULT_FORM_VALUES.tax_mode;
   const regime = getTaxRegimeDefinition({ taxMode: selectedMode });
   if (!regime) {
-    renderEmpty('taxAssumptionsPanel', 'Regime tributário não encontrado na configuração carregada.');
+    renderEmpty(
+      'taxAssumptionsPanel',
+      'Regime tributário não encontrado na configuração carregada.'
+    );
     return;
   }
 
@@ -182,7 +280,7 @@ function renderTaxAssumptions() {
 }
 
 function renderCompanyTabs() {
-  document.querySelectorAll('[data-company]').forEach(btn => {
+  document.querySelectorAll('[data-company]').forEach((btn) => {
     const active = btn.dataset.company === state.companyId;
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-selected', active ? 'true' : 'false');
@@ -196,22 +294,39 @@ function renderBaseline() {
   setText('phase3CompanyLabel', state.companyId === 'empresa1' ? 'Empresa 1' : 'Empresa 2');
   renderCards('baselineCards', [
     metric('Baseline', baseline.model.scenario_id, baseline.model.baseline_status),
-    metric('CDs ativos', formatNumber((baseline.model.active_cds || []).length), (baseline.model.active_cds || []).slice(0, 4).join(' · ')),
+    metric(
+      'CDs ativos',
+      formatNumber((baseline.model.active_cds || []).length),
+      (baseline.model.active_cds || []).slice(0, 4).join(' · ')
+    ),
     metric('Origens', formatNumber((baseline.model.origins || []).length), 'detectadas'),
     metric('Destinos', formatNumber((baseline.model.destinations || []).length), 'cobertura'),
-    metric('Fluxos', formatNumber(baseline.flows.length), 'Fase 2'),
+    metric('Fluxos', formatNumber(baseline.flows.length), 'baseline'),
     metric('Total com tributo', formatBRL(costs.total_with_tax, true), 'referência do baseline'),
-    metric('Base Fit', baseline.base_fit.base_fit_score ?? 'pendente', baseline.base_fit.status)
+    metric('Base Fit', baseline.base_fit.base_fit_score ?? 'pendente', baseline.base_fit.status),
   ]);
   renderBaselineFinanceTable();
 }
 
 function renderBaselineFinanceTable() {
   const costs = state.library?.baselineBundle?.costs?.costs || {};
-  const rows = ['transfer_cost', 'distribution_cost', 'storage_cost', 'inventory_cost', 'tax_impact', 'total_with_tax']
-    .map(key => `<tr><td>${escapeHtml(COST_LABELS[key] || key)}</td><td>${formatBRL(costs[key], true)}</td></tr>`)
+  const rows = [
+    'transfer_cost',
+    'distribution_cost',
+    'storage_cost',
+    'inventory_cost',
+    'tax_impact',
+    'total_with_tax',
+  ]
+    .map(
+      (key) =>
+        `<tr><td>${escapeHtml(COST_LABELS[key] || key)}</td><td>${formatBRL(costs[key], true)}</td></tr>`
+    )
     .join('');
-  setHtml('baselineFinanceTable', `<table><thead><tr><th>Componente</th><th>Valor baseline</th></tr></thead><tbody>${rows}</tbody></table>`);
+  setHtml(
+    'baselineFinanceTable',
+    `<table><thead><tr><th>Componente</th><th>Valor baseline</th></tr></thead><tbody>${rows}</tbody></table>`
+  );
 }
 
 function renderCdChecks() {
@@ -220,7 +335,7 @@ function renderCdChecks() {
     'cdSelector',
     cds
       .map(
-        cd =>
+        (cd) =>
           `<label class="chip-check"><input type="checkbox" data-cd-check value="${escapeHtml(cd)}" checked><span>${escapeHtml(cd)}</span></label>`
       )
       .join('')
@@ -237,7 +352,10 @@ function renderLibraryWarnings() {
   const banner = document.createElement('div');
   banner.id = 'libraryWarningBanner';
   banner.innerHTML = warnings
-    .map(w => `<div class="alert-box warn"><strong>Aviso de biblioteca</strong><p>${escapeHtml(w.message)}</p></div>`)
+    .map(
+      (w) =>
+        `<div class="alert-box warn"><strong>Aviso de biblioteca</strong><p>${escapeHtml(w.message)}</p></div>`
+    )
     .join('');
   $('baselineCards').before(banner);
 }
@@ -248,8 +366,8 @@ function renderScenarioLibrary() {
     'scenarioLibrary',
     list
       .map(
-        s =>
-          `<button type="button" class="scenario-card" data-load-scenario="${escapeHtml(s.scenario_id)}"><strong>${escapeHtml(s.scenario_name)}</strong><span>${escapeHtml(s.scenario_type)} · ${escapeHtml(s.metadata?.source || 'local')}</span></button>`
+        (s) =>
+          `<button type="button" class="scenario-card" data-load-scenario="${escapeHtml(s.scenario_id)}"><strong>${escapeHtml(s.scenario_name)}</strong><span>${escapeHtml(s.scenario_type)} · ${escapeHtml(s.metadata?.source || 'local')}${s.monte_carlo?.summary ? ` · MC ${formatPct(s.monte_carlo.summary.probability_saving_positive * 100, 0)}` : ''}</span></button>`
       )
       .join('')
   );
@@ -259,18 +377,25 @@ function loadScenarioToForm(scenario) {
   setValue('scenarioName', scenario.scenario_name || DEFAULT_FORM_VALUES.scenario_name);
 
   const active = new Set(scenario.changes?.active_cds || []);
-  document.querySelectorAll('[data-cd-check]').forEach(input => {
+  document.querySelectorAll('[data-cd-check]').forEach((input) => {
     input.checked = active.has(input.value);
   });
 
-  $('freightMultiplier').value = scenario.changes?.freight_multiplier ?? DEFAULT_FORM_VALUES.freight_multiplier;
-  $('demandMultiplier').value = scenario.changes?.demand_multiplier ?? DEFAULT_FORM_VALUES.demand_multiplier;
+  $('freightMultiplier').value =
+    scenario.changes?.freight_multiplier ?? DEFAULT_FORM_VALUES.freight_multiplier;
+  $('demandMultiplier').value =
+    scenario.changes?.demand_multiplier ?? DEFAULT_FORM_VALUES.demand_multiplier;
   $('inventoryDays').value = scenario.changes?.inventory_days ?? DEFAULT_FORM_VALUES.inventory_days;
   $('waccValue').value = scenario.changes?.wacc ?? DEFAULT_FORM_VALUES.wacc;
   $('taxMode').value = scenarioTaxMode(scenario) || DEFAULT_FORM_VALUES.tax_mode;
-  $('reallocationRule').value = scenario.changes?.reallocation_rule || DEFAULT_FORM_VALUES.reallocation_rule;
+  $('reallocationRule').value =
+    scenario.changes?.reallocation_rule || DEFAULT_FORM_VALUES.reallocation_rule;
   renderTaxAssumptions();
-  log('Cenário carregado no formulário', {scenario_id: scenario.scenario_id});
+  const mc = scenario.monte_carlo || scenario.analysis?.monte_carlo || null;
+  if (mc?.config) applyMonteCarloConfig(mc.config);
+  state.monteCarlo = mc?.summary ? { ...mc, samples: mc.samples || [] } : null;
+  renderMonteCarlo();
+  log('Cenário carregado no formulário', { scenario_id: scenario.scenario_id });
 }
 
 function renderValidation(validation) {
@@ -279,7 +404,7 @@ function renderValidation(validation) {
   const summary = `${validation.errors.length} erro(s), ${validation.warnings.length} aviso(s).`;
   const items = [...validation.errors, ...validation.warnings]
     .map(
-      item =>
+      (item) =>
         `<div class="alert-box ${item.severity === 'warning' ? 'warn' : 'error'}"><strong>${escapeHtml(item.code)}</strong><p>${escapeHtml(item.message)}</p></div>`
     )
     .join('');
@@ -301,13 +426,29 @@ function renderResult() {
   const quality = state.quality;
   renderCards('scenarioResultCards', [
     metric('Cenário', result.scenario_name, result.simulation_status),
-    metric('Total com tributo', formatBRL(result.total_with_tax, true), 'logística + tributo básico'),
-    metric('Regime fiscal', result.tax_results?.regime_label || taxRegimeLabel(scenarioTaxRegime(result.scenario)), result.tax_results?.calculation_mode || '—'),
-    metric('Quality Score', quality?.quality_score ?? '—', `risco ${riskLabel(quality?.risk_level)}`),
-    metric('Fluxos realocados', formatNumber(result.flow_summary?.reallocated_flows || 0), `de ${formatNumber(result.flow_summary?.total_flows || 0)} fluxos`)
+    metric(
+      'Total com tributo',
+      formatBRL(result.total_with_tax, true),
+      'logística + tributo básico'
+    ),
+    metric(
+      'Regime fiscal',
+      result.tax_results?.regime_label || taxRegimeLabel(scenarioTaxRegime(result.scenario)),
+      result.tax_results?.calculation_mode || '—'
+    ),
+    metric(
+      'Quality Score',
+      quality?.quality_score ?? '—',
+      `risco ${riskLabel(quality?.risk_level)}`
+    ),
+    metric(
+      'Fluxos realocados',
+      formatNumber(result.flow_summary?.reallocated_flows || 0),
+      `de ${formatNumber(result.flow_summary?.total_flows || 0)} fluxos`
+    ),
   ]);
   renderScenarioExecutiveTable();
-  
+
   renderScenarioComparisonChart(state.library.baselineBundle.costs.costs, result.costs);
 }
 
@@ -323,10 +464,23 @@ function renderScenarioExecutiveTable() {
   const savingPct = base.total_with_tax ? (saving / Number(base.total_with_tax)) * 100 : 0;
   const rows = [
     ['Baseline', formatBRL(base.total_with_tax, true), '—', 'referência'],
-    [result.scenario_name, formatBRL(result.total_with_tax, true), formatBRL(saving, true), formatPct(savingPct, 2)],
-    ['Quality Score', quality?.quality_score ?? '—', 'vs ideal', quality?.quality_score !== undefined ? `${Number(quality.quality_score) - 100}` : '—']
+    [
+      result.scenario_name,
+      formatBRL(result.total_with_tax, true),
+      formatBRL(saving, true),
+      formatPct(savingPct, 2),
+    ],
+    [
+      'Quality Score',
+      quality?.quality_score ?? '—',
+      'vs ideal',
+      quality?.quality_score !== undefined ? `${Number(quality.quality_score) - 100}` : '—',
+    ],
   ];
-  setHtml('scenarioExecutiveTable', `<table class="executive-table-premium"><thead><tr><th>Item</th><th>Total/Score</th><th>Delta Absoluto</th><th>Delta %</th></tr></thead><tbody>${rows.map(r => `<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td><td>${escapeHtml(r[2])}</td><td class="${String(r[3]).includes('-') ? 'delta-negative' : String(r[3]).includes('%') ? 'delta-positive' : ''}">${escapeHtml(r[3])}</td></tr>`).join('')}</tbody></table>`);
+  setHtml(
+    'scenarioExecutiveTable',
+    `<table class="executive-table-premium"><thead><tr><th>Item</th><th>Total/Score</th><th>Delta Absoluto</th><th>Delta %</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td><td>${escapeHtml(r[2])}</td><td class="${String(r[3]).includes('-') ? 'delta-negative' : String(r[3]).includes('%') ? 'delta-positive' : ''}">${escapeHtml(r[3])}</td></tr>`).join('')}</tbody></table>`
+  );
 }
 
 function renderComponentDeltas() {
@@ -340,8 +494,8 @@ function renderComponentDeltas() {
     'componentDeltaPanel',
     deltas
       .map(
-        delta =>
-          `<div class="breakdown-row"><div><strong>${escapeHtml(COST_LABELS[delta.metric] || delta.metric)}</strong><span>${formatPct(delta.baseline ? (delta.delta / delta.baseline) * 100 : 0, 2)} vs baseline</span></div><div class="breakdown-bar"><span style="width:${Math.min(100, Math.abs(delta.delta) / Math.max(1, Math.abs(delta.baseline)) * 100)}%"></span></div><b class="${delta.delta <= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(delta.delta)}</b></div>`
+        (delta) =>
+          `<div class="breakdown-row"><div><strong>${escapeHtml(COST_LABELS[delta.metric] || delta.metric)}</strong><span>${formatPct(delta.baseline ? (delta.delta / delta.baseline) * 100 : 0, 2)} vs baseline</span></div><div class="breakdown-bar"><span style="width:${Math.min(100, (Math.abs(delta.delta) / Math.max(1, Math.abs(delta.baseline))) * 100)}%"></span></div><b class="${delta.delta <= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(delta.delta)}</b></div>`
       )
       .join('')
   );
@@ -360,7 +514,7 @@ function renderComparison() {
     'comparisonTable',
     `<table><thead><tr><th>Cenário</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Rank</th><th>Status</th></tr></thead><tbody>${rows
       .map(
-        row =>
+        (row) =>
           `<tr><td>${escapeHtml(row.scenario_name)}</td><td>${formatBRL(row.total_with_tax)}</td><td class="${row.saving_abs >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving_abs)}</td><td>${formatPct(row.saving_pct, 2)}</td><td>${row.rank_by_total_cost}</td><td>${escapeHtml(row.status)}</td></tr>`
       )
       .join('')}</tbody></table>`
@@ -376,19 +530,28 @@ function renderLibraryComparisonTable() {
     return;
   }
   const baselineTotal = Number(state.library.baselineBundle.costs.costs.total_with_tax || 0);
-  const rows = [{
-    name: 'Baseline',
-    type: 'referência',
-    regime: taxRegimeLabel('legacy_current'),
-    total: baselineTotal,
-    saving: 0,
-    savingPct: 0,
-    quality: '—',
-    risk: '—'
-  }];
-  const libraryRows = (state.library.scenarios || []).slice(0, 8).map(scenario => {
-    const result = runScenario({ companyId: state.companyId, scenario, baselineBundle: state.library.baselineBundle });
-    const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle: state.library.baselineBundle });
+  const rows = [
+    {
+      name: 'Baseline',
+      type: 'referência',
+      regime: taxRegimeLabel('legacy_current'),
+      total: baselineTotal,
+      saving: 0,
+      savingPct: 0,
+      quality: '—',
+      risk: '—',
+    },
+  ];
+  const libraryRows = (state.library.scenarios || []).slice(0, 8).map((scenario) => {
+    const result = runScenario({
+      companyId: state.companyId,
+      scenario,
+      baselineBundle: state.library.baselineBundle,
+    });
+    const quality = evaluateScenarioQuality({
+      scenarioResult: result,
+      baselineBundle: state.library.baselineBundle,
+    });
     const saving = baselineTotal - Number(result.total_with_tax || 0);
     return {
       name: scenario.scenario_name || scenario.scenario_id,
@@ -398,20 +561,30 @@ function renderLibraryComparisonTable() {
       saving,
       savingPct: baselineTotal ? (saving / baselineTotal) * 100 : 0,
       quality: quality.quality_score,
-      risk: riskLabel(quality.risk_level)
+      risk: riskLabel(quality.risk_level),
     };
   });
-  const current = state.currentResult ? [{
-    name: `${state.currentResult.scenario_name} (atual)`,
-    type: 'customizado',
-    regime: taxRegimeLabel(scenarioTaxRegime(state.currentResult.scenario)),
-    total: state.currentResult.total_with_tax,
-    saving: baselineTotal - Number(state.currentResult.total_with_tax || 0),
-    savingPct: baselineTotal ? ((baselineTotal - Number(state.currentResult.total_with_tax || 0)) / baselineTotal) * 100 : 0,
-    quality: state.quality?.quality_score ?? '—',
-    risk: riskLabel(state.quality?.risk_level)
-  }] : [];
-  setHtml('scenarioLibraryComparisonTable', `<table><thead><tr><th>Cenário</th><th>Tipo</th><th>Regime</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Quality</th><th>Risco</th></tr></thead><tbody>${[...rows, ...current, ...libraryRows].map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.type)}</td><td>${escapeHtml(row.regime || '—')}</td><td>${formatBRL(row.total, true)}</td><td class="${row.saving >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving, true)}</td><td>${formatPct(row.savingPct, 2)}</td><td>${escapeHtml(row.quality)}</td><td>${escapeHtml(row.risk)}</td></tr>`).join('')}</tbody></table>`);
+  const current = state.currentResult
+    ? [
+        {
+          name: `${state.currentResult.scenario_name} (atual)`,
+          type: 'customizado',
+          regime: taxRegimeLabel(scenarioTaxRegime(state.currentResult.scenario)),
+          total: state.currentResult.total_with_tax,
+          saving: baselineTotal - Number(state.currentResult.total_with_tax || 0),
+          savingPct: baselineTotal
+            ? ((baselineTotal - Number(state.currentResult.total_with_tax || 0)) / baselineTotal) *
+              100
+            : 0,
+          quality: state.quality?.quality_score ?? '—',
+          risk: riskLabel(state.quality?.risk_level),
+        },
+      ]
+    : [];
+  setHtml(
+    'scenarioLibraryComparisonTable',
+    `<table><thead><tr><th>Cenário</th><th>Tipo</th><th>Regime</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Quality</th><th>Risco</th></tr></thead><tbody>${[...rows, ...current, ...libraryRows].map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.type)}</td><td>${escapeHtml(row.regime || '—')}</td><td>${formatBRL(row.total, true)}</td><td class="${row.saving >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving, true)}</td><td>${formatPct(row.savingPct, 2)}</td><td>${escapeHtml(row.quality)}</td><td>${escapeHtml(row.risk)}</td></tr>`).join('')}</tbody></table>`
+  );
 }
 
 function renderQuality() {
@@ -424,7 +597,7 @@ function renderQuality() {
   const alerts = quality.alerts.length
     ? quality.alerts
         .map(
-          alert =>
+          (alert) =>
             `<div class="alert-box ${alert.severity === 'error' ? 'error' : 'warn'}"><strong>${escapeHtml(alert.type)}</strong><p>${escapeHtml(alert.message)}</p></div>`
         )
         .join('')
@@ -434,12 +607,14 @@ function renderQuality() {
   const taxWarningsList = tax.warnings || [];
   const visibleTaxWarnings = taxWarningsList.slice(0, 8);
   const hiddenTaxWarnings = Math.max(0, taxWarningsList.length - visibleTaxWarnings.length);
-  const taxWarnings = visibleTaxWarnings
-    .map(
-      warning =>
-        `<div class="alert-box warn"><strong>${escapeHtml(warning.code || 'AVISO')}</strong><p>${escapeHtml(warning.message || '')}</p></div>`
-    )
-    .join('') + (hiddenTaxWarnings
+  const taxWarnings =
+    visibleTaxWarnings
+      .map(
+        (warning) =>
+          `<div class="alert-box warn"><strong>${escapeHtml(warning.code || 'AVISO')}</strong><p>${escapeHtml(warning.message || '')}</p></div>`
+      )
+      .join('') +
+    (hiddenTaxWarnings
       ? `<div class="alert-box warn"><strong>${hiddenTaxWarnings} avisos tributários adicionais</strong><p>Lista reduzida para manter a tela legível. O cálculo preserva os avisos completos em <code>tax_results.warnings</code>.</p></div>`
       : '');
 
@@ -458,8 +633,139 @@ function renderExplanation() {
 
   setHtml(
     'changeExplainer',
-    `<h3>O que mudou</h3><ul>${explanation.change_summary.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul><p><strong>${escapeHtml(explanation.result_summary)}</strong></p><p class="small-note">Drivers: ${escapeHtml(explanation.main_drivers.join(', '))}</p>`
+    `<h3>O que mudou</h3><ul>${explanation.change_summary.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul><p><strong>${escapeHtml(explanation.result_summary)}</strong></p><p class="small-note">Drivers: ${escapeHtml(explanation.main_drivers.join(', '))}</p>`
   );
+}
+
+function renderMonteCarloSummaryCards() {
+  const summary = state.monteCarlo?.summary;
+  const el = $('monteCarloSummaryCards');
+  const tableEl = $('monteCarloSummaryTable');
+  if (!summary) {
+    if (el) el.innerHTML = '';
+    if (tableEl)
+      tableEl.innerHTML =
+        '<div class="empty-state">Rode o cenário para visualizar a distribuição probabilística.</div>';
+    return;
+  }
+
+  const driverLabel = monteCarloDriverLabel(summary.most_sensitive_driver);
+  const driverCorrelation = Number(summary.most_sensitive_driver_correlation || 0);
+  if (el) {
+    el.innerHTML = [
+      metric(
+        'Prob. saving positivo',
+        formatPct(summary.probability_saving_positive * 100, 1),
+        `risco ${summary.risk_band}`
+      ),
+      metric(
+        'Prob. saving negativo',
+        formatPct(summary.probability_saving_loss * 100, 1),
+        'cenário abaixo do baseline'
+      ),
+      metric(
+        'Saving mediano',
+        formatPct(summary.median_saving_pct, 1),
+        `p10 ${formatPct(summary.p10_saving_pct, 1)} · p90 ${formatPct(summary.p90_saving_pct, 1)}`
+      ),
+      metric('Desvio saving', formatPct(summary.stddev_saving_pct, 1), 'dispersão entre amostras'),
+      metric(
+        'Custo mediano',
+        formatBRL(summary.median_total_with_tax, true),
+        `p10 ${formatBRL(summary.p10_total_with_tax, true)} · p90 ${formatBRL(summary.p90_total_with_tax, true)}`
+      ),
+      metric(
+        'Custo esperado',
+        formatBRL(summary.mean_total_with_tax, true),
+        `desvio ${formatBRL(summary.stddev_total_with_tax, true)}`
+      ),
+      metric(
+        'Driver mais influente',
+        driverLabel,
+        `${driverCorrelation >= 0 ? '+' : ''}${driverCorrelation.toFixed(2)} de correlação`
+      ),
+      metric(
+        'Percentil do cenário',
+        `${Number(summary.deterministic_percentile_saving_pct || 0).toFixed(0)}º`,
+        'posição do cenário base na distribuição'
+      ),
+      metric('Iterações', formatNumber(summary.iterations, 0), `seed ${summary.seed}`),
+    ].join('');
+  }
+
+  if (tableEl) {
+    tableEl.innerHTML = `
+      <table class="executive-table-premium">
+        <thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td>Perfil</td><td>${escapeHtml(monteCarloProfileLabel(summary.profile))}</td></tr>
+          <tr><td>Leitura executiva</td><td>${escapeHtml(monteCarloInterpretation(summary))}</td></tr>
+          <tr><td>Prob. saving positivo</td><td>${formatPct(summary.probability_saving_positive * 100, 1)}</td></tr>
+          <tr><td>Prob. saving negativo</td><td>${formatPct(summary.probability_saving_loss * 100, 1)}</td></tr>
+          <tr><td>Saving p10 / p50 / p90</td><td>${formatPct(summary.p10_saving_pct, 1)} · ${formatPct(summary.median_saving_pct, 1)} · ${formatPct(summary.p90_saving_pct, 1)}</td></tr>
+          <tr><td>Total p10 / p50 / p90</td><td>${formatBRL(summary.p10_total_with_tax, true)} · ${formatBRL(summary.median_total_with_tax, true)} · ${formatBRL(summary.p90_total_with_tax, true)}</td></tr>
+          <tr><td>Driver mais influente</td><td>${escapeHtml(driverLabel)} (${driverCorrelation >= 0 ? '+' : ''}${driverCorrelation.toFixed(2)})</td></tr>
+        </tbody>
+      </table>
+    `;
+  }
+}
+
+function renderMonteCarlo() {
+  renderMonteCarloSummaryCards();
+  const summary = state.monteCarlo?.summary;
+  renderMonteCarloHistogram(summary?.histogram);
+  renderMonteCarloPercentileCurve(summary?.percentile_curve);
+  renderMonteCarloTotalCurve(summary?.total_percentile_curve);
+  renderMonteCarloRiskDonut(summary);
+  renderMonteCarloDriverImportance(
+    (summary?.driver_importance || []).map((item) => ({
+      ...item,
+      label: monteCarloDriverLabel(item.driver),
+    }))
+  );
+  renderMonteCarloScatter(
+    state.monteCarlo?.samples || [],
+    summary?.scatter_driver || state.monteCarloConfig?.scatter_driver || 'freight_multiplier',
+    monteCarloDriverLabel(
+      summary?.scatter_driver || state.monteCarloConfig?.scatter_driver || 'freight_multiplier'
+    )
+  );
+}
+
+function runMonteCarloForCurrentScenario({ rerender = true } = {}) {
+  if (!state.library || !state.currentScenario || !state.currentResult) {
+    state.monteCarlo = null;
+    renderMonteCarlo();
+    return null;
+  }
+
+  state.monteCarloConfig = readMonteCarloConfig();
+  const mc = runMonteCarloSimulation({
+    companyId: state.companyId,
+    selectedScenario: state.currentScenario,
+    baselineBundle: state.library.baselineBundle,
+    deterministicResult: state.currentResult,
+    iterations: state.monteCarloConfig.iterations,
+    seed: state.monteCarloConfig.seed,
+    config: state.monteCarloConfig,
+  });
+  state.monteCarlo = mc;
+  if (mc.summary) {
+    state.currentScenario = {
+      ...state.currentScenario,
+      monte_carlo: {
+        config: mc.config,
+        summary: mc.summary,
+        generated_at: 'browser_runtime',
+      },
+    };
+  } else {
+    const { monte_carlo: _monte_carlo, ...rest } = state.currentScenario;
+    state.currentScenario = rest;
+  }
+  if (rerender) renderMonteCarlo();
+  return mc;
 }
 
 function renderSaved() {
@@ -473,8 +779,8 @@ function renderSaved() {
     'savedScenarios',
     saved
       .map(
-        scenario =>
-          `<div class="saved-scenario-row"><button type="button" class="secondary-button small-button" data-load-saved="${escapeHtml(scenario.scenario_id)}">Carregar</button><strong>${escapeHtml(scenario.scenario_name)}</strong><button type="button" class="ghost-danger small-button" data-delete-saved="${escapeHtml(scenario.scenario_id)}">Excluir</button></div>`
+        (scenario) =>
+          `<div class="saved-scenario-row"><button type="button" class="secondary-button small-button" data-load-saved="${escapeHtml(scenario.scenario_id)}">Carregar</button><strong>${escapeHtml(scenario.scenario_name)}</strong>${scenario.monte_carlo?.summary ? `<span class="status-chip status-ok">MC ${formatPct(scenario.monte_carlo.summary.probability_saving_positive * 100, 0)}</span>` : ''}<button type="button" class="ghost-danger small-button" data-delete-saved="${escapeHtml(scenario.scenario_id)}">Excluir</button></div>`
       )
       .join('')
   );
@@ -488,7 +794,7 @@ function setSimulateButtonState(enabled) {
 }
 
 function setCompanyButtonsDisabled(disabled) {
-  document.querySelectorAll('[data-company]').forEach(btn => {
+  document.querySelectorAll('[data-company]').forEach((btn) => {
     btn.disabled = disabled;
     btn.style.opacity = disabled ? '0.5' : '';
     btn.title = disabled ? 'Aguarde o carregamento da empresa atual...' : '';
@@ -507,13 +813,13 @@ function runCurrentScenario() {
   const scenario = buildScenarioFromForm({
     companyId: state.companyId,
     baselineBundle: state.library.baselineBundle,
-    formValues: scenarioFormValues()
+    formValues: scenarioFormValues(),
   });
 
   const validation = validateScenario({
     companyId: state.companyId,
     scenario,
-    baselineBundle: state.library.baselineBundle
+    baselineBundle: state.library.baselineBundle,
   });
 
   renderValidation(validation);
@@ -524,7 +830,9 @@ function runCurrentScenario() {
     state.comparison = null;
     state.quality = null;
     state.explanation = null;
+    state.monteCarlo = null;
     renderResult();
+    renderMonteCarlo();
     renderComparison();
     renderQuality();
     renderExplanation();
@@ -535,31 +843,38 @@ function runCurrentScenario() {
   state.currentResult = runScenario({
     companyId: state.companyId,
     scenario,
-    baselineBundle: state.library.baselineBundle
+    baselineBundle: state.library.baselineBundle,
   });
   state.quality = evaluateScenarioQuality({
     scenarioResult: state.currentResult,
-    baselineBundle: state.library.baselineBundle
+    baselineBundle: state.library.baselineBundle,
   });
   state.comparison = compareScenarios({
     companyId: state.companyId,
     baselineBundle: state.library.baselineBundle,
-    scenarioResults: [state.currentResult]
+    scenarioResults: [state.currentResult],
   });
 
-  const comparisonRow = state.comparison.comparison.find(row => row.scenario_id === state.currentResult.scenario_id);
+  const comparisonRow = state.comparison.comparison.find(
+    (row) => row.scenario_id === state.currentResult.scenario_id
+  );
   state.explanation = explainScenarioChanges({
     baselineBundle: state.library.baselineBundle,
     scenario,
     comparisonRow,
-    quality: state.quality
+    quality: state.quality,
   });
+  runMonteCarloForCurrentScenario({ rerender: false });
 
   renderResult();
+  renderMonteCarlo();
   renderComparison();
   renderQuality();
   renderExplanation();
-  log('Cenário simulado', {scenario_id: scenario.scenario_id, total: state.currentResult.total_with_tax});
+  log('Cenário simulado', {
+    scenario_id: scenario.scenario_id,
+    total: state.currentResult.total_with_tax,
+  });
 }
 
 function onImportScenarioFile(event) {
@@ -585,13 +900,17 @@ function onImportScenarioFile(event) {
 function onBodyClick(event) {
   const loadLibraryScenario = event.target.closest('[data-load-scenario]');
   if (loadLibraryScenario) {
-    const scenario = state.library.scenarios.find(item => item.scenario_id === loadLibraryScenario.dataset.loadScenario);
+    const scenario = state.library.scenarios.find(
+      (item) => item.scenario_id === loadLibraryScenario.dataset.loadScenario
+    );
     if (scenario) loadScenarioToForm(scenario);
   }
 
   const loadSavedScenario = event.target.closest('[data-load-saved]');
   if (loadSavedScenario) {
-    const scenario = loadSavedScenarios(state.companyId).find(item => item.scenario_id === loadSavedScenario.dataset.loadSaved);
+    const scenario = loadSavedScenarios(state.companyId).find(
+      (item) => item.scenario_id === loadSavedScenario.dataset.loadSaved
+    );
     if (scenario) loadScenarioToForm(scenario);
   }
 
@@ -616,7 +935,7 @@ export async function loadCompany(companyId) {
   setCompanyButtonsDisabled(true);
   const loading = $('phase3Loading');
   if (loading) {
-    loading.innerHTML = '<strong>Carregando Fase 3...</strong>';
+    loading.innerHTML = '<strong>Carregando cenários...</strong>';
     loading.classList.remove('hidden');
   }
 
@@ -630,6 +949,7 @@ export async function loadCompany(companyId) {
     renderLibraryComparisonTable();
     renderSaved();
     renderResult();
+    renderMonteCarlo();
     renderComparison();
     renderQuality();
     renderExplanation();
@@ -638,7 +958,7 @@ export async function loadCompany(companyId) {
     log('Empresa carregada', {
       companyId,
       scenarios: state.library.scenarios.length,
-      warnings: state.library.warnings.length
+      warnings: state.library.warnings.length,
     });
   } catch (error) {
     state.library = null; // garante estado nulo explícito em caso de falha
@@ -646,7 +966,7 @@ export async function loadCompany(companyId) {
     if (loading) {
       loading.innerHTML = `<div class="alert-box error"><strong>Erro ao carregar empresa</strong><p>${escapeHtml(error.message)}</p></div>`;
     }
-    logError('loadCompany:error', error, {companyId});
+    logError('loadCompany:error', error, { companyId });
   } finally {
     state.isLoading = false;
     setCompanyButtonsDisabled(false);
@@ -654,11 +974,23 @@ export async function loadCompany(companyId) {
 }
 
 export function setupPhase3() {
-  document.querySelectorAll('[data-company]').forEach(btn => {
+  document.querySelectorAll('[data-company]').forEach((btn) => {
     btn.addEventListener('click', () => loadCompany(btn.dataset.company));
   });
 
   $('simulateScenario')?.addEventListener('click', runCurrentScenario);
+  [
+    'phase3MonteCarloIterations',
+    'phase3MonteCarloSeed',
+    'phase3MonteCarloProfile',
+    'phase3MonteCarloDriver',
+  ].forEach((id) => {
+    $(id)?.addEventListener('change', () => {
+      state.monteCarloConfig = readMonteCarloConfig();
+      if (state.currentScenario && state.currentResult) runMonteCarloForCurrentScenario();
+    });
+  });
+  $('runMonteCarloScenario')?.addEventListener('click', () => runMonteCarloForCurrentScenario());
   $('taxMode')?.addEventListener('change', renderTaxAssumptions);
   $('saveScenario')?.addEventListener('click', () => {
     if (!state.currentScenario) return;

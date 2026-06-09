@@ -1,0 +1,23 @@
+[tool.ruff]
+# Target Python version
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+# Select rules:
+# E/W - pycodestyle errors and warnings
+# F - Pyflakes (imports, syntax, variables)
+# I - isort (import sorting)
+# B - flake8-bugbear (common design issues)
+# UP - pyupgrade (upgrade syntax to modern Python)
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = [
+    "E501", # Ignore line too long (handled by formatter)
+    "B008", # Do not perform function call in argument defaults (needed for some custom script decorators/defaults)
+]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"

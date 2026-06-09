@@ -1,0 +1,4 @@
+# MonteCarloEngine - Functions
+
+- `buildMonteCarloConfig(...)`
+- `runMonteCarloSimulation(...)`

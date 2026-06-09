@@ -6,3 +6,7 @@ __pycache__/
 node_modules/
 .playwright-mcp/
 tmp_*/
+
+# Proteção extra: Ignorar dados brutos (.csv) nas pastas de exportação
+# Garantindo que apenas os .enc.json sejam commitados
+data/**/source_exports/**/*.csv

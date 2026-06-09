@@ -11,17 +11,17 @@
   {
     "step": "scenario",
     "status": "ok",
-    "prompts": 1
+    "prompts": 0
   },
   {
     "step": "optimizer",
     "status": "ok",
-    "prompts": 1
+    "prompts": 0
   },
   {
     "step": "final_delivery",
     "status": "ok",
-    "prompts": 1
+    "prompts": 0
   },
   {
     "step": "mobile_home",

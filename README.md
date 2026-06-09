@@ -1,14 +1,21 @@
-# Simulador Estático de Malha Logística — Fase 1 organizada
+# Simulador Estático de Malha Logística
 
-Este pacote é a base organizada para reconstruir o projeto do simulador estático de malha logística.
+Este pacote mantém as rotas públicas atuais e agora expõe uma árvore mais clara para navegação e manutenção.
 
-A Fase 1 já implementa:
+## Estrutura preferencial
 
-- site estático com `index.html`, `assets/styles.css` e `assets/app.js`;
+- `assets/js/core/`: utilitários compartilhados e integrações comuns.
+- `assets/js/features/phase-*/`: entrypoints canônicos por fase.
+- `assets/js/debug/`: Debug Center isolado.
+- `assets/js/shared/` e `assets/js/phase2` a `assets/js/phase5`: compatibilidade com a organização anterior.
+
+## O que já está pronto
+
+- site estático com `index.html`, `assets/styles.css` e rotas diretas por fase;
 - seleção separada de Empresa 1 e Empresa 2;
 - catálogo de dados em `data/catalog.json`;
 - painéis de qualidade, paths, abas e checklist manual;
-- documentação modular de todas as fases;
+- documentação modular por tema e por fase;
 - dados tratados por empresa;
 - testes separados por tipo.
 
@@ -55,15 +62,15 @@ data/validation/presentation_e2e/
 ## Pastas principais
 
 ```text
-assets/       front-end estático
-data/         dados tratados, contratos e validações
-docs/         documentação organizada por tema
-etl/          apoio para regeneração
-references/   fontes brutas preservadas
-tests/        testes organizados
+assets/         front-end estático
+data/           dados tratados, contratos e validações
+docs/           documentação organizada por tema
+etl/            apoio para regeneração
+references/     fontes brutas preservadas
+tests/          testes organizados
 ```
 
-Leia também `PROJECT_STRUCTURE.md`.
+Leia também `PROJECT_STRUCTURE.md` para a divisão recomendada entre `core` e `features`.
 
 ## Fase 2 implementada
 

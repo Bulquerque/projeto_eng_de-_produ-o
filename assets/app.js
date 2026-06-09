@@ -687,6 +687,8 @@ async function ensureCompanyUnlocked(companyId) {
   state.phase2Bundles[companyId] = bundle;
   await renderPhase2Validation(companyId);
   log('Dados criptografados desbloqueados', { companyId });
+  const tab = document.querySelector(`.company-toggle button[data-company="${companyId}"]`);
+  if (tab) tab.click();
 }
 
 function bindEvents() {
@@ -760,6 +762,14 @@ async function init() {
     runPhase1Checks();
     void renderPhase2Validation(state.selectedCompany);
     log('Fase 1 carregada com sucesso');
+    setTimeout(() => {
+      const protectedHashes = ['#/diagnostico-baseline', '#/simulacao-otimizacao', '#/homologacao-relatorio', 
+                               '#fase-2-baseline', '#fase-3-cenarios', '#fase-4-score-otimizador', '#fase-5-entrega-final', '#debug', '#erros', '#baseline', '#arena'];
+      const currentHash = window.location.hash;
+      if (protectedHashes.includes(currentHash) || protectedHashes.some(ph => currentHash.startsWith(ph))) {
+        void ensureCompanyUnlocked(state.selectedCompany);
+      }
+    }, 300);
     window.addEventListener('storage', (event) => {
       if (event.key === SHARED_DEBUG_FEED_KEY) renderSharedDebugFeed();
     });

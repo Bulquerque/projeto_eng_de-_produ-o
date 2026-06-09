@@ -1,0 +1,10 @@
+grupo,checagem,criterio_de_ok,acao_se_falhar
+baseline,Custo total fecha com observado,Diferença dentro da tolerância definida pelo grupo,Bloquear recomendação; revisar fórmula/camadas.
+tributário,Regime atual e reforma separados,Campos e abas distintos para atual/reforma,Separar antes de rodar cenários.
+tributário,Fonte de cada alíquota registrada,Toda linha fiscal tem fonte_url e confiança,Marcar como hipótese ou buscar fonte.
+tributário,Benefício fiscal não tratado como universal,"Benefício tem UF, operação, produto e fonte",Remover do cenário base ou marcar hipótese.
+dados,Demanda encontra rota,Demanda sem match = 0 ou alertada,Gerar lista de rotas sem match.
+frete,Frete não duplicado,Transferência + distribuição não somam com campo já consolidado,Auditar fórmula de custo total.
+estoque,WOC proxy marcado,Toda cobertura importada da outra empresa tem tag proxy_empresa2,Não apresentar como observado.
+geografia,UFs padronizadas,Todas as UFs em uf_reference,Corrigir grafia/acentos/códigos.
+reforma,Pesos de transição somam 1,peso_icms_iss + peso_ibs = 1 para 2029-2033,Corrigir timeline.

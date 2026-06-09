@@ -1,0 +1,32 @@
+[
+  {
+    "source_confidence": "observed_tenant",
+    "meaning": "Dado observado diretamente no arquivo bruto da própria empresa",
+    "can_be_treated_as_observed": true
+  },
+  {
+    "source_confidence": "proxy_other_company",
+    "meaning": "Dado usado da outra empresa como proxy controlado e declarado",
+    "can_be_treated_as_observed": false
+  },
+  {
+    "source_confidence": "external_official",
+    "meaning": "Dado de fonte pública oficial, principalmente tributária/regulatória",
+    "can_be_treated_as_observed": false
+  },
+  {
+    "source_confidence": "external_reference",
+    "meaning": "Dado externo de apoio/benchmark, não central",
+    "can_be_treated_as_observed": false
+  },
+  {
+    "source_confidence": "manual_scenario",
+    "meaning": "Hipótese criada para simulação de cenário",
+    "can_be_treated_as_observed": false
+  },
+  {
+    "source_confidence": "disabled",
+    "meaning": "Campo/tabela não disponível com segurança para o cenário",
+    "can_be_treated_as_observed": false
+  }
+]

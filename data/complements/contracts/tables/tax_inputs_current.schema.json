@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "title": "tax_inputs_current",
+  "x_contract": "initial_site_bundle",
+  "required": [
+    "tenant_id",
+    "tax_rule_id",
+    "origin_uf",
+    "destination_uf",
+    "tax_type",
+    "source_confidence"
+  ]
+}

@@ -1,0 +1,178 @@
+[
+  {
+    "tenant_id": "empresa_1",
+    "layer": "canonical",
+    "table": "nodes",
+    "path": "data/tenants/empresa_1/canonical/nodes.csv",
+    "rows": 89,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "layer": "canonical",
+    "table": "edges",
+    "path": "data/tenants/empresa_1/canonical/edges.csv",
+    "rows": 576,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "layer": "canonical",
+    "table": "products",
+    "path": "data/tenants/empresa_1/canonical/products.csv",
+    "rows": 2983,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "layer": "canonical",
+    "table": "demand",
+    "path": "data/tenants/empresa_1/canonical/demand.csv",
+    "rows": 60309,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "layer": "canonical",
+    "table": "cost_inputs",
+    "path": "data/tenants/empresa_1/canonical/cost_inputs.csv",
+    "rows": 579,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "layer": "canonical",
+    "table": "inventory",
+    "path": "data/tenants/empresa_1/canonical/inventory.csv",
+    "rows": 1,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "layer": "canonical",
+    "table": "storage_inputs",
+    "path": "data/tenants/empresa_1/canonical/storage_inputs.csv",
+    "rows": 1,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "layer": "tax",
+    "table": "tax_inputs_current",
+    "path": "data/tenants/empresa_1/tax/tax_inputs_current.csv",
+    "rows": 729,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "layer": "tax",
+    "table": "tax_inputs_reform",
+    "path": "data/tenants/empresa_1/tax/tax_inputs_reform.csv",
+    "rows": 8,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "layer": "tax",
+    "table": "tax_scenario_bridge",
+    "path": "data/tenants/empresa_1/tax/tax_scenario_bridge.csv",
+    "rows": 4,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_1",
+    "layer": "tax",
+    "table": "tax_assumptions",
+    "path": "data/tenants/empresa_1/tax/tax_assumptions.csv",
+    "rows": 3,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "canonical",
+    "table": "nodes",
+    "path": "data/tenants/empresa_2/canonical/nodes.csv",
+    "rows": 35,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "canonical",
+    "table": "edges",
+    "path": "data/tenants/empresa_2/canonical/edges.csv",
+    "rows": 0,
+    "status": "empty_or_template"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "canonical",
+    "table": "products",
+    "path": "data/tenants/empresa_2/canonical/products.csv",
+    "rows": 159,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "canonical",
+    "table": "demand",
+    "path": "data/tenants/empresa_2/canonical/demand.csv",
+    "rows": 168,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "canonical",
+    "table": "cost_inputs",
+    "path": "data/tenants/empresa_2/canonical/cost_inputs.csv",
+    "rows": 68,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "canonical",
+    "table": "inventory",
+    "path": "data/tenants/empresa_2/canonical/inventory.csv",
+    "rows": 633,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "canonical",
+    "table": "storage_inputs",
+    "path": "data/tenants/empresa_2/canonical/storage_inputs.csv",
+    "rows": 68,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "tax",
+    "table": "tax_inputs_current",
+    "path": "data/tenants/empresa_2/tax/tax_inputs_current.csv",
+    "rows": 729,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "tax",
+    "table": "tax_inputs_reform",
+    "path": "data/tenants/empresa_2/tax/tax_inputs_reform.csv",
+    "rows": 8,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "tax",
+    "table": "tax_scenario_bridge",
+    "path": "data/tenants/empresa_2/tax/tax_scenario_bridge.csv",
+    "rows": 4,
+    "status": "ready_initial"
+  },
+  {
+    "tenant_id": "empresa_2",
+    "layer": "tax",
+    "table": "tax_assumptions",
+    "path": "data/tenants/empresa_2/tax/tax_assumptions.csv",
+    "rows": 3,
+    "status": "ready_initial"
+  }
+]

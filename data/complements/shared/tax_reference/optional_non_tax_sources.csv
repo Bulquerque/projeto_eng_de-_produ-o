@@ -1,0 +1,5 @@
+input,prioridade,usar_quando,fonte,url,nao_fazer
+Selic / WACC,baixa,"Somente para sensibilidade de custo de capital, caso o grupo queira comparar WACC interno vs taxa de referência.",BCB SGS 11,https://dadosabertos.bcb.gov.br/dataset/11-taxa-de-juros---selic,Não substituir WACC interno automaticamente.
+Diesel,baixa,Somente para validar/sensibilizar frete em cenário específico.,ANP série histórica de combustíveis,https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/serie-historica-de-precos-de-combustiveis,Não substituir frete/kg contratado.
+Piso mínimo de frete,baixa,Somente como benchmark/regulatório se houver rota sem referência.,ANTT calculadora,https://calculadorafrete.antt.gov.br/,Não usar como custo real da empresa.
+Geografia oficial,média,Padronizar UF/município/centroide e corrigir rotas sem match.,IBGE Malha Municipal,https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais/15774-malhas.html,Não trocar coordenadas internas se elas já forem consistentes.

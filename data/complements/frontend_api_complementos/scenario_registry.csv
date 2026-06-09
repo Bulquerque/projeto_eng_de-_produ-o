@@ -1,0 +1,9 @@
+tenant_id,scenario_id,scenario_name,scenario_type,tax_regime,scenario_year,tax_policy,source_confidence
+empresa_1,baseline_atual,Baseline atual,baseline_current,current,2026,regime atual,observed_tenant_plus_proxy_tax
+empresa_1,reforma_2027,Reforma 2027,tax_reform_transition,reform_transition,2027,CBS/IBS/IS inicial conforme premissas,external_official
+empresa_1,reforma_2030,Reforma 2030,tax_reform_transition,reform_transition,2030,transição intermediária ICMS/ISS para IBS,external_official
+empresa_1,reforma_2033,Reforma 2033,tax_reform_full,reform_full,2033,novo regime integral,external_official
+empresa_2,baseline_atual,Baseline atual,baseline_current,current,2026,regime atual,observed_tenant
+empresa_2,reforma_2027,Reforma 2027,tax_reform_transition,reform_transition,2027,CBS/IBS/IS inicial conforme premissas,external_official
+empresa_2,reforma_2030,Reforma 2030,tax_reform_transition,reform_transition,2030,transição intermediária ICMS/ISS para IBS,external_official
+empresa_2,reforma_2033,Reforma 2033,tax_reform_full,reform_full,2033,novo regime integral,external_official

@@ -1,7 +1,29 @@
-function esc(v) { return String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
-function brl(v) { const n = Number(v); return Number.isFinite(n) ? n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }) : '—'; }
-function pct(v) { const n = Number(v); return Number.isFinite(n) ? `${n.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%` : '—'; }
-function status(v) { return { recommended: 'recomendado', not_recommended: 'não recomendado', review_required: 'revisar' }[v] || v || '—'; }
+function esc(v) {
+  return String(v ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+function brl(v) {
+  const n = Number(v);
+  return Number.isFinite(n)
+    ? n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
+    : '—';
+}
+function pct(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? `${n.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%` : '—';
+}
+function status(v) {
+  return (
+    { recommended: 'recomendado', not_recommended: 'não recomendado', review_required: 'revisar' }[
+      v
+    ] ||
+    v ||
+    '—'
+  );
+}
 function workbookParitySection(workbookParity = {}) {
   const rows = workbookParity?.rows || [];
   if (!workbookParity) return '';
@@ -19,15 +41,53 @@ function workbookParitySection(workbookParity = {}) {
       <tr><td>Reconciliação geral</td><td>${esc(workbookParity.reconciliation_label || '—')}</td></tr>
       <tr><td>Reconciliação tributária</td><td>${esc(workbookParity.tax_status || 'pending')}</td></tr>
     </tbody></table>
-    ${rows.length ? `
+    ${
+      rows.length
+        ? `
       <table class="executive-table-premium" style="margin-top:12px"><thead><tr><th>Métrica</th><th>Referência</th><th>Simulado</th><th>Erro</th><th>Status</th></tr></thead><tbody>
-      ${rows.map(row => `<tr><td>${esc(row.metric)}</td><td>${esc(brl(row.reference))}</td><td>${esc(brl(row.simulated))}</td><td>${esc(row.percentage_error == null ? '—' : pct(row.percentage_error))}</td><td>${esc(row.status || '—')}</td></tr>`).join('')}
+      ${rows.map((row) => `<tr><td>${esc(row.metric)}</td><td>${esc(brl(row.reference))}</td><td>${esc(brl(row.simulated))}</td><td>${esc(row.percentage_error == null ? '—' : pct(row.percentage_error))}</td><td>${esc(row.status || '—')}</td></tr>`).join('')}
       </tbody></table>
-    ` : '<p>Sem métricas de workbook consolidadas para exibir.</p>'}
+    `
+        : '<p>Sem métricas de workbook consolidadas para exibir.</p>'
+    }
   `;
 }
-export function buildExecutiveReportHtml({ companyId, selectedScenario, recommendation, stress, robustness, audit, comparison, workbookParity } = {}) {
-  const scenarioName = selectedScenario?.scenario_name || selectedScenario?.scenario?.scenario_name || selectedScenario?.scenario_id || selectedScenario?.result?.scenario_id || 'Cenário selecionado';
+function monteCarloSection(selectedScenario = {}) {
+  const monteCarlo =
+    selectedScenario?.monte_carlo?.summary ||
+    selectedScenario?.scenario?.monte_carlo?.summary ||
+    selectedScenario?.monte_carlo_summary ||
+    null;
+  if (!monteCarlo) return '';
+
+  return `
+    <h3>Análise probabilística</h3>
+    <table class="executive-table-premium"><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>
+      <tr><td>Perfil</td><td>${esc(monteCarlo.profile || '—')}</td></tr>
+      <tr><td>Iterações</td><td>${esc(monteCarlo.iterations ?? '—')}</td></tr>
+      <tr><td>Prob. saving positivo</td><td>${esc(pct(Number(monteCarlo.probability_saving_positive || 0) * 100))}</td></tr>
+      <tr><td>Saving p10 / p50 / p90</td><td>${esc(pct(monteCarlo.p10_saving_pct))} · ${esc(pct(monteCarlo.median_saving_pct))} · ${esc(pct(monteCarlo.p90_saving_pct))}</td></tr>
+      <tr><td>Driver mais influente</td><td>${esc(monteCarlo.most_sensitive_driver || '—')}</td></tr>
+      <tr><td>Faixa de risco</td><td>${esc(monteCarlo.risk_band || '—')}</td></tr>
+    </tbody></table>
+  `;
+}
+export function buildExecutiveReportHtml({
+  companyId,
+  selectedScenario,
+  recommendation,
+  stress,
+  robustness,
+  audit,
+  comparison,
+  workbookParity,
+} = {}) {
+  const scenarioName =
+    selectedScenario?.scenario_name ||
+    selectedScenario?.scenario?.scenario_name ||
+    selectedScenario?.scenario_id ||
+    selectedScenario?.result?.scenario_id ||
+    'Cenário selecionado';
   const total = selectedScenario?.result?.total_with_tax ?? selectedScenario?.total_with_tax;
   const saving = comparison?.saving_abs ?? comparison?.comparison?.[0]?.saving_abs;
   const savingPct = comparison?.saving_pct;
@@ -46,11 +106,12 @@ export function buildExecutiveReportHtml({ companyId, selectedScenario, recommen
     </tbody></table>
     <h3>Stress test</h3>
     <p>${esc(stress?.summary?.cases_positive || 0)} de ${esc(stress?.summary?.cases_run || 0)} casos mantiveram resultado melhor ou igual ao baseline.</p>
+    ${monteCarloSection(selectedScenario)}
     ${workbookParitySection(workbookParity)}
     <h3>Principais razões</h3>
-    <ul>${(recommendation?.main_reasons || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <ul>${(recommendation?.main_reasons || []).map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
     <h3>Riscos e próximos passos</h3>
-    <ul>${(recommendation?.main_risks || []).map(x => `<li>${esc(x)}</li>`).join('')}${(recommendation?.next_actions || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <ul>${(recommendation?.main_risks || []).map((x) => `<li>${esc(x)}</li>`).join('')}${(recommendation?.next_actions || []).map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
     <h3>Auditoria</h3>
     <p>Baseline: ${esc(audit?.baseline_scenario_id || '—')} · Cenário: ${esc(audit?.selected_scenario_id || '—')}</p>
   </article>`;

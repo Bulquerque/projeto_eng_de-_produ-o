@@ -8,7 +8,11 @@ function n(value) {
 
 function normalizeInput(input) {
   if (input && typeof input === 'object' && (input.base_fit || input.costs || input.model)) {
-    return { fit: input.base_fit || {}, costs: input.costs || null, reconciliation: input.reconciliation || buildBundleReconciliation(input) };
+    return {
+      fit: input.base_fit || {},
+      costs: input.costs || null,
+      reconciliation: input.reconciliation || buildBundleReconciliation(input),
+    };
   }
   return { fit: input || {}, costs: null, reconciliation: null };
 }
@@ -16,7 +20,9 @@ function normalizeInput(input) {
 function fitRows(fit, costs, reconciliation) {
   const directRows = Array.isArray(fit?.errors_by_metric) ? fit.errors_by_metric : [];
   if (directRows.length) return directRows;
-  const operationalRows = Array.isArray(reconciliation?.operational?.rows) ? reconciliation.operational.rows : [];
+  const operationalRows = Array.isArray(reconciliation?.operational?.rows)
+    ? reconciliation.operational.rows
+    : [];
   if (operationalRows.length) return operationalRows;
   const referenceResults = costs?.reference_results || null;
   const simulated = costs?.costs || {};
@@ -25,17 +31,26 @@ function fitRows(fit, costs, reconciliation) {
   return Object.entries(referenceResults).map(([metric, reference]) => {
     const simulatedValue = n(simulated[metric]);
     const referenceValue = n(reference);
-    const percentageError = referenceValue === 0 || simulatedValue == null || referenceValue == null
-      ? null
-      : ((simulatedValue - referenceValue) / referenceValue) * 100;
+    const percentageError =
+      referenceValue === 0 || simulatedValue == null || referenceValue == null
+        ? null
+        : ((simulatedValue - referenceValue) / referenceValue) * 100;
     const absPct = percentageError == null ? null : Math.abs(percentageError);
     return {
       metric,
       reference: referenceValue,
       simulated: simulatedValue,
-      absolute_error: simulatedValue == null || referenceValue == null ? null : simulatedValue - referenceValue,
+      absolute_error:
+        simulatedValue == null || referenceValue == null ? null : simulatedValue - referenceValue,
       percentage_error: percentageError,
-      status: absPct == null ? 'sem_referencia' : absPct <= 3 ? 'OK' : absPct <= 10 ? 'atenção' : 'alto_desvio'
+      status:
+        absPct == null
+          ? 'sem_referencia'
+          : absPct <= 3
+            ? 'OK'
+            : absPct <= 10
+              ? 'atenção'
+              : 'alto_desvio',
     };
   });
 }
@@ -44,21 +59,21 @@ function statusLabel(fit, hasRealComparison, costs = null) {
   if (!fit) return 'sem referência';
   if (fit.status === 'benchmark_pending') {
     if (hasRealComparison) return 'comparação real disponível';
-    return costs?.cost_basis === 'computed_proxy' ? 'baseline estrutural disponível' : 'benchmark pendente';
+    return costs?.cost_basis === 'computed_proxy'
+      ? 'baseline estrutural disponível'
+      : 'benchmark pendente';
   }
   return String(fit.status || 'paridade disponível');
 }
 
 function summarizeRows(rows) {
-  const numeric = rows
-    .map((row) => n(row?.percentage_error))
-    .filter((value) => value !== null);
+  const numeric = rows.map((row) => n(row?.percentage_error)).filter((value) => value !== null);
 
   if (!numeric.length) {
     return {
       compared_metrics: 0,
       mean_abs_error_pct: null,
-      max_abs_error_pct: null
+      max_abs_error_pct: null,
     };
   }
 
@@ -68,7 +83,7 @@ function summarizeRows(rows) {
   return {
     compared_metrics: absValues.length,
     mean_abs_error_pct: total / absValues.length,
-    max_abs_error_pct: Math.max(...absValues)
+    max_abs_error_pct: Math.max(...absValues),
   };
 }
 
@@ -76,25 +91,43 @@ export function buildWorkbookParitySummary(input) {
   const { fit, costs, reconciliation } = normalizeInput(input);
   const rows = fitRows(fit, costs, reconciliation);
   const summary = summarizeRows(rows);
-  const hasDirectBenchmark = Array.isArray(fit?.errors_by_metric) && fit.errors_by_metric.length > 0;
-  const hasRealComparison = rows.length > 0 && !hasDirectBenchmark && Boolean((reconciliation?.operational?.rows || []).length || costs?.reference_results);
-  const hasProxyBaseline = fit.status === 'benchmark_pending' && costs?.cost_basis === 'computed_proxy';
+  const hasDirectBenchmark =
+    Array.isArray(fit?.errors_by_metric) && fit.errors_by_metric.length > 0;
+  const hasRealComparison =
+    rows.length > 0 &&
+    !hasDirectBenchmark &&
+    Boolean((reconciliation?.operational?.rows || []).length || costs?.reference_results);
+  const hasProxyBaseline =
+    fit.status === 'benchmark_pending' && costs?.cost_basis === 'computed_proxy';
   const overallStatus = reconciliation?.overall || null;
   const taxStatus = reconciliation?.tax || null;
 
   return {
     available: rows.length > 0,
     status: fit.status || 'benchmark_pending',
-    status_label: hasProxyBaseline ? 'baseline estrutural disponível' : (overallStatus?.label || statusLabel(fit, hasRealComparison, costs)),
+    status_label: hasProxyBaseline
+      ? 'baseline estrutural disponível'
+      : overallStatus?.label || statusLabel(fit, hasRealComparison, costs),
     score: fit.base_fit_score ?? null,
-    reference_source: fit.reference_source || reconciliation?.operational?.source || costs?.cost_basis || 'Sem referência consolidada disponível.',
-    comparison_mode: hasRealComparison ? 'reference_results' : (hasProxyBaseline ? 'proxy_baseline' : (Array.isArray(fit?.errors_by_metric) && fit.errors_by_metric.length ? 'base_fit' : 'pending')),
+    reference_source:
+      fit.reference_source ||
+      reconciliation?.operational?.source ||
+      costs?.cost_basis ||
+      'Sem referência consolidada disponível.',
+    comparison_mode: hasRealComparison
+      ? 'reference_results'
+      : hasProxyBaseline
+        ? 'proxy_baseline'
+        : Array.isArray(fit?.errors_by_metric) && fit.errors_by_metric.length
+          ? 'base_fit'
+          : 'pending',
     reconciliation_status: overallStatus?.status || 'pending',
     reconciliation_label: overallStatus?.label || 'reconciliaçao pendente',
-    operational_status: reconciliation?.operational?.status || (hasRealComparison ? 'aligned' : 'pending'),
+    operational_status:
+      reconciliation?.operational?.status || (hasRealComparison ? 'aligned' : 'pending'),
     tax_status: taxStatus?.status || 'pending',
     rows,
-    summary
+    summary,
   };
 }
 
@@ -110,9 +143,15 @@ export function renderWorkbookParityPanel(parity) {
     ['Status', parity.status_label || '—'],
     ['Base Fit Score', score],
     ['Métricas comparadas', String(summary.compared_metrics ?? 0)],
-    ['Erro médio absoluto', summary.mean_abs_error_pct == null ? '—' : formatPct(summary.mean_abs_error_pct, 2)],
-    ['Maior desvio', summary.max_abs_error_pct == null ? '—' : formatPct(summary.max_abs_error_pct, 2)],
-    ['Fonte', parity.reference_source || '—']
+    [
+      'Erro médio absoluto',
+      summary.mean_abs_error_pct == null ? '—' : formatPct(summary.mean_abs_error_pct, 2),
+    ],
+    [
+      'Maior desvio',
+      summary.max_abs_error_pct == null ? '—' : formatPct(summary.max_abs_error_pct, 2),
+    ],
+    ['Fonte', parity.reference_source || '—'],
   ];
 
   return `
@@ -127,20 +166,36 @@ export function renderWorkbookParityPanel(parity) {
         ${parity.comparison_mode === 'proxy_baseline' ? '<p class="small-note">Baseline estrutural proxy calculado a partir de demanda, distância e premissas; o Base Fit histórico permanece pendente.</p>' : ''}
       </div>
       <div class="fit-table-wrap">
-        ${renderTable(summaryCards.map(([metric, value]) => ({ metric, value })), [
-          { label: 'Indicador', value: 'metric' },
-          { label: 'Valor', value: 'value' }
-        ], 20)}
+        ${renderTable(
+          summaryCards.map(([metric, value]) => ({ metric, value })),
+          [
+            { label: 'Indicador', value: 'metric' },
+            { label: 'Valor', value: 'value' },
+          ],
+          20
+        )}
       </div>
     </div>
     <div class="table-wrap" style="margin-top: 12px;">
-      ${rows.length ? renderTable(rows, [
-        { label: 'Métrica', value: 'metric' },
-        { label: 'Referência workbook', value: (row) => formatBRL(row.reference, true) },
-        { label: 'Simulado', value: (row) => formatBRL(row.simulated, true) },
-        { label: 'Erro (%)', value: (row) => (row.percentage_error == null ? '—' : formatPct(row.percentage_error, 2)) },
-        { label: 'Status', value: 'status' }
-      ], 20) : '<p class="benchmark-pending">Sem métricas de workbook consolidadas para exibir.</p>'}
+      ${
+        rows.length
+          ? renderTable(
+              rows,
+              [
+                { label: 'Métrica', value: 'metric' },
+                { label: 'Referência workbook', value: (row) => formatBRL(row.reference, true) },
+                { label: 'Simulado', value: (row) => formatBRL(row.simulated, true) },
+                {
+                  label: 'Erro (%)',
+                  value: (row) =>
+                    row.percentage_error == null ? '—' : formatPct(row.percentage_error, 2),
+                },
+                { label: 'Status', value: 'status' },
+              ],
+              20
+            )
+          : '<p class="benchmark-pending">Sem métricas de workbook consolidadas para exibir.</p>'
+      }
     </div>
   `;
 }

@@ -1,0 +1,56 @@
+[
+  {
+    "grupo": "baseline",
+    "checagem": "Custo total fecha com observado",
+    "criterio_de_ok": "Diferença dentro da tolerância definida pelo grupo",
+    "acao_se_falhar": "Bloquear recomendação; revisar fórmula/camadas."
+  },
+  {
+    "grupo": "tributário",
+    "checagem": "Regime atual e reforma separados",
+    "criterio_de_ok": "Campos e abas distintos para atual/reforma",
+    "acao_se_falhar": "Separar antes de rodar cenários."
+  },
+  {
+    "grupo": "tributário",
+    "checagem": "Fonte de cada alíquota registrada",
+    "criterio_de_ok": "Toda linha fiscal tem fonte_url e confiança",
+    "acao_se_falhar": "Marcar como hipótese ou buscar fonte."
+  },
+  {
+    "grupo": "tributário",
+    "checagem": "Benefício fiscal não tratado como universal",
+    "criterio_de_ok": "Benefício tem UF, operação, produto e fonte",
+    "acao_se_falhar": "Remover do cenário base ou marcar hipótese."
+  },
+  {
+    "grupo": "dados",
+    "checagem": "Demanda encontra rota",
+    "criterio_de_ok": "Demanda sem match = 0 ou alertada",
+    "acao_se_falhar": "Gerar lista de rotas sem match."
+  },
+  {
+    "grupo": "frete",
+    "checagem": "Frete não duplicado",
+    "criterio_de_ok": "Transferência + distribuição não somam com campo já consolidado",
+    "acao_se_falhar": "Auditar fórmula de custo total."
+  },
+  {
+    "grupo": "estoque",
+    "checagem": "WOC proxy marcado",
+    "criterio_de_ok": "Toda cobertura importada da outra empresa tem tag proxy_empresa2",
+    "acao_se_falhar": "Não apresentar como observado."
+  },
+  {
+    "grupo": "geografia",
+    "checagem": "UFs padronizadas",
+    "criterio_de_ok": "Todas as UFs em uf_reference",
+    "acao_se_falhar": "Corrigir grafia/acentos/códigos."
+  },
+  {
+    "grupo": "reforma",
+    "checagem": "Pesos de transição somam 1",
+    "criterio_de_ok": "peso_icms_iss + peso_ibs = 1 para 2029-2033",
+    "acao_se_falhar": "Corrigir timeline."
+  }
+]

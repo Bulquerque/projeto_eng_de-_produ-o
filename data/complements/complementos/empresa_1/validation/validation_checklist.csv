@@ -1,0 +1,7 @@
+test,status,notes
+raw_is_read_only,pass,Arquivos brutos copiados para data/raw; não editar.
+tenant_manifest_valid,pass,Manifesto criado.
+source_map_complete_initial,pass,Campos críticos mapeados; revisar após refinamento tributário.
+canonical_schema_valid_initial,pass,Tabelas canônicas criadas no padrão inicial.
+tax_scenario_bridge_valid,pass,"Cenários baseline, 2027, 2030 e 2033 criados."
+legal_tax_review,pending,"Camada tributária é simulação, não parecer jurídico."

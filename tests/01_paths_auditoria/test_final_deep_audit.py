@@ -1,24 +1,28 @@
 import json
-
 from pathlib import Path
 
+
 def find_project_root() -> Path:
     here = Path(__file__).resolve()
     for candidate in [here.parent, *here.parents]:
-        if (candidate / "index.html").exists() and (candidate / "data").exists():
+        if (candidate / 'index.html').exists() and (candidate / 'data').exists():
             return candidate
-    raise RuntimeError("Project root not found. Run tests from inside the extracted package.")
+    raise RuntimeError('Project root not found. Run tests from inside the extracted package.')
+
 
 ROOT = find_project_root()
+
+
 def find_project_root() -> Path:
     here = Path(__file__).resolve()
     for candidate in [here.parent, *here.parents]:
-        if (candidate / "index.html").exists() and (candidate / "data").exists():
+        if (candidate / 'index.html').exists() and (candidate / 'data').exists():
             return candidate
-    raise RuntimeError("Project root not found. Run tests from inside the extracted package.")
+    raise RuntimeError('Project root not found. Run tests from inside the extracted package.')
+
 
 ROOT = find_project_root()
-summary = json.loads((ROOT/'data/validation/final_v6_audit_summary.json').read_text(encoding='utf-8'))
+summary = json.loads((ROOT / 'data/validation/final_v6_audit_summary.json').read_text(encoding='utf-8'))
 assert summary['result'] == 'OK', summary
 assert summary['workbook_audit']['workbook_files_checked'] == 5
 assert summary['workbook_audit']['total_sheets_checked'] == 53

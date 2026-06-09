@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "title": "inventory",
+  "x_contract": "initial_site_bundle",
+  "required": [
+    "tenant_id",
+    "inventory_id",
+    "node_id",
+    "period",
+    "source_confidence"
+  ]
+}

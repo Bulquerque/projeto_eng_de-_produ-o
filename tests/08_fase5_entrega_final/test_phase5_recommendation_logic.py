@@ -1,10 +1,14 @@
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tests.crypto_helpers import NODE_DECRYPT_HELPER
-ROOT=Path(__file__).resolve().parents[2]
-code=NODE_DECRYPT_HELPER + r'''
+
+ROOT = Path(__file__).resolve().parents[2]
+code = (
+    NODE_DECRYPT_HELPER
+    + r"""
 import fs from 'fs';
 import {buildObjective} from './assets/js/phase4/objective-builder.js';
 import {runOptimization} from './assets/js/phase4/scenario-optimizer.js';
@@ -28,8 +32,9 @@ for (const companyId of ['empresa1','empresa2']) {
  if(comp.saving_pct<0 && rec.recommendation_status==='recommended') throw new Error('negative saving cannot be clean recommended');
 }
 console.log('PHASE5_NODE_RECOMMENDATION_OK');
-'''
-res=subprocess.run(['node','--input-type=module','-e',code],cwd=ROOT,text=True,capture_output=True,timeout=120)
-assert res.returncode==0, res.stderr+res.stdout
+"""
+)
+res = subprocess.run(['node', '--input-type=module', '-e', code], cwd=ROOT, text=True, capture_output=True, timeout=120)
+assert res.returncode == 0, res.stderr + res.stdout
 print(res.stdout.strip())
 print('PHASE5_RECOMMENDATION_LOGIC_OK')

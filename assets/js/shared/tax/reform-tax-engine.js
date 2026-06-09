@@ -16,9 +16,14 @@ function groupBy(items, keyGetter) {
   return out;
 }
 
-export function calculateReformTax({ fiscalFlows = [], taxRegime = 'reform_full_2033', demandMultiplier = 1, parameters = null } = {}) {
+export function calculateReformTax({
+  fiscalFlows = [],
+  taxRegime = 'reform_full_2033',
+  demandMultiplier = 1,
+  parameters = null,
+} = {}) {
   const rates = getRegimeTaxRates(taxRegime, parameters || undefined);
-  const flowBreakdown = fiscalFlows.map(flow => {
+  const flowBreakdown = fiscalFlows.map((flow) => {
     const rule = getFiscalCategoryRule(flow.fiscal_category);
     const grossRevenue = n(flow.gross_revenue) * n(demandMultiplier, 1);
     const cbs = grossRevenue * n(rates.cbs) * n(rule.cbs_rate_multiplier, 1);
@@ -35,7 +40,7 @@ export function calculateReformTax({ fiscalFlows = [], taxRegime = 'reform_full_
       ibs,
       selective_tax: selective,
       credits,
-      total_tax: total
+      total_tax: total,
     };
   });
 
@@ -51,21 +56,31 @@ export function calculateReformTax({ fiscalFlows = [], taxRegime = 'reform_full_
     { cbs_total: 0, ibs_total: 0, selective_tax_total: 0, credits_total: 0, total_reform_tax: 0 }
   );
 
-  const byDestination = groupBy(flowBreakdown, row => row.destination_uf);
-  const byCategory = groupBy(flowBreakdown, row => row.fiscal_category);
+  const byDestination = groupBy(flowBreakdown, (row) => row.destination_uf);
+  const byCategory = groupBy(flowBreakdown, (row) => row.fiscal_category);
 
   return {
     ...totals,
     flow_breakdown: flowBreakdown,
-    tax_breakdown_by_destination_uf: Object.fromEntries(Object.entries(byDestination).map(([key, rows]) => [key, rows.reduce((sum, row) => sum + n(row.total_tax), 0)])),
-    tax_breakdown_by_fiscal_category: Object.fromEntries(Object.entries(byCategory).map(([key, rows]) => [key, rows.reduce((sum, row) => sum + n(row.total_tax), 0)])),
+    tax_breakdown_by_destination_uf: Object.fromEntries(
+      Object.entries(byDestination).map(([key, rows]) => [
+        key,
+        rows.reduce((sum, row) => sum + n(row.total_tax), 0),
+      ])
+    ),
+    tax_breakdown_by_fiscal_category: Object.fromEntries(
+      Object.entries(byCategory).map(([key, rows]) => [
+        key,
+        rows.reduce((sum, row) => sum + n(row.total_tax), 0),
+      ])
+    ),
     tax_breakdown_by_component: {
       legacy_tax: 0,
       cbs_total: totals.cbs_total,
       ibs_total: totals.ibs_total,
       selective_tax_total: totals.selective_tax_total,
-      credits_total: totals.credits_total
+      credits_total: totals.credits_total,
     },
-    regime_rates: rates
+    regime_rates: rates,
   };
 }

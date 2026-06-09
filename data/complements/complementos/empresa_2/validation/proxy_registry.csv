@@ -1,0 +1,3 @@
+tenant_id,proxy_id,field_scope,proxy_source,allowed,limitation
+empresa_2,proxy_other_company_if_missing,inventory/freight/tax_as_needed,empresa_1,True,"Usar como hipótese controlada, nunca como observado."
+empresa_2,external_official_tax,tax_reform/current_icms_reference,official_sources,True,Usar para simulação; validar regras específicas.

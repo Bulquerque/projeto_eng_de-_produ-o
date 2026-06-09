@@ -12,7 +12,9 @@ const textDecoder = new TextDecoder();
 
 export function bytesToBase64(bytes) {
   let binary = '';
-  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
   return btoa(binary);
 }
 
@@ -28,8 +30,13 @@ export function base64ToBytes(value) {
 }
 
 export function validateEnvelope(envelope) {
-  if (!envelope || typeof envelope !== 'object') throw new CryptoDataError('CRYPTO_004', 'Envelope criptográfico inválido.');
-  if (envelope.version !== 1 || envelope.algorithm !== 'AES-GCM' || envelope.kdf !== 'PBKDF2-SHA-256') {
+  if (!envelope || typeof envelope !== 'object')
+    throw new CryptoDataError('CRYPTO_004', 'Envelope criptográfico inválido.');
+  if (
+    envelope.version !== 1 ||
+    envelope.algorithm !== 'AES-GCM' ||
+    envelope.kdf !== 'PBKDF2-SHA-256'
+  ) {
     throw new CryptoDataError('CRYPTO_004', 'Versão ou algoritmo criptográfico incompatível.');
   }
   for (const key of ['salt', 'iv', 'ciphertext']) {
@@ -37,8 +44,14 @@ export function validateEnvelope(envelope) {
   }
 }
 
-export async function deriveAesKey(password, saltBase64, extractable = true) {
-  const keyMaterial = await crypto.subtle.importKey('raw', textEncoder.encode(password), 'PBKDF2', false, ['deriveKey']);
+export async function deriveAesKey(password, saltBase64, extractable = false) {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    textEncoder.encode(password),
+    'PBKDF2',
+    false,
+    ['deriveKey']
+  );
   return crypto.subtle.deriveKey(
     { name: 'PBKDF2', hash: 'SHA-256', salt: base64ToBytes(saltBase64), iterations: 310000 },
     keyMaterial,
@@ -48,8 +61,14 @@ export async function deriveAesKey(password, saltBase64, extractable = true) {
   );
 }
 
-export async function importAesKey(rawKeyBase64) {
-  return crypto.subtle.importKey('raw', base64ToBytes(rawKeyBase64), { name: 'AES-GCM' }, true, ['decrypt']);
+export async function importAesKey(rawKeyBase64, extractable = false) {
+  return crypto.subtle.importKey(
+    'raw',
+    base64ToBytes(rawKeyBase64),
+    { name: 'AES-GCM' },
+    extractable,
+    ['decrypt']
+  );
 }
 
 export async function exportAesKey(key) {

@@ -1,5 +1,5 @@
 from pathlib import Path
-import re
+
 ROOT = Path(__file__).resolve().parents[2]
 required = [
     'fase-3-cenarios/index.html',
@@ -17,16 +17,17 @@ required = [
     'assets/js/phase3/scenario-change-explainer.js',
     'assets/js/phase3/scenario-persistence.js',
     'assets/js/phase3/scenario-import-export.js',
+    'assets/js/phase3/monte-carlo-engine.js',
     'assets/js/phase3/scenario-arena-dashboard.js',
     'assets/js/phase3/phase3-tests.js',
 ]
-missing=[p for p in required if not (ROOT/p).exists()]
+missing = [p for p in required if not (ROOT / p).exists()]
 assert not missing, f'Missing Phase 3 files: {missing}'
-html=(ROOT/'fase-3-cenarios/index.html').read_text(encoding='utf-8')
+html = (ROOT / 'fase-3-cenarios/index.html').read_text(encoding='utf-8')
 assert '../assets/styles.css' in html
 assert '../assets/js/phase3/main.js' in html
 assert '/mnt/data' not in html and 'C:\\' not in html
-css=(ROOT/'assets/styles.css').read_text(encoding='utf-8')
-for cls in ['scenario-form','scenario-arena','scenario-card','scenario-library','delta-positive','delta-negative']:
+css = (ROOT / 'assets/styles.css').read_text(encoding='utf-8')
+for cls in ['scenario-form', 'scenario-arena', 'scenario-card', 'scenario-library', 'delta-positive', 'delta-negative']:
     assert cls in css, f'Missing CSS class: {cls}'
 print('PHASE3_FILE_STRUCTURE_OK')

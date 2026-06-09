@@ -11,7 +11,7 @@ function baselineResult(bundle) {
     company_id: bundle?.model?.company_id,
     total_with_tax: n(costs.total_with_tax),
     costs,
-    tax_results: bundle?.tax_results?.tax_results || {}
+    tax_results: bundle?.tax_results?.tax_results || {},
   };
 }
 
@@ -42,7 +42,8 @@ function comparisonRow({ base, companyId, result }) {
     tax_explanation: taxResults.explanation,
     saving_abs: savingAbs,
     saving_pct: savingPct,
-    status: savingAbs > 0 ? 'better_than_baseline' : savingAbs < 0 ? 'worse_than_baseline' : 'baseline'
+    status:
+      savingAbs > 0 ? 'better_than_baseline' : savingAbs < 0 ? 'worse_than_baseline' : 'baseline',
   };
 }
 
@@ -63,7 +64,7 @@ export function compareScenarios({ companyId, baselineBundle, scenarioResults = 
     comparison: rows,
     best_by_total_cost: ranked[0]?.scenario_id || null,
     warnings: [],
-    errors: []
+    errors: [],
   };
 }
 
@@ -76,13 +77,13 @@ export function componentDelta(baselineBundle, result) {
     'storage_cost',
     'inventory_cost',
     'tax_impact',
-    'total_with_tax'
+    'total_with_tax',
   ];
 
   return metrics.map((metric) => ({
     metric,
     baseline: n(baselineCosts[metric]),
     scenario: n(scenarioCosts[metric]),
-    delta: n(scenarioCosts[metric]) - n(baselineCosts[metric])
+    delta: n(scenarioCosts[metric]) - n(baselineCosts[metric]),
   }));
 }

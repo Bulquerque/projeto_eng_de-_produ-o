@@ -1,7 +1,8 @@
+import subprocess
 from pathlib import Path
-import subprocess, textwrap
-ROOT=Path(__file__).resolve().parents[2]
-code=r'''
+
+ROOT = Path(__file__).resolve().parents[2]
+code = r"""
 import {buildObjective} from './assets/js/phase4/objective-builder.js';
 import {validateObjective} from './assets/js/phase4/objective-validator.js';
 import {normalizeMetrics} from './assets/js/phase4/metric-normalizer.js';
@@ -27,8 +28,8 @@ const scored=scoreScenarios({companyId:'empresa1',objective,normalizedMetrics:no
 if(scored.scored_scenarios.length!==2) throw new Error('scoring length mismatch');
 if(scored.scored_scenarios.some(s=>s.final_score<0 || s.final_score>100)) throw new Error('score out of range');
 console.log('PHASE4_NODE_SCORING_OK');
-'''
-res=subprocess.run(['node','--input-type=module','-e',code],cwd=ROOT,text=True,capture_output=True)
-assert res.returncode==0, res.stderr+res.stdout
+"""
+res = subprocess.run(['node', '--input-type=module', '-e', code], cwd=ROOT, text=True, capture_output=True)
+assert res.returncode == 0, res.stderr + res.stdout
 print(res.stdout.strip())
 print('PHASE4_SCORING_LOGIC_OK')

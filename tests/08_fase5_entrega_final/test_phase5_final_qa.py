@@ -1,10 +1,14 @@
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tests.crypto_helpers import NODE_DECRYPT_HELPER
-ROOT=Path(__file__).resolve().parents[2]
-code=NODE_DECRYPT_HELPER + r'''
+
+ROOT = Path(__file__).resolve().parents[2]
+code = (
+    NODE_DECRYPT_HELPER
+    + r"""
 import fs from 'fs';
 import {runFinalQAChecks} from './assets/js/phase5/final-qa-checker.js';
 import {validateRelease} from './assets/js/phase5/release-validator.js';
@@ -18,8 +22,9 @@ for (const companyId of ['empresa1','empresa2']) {
  const bad=validateRelease({finalQA:{final_qa_status:'failed',blocking_issues:['x']}}); if(bad.release_status!=='blocked') throw new Error('bad release should block');
 }
 console.log('PHASE5_NODE_FINAL_QA_OK');
-'''
-res=subprocess.run(['node','--input-type=module','-e',code],cwd=ROOT,text=True,capture_output=True,timeout=120)
-assert res.returncode==0, res.stderr+res.stdout
+"""
+)
+res = subprocess.run(['node', '--input-type=module', '-e', code], cwd=ROOT, text=True, capture_output=True, timeout=120)
+assert res.returncode == 0, res.stderr + res.stdout
 print(res.stdout.strip())
 print('PHASE5_FINAL_QA_OK')

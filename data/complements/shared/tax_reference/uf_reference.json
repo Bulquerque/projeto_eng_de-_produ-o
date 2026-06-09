@@ -1,0 +1,137 @@
+[
+  {
+    "uf": "AC",
+    "nome_uf": "Acre",
+    "regiao": "Norte"
+  },
+  {
+    "uf": "AL",
+    "nome_uf": "Alagoas",
+    "regiao": "Nordeste"
+  },
+  {
+    "uf": "AP",
+    "nome_uf": "Amapá",
+    "regiao": "Norte"
+  },
+  {
+    "uf": "AM",
+    "nome_uf": "Amazonas",
+    "regiao": "Norte"
+  },
+  {
+    "uf": "BA",
+    "nome_uf": "Bahia",
+    "regiao": "Nordeste"
+  },
+  {
+    "uf": "CE",
+    "nome_uf": "Ceará",
+    "regiao": "Nordeste"
+  },
+  {
+    "uf": "DF",
+    "nome_uf": "Distrito Federal",
+    "regiao": "Centro-Oeste"
+  },
+  {
+    "uf": "ES",
+    "nome_uf": "Espírito Santo",
+    "regiao": "Sudeste"
+  },
+  {
+    "uf": "GO",
+    "nome_uf": "Goiás",
+    "regiao": "Centro-Oeste"
+  },
+  {
+    "uf": "MA",
+    "nome_uf": "Maranhão",
+    "regiao": "Nordeste"
+  },
+  {
+    "uf": "MT",
+    "nome_uf": "Mato Grosso",
+    "regiao": "Centro-Oeste"
+  },
+  {
+    "uf": "MS",
+    "nome_uf": "Mato Grosso do Sul",
+    "regiao": "Centro-Oeste"
+  },
+  {
+    "uf": "MG",
+    "nome_uf": "Minas Gerais",
+    "regiao": "Sudeste"
+  },
+  {
+    "uf": "PA",
+    "nome_uf": "Pará",
+    "regiao": "Norte"
+  },
+  {
+    "uf": "PB",
+    "nome_uf": "Paraíba",
+    "regiao": "Nordeste"
+  },
+  {
+    "uf": "PR",
+    "nome_uf": "Paraná",
+    "regiao": "Sul"
+  },
+  {
+    "uf": "PE",
+    "nome_uf": "Pernambuco",
+    "regiao": "Nordeste"
+  },
+  {
+    "uf": "PI",
+    "nome_uf": "Piauí",
+    "regiao": "Nordeste"
+  },
+  {
+    "uf": "RJ",
+    "nome_uf": "Rio de Janeiro",
+    "regiao": "Sudeste"
+  },
+  {
+    "uf": "RN",
+    "nome_uf": "Rio Grande do Norte",
+    "regiao": "Nordeste"
+  },
+  {
+    "uf": "RS",
+    "nome_uf": "Rio Grande do Sul",
+    "regiao": "Sul"
+  },
+  {
+    "uf": "RO",
+    "nome_uf": "Rondônia",
+    "regiao": "Norte"
+  },
+  {
+    "uf": "RR",
+    "nome_uf": "Roraima",
+    "regiao": "Norte"
+  },
+  {
+    "uf": "SC",
+    "nome_uf": "Santa Catarina",
+    "regiao": "Sul"
+  },
+  {
+    "uf": "SP",
+    "nome_uf": "São Paulo",
+    "regiao": "Sudeste"
+  },
+  {
+    "uf": "SE",
+    "nome_uf": "Sergipe",
+    "regiao": "Nordeste"
+  },
+  {
+    "uf": "TO",
+    "nome_uf": "Tocantins",
+    "regiao": "Norte"
+  }
+]

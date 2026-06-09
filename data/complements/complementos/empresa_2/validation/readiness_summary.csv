@@ -1,0 +1,12 @@
+tenant_id,layer,table,path,rows,status
+empresa_2,canonical,nodes,data/tenants/empresa_2/canonical/nodes.csv,35,ready_initial
+empresa_2,canonical,edges,data/tenants/empresa_2/canonical/edges.csv,0,empty_or_template
+empresa_2,canonical,products,data/tenants/empresa_2/canonical/products.csv,159,ready_initial
+empresa_2,canonical,demand,data/tenants/empresa_2/canonical/demand.csv,168,ready_initial
+empresa_2,canonical,cost_inputs,data/tenants/empresa_2/canonical/cost_inputs.csv,68,ready_initial
+empresa_2,canonical,inventory,data/tenants/empresa_2/canonical/inventory.csv,633,ready_initial
+empresa_2,canonical,storage_inputs,data/tenants/empresa_2/canonical/storage_inputs.csv,68,ready_initial
+empresa_2,tax,tax_inputs_current,data/tenants/empresa_2/tax/tax_inputs_current.csv,729,ready_initial
+empresa_2,tax,tax_inputs_reform,data/tenants/empresa_2/tax/tax_inputs_reform.csv,8,ready_initial
+empresa_2,tax,tax_scenario_bridge,data/tenants/empresa_2/tax/tax_scenario_bridge.csv,4,ready_initial
+empresa_2,tax,tax_assumptions,data/tenants/empresa_2/tax/tax_assumptions.csv,3,ready_initial

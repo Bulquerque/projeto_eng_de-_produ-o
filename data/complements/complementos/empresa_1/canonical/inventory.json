@@ -1,0 +1,15 @@
+[
+  {
+    "tenant_id": "empresa_1",
+    "inventory_id": "e1_inventory_proxy_placeholder",
+    "node_id": "",
+    "product_id": "",
+    "period": "",
+    "stock_units": "",
+    "stock_kg": "",
+    "coverage_days": "",
+    "inventory_value_brl": "",
+    "source_confidence": "proxy_other_company",
+    "source_ref": "Empresa 2 quando necessário; ainda não observado na Empresa 1"
+  }
+]

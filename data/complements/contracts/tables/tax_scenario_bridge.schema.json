@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "title": "tax_scenario_bridge",
+  "x_contract": "initial_site_bundle",
+  "required": [
+    "tenant_id",
+    "scenario_id",
+    "tax_regime",
+    "scenario_year",
+    "source_confidence"
+  ]
+}

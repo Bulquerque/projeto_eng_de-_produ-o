@@ -3,57 +3,57 @@ import json
 import os
 from pathlib import Path
 
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives import hashes
 
 
 def find_project_root() -> Path:
     here = Path(__file__).resolve()
     for candidate in [here.parent, *here.parents]:
-        if (candidate / "index.html").exists() and (candidate / "data").exists():
+        if (candidate / 'index.html').exists() and (candidate / 'data').exists():
             return candidate
-    raise RuntimeError("Project root not found")
+    raise RuntimeError('Project root not found')
 
 
 ROOT = find_project_root()
 
 
 def _password() -> str:
-    value = os.environ.get("VISAGIO_DATA_PASSWORD")
-    env_path = ROOT / ".env.local"
+    value = os.environ.get('VISAGIO_DATA_PASSWORD')
+    env_path = ROOT / '.env.local'
     if not value and env_path.exists():
-        for line in env_path.read_text(encoding="utf-8").splitlines():
-            if line.startswith("VISAGIO_DATA_PASSWORD="):
-                value = line.split("=", 1)[1].strip().strip('"').strip("'")
+        for line in env_path.read_text(encoding='utf-8').splitlines():
+            if line.startswith('VISAGIO_DATA_PASSWORD='):
+                value = line.split('=', 1)[1].strip().strip('"').strip("'")
                 break
     if not value:
-        raise RuntimeError("VISAGIO_DATA_PASSWORD missing for encrypted data tests")
+        raise RuntimeError('VISAGIO_DATA_PASSWORD missing for encrypted data tests')
     return value
 
 
 def _manifest() -> dict:
-    return json.loads((ROOT / "data" / "encrypted_manifest.json").read_text(encoding="utf-8"))
+    return json.loads((ROOT / 'data' / 'encrypted_manifest.json').read_text(encoding='utf-8'))
 
 
 def decrypt_text(rel_path: str) -> str:
     manifest = _manifest()
-    entry = next((item for item in manifest["entries"] if item["original_path"] == rel_path), None)
+    entry = next((item for item in manifest['entries'] if item['original_path'] == rel_path), None)
     if not entry:
         raise FileNotFoundError(rel_path)
-    envelope = json.loads((ROOT / entry["encrypted_path"]).read_text(encoding="utf-8"))
-    salt = base64.b64decode(envelope["salt"])
-    iv = base64.b64decode(envelope["iv"])
-    ciphertext = base64.b64decode(envelope["ciphertext"])
+    envelope = json.loads((ROOT / entry['encrypted_path']).read_text(encoding='utf-8'))
+    salt = base64.b64decode(envelope['salt'])
+    iv = base64.b64decode(envelope['iv'])
+    ciphertext = base64.b64decode(envelope['ciphertext'])
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
         salt=salt,
-        iterations=int(envelope["iterations"]),
+        iterations=int(envelope['iterations']),
     )
-    key = kdf.derive(_password().encode("utf-8"))
-    plaintext = AESGCM(key).decrypt(iv, ciphertext, rel_path.encode("utf-8"))
-    return plaintext.decode("utf-8")
+    key = kdf.derive(_password().encode('utf-8'))
+    plaintext = AESGCM(key).decrypt(iv, ciphertext, rel_path.encode('utf-8'))
+    return plaintext.decode('utf-8')
 
 
 def decrypt_json(rel_path: str):

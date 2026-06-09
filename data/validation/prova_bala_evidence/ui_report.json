@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-06-09T15:43:26.558881+00:00",
+  "screenshots": [
+    "ui_invalid_route_fallback_desktop.png",
+    "ui_corrupted_storage_baseline_desktop.png",
+    "ui_final_delivery_mobile.png"
+  ],
+  "checks": [
+    {
+      "case": "invalid_route_fallback",
+      "status": "ok"
+    },
+    {
+      "case": "corrupted_storage_baseline",
+      "status": "ok"
+    },
+    {
+      "case": "final_delivery_mobile",
+      "status": "ok"
+    }
+  ]
+}

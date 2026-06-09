@@ -1,0 +1,7 @@
+source_confidence,meaning,can_be_treated_as_observed
+observed_tenant,Dado observado diretamente no arquivo bruto da própria empresa,True
+proxy_other_company,Dado usado da outra empresa como proxy controlado e declarado,False
+external_official,"Dado de fonte pública oficial, principalmente tributária/regulatória",False
+external_reference,"Dado externo de apoio/benchmark, não central",False
+manual_scenario,Hipótese criada para simulação de cenário,False
+disabled,Campo/tabela não disponível com segurança para o cenário,False

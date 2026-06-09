@@ -1,0 +1,20 @@
+{
+  "tenant_id": "empresa_2",
+  "scenario_id": "reforma_2030",
+  "scenario_name": "Reforma Tributária 2030",
+  "scenario_type": "tax_reform_transition",
+  "scenario_year": 2030,
+  "tax_bridge_path": "data/tenants/empresa_2/tax/tax_scenario_bridge.csv",
+  "canonical_root": "data/tenants/empresa_2/canonical",
+  "active_nodes": "read_from_canonical",
+  "active_edges": "read_from_canonical",
+  "enabled_features": [
+    "freight",
+    "storage",
+    "inventory",
+    "tax",
+    "scenario_compare"
+  ],
+  "source_confidence": "external_official_and_manual_scenario",
+  "notes": "Configuração pronta para frontend/simulador. Ajustar pesos/alíquotas específicas após validação tributária fina."
+}

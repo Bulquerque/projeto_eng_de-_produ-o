@@ -1,10 +1,14 @@
-from pathlib import Path
-import subprocess, textwrap
+import subprocess
 import sys
+from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tests.crypto_helpers import NODE_DECRYPT_HELPER
-ROOT=Path(__file__).resolve().parents[2]
-code = NODE_DECRYPT_HELPER + r'''
+
+ROOT = Path(__file__).resolve().parents[2]
+code = (
+    NODE_DECRYPT_HELPER
+    + r"""
 import fs from 'fs';
 import {buildScenarioFromForm} from './assets/js/phase3/scenario-builder.js';
 import {validateScenario} from './assets/js/phase3/scenario-validator.js';
@@ -12,6 +16,7 @@ import {rebuildScenarioFlows} from './assets/js/phase3/scenario-flow-rebuilder.j
 import {runScenario} from './assets/js/phase3/scenario-simulator.js';
 import {compareScenarios} from './assets/js/phase3/scenario-comparator.js';
 import {evaluateScenarioQuality} from './assets/js/phase3/scenario-quality-check.js';
+import {runMonteCarloSimulation} from './assets/js/phase3/monte-carlo-engine.js';
 import {resolveTaxRegime} from './assets/js/shared/tax-reform-config.js';
 import {getRegimeTaxRates} from './assets/js/shared/tax/tax-reform-parameters.js';
 const testRates2026 = getRegimeTaxRates('reform_2026');
@@ -27,6 +32,15 @@ for (const companyId of ['empresa1','empresa2']) {
   if (!scenario.changes.closed_cds.length && cds.length > 1) throw new Error('closed_cds not detected');
   const validation = validateScenario({companyId, scenario, baselineBundle: bundle});
   if (!validation.valid) throw new Error('valid scenario rejected');
+  if (companyId === 'empresa1') {
+    const fullScenario = buildScenarioFromForm({companyId, baselineBundle: bundle, formValues: {scenario_name:'baseline completo', active_cds: cds, freight_multiplier:1, demand_multiplier:1, inventory_days:45, wacc:0.15, tax_mode:'current'}});
+    const fullValidation = validateScenario({companyId, scenario: fullScenario, baselineBundle: bundle});
+    if (!fullValidation.valid) throw new Error('full baseline scenario rejected');
+    const fullResult = runScenario({companyId, scenario: fullScenario, baselineBundle: bundle});
+    if ((fullResult.flow_summary.reallocated_flows || 0) !== 0) throw new Error('full baseline should not reallocate flows');
+    if ((fullResult.flow_summary.uncovered_flows || 0) !== 0) throw new Error('full baseline should not uncover flows');
+    if (Math.abs(fullResult.costs.transfer_cost || 0) > 0.0001) throw new Error('full baseline should not create transfer cost');
+  }
   const bad = buildScenarioFromForm({companyId, baselineBundle: bundle, formValues: {scenario_name:'bad', active_cds:[], freight_multiplier:-1, demand_multiplier:1, inventory_days:45, wacc:0.15, tax_mode:'current'}});
   const badValidation = validateScenario({companyId, scenario: bad, baselineBundle: bundle});
   if (badValidation.valid) throw new Error('invalid scenario accepted');
@@ -37,6 +51,12 @@ for (const companyId of ['empresa1','empresa2']) {
   if (result.simulation_status !== 'success') throw new Error('scenario did not run');
   if (result.costs.tax_impact !== 0) throw new Error('tax disabled did not zero tax impact');
   if (result.tax_results.tax_regime !== 'disabled') throw new Error('disabled regime not preserved');
+  const mcA = runMonteCarloSimulation({companyId, selectedScenario: scenario, baselineBundle: bundle, deterministicResult: result, iterations: 80, seed: 33, config: { profile: 'balanced', scatter_driver: 'freight_multiplier' }});
+  const mcB = runMonteCarloSimulation({companyId, selectedScenario: scenario, baselineBundle: bundle, deterministicResult: result, iterations: 80, seed: 33, config: { profile: 'balanced', scatter_driver: 'freight_multiplier' }});
+  if (!mcA.summary || mcA.samples.length === 0) throw new Error('monte carlo summary missing');
+  if (JSON.stringify(mcA.summary) !== JSON.stringify(mcB.summary)) throw new Error('monte carlo not reproducible');
+  if (!mcA.summary.total_percentile_curve || mcA.summary.total_percentile_curve.length !== 11) throw new Error('total percentile curve missing');
+  if (!mcA.summary.driver_importance || mcA.summary.driver_importance.length < 3) throw new Error('driver importance missing');
   const reformScenario = buildScenarioFromForm({companyId, baselineBundle: bundle, formValues: {scenario_name:'reforma', active_cds: active, freight_multiplier:1, demand_multiplier:1, inventory_days:45, wacc:0.15, tax_mode:'reform_2028'}});
   const reformValidation = validateScenario({companyId, scenario: reformScenario, baselineBundle: bundle});
   if (!reformValidation.valid) throw new Error('reform scenario rejected');
@@ -53,8 +73,9 @@ for (const companyId of ['empresa1','empresa2']) {
   if (quality.quality_score < 0 || quality.quality_score > 100) throw new Error('quality out of range');
 }
 console.log('PHASE3_NODE_LOGIC_OK');
-'''
-res=subprocess.run(['node','--input-type=module','-e',code],cwd=ROOT,text=True,capture_output=True)
-assert res.returncode==0, res.stderr + res.stdout
+"""
+)
+res = subprocess.run(['node', '--input-type=module', '-e', code], cwd=ROOT, text=True, capture_output=True)
+assert res.returncode == 0, res.stderr + res.stdout
 print(res.stdout.strip())
 print('PHASE3_LOGIC_OK')

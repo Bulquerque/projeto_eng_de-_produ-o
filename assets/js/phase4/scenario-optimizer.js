@@ -12,21 +12,30 @@ import {
   buildSearchLog,
   compareExactRanking,
   n,
-  uniqueByChanges
+  uniqueByChanges,
 } from './optimizer-utils.js';
-import {buildRefinementVariants} from './optimizer-refinement.js';
+import { buildRefinementVariants } from './optimizer-refinement.js';
 
-export function runOptimization({ companyId, baselineBundle, objective, constraints = {}, optimizerConfig = {} }) {
+export function runOptimization({
+  companyId,
+  baselineBundle,
+  objective,
+  constraints = {},
+  optimizerConfig = {},
+}) {
   const requestedMethod = String(optimizerConfig.method || 'exact_discrete');
   const maxCandidates = Number(optimizerConfig.max_candidates ?? 2000);
   const refinementRounds = Math.max(0, Math.floor(Number(optimizerConfig.refinement_rounds ?? 2)));
-  const refinementSeedCount = Math.max(1, Math.floor(Number(optimizerConfig.refinement_seed_count ?? 5)));
+  const refinementSeedCount = Math.max(
+    1,
+    Math.floor(Number(optimizerConfig.refinement_seed_count ?? 5))
+  );
   const refinementConfig = {
     allow_tax_toggle: optimizerConfig.allow_tax_toggle !== false,
     freight_steps: optimizerConfig.refinement_freight_steps || [0.95, 1.05],
     demand_steps: optimizerConfig.refinement_demand_steps || [0.95, 1.05],
     inventory_steps: optimizerConfig.refinement_inventory_steps || [-15, 15],
-    wacc_steps: optimizerConfig.refinement_wacc_steps || [-0.02, 0.02]
+    wacc_steps: optimizerConfig.refinement_wacc_steps || [-0.02, 0.02],
   };
 
   const constraintValidation = validateConstraintConfig(constraints);
@@ -38,9 +47,9 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
         methodApplied: SUPPORTED_METHOD,
         refinementRounds,
         refinementSeedCount,
-        invalidReasons: constraintValidation.errors
+        invalidReasons: constraintValidation.errors,
       }),
-      errors: constraintValidation.errors
+      errors: constraintValidation.errors,
     });
   }
 
@@ -52,10 +61,11 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
       freight_multipliers: [0.95, 1, 1.05, 1.1],
       inventory_days_options: [30, 45, 60],
       base_tax_mode: optimizerConfig.base_tax_mode || 'current',
-      base_tax_regime: optimizerConfig.base_tax_regime || optimizerConfig.base_tax_mode || 'current',
+      base_tax_regime:
+        optimizerConfig.base_tax_regime || optimizerConfig.base_tax_mode || 'current',
       allow_tax_disabled: optimizerConfig.allow_tax_disabled === true,
-      demand_multipliers: [0.95, 1, 1.05]
-    }
+      demand_multipliers: [0.95, 1, 1.05],
+    },
   });
 
   const generatedCount = generated.candidate_scenarios.length;
@@ -72,9 +82,9 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
         refinementRounds,
         refinementSeedCount,
         exactSearchSpace: false,
-        invalidReasons: [message]
+        invalidReasons: [message],
       }),
-      errors: [message]
+      errors: [message],
     });
   }
 
@@ -90,10 +100,10 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
         refinementRounds,
         refinementSeedCount,
         spaceLimited: true,
-        invalidReasons: [message]
+        invalidReasons: [message],
       }),
       warnings: searchWarnings,
-      errors: [...searchErrors, message]
+      errors: [...searchErrors, message],
     });
   }
 
@@ -110,7 +120,12 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
     }
 
     const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle });
-    const constraint = evaluateConstraints({ scenarioResult: result, quality, scenario, constraints });
+    const constraint = evaluateConstraints({
+      scenarioResult: result,
+      quality,
+      scenario,
+      constraints,
+    });
     if (!constraint.passes_constraints) {
       invalid++;
       invalidReasons.push(constraint.violations[0] || 'restrição violada');
@@ -135,10 +150,10 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
         invalidCandidates: invalid,
         refinementRounds,
         refinementSeedCount,
-        invalidReasons: [message]
+        invalidReasons: [message],
       }),
       warnings: searchWarnings,
-      errors: [message]
+      errors: [message],
     });
   }
 
@@ -146,19 +161,40 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
     scenario: baselineScenario,
     result: baselineResult,
     quality: evaluateScenarioQuality({ scenarioResult: baselineResult, baselineBundle }),
-    constraint: { passes_constraints: true, violations: [], warnings: [] }
+    constraint: { passes_constraints: true, violations: [], warnings: [] },
   };
 
-  const preliminaryMetrics = extractScenarioMetrics({ companyId, scenarioResults: scenarioRecords });
+  const preliminaryMetrics = extractScenarioMetrics({
+    companyId,
+    scenarioResults: scenarioRecords,
+  });
   const preliminaryNormalized = normalizeMetrics({
     companyId,
     scenarioMetrics: preliminaryMetrics.scenario_metrics,
-    referenceMetrics: baselineRecord.result?.scenario_id ? [{ scenario_id: baselineRecord.result.scenario_id, total_cost: baselineRecord.result.total_with_tax, service_quality: baselineRecord.quality.quality_score, operational_risk: baselineRecord.quality.risk_numeric ?? 50, tax_impact: baselineRecord.result.costs?.tax_impact ?? 0, inventory_efficiency: baselineRecord.quality.quality_metrics?.inventory_efficiency ?? 50 }] : []
+    referenceMetrics: baselineRecord.result?.scenario_id
+      ? [
+          {
+            scenario_id: baselineRecord.result.scenario_id,
+            total_cost: baselineRecord.result.total_with_tax,
+            service_quality: baselineRecord.quality.quality_score,
+            operational_risk: baselineRecord.quality.risk_numeric ?? 50,
+            tax_impact: baselineRecord.result.costs?.tax_impact ?? 0,
+            inventory_efficiency:
+              baselineRecord.quality.quality_metrics?.inventory_efficiency ?? 50,
+          },
+        ]
+      : [],
   });
-  const preliminaryScoring = scoreScenarios({ companyId, objective, normalizedMetrics: preliminaryNormalized.normalized_metrics });
+  const preliminaryScoring = scoreScenarios({
+    companyId,
+    objective,
+    normalizedMetrics: preliminaryNormalized.normalized_metrics,
+  });
   const refinementSeeds = uniqueByChanges(
     (preliminaryScoring.scored_scenarios.length
-      ? preliminaryScoring.scored_scenarios.map(s => scenarioRecords.find(r => r.result.scenario_id === s.scenario_id)).filter(Boolean)
+      ? preliminaryScoring.scored_scenarios
+          .map((s) => scenarioRecords.find((r) => r.result.scenario_id === s.scenario_id))
+          .filter(Boolean)
       : [baselineRecord]
     ).slice(0, refinementSeedCount)
   );
@@ -172,7 +208,7 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
         baselineBundle,
         seedRecord: seed,
         roundIndex: round,
-        refinementConfig
+        refinementConfig,
       });
       refinementGenerated += variants.length;
       refinedCandidates.push(...variants);
@@ -180,16 +216,16 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
   }
 
   const seenScenarioIds = new Set([
-    ...scenarioRecords.map(r => r.result.scenario_id),
-    baselineRecord.result.scenario_id
+    ...scenarioRecords.map((r) => r.result.scenario_id),
+    baselineRecord.result.scenario_id,
   ]);
   const refinedRecords = [];
   let refinedInvalid = 0;
   let refinedSimulated = 0;
   const refinedInvalidReasons = [];
   const seenScenarioKeys = new Set([
-    ...scenarioRecords.map(r => JSON.stringify(r.scenario?.changes || {})),
-    JSON.stringify(baselineRecord.scenario?.changes || {})
+    ...scenarioRecords.map((r) => JSON.stringify(r.scenario?.changes || {})),
+    JSON.stringify(baselineRecord.scenario?.changes || {}),
   ]);
   for (const scenario of uniqueByChanges(refinedCandidates)) {
     const scenarioKey = JSON.stringify(scenario.changes || {});
@@ -205,7 +241,12 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
       continue;
     }
     const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle });
-    const constraint = evaluateConstraints({ scenarioResult: result, quality, scenario, constraints });
+    const constraint = evaluateConstraints({
+      scenarioResult: result,
+      quality,
+      scenario,
+      constraints,
+    });
     if (!constraint.passes_constraints) {
       refinedInvalid += 1;
       refinedInvalidReasons.push(constraint.violations[0] || 'restrição violada');
@@ -215,7 +256,9 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
   }
 
   const allScenarioRecords = uniqueByChanges([...scenarioRecords, ...refinedRecords]);
-  const candidateSpaceSize = Number((generated.generation_summary?.candidate_space_size ?? generatedCount)) + Number(refinementGenerated || 0);
+  const candidateSpaceSize =
+    Number(generated.generation_summary?.candidate_space_size ?? generatedCount) +
+    Number(refinementGenerated || 0);
   const totalSimulated = generatedCount + refinedSimulated;
   const totalValid = scenarioRecords.length + refinedRecords.length;
   const totalInvalid = invalid + refinedInvalid;
@@ -238,10 +281,10 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
         refinementSeedCount,
         refinementCandidatesGenerated: refinementGenerated,
         refinementCandidatesSimulated: refinedSimulated,
-        invalidReasons: [...invalidReasons, ...refinedInvalidReasons, message]
+        invalidReasons: [...invalidReasons, ...refinedInvalidReasons, message],
       }),
       warnings: searchWarnings,
-      errors: [...searchErrors, message]
+      errors: [...searchErrors, message],
     });
   }
 
@@ -249,32 +292,43 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
   const normalized = normalizeMetrics({
     companyId,
     scenarioMetrics: metrics.scenario_metrics,
-    referenceMetrics: [{
-      scenario_id: baselineRecord.result.scenario_id,
-      total_cost: baselineRecord.result.total_with_tax,
-      service_quality: baselineRecord.quality.quality_score,
-      operational_risk: baselineRecord.quality.risk_numeric ?? 50,
-      tax_impact: baselineRecord.result.costs?.tax_impact ?? 0,
-      inventory_efficiency: baselineRecord.quality.quality_metrics?.inventory_efficiency ?? 50
-    }]
+    referenceMetrics: [
+      {
+        scenario_id: baselineRecord.result.scenario_id,
+        total_cost: baselineRecord.result.total_with_tax,
+        service_quality: baselineRecord.quality.quality_score,
+        operational_risk: baselineRecord.quality.risk_numeric ?? 50,
+        tax_impact: baselineRecord.result.costs?.tax_impact ?? 0,
+        inventory_efficiency: baselineRecord.quality.quality_metrics?.inventory_efficiency ?? 50,
+      },
+    ],
   });
-  const scoring = scoreScenarios({ companyId, objective, normalizedMetrics: normalized.normalized_metrics });
-  const resultById = new Map(allScenarioRecords.map(r => [r.result.scenario_id, r]));
+  const scoring = scoreScenarios({
+    companyId,
+    objective,
+    normalizedMetrics: normalized.normalized_metrics,
+  });
+  const resultById = new Map(allScenarioRecords.map((r) => [r.result.scenario_id, r]));
   const enriched = scoring.scored_scenarios
-    .map(s => {
+    .map((s) => {
       const record = resultById.get(s.scenario_id);
       return {
         ...s,
         scenario: record?.scenario,
         result: record?.result,
         quality: record?.quality,
-        constraint: record?.constraint
+        constraint: record?.constraint,
       };
     })
     .sort(compareExactRanking)
     .map((r, i) => ({ ...r, rank: i + 1 }));
   const best_scenarios = enriched.slice(0, 10);
-  const best_by_total_cost = [...enriched].sort((a, b) => n(a.result?.total_with_tax, Number.POSITIVE_INFINITY) - n(b.result?.total_with_tax, Number.POSITIVE_INFINITY))[0] || null;
+  const best_by_total_cost =
+    [...enriched].sort(
+      (a, b) =>
+        n(a.result?.total_with_tax, Number.POSITIVE_INFINITY) -
+        n(b.result?.total_with_tax, Number.POSITIVE_INFINITY)
+    )[0] || null;
 
   return {
     company_id: companyId,
@@ -303,9 +357,14 @@ export function runOptimization({ companyId, baselineBundle, objective, constrai
       bestScenarioId: best_scenarios[0]?.scenario_id ?? null,
       bestByTotalCostScenarioId: best_by_total_cost?.scenario_id ?? null,
       bestByTotalCostValue: best_by_total_cost?.result?.total_with_tax ?? null,
-      invalidReasons: [...invalidReasons, ...refinedInvalidReasons]
+      invalidReasons: [...invalidReasons, ...refinedInvalidReasons],
     }),
-    warnings: [...searchWarnings, ...(metrics.warnings || []), ...(normalized.warnings || []), ...(scoring.warnings || [])],
-    errors: []
+    warnings: [
+      ...searchWarnings,
+      ...(metrics.warnings || []),
+      ...(normalized.warnings || []),
+      ...(scoring.warnings || []),
+    ],
+    errors: [],
   };
 }

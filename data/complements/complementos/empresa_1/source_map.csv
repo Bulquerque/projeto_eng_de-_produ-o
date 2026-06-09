@@ -1,0 +1,7 @@
+tenant_id,canonical_table,canonical_field,source_type,source_file,source_sheet,source_column,source_confidence,transformation_rule,notes
+empresa_1,nodes,uf/city/lat/lon,observed,Dados de Distância.xlsx,Sheet1,UF_ORIGEM/ORIGEM/UF_DESTINO/DESTINO/Latitude/Longitude,observed_tenant,normalize_as_nodes,Nós de origem e destino da matriz OD.
+empresa_1,edges,distance_km,observed,Dados de Distância.xlsx,Sheet1,Distancia(KM),observed_tenant,cast_to_float_km,Distância observada.
+empresa_1,cost_inputs,freight_brl_per_kg,observed,Dados de Distância.xlsx,Sheet1,Frete (R$/Kg),observed_tenant,cast_to_float_brl_per_kg,Frete observado por rota.
+empresa_1,demand,weight_kg/revenue/quantity/product,observed,Dados de Demanda.xlsx,Planilha1,PESO_DEMANDA_KG/FATURAMENTO_MENSAL/QTD_ITENS_UNID/CODIGO,observed_tenant,normalize_columns_and_ids,Demanda observada.
+empresa_1,inventory,coverage_days/stock,proxy,Analise_Malha_Empresa2.xlsx,Estoque,quando necessário,proxy_other_company,proxy_controlled,Só usar se Empresa 1 não tiver WOC/estoque.
+empresa_1,tax,current/reform,external_official,shared/tax_reference,,,external_official,tax_scenario_bridge,Foco principal: reforma tributária.

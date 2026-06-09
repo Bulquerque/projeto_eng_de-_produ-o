@@ -7,7 +7,11 @@ export function setActiveCompany(companyId) {
     throw error;
   }
   if (activeCompanyId && activeCompanyId !== companyId) {
-    window.dispatchEvent(new CustomEvent('visagio:company-change', { detail: { from: activeCompanyId, to: companyId } }));
+    window.dispatchEvent(
+      new CustomEvent('visagio:company-change', {
+        detail: { from: activeCompanyId, to: companyId },
+      })
+    );
   }
   activeCompanyId = companyId;
 }
