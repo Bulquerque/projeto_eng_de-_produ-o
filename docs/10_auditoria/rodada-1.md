@@ -1,6 +1,6 @@
 # Auditoria final 1 — técnica e quantitativa
 
-**Commit auditado:** `636966416bd46cc4e46a060d7ceac29f36b254a9`  
+**Commit auditado:** `7cd285e504790760bb09266059911cbff5d78411`  
 **Ambiente:** cópia limpa do repositório; `npm ci`; Ruff disponível no ambiente de validação.  
 **Credencial:** usada somente em memória durante a execução protegida; não foi registrada.
 
