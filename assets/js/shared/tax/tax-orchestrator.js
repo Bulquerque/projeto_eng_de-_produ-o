@@ -11,6 +11,7 @@ import { calculateReformTax } from './reform-tax-engine.js';
 import { combineTransitionTaxes } from './transition-tax-engine.js';
 
 function n(value, fallback = 0) {
+  if (value == null || (typeof value === 'string' && !value.trim())) return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
