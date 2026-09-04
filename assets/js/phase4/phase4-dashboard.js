@@ -107,6 +107,7 @@ function renderOptimizerInputTable() {
       constraints: constraints(),
       optimizerConfig: optimizerConfig(),
       searchLog: state.optimizer?.search_log,
+      baselineReference: state.optimizer?.baseline_reference,
     });
 }
 function renderProfiles() {

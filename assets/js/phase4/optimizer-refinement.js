@@ -1,5 +1,6 @@
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
 import { clamp, uniqueByChanges } from './optimizer-utils.js';
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
 
 function buildVariant({ companyId, baselineBundle, seedRecord, roundIndex, label, patch }) {
   const current = seedRecord?.scenario?.changes || {};
@@ -15,8 +16,9 @@ function buildVariant({ companyId, baselineBundle, seedRecord, roundIndex, label
       active_cds: nextActive,
       freight_multiplier: patch.freight_multiplier ?? current.freight_multiplier ?? 1,
       demand_multiplier: patch.demand_multiplier ?? current.demand_multiplier ?? 1,
-      inventory_days: patch.inventory_days ?? current.inventory_days ?? 45,
-      wacc: patch.wacc ?? current.wacc ?? 0.15,
+      inventory_days:
+        patch.inventory_days ?? current.inventory_days ?? MODEL_ASSUMPTIONS.inventory.baseline_days,
+      wacc: patch.wacc ?? current.wacc ?? MODEL_ASSUMPTIONS.inventory.baseline_wacc,
       tax_mode: patch.tax_mode ?? current.tax_mode ?? 'current',
       tax_regime: patch.tax_regime ?? current.tax_regime ?? null,
       reallocation_rule: current.reallocation_rule || 'nearest_available_cd',
@@ -80,7 +82,9 @@ export function buildRefinementVariants({
   for (const delta of inventorySteps) {
     add(`inventory_${delta > 0 ? 'p' : 'm'}${Math.abs(delta)}`, {
       inventory_days: clamp(
-        Math.round((Number(current.inventory_days || 45) + delta) / 5) * 5,
+        Math.round(
+          (Number(current.inventory_days || MODEL_ASSUMPTIONS.inventory.baseline_days) + delta) / 5
+        ) * 5,
         15,
         90
       ),
@@ -89,7 +93,11 @@ export function buildRefinementVariants({
 
   for (const delta of waccSteps) {
     add(`wacc_${delta > 0 ? 'p' : 'm'}${Math.abs(delta)}`.replace('.', '_'), {
-      wacc: clamp(Number(current.wacc || 0.15) + delta, 0.01, 0.5),
+      wacc: clamp(
+        Number(current.wacc || MODEL_ASSUMPTIONS.inventory.baseline_wacc) + delta,
+        0.01,
+        0.5
+      ),
     });
   }
 

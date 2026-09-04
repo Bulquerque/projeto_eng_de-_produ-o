@@ -1,4 +1,7 @@
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
+
 function n(v, d = 0) {
+  if (v === null || v === undefined || v === '') return d;
   const x = Number(v);
   return Number.isFinite(x) ? x : d;
 }
@@ -19,6 +22,20 @@ export function buildRecommendation({
     quality.risk_level || selectedScenario?.quality?.risk_level || 'medium'
   ).toLowerCase();
   const robustnessScore = n(robustness.robustness_score, 0);
+  const thresholds = MODEL_ASSUMPTIONS.recommendation;
+  const fallbackUsage =
+    selectedScenario?.result?.costs?.fallback_usage ||
+    selectedScenario?.costs?.fallback_usage ||
+    selectedScenario?.scenario?.result?.costs?.fallback_usage ||
+    null;
+  const transferProxySensitivity =
+    selectedScenario?.result?.costs?.transfer_proxy_sensitivity ||
+    selectedScenario?.costs?.transfer_proxy_sensitivity ||
+    selectedScenario?.scenario?.result?.costs?.transfer_proxy_sensitivity ||
+    null;
+  const transferProxyCanReverseSaving = Boolean(
+    transferProxySensitivity?.points?.some((point) => n(point.saving_pct, null) < 0)
+  );
   const monteCarlo =
     selectedScenario?.monte_carlo?.summary ||
     selectedScenario?.scenario?.monte_carlo?.summary ||
@@ -30,23 +47,27 @@ export function buildRecommendation({
   if (
     savingPct >= 0 &&
     risk !== 'high' &&
-    robustnessScore >= 70 &&
-    (mcProbability === null || mcProbability >= 0.65) &&
+    robustnessScore >= thresholds.recommended_min_robustness &&
+    (mcProbability === null || mcProbability >= thresholds.recommended_min_mc_probability) &&
     (mcP10 === null || mcP10 >= 0)
   ) {
     status = 'recommended';
   } else if (
     savingPct >= 0 &&
-    robustnessScore >= 45 &&
-    (mcProbability === null || mcProbability >= 0.5)
+    robustnessScore >= thresholds.warning_min_robustness &&
+    (mcProbability === null || mcProbability >= thresholds.warning_min_mc_probability)
   ) {
+    status = 'recommended_with_warnings';
+  }
+  if (status === 'recommended' && transferProxyCanReverseSaving) {
     status = 'recommended_with_warnings';
   }
   const main_reasons = [];
   if (savingPct >= 0) main_reasons.push('saving positivo contra o baseline');
   if (selectedScenario?.final_score !== undefined)
     main_reasons.push('bom score no objetivo selecionado');
-  if (robustnessScore >= 55) main_reasons.push('robustez aceitável nos testes de stress');
+  if (robustnessScore >= MODEL_ASSUMPTIONS.robustness.medium_threshold)
+    main_reasons.push('robustez aceitável nos testes de stress');
   if (monteCarlo) {
     main_reasons.push(
       `probabilidade de saving positivo de ${
@@ -66,10 +87,18 @@ export function buildRecommendation({
     main_risks.push(`risco operacional ${risk === 'high' ? 'alto' : 'médio'}`);
   if (robustness.alerts?.length) main_risks.push(...robustness.alerts);
   if (savingPct < 0) main_risks.push('custo maior que o baseline');
-  if (monteCarlo && mcProbability != null && mcProbability < 0.5)
+  if (monteCarlo && mcProbability != null && mcProbability < thresholds.warning_min_mc_probability)
     main_risks.push('baixa probabilidade de saving positivo na análise Monte Carlo');
   if (monteCarlo && mcP10 != null && mcP10 < 0)
     main_risks.push('faixa pessimista do Monte Carlo ainda fica abaixo do baseline');
+  if (n(fallbackUsage?.cross_company_transfer_proxy_flows) > 0) {
+    main_risks.push('transferência da Empresa 1 depende de proxy calibrado com dados da Empresa 2');
+  }
+  if (transferProxyCanReverseSaving) {
+    main_risks.push(
+      'o saving deixa de ser positivo em pelo menos um ponto da sensibilidade da tarifa proxy'
+    );
+  }
   const executive_summary =
     status === 'not_recommended'
       ? 'O cenário não é recomendado nesta configuração porque não preserva saving ou robustez suficiente contra o baseline.'
@@ -89,7 +118,10 @@ export function buildRecommendation({
       'revisar premissas de malha e realocação',
       'comparar contra dados reais atualizados antes de decisão executiva',
     ],
-    warnings: [],
+    warnings:
+      n(fallbackUsage?.cross_company_transfer_proxy_flows) > 0
+        ? ['A recomendação depende de tarifa de transferência proxy; revisar a sensibilidade.']
+        : [],
     errors: [],
   };
 }

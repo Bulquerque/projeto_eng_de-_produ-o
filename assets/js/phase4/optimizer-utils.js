@@ -1,10 +1,12 @@
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
 import { resolveTaxRegime } from '../shared/tax-reform-config.js';
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
 
 export const SUPPORTED_METHOD = 'exact_discrete';
 const RISK_ORDER = { low: 1, baixo: 1, medium: 2, medio: 2, médio: 2, high: 3, alto: 3 };
 
 export function n(v, d = 0) {
+  if (v == null || (typeof v === 'string' && !v.trim())) return d;
   const x = Number(v);
   return Number.isFinite(x) ? x : d;
 }
@@ -55,25 +57,76 @@ export function emptyCollections() {
   };
 }
 
-export function buildBaselineScenario(companyId, baselineBundle) {
+export function buildBaselineScenario(
+  companyId,
+  baselineBundle,
+  { taxMode = 'current', taxRegime = null } = {}
+) {
   const base = baselineBundle?.model || {};
+  const resolvedTaxRegime = resolveTaxRegime({ taxMode, taxRegime });
   return buildScenarioFromForm({
     companyId,
     baselineBundle,
-    scenarioId: base.scenario_id || `${companyId}_baseline`,
+    scenarioId: `${base.scenario_id || `${companyId}_baseline`}__${resolvedTaxRegime}_reference`,
     formValues: {
-      scenario_name: 'Baseline',
+      scenario_name: 'Baseline comparável',
       active_cds: base.active_cds || [],
       freight_multiplier: 1,
       demand_multiplier: 1,
-      inventory_days: 45,
-      wacc: 0.15,
-      tax_mode: 'current',
-      tax_regime: resolveTaxRegime({ taxMode: 'current' }),
+      inventory_days: MODEL_ASSUMPTIONS.inventory.baseline_days,
+      wacc: MODEL_ASSUMPTIONS.inventory.baseline_wacc,
+      tax_mode: taxMode,
+      tax_regime: resolvedTaxRegime,
       reallocation_rule: 'nearest_available_cd',
-      scenario_type: 'baseline',
+      scenario_type: 'comparison_baseline',
     },
   });
+}
+
+export function attachBaselineReference(result, baselineResult) {
+  const baselineTotal = n(baselineResult?.total_with_tax);
+  const scenarioTotal = n(result?.total_with_tax);
+  const savingAbs = baselineTotal - scenarioTotal;
+  const transferSensitivity = result?.costs?.transfer_proxy_sensitivity;
+  const costs = transferSensitivity
+    ? {
+        ...result.costs,
+        transfer_proxy_sensitivity: {
+          ...transferSensitivity,
+          points: (transferSensitivity.points || []).map((point) => {
+            const totalWithTax = scenarioTotal + n(point.delta_from_reference);
+            const pointSavingAbs = baselineTotal - totalWithTax;
+            return {
+              ...point,
+              total_with_tax: totalWithTax,
+              saving_abs: pointSavingAbs,
+              saving_pct: baselineTotal ? (pointSavingAbs / baselineTotal) * 100 : null,
+            };
+          }),
+        },
+      }
+    : result?.costs;
+
+  return {
+    ...result,
+    costs,
+    baseline_total: baselineTotal,
+    saving_abs: savingAbs,
+    saving_pct: baselineTotal ? (savingAbs / baselineTotal) * 100 : null,
+    comparison_basis: 'same_tax_regime',
+    baseline_reference: {
+      scenario_id: baselineResult?.scenario_id || null,
+      total_with_tax: baselineTotal,
+      tax_mode:
+        baselineResult?.tax_results?.tax_mode ||
+        baselineResult?.scenario?.changes?.tax_mode ||
+        null,
+      tax_regime:
+        baselineResult?.tax_results?.tax_regime ||
+        baselineResult?.scenario?.changes?.tax_regime ||
+        null,
+    },
+  };
 }
 
 export function buildFailureResult({ companyId, searchLog, errors = [], warnings = [] }) {

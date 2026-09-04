@@ -1,15 +1,19 @@
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
+
+const AUDITED_PROFILES = MODEL_ASSUMPTIONS.scoring.objective_profiles;
+
 export const DEFAULT_OBJECTIVE_PROFILES = [
+  {
+    profile_id: 'cost_minimum',
+    profile_name: 'Perfil Custo Mínimo',
+    description: 'Prioriza o custo total dentro do espaço discreto avaliado.',
+    weights: AUDITED_PROFILES.cost_minimum,
+  },
   {
     profile_id: 'balanced',
     profile_name: 'Perfil Balanceado',
     description: 'Equilibra custo, qualidade, risco, tributo e estoque.',
-    weights: {
-      total_cost: 0.3,
-      service_quality: 0.25,
-      operational_risk: 0.2,
-      tax_impact: 0.15,
-      inventory_efficiency: 0.1,
-    },
+    weights: AUDITED_PROFILES.balanced,
   },
   {
     profile_id: 'cfo',
@@ -51,13 +55,13 @@ export const DEFAULT_OBJECTIVE_PROFILES = [
     profile_id: 'conservative',
     profile_name: 'Perfil Conservador',
     description: 'Prioriza baixo risco e qualidade mesmo com saving menor.',
-    weights: {
-      total_cost: 0.2,
-      service_quality: 0.3,
-      operational_risk: 0.35,
-      tax_impact: 0.05,
-      inventory_efficiency: 0.1,
-    },
+    weights: AUDITED_PROFILES.conservative,
+  },
+  {
+    profile_id: 'quality_service',
+    profile_name: 'Perfil Qualidade/Serviço',
+    description: 'Prioriza qualidade e serviço, mantendo custo, risco e tributo no score.',
+    weights: AUDITED_PROFILES.quality_service,
   },
   {
     profile_id: 'growth',

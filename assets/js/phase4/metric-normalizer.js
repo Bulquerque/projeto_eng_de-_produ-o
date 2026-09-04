@@ -6,6 +6,7 @@ const DIRECTIONS = {
   inventory_efficiency: 'higher_is_better',
 };
 function n(v) {
+  if (v == null || (typeof v === 'string' && !v.trim())) return null;
   const x = Number(v);
   return Number.isFinite(x) ? x : null;
 }
@@ -21,7 +22,9 @@ export function normalizeMetrics({
   metricDirections = DIRECTIONS,
   referenceMetrics = [],
 }) {
-  const warnings = [];
+  const warnings = [
+    'A normalização min-max depende do conjunto de cenários e referências incluído nesta execução; a inclusão ou remoção de candidatos pode alterar scores e ranking.',
+  ];
   const metrics = Object.keys(metricDirections);
   const minmax = {};
   for (const m of metrics) {
@@ -53,6 +56,8 @@ export function normalizeMetrics({
     normalized_metrics,
     minmax,
     metric_directions: metricDirections,
+    normalization_method: 'min_max_by_candidate_set',
+    candidate_set_dependent: true,
     warnings,
     errors: [],
   };

@@ -1,11 +1,15 @@
 import { buildScenarioSummary } from '../shared/scenario-summary.js';
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
+import { buildScenarioFromForm } from './scenario-builder.js';
+import { runScenario } from './scenario-simulator.js';
 
 function n(value, fallback = 0) {
+  if (value == null || (typeof value === 'string' && !value.trim())) return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
 
-function baselineResult(bundle) {
+function bundleBaselineResult(bundle) {
   const costs = bundle?.costs?.costs || {};
   return {
     scenario_id: bundle?.model?.scenario_id || 'baseline',
@@ -16,8 +20,8 @@ function baselineResult(bundle) {
         active_cds: bundle?.model?.active_cds || [],
         freight_multiplier: 1,
         demand_multiplier: 1,
-        inventory_days: 45,
-        wacc: 0.15,
+        inventory_days: MODEL_ASSUMPTIONS.inventory.baseline_days,
+        wacc: MODEL_ASSUMPTIONS.inventory.baseline_wacc,
         tax_mode: 'current',
         reallocation_rule: 'nearest_available_cd',
       },
@@ -26,6 +30,30 @@ function baselineResult(bundle) {
     costs,
     tax_results: bundle?.tax_results?.tax_results || {},
   };
+}
+
+export function buildComparableBaselineResult({ companyId, baselineBundle, scenario } = {}) {
+  const changes = scenario?.changes || {};
+  const taxMode = changes.tax_mode || 'current';
+  const taxRegime = changes.tax_regime || null;
+  const referenceScenario = buildScenarioFromForm({
+    companyId,
+    baselineBundle,
+    scenarioId: `${baselineBundle?.model?.scenario_id || `${companyId}_baseline`}__${taxRegime || taxMode}_reference`,
+    formValues: {
+      scenario_name: 'Baseline comparável',
+      active_cds: baselineBundle?.model?.active_cds || [],
+      freight_multiplier: 1,
+      demand_multiplier: 1,
+      inventory_days: MODEL_ASSUMPTIONS.inventory.baseline_days,
+      wacc: MODEL_ASSUMPTIONS.inventory.baseline_wacc,
+      tax_mode: taxMode,
+      tax_regime: taxRegime,
+      reallocation_rule: 'nearest_available_cd',
+      scenario_type: 'comparison_baseline',
+    },
+  });
+  return runScenario({ companyId, scenario: referenceScenario, baselineBundle });
 }
 
 function assertSameCompany(companyId, result) {
@@ -78,8 +106,14 @@ function comparisonRow({ base, companyId, result }) {
   };
 }
 
-export function compareScenarios({ companyId, baselineBundle, scenarioResults = [] }) {
-  const base = baselineResult(baselineBundle);
+export function compareScenarios({
+  companyId,
+  baselineBundle,
+  baselineResult = null,
+  scenarioResults = [],
+}) {
+  const base = baselineResult || bundleBaselineResult(baselineBundle);
+  assertSameCompany(companyId, base);
   const rows = [base, ...scenarioResults]
     .filter(Boolean)
     .map((result) => comparisonRow({ base, companyId, result }));
@@ -99,8 +133,8 @@ export function compareScenarios({ companyId, baselineBundle, scenarioResults = 
   };
 }
 
-export function componentDelta(baselineBundle, result) {
-  const baselineCosts = baselineBundle?.costs?.costs || {};
+export function componentDelta(baselineBundle, result, baselineResult = null) {
+  const baselineCosts = baselineResult?.costs || baselineBundle?.costs?.costs || {};
   const scenarioCosts = result?.costs || {};
   const metrics = [
     'transfer_cost',

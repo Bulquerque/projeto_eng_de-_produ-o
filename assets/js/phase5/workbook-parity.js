@@ -1,7 +1,11 @@
 import { escapeHtml, formatBRL, formatPct, renderTable } from '../shared/common.js';
-import { buildBundleReconciliation } from '../shared/reconciliation-engine.js';
+import {
+  buildBundleReconciliation,
+  classifyReconciliationPct,
+} from '../shared/reconciliation-engine.js';
 
 function n(value) {
+  if (value == null || (typeof value === 'string' && !value.trim())) return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
@@ -19,7 +23,12 @@ function normalizeInput(input) {
 
 function fitRows(fit, costs, reconciliation) {
   const directRows = Array.isArray(fit?.errors_by_metric) ? fit.errors_by_metric : [];
-  if (directRows.length) return directRows;
+  if (directRows.length) {
+    return directRows.map((row) => ({
+      ...row,
+      status: classifyReconciliationPct(n(row.percentage_error)),
+    }));
+  }
   const operationalRows = Array.isArray(reconciliation?.operational?.rows)
     ? reconciliation.operational.rows
     : [];
@@ -35,7 +44,6 @@ function fitRows(fit, costs, reconciliation) {
       referenceValue === 0 || simulatedValue == null || referenceValue == null
         ? null
         : ((simulatedValue - referenceValue) / referenceValue) * 100;
-    const absPct = percentageError == null ? null : Math.abs(percentageError);
     return {
       metric,
       reference: referenceValue,
@@ -43,14 +51,7 @@ function fitRows(fit, costs, reconciliation) {
       absolute_error:
         simulatedValue == null || referenceValue == null ? null : simulatedValue - referenceValue,
       percentage_error: percentageError,
-      status:
-        absPct == null
-          ? 'sem_referencia'
-          : absPct <= 3
-            ? 'OK'
-            : absPct <= 10
-              ? 'atenção'
-              : 'alto_desvio',
+      status: classifyReconciliationPct(percentageError),
     };
   });
 }
@@ -122,7 +123,7 @@ export function buildWorkbookParitySummary(input) {
           ? 'base_fit'
           : 'pending',
     reconciliation_status: overallStatus?.status || 'pending',
-    reconciliation_label: overallStatus?.label || 'reconciliaçao pendente',
+    reconciliation_label: overallStatus?.label || 'reconciliação pendente',
     operational_status:
       reconciliation?.operational?.status || (hasRealComparison ? 'aligned' : 'pending'),
     tax_status: taxStatus?.status || 'pending',

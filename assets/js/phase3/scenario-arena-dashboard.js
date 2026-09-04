@@ -3,7 +3,11 @@ import { loadScenarioLibrary } from './scenario-library.js';
 import { buildScenarioFromForm } from './scenario-builder.js';
 import { validateScenario } from './scenario-validator.js';
 import { runScenario } from './scenario-simulator.js';
-import { compareScenarios, componentDelta } from './scenario-comparator.js';
+import {
+  buildComparableBaselineResult,
+  compareScenarios,
+  componentDelta,
+} from './scenario-comparator.js';
 import { evaluateScenarioQuality } from './scenario-quality-check.js';
 import { explainScenarioChanges } from './scenario-change-explainer.js';
 import {
@@ -127,6 +131,7 @@ const state = {
   library: null,
   currentScenario: null,
   currentResult: null,
+  comparisonBaseline: null,
   comparison: null,
   quality: null,
   explanation: null,
@@ -225,6 +230,7 @@ function logError(msg, error, data = null) {
 function resetAnalysisPanels() {
   state.currentScenario = null;
   state.currentResult = null;
+  state.comparisonBaseline = null;
   state.comparison = null;
   state.quality = null;
   state.explanation = null;
@@ -494,7 +500,11 @@ function renderComponentDeltas() {
     return;
   }
 
-  const deltas = componentDelta(state.library.baselineBundle, state.currentResult);
+  const deltas = componentDelta(
+    state.library.baselineBundle,
+    state.currentResult,
+    state.comparisonBaseline
+  );
   setHtml(
     'componentDeltaPanel',
     deltas
@@ -670,9 +680,34 @@ function renderQuality() {
       ? `<div class="alert-box warn"><strong>${hiddenTaxWarnings} avisos tributários adicionais</strong><p>Lista reduzida para manter a tela legível. O cálculo preserva os avisos completos em <code>tax_results.warnings</code>.</p></div>`
       : '');
 
+  const costs = state.currentResult?.costs || {};
+  const fallback = costs.fallback_usage || {};
+  const fallbackItems = [];
+  if (fallback.cross_company_transfer_proxy_flows > 0) {
+    fallbackItems.push(
+      `Proxy cruzada de transferência: ${formatNumber(fallback.cross_company_transfer_proxy_flows, 0)} fluxo(s), ${formatPct(fallback.cross_company_transfer_proxy_volume_share_pct || 0, 1)} do peso e ${formatPct(fallback.cross_company_transfer_proxy_cost_share_pct || 0, 1)} do custo físico.`
+    );
+  }
+  if (fallback.missing_transfer_distance_flows > 0) {
+    fallbackItems.push(
+      `Fallback de distância: ${formatNumber(fallback.missing_transfer_distance_flows, 0)} fluxo(s), ${formatPct(fallback.missing_transfer_distance_cost_share_pct || 0, 1)} do custo físico.`
+    );
+  }
+  if (fallback.revenue_pct_fallback_cost_brl > 0) {
+    fallbackItems.push(
+      `Fallback de 2,5% da receita: ${formatPct(fallback.revenue_pct_fallback_revenue_share_pct || 0, 1)} da receita coberta e ${formatPct(fallback.revenue_pct_fallback_cost_share_pct || 0, 1)} do custo físico.`
+    );
+  }
+  if (fallback.storage_proxy_used) {
+    fallbackItems.push(
+      `Armazenagem proporcional: ${formatPct(fallback.storage_proxy_cost_share_pct || 0, 1)} do custo físico.`
+    );
+  }
+  const fallbackSummary = `<div class="alert-box neutral"><strong>Cobertura de premissas e fallbacks</strong><p>Estoque: ${escapeHtml(costs.inventory_calculation_mode || 'days_wacc_only')} · pooling por CDs: ${costs.inventory_pooling_effect_included ? 'incluído' : 'não incluído'}.</p>${fallbackItems.length ? `<ul>${fallbackItems.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : '<p>Nenhum fallback operacional dinâmico acionado.</p>'}</div>`;
+
   setHtml(
     'qualityPanel',
-    `<div class="fit-score-card ${qualityStatusClass(quality.quality_score)}"><span class="metric-label">Quality Score</span><strong class="fit-score-value">${quality.quality_score}</strong><p>Risco: <b>${escapeHtml(riskLabel(quality.risk_level))}</b></p></div><div class="alert-box neutral"><strong>Regime fiscal</strong><p>${escapeHtml(tax.regime_label || taxRegimeLabel(scenarioTaxRegime(state.currentResult?.scenario)))}</p><p class="small-note">Modo de cálculo: ${escapeHtml(tax.calculation_mode || '—')} · Precisão: ${escapeHtml(tax.precision_mode || '—')}</p></div>${alerts}${taxWarnings}`
+    `<div class="fit-score-card ${qualityStatusClass(quality.quality_score)}"><span class="metric-label">Quality Score</span><strong class="fit-score-value">${quality.quality_score}</strong><p>Risco: <b>${escapeHtml(riskLabel(quality.risk_level))}</b></p></div><div class="alert-box neutral"><strong>Regime fiscal</strong><p>${escapeHtml(tax.regime_label || taxRegimeLabel(scenarioTaxRegime(state.currentResult?.scenario)))}</p><p class="small-note">Modo de cálculo: ${escapeHtml(tax.calculation_mode || '—')} · Precisão: ${escapeHtml(tax.precision_mode || '—')}</p></div>${fallbackSummary}${alerts}${taxWarnings}`
   );
 }
 
@@ -797,6 +832,7 @@ function runMonteCarloForCurrentScenario({ rerender = true } = {}) {
     companyId: state.companyId,
     selectedScenario: state.currentScenario,
     baselineBundle: state.library.baselineBundle,
+    baselineResult: state.comparisonBaseline,
     deterministicResult: state.currentResult,
     iterations: state.monteCarloConfig.iterations,
     seed: state.monteCarloConfig.seed,
@@ -879,6 +915,7 @@ function runCurrentScenario() {
   if (!validation.valid) {
     state.currentScenario = scenario;
     state.currentResult = null;
+    state.comparisonBaseline = null;
     state.comparison = null;
     state.quality = null;
     state.explanation = null;
@@ -897,6 +934,16 @@ function runCurrentScenario() {
     scenario,
     baselineBundle: state.library.baselineBundle,
   });
+  state.comparisonBaseline = buildComparableBaselineResult({
+    companyId: state.companyId,
+    baselineBundle: state.library.baselineBundle,
+    scenario,
+  });
+  state.currentResult = {
+    ...state.currentResult,
+    baseline_total: state.comparisonBaseline.total_with_tax,
+    comparison_basis: 'same_tax_regime',
+  };
   state.quality = evaluateScenarioQuality({
     scenarioResult: state.currentResult,
     baselineBundle: state.library.baselineBundle,
@@ -904,6 +951,7 @@ function runCurrentScenario() {
   state.comparison = compareScenarios({
     companyId: state.companyId,
     baselineBundle: state.library.baselineBundle,
+    baselineResult: state.comparisonBaseline,
     scenarioResults: [state.currentResult],
   });
 

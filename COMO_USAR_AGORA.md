@@ -5,7 +5,8 @@
 Na pasta extraída, rode:
 
 ```bash
-python -m http.server 8000
+npm ci
+npm run serve
 ```
 
 Abra:
@@ -24,16 +25,26 @@ http://localhost:8000/fase-1-validacao/
 
 Rode:
 
+Sem a senha dos dados, rode somente a suíte pública:
+
 ```bash
-python tests/run_all_tests.py
+npm run test:public
 ```
 
-Resultado esperado:
+Para a validação integral, configure `VISAGIO_DATA_PASSWORD` conforme `.env.example` e rode:
+
+```bash
+npm test
+```
+
+Resultados esperados, respectivamente:
 
 ```text
-PRESENTATION_E2E_OK
-ALL_PHASE5_PACKAGE_TESTS_OK
+PUBLIC_TEST_SUITE_OK
+FULL_TEST_SUITE_OK
 ```
+
+Se a credencial estiver ausente, `npm test` termina com `FULL_SUITE_BLOCKED`; isso é um bloqueio deliberado, não uma aprovação parcial.
 
 ## 3. Preparar para banca
 
@@ -71,7 +82,7 @@ Depois de iniciar o servidor local, abra:
 http://localhost:8000/fase-2-baseline/
 ```
 
-Use a página para conferir o baseline da Empresa 1 e da Empresa 2. A Empresa 1 aparece com benchmark pendente. A Empresa 2 aparece com benchmark pendente também, porque não há benchmark independente consolidado; a página destaca a divergência entre o `scenario_totals` e a matriz tributária.
+Use a página para conferir o baseline da Empresa 1 e da Empresa 2. As empresas aparecem separadas. Na ausência de benchmark independente consolidado, a página informa `benchmark pendente` e não produz score fictício.
 
 
 ## Fase 3 implementada
@@ -104,7 +115,7 @@ A Fase 4 continua 100% estática. Ela roda no navegador e usa os dados da Fase 2
 
 ## Fase 5 — Entrega Final
 
-A Fase 5 foi implementada em `/fase-5-entrega-final/` com stress test, robustez, recomendação, audit trail, relatório executivo, exportação e QA final.
+A Fase 5 foi implementada em `/fase-5-entrega-final/` com stress test, índice de robustez, recomendação, audit trail, relatório executivo, exportação e QA final. Risco e robustez são proxies multicritério, não probabilidades empíricas.
 
 Para abrir:
 

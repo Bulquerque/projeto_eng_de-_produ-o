@@ -1,5 +1,6 @@
 import { loadPhase2Bundle, loadPhase3Samples } from '../shared/data-loader.js';
 import { loadSavedScenarios } from './scenario-persistence.js';
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
 export async function loadScenarioLibrary(companyId) {
   const baselineBundle = await loadPhase2Bundle(companyId);
   let samples = [];
@@ -19,8 +20,8 @@ export async function loadScenarioLibrary(companyId) {
       closed_cds: [],
       freight_multiplier: 1,
       demand_multiplier: 1,
-      inventory_days: 45,
-      wacc: 0.15,
+      inventory_days: MODEL_ASSUMPTIONS.inventory.baseline_days,
+      wacc: MODEL_ASSUMPTIONS.inventory.baseline_wacc,
       tax_mode: 'current',
       tax_regime: 'legacy_current',
       reallocation_rule: 'nearest_available_cd',

@@ -33,12 +33,21 @@ for (const companyId of ['empresa1','empresa2']) {
  const stressed=applyStressCaseToScenario({scenario,stressCase:cases.find(c=>c.case_id==='frete_mais_20')});
  if(JSON.stringify(scenario)!==original) throw new Error('stress mutated original');
  if(!(stressed.changes.freight_multiplier > (scenario.changes.freight_multiplier||1))) throw new Error('freight stress not applied');
- const stress=runStressTests({companyId,selectedScenario:scenario,baselineBundle:bundle,stressCases:cases});
+ const comparisonBaseline=opt.baseline_reference.result;
+ const stress=runStressTests({companyId,selectedScenario:scenario,baselineBundle:bundle,baselineResult:comparisonBaseline,stressCases:cases});
  if(stress.stress_results.length!==cases.length) throw new Error('stress count mismatch');
  if(!stress.stress_results.some(r=>r.case_id==='frete_mais_20')) throw new Error('missing freight case');
- const sens=runSensitivity({companyId,selectedScenario:scenario,baselineBundle:bundle,sensitivityConfig:{variable:'freight_multiplier',values:[0.9,1,1.2]}});
+ for(const row of stress.stress_results){
+   const expected=comparisonBaseline.total_with_tax-row.total_with_tax;
+   if(Math.abs(row.saving_vs_baseline-expected)>0.01) throw new Error('stress saving formula mismatch');
+ }
+ const sens=runSensitivity({companyId,selectedScenario:scenario,baselineBundle:bundle,baselineResult:comparisonBaseline,sensitivityConfig:{variable:'freight_multiplier',values:[0.9,1,1.2]}});
  if(sens.sensitivity_results.length!==3) throw new Error('sensitivity count mismatch');
  if(sens.sensitivity_results[2].total_with_tax < sens.sensitivity_results[0].total_with_tax) throw new Error('freight sensitivity not monotonic enough');
+ for(const row of sens.sensitivity_results){
+   const expected=((comparisonBaseline.total_with_tax-row.total_with_tax)/comparisonBaseline.total_with_tax)*100;
+   if(Math.abs(row.saving_pct-expected)>1e-9) throw new Error('sensitivity saving formula mismatch');
+ }
 }
 console.log('PHASE5_NODE_STRESS_OK');
 """

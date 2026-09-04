@@ -1,10 +1,12 @@
 import { runScenario } from './scenario-simulator.js';
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value || {}));
 }
 
 function n(value, fallback = 0) {
+  if (value === null || value === undefined || value === '') return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
@@ -155,50 +157,43 @@ function normalizeDriver(driver) {
   return allowed.has(driver) ? driver : 'freight_multiplier';
 }
 
-const PROFILE_PRESETS = {
-  conservative: {
-    spread: {
-      freight_multiplier: 0.045,
-      demand_multiplier: 0.035,
-      inventory_days: 5,
-      wacc: 0.012,
-      tax_multiplier: 0.025,
-    },
-    shared_shock: 0.18,
-    idiosyncratic_shock: 0.45,
-  },
-  balanced: {
-    spread: {
-      freight_multiplier: 0.08,
-      demand_multiplier: 0.07,
-      inventory_days: 9,
-      wacc: 0.02,
-      tax_multiplier: 0.04,
-    },
-    shared_shock: 0.32,
-    idiosyncratic_shock: 0.65,
-  },
-  broad: {
-    spread: {
-      freight_multiplier: 0.12,
-      demand_multiplier: 0.1,
-      inventory_days: 14,
-      wacc: 0.03,
-      tax_multiplier: 0.06,
-    },
-    shared_shock: 0.48,
-    idiosyncratic_shock: 0.85,
-  },
-};
+const MONTE_CARLO_ASSUMPTIONS = MODEL_ASSUMPTIONS.monte_carlo;
+const PROFILE_PRESETS = MONTE_CARLO_ASSUMPTIONS.profiles;
+
+const MONTE_CARLO_METHODOLOGY = Object.freeze({
+  deterministic_core: true,
+  role: 'complementary_probabilistic_layer',
+  distribution: 'gaussian_parameterized_with_bounds',
+  calibration_status: 'manual_spreads_not_historically_calibrated',
+  interpretation:
+    'Análise exploratória de sensibilidade; não constitui previsão estatística validada.',
+});
+
+function normalizeSpread(profileSpread, override = null) {
+  const source = override && typeof override === 'object' ? override : {};
+  return Object.fromEntries(
+    Object.entries(profileSpread).map(([driver, value]) => [
+      driver,
+      Math.max(0, n(source[driver], value)),
+    ])
+  );
+}
 
 function buildMonteCarloConfig({
-  iterations = 300,
-  seed = 42,
+  iterations = MONTE_CARLO_ASSUMPTIONS.default_iterations,
+  seed = MONTE_CARLO_ASSUMPTIONS.default_seed,
   profile = 'balanced',
   scatterDriver = 'freight_multiplier',
-  histogramBins = 12,
+  histogramBins = MONTE_CARLO_ASSUMPTIONS.default_histogram_bins,
+  spread = null,
+  sharedShock = null,
+  idiosyncraticShock = null,
 } = {}) {
-  const normalizedIterations = clamp(Math.round(n(iterations, 300)), 50, 5000);
+  const normalizedIterations = clamp(
+    Math.round(n(iterations, MONTE_CARLO_ASSUMPTIONS.default_iterations)),
+    MONTE_CARLO_ASSUMPTIONS.minimum_iterations,
+    MONTE_CARLO_ASSUMPTIONS.maximum_iterations
+  );
   const normalizedProfile = normalizeProfile(profile);
   const normalizedDriver = normalizeDriver(scatterDriver);
   const preset = PROFILE_PRESETS[normalizedProfile];
@@ -208,10 +203,20 @@ function buildMonteCarloConfig({
     seed,
     profile: normalizedProfile,
     scatter_driver: normalizedDriver,
-    histogram_bins: clamp(Math.round(n(histogramBins, 12)), 6, 30),
-    spread: clone(preset.spread),
-    shared_shock: preset.shared_shock,
-    idiosyncratic_shock: preset.idiosyncratic_shock,
+    histogram_bins: clamp(
+      Math.round(n(histogramBins, MONTE_CARLO_ASSUMPTIONS.default_histogram_bins)),
+      MONTE_CARLO_ASSUMPTIONS.bounds.histogram_bins[0],
+      MONTE_CARLO_ASSUMPTIONS.bounds.histogram_bins[1]
+    ),
+    spread: normalizeSpread(preset.spread, spread),
+    shared_shock:
+      sharedShock == null ? preset.shared_shock : Math.max(0, n(sharedShock, preset.shared_shock)),
+    idiosyncratic_shock:
+      idiosyncraticShock == null
+        ? preset.idiosyncratic_shock
+        : Math.max(0, n(idiosyncraticShock, preset.idiosyncratic_shock)),
+    bounds: clone(MONTE_CARLO_ASSUMPTIONS.bounds),
+    calibration_status: MONTE_CARLO_METHODOLOGY.calibration_status,
   };
 }
 
@@ -296,8 +301,10 @@ function summarizeSamples({
   const probabilityLoss = savingValues.length
     ? savingValues.filter((value) => value < 0).length / savingValues.length
     : 0;
+  const riskAssumptions = MONTE_CARLO_ASSUMPTIONS.risk;
   const probabilityStrongPositive = savingValues.length
-    ? savingValues.filter((value) => value >= 5).length / savingValues.length
+    ? savingValues.filter((value) => value >= riskAssumptions.strong_positive_saving_min_pct)
+        .length / savingValues.length
     : 0;
   const deterministicPercentile = percentileRank(sortedSaving, deterministicSavingPct);
   const correlationMap = {};
@@ -342,9 +349,15 @@ function summarizeSamples({
   }));
 
   let riskBand = 'low';
-  if (probabilityPositive < 0.6 || p10Saving < 0) {
+  if (
+    probabilityPositive < riskAssumptions.high_probability_saving_below ||
+    p10Saving < riskAssumptions.high_p10_saving_below_pct
+  ) {
     riskBand = 'high';
-  } else if (probabilityPositive < 0.8 || p10Saving < 2) {
+  } else if (
+    probabilityPositive < riskAssumptions.medium_probability_saving_below ||
+    p10Saving < riskAssumptions.medium_p10_saving_below_pct
+  ) {
     riskBand = 'medium';
   }
 
@@ -370,6 +383,8 @@ function summarizeSamples({
     probability_saving_positive: probabilityPositive,
     probability_saving_loss: probabilityLoss,
     probability_saving_strong_positive: probabilityStrongPositive,
+    probability_saving_strong_positive_threshold_pct:
+      riskAssumptions.strong_positive_saving_min_pct,
     stddev_total_with_tax: stdTotal,
     stddev_saving_pct: stdSaving,
     risk_band: riskBand,
@@ -387,12 +402,13 @@ export function runMonteCarloSimulation({
   companyId,
   selectedScenario,
   baselineBundle,
+  baselineResult = null,
   deterministicResult = null,
-  iterations = 300,
-  seed = 42,
+  iterations = MONTE_CARLO_ASSUMPTIONS.default_iterations,
+  seed = MONTE_CARLO_ASSUMPTIONS.default_seed,
   config = {},
 } = {}) {
-  const warnings = [];
+  const warnings = [MONTE_CARLO_METHODOLOGY.interpretation];
   const errors = [];
 
   if (!companyId) errors.push('company_id ausente.');
@@ -406,6 +422,7 @@ export function runMonteCarloSimulation({
       config: buildMonteCarloConfig({ iterations, seed, ...config }),
       samples: [],
       summary: null,
+      methodology: MONTE_CARLO_METHODOLOGY,
       warnings,
       errors,
     };
@@ -416,9 +433,11 @@ export function runMonteCarloSimulation({
     seed,
     profile: config.profile || config.uncertainty_profile || 'balanced',
     scatterDriver: config.scatter_driver || config.scatterDriver || 'freight_multiplier',
-    histogramBins: config.histogram_bins || 12,
+    histogramBins: config.histogram_bins || MONTE_CARLO_ASSUMPTIONS.default_histogram_bins,
+    spread: config.spread || null,
+    sharedShock: config.shared_shock ?? config.sharedShock ?? null,
+    idiosyncraticShock: config.idiosyncratic_shock ?? config.idiosyncraticShock ?? null,
   });
-  const preset = PROFILE_PRESETS[normalizedConfig.profile];
   const rng = createRng(normalizedConfig.seed);
   const baseScenario = clone(selectedScenario);
   delete baseScenario.monte_carlo;
@@ -426,13 +445,32 @@ export function runMonteCarloSimulation({
   const baseChanges = baseScenario.changes || {};
   const baseFreight = Math.max(0.0001, n(baseChanges.freight_multiplier, 1));
   const baseDemand = Math.max(0.0001, n(baseChanges.demand_multiplier, 1));
-  const baseInventory = Math.max(0, n(baseChanges.inventory_days, 45));
-  const baseWacc = Math.max(0, n(baseChanges.wacc, 0.15));
+  const baseInventory = Math.max(
+    0,
+    n(baseChanges.inventory_days, MODEL_ASSUMPTIONS.inventory.baseline_days)
+  );
+  const baseWacc = Math.max(0, n(baseChanges.wacc, MODEL_ASSUMPTIONS.inventory.baseline_wacc));
   const baselineTotal = n(
-    deterministicResult?.total_with_tax ?? baselineBundle?.costs?.costs?.total_with_tax
+    baselineResult?.total_with_tax ??
+      deterministicResult?.baseline_total ??
+      baselineBundle?.costs?.costs?.total_with_tax
   );
   const deterministic =
     deterministicResult || runScenario({ companyId, scenario: baseScenario, baselineBundle });
+
+  if (!(baselineTotal > 0)) {
+    return {
+      company_id: companyId,
+      scenario_id: selectedScenario?.scenario_id || null,
+      monte_carlo_status: 'blocked',
+      config: normalizedConfig,
+      samples: [],
+      summary: null,
+      methodology: MONTE_CARLO_METHODOLOGY,
+      warnings,
+      errors: ['baseline total deve ser positivo para calcular saving e probabilidades.'],
+    };
+  }
 
   if (deterministic?.errors?.length) {
     return {
@@ -442,7 +480,8 @@ export function runMonteCarloSimulation({
       config: normalizedConfig,
       samples: [],
       summary: null,
-      warnings: deterministic.warnings || [],
+      methodology: MONTE_CARLO_METHODOLOGY,
+      warnings: [...warnings, ...(deterministic.warnings || [])],
       errors: deterministic.errors || ['simulação determinística inválida; Monte Carlo bloqueado.'],
     };
   }
@@ -454,55 +493,55 @@ export function runMonteCarloSimulation({
     const sampled = {
       freight_multiplier: sampleMultiplicative(
         baseFreight,
-        preset.spread.freight_multiplier,
+        normalizedConfig.spread.freight_multiplier,
         rng,
         sharedShock,
-        1,
-        preset.idiosyncratic_shock,
-        0.6,
-        1.8
+        normalizedConfig.shared_shock,
+        normalizedConfig.idiosyncratic_shock,
+        normalizedConfig.bounds.freight_multiplier_factor[0],
+        normalizedConfig.bounds.freight_multiplier_factor[1]
       ),
       demand_multiplier: sampleMultiplicative(
         baseDemand,
-        preset.spread.demand_multiplier,
+        normalizedConfig.spread.demand_multiplier,
         rng,
         sharedShock,
-        0.9,
-        preset.idiosyncratic_shock,
-        0.6,
-        1.6
+        normalizedConfig.shared_shock * 0.9,
+        normalizedConfig.idiosyncratic_shock,
+        normalizedConfig.bounds.demand_multiplier_factor[0],
+        normalizedConfig.bounds.demand_multiplier_factor[1]
       ),
       inventory_days: Math.round(
         sampleAdditive(
           baseInventory,
-          preset.spread.inventory_days,
+          normalizedConfig.spread.inventory_days,
           rng,
           sharedShock,
-          1,
-          preset.idiosyncratic_shock,
-          0,
-          120
+          normalizedConfig.shared_shock,
+          normalizedConfig.idiosyncratic_shock,
+          normalizedConfig.bounds.inventory_days[0],
+          normalizedConfig.bounds.inventory_days[1]
         )
       ),
       wacc: sampleAdditive(
         baseWacc,
-        preset.spread.wacc,
+        normalizedConfig.spread.wacc,
         rng,
         sharedShock,
-        0.7,
-        preset.idiosyncratic_shock,
-        0,
-        0.5
+        normalizedConfig.shared_shock * 0.7,
+        normalizedConfig.idiosyncratic_shock,
+        normalizedConfig.bounds.wacc[0],
+        normalizedConfig.bounds.wacc[1]
       ),
       tax_multiplier: sampleMultiplicative(
         1,
-        preset.spread.tax_multiplier,
+        normalizedConfig.spread.tax_multiplier,
         rng,
         sharedShock,
-        0.5,
-        preset.idiosyncratic_shock,
-        0.7,
-        1.35
+        normalizedConfig.shared_shock * 0.5,
+        normalizedConfig.idiosyncratic_shock,
+        normalizedConfig.bounds.tax_multiplier[0],
+        normalizedConfig.bounds.tax_multiplier[1]
       ),
       common_shock: sharedShock,
     };
@@ -551,6 +590,7 @@ export function runMonteCarloSimulation({
       config: normalizedConfig,
       samples: [],
       summary: null,
+      methodology: MONTE_CARLO_METHODOLOGY,
       warnings,
       errors: warnings.length ? warnings : ['nenhuma amostra válida foi gerada.'],
     };
@@ -573,6 +613,8 @@ export function runMonteCarloSimulation({
     config: normalizedConfig,
     samples,
     summary,
+    methodology: MONTE_CARLO_METHODOLOGY,
+    invalid_sample_count: normalizedConfig.iterations - samples.length,
     warnings,
     errors: [],
   };

@@ -1,4 +1,5 @@
 import { flowMeasure } from './scenario-flow-rebuilder.js';
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
 function pct(part, total) {
   return total ? part / total : 0;
 }
@@ -15,9 +16,11 @@ export function evaluateScenarioQuality({ scenarioResult, baselineBundle, qualit
   const flowCount = Math.max(1, scenarioResult?.flow_summary?.total_flows || flows.length || 1);
   const reallocShare = reallocated / flowCount;
   const missing = (scenarioResult?.flow_summary?.uncovered_flows || 0) / flowCount;
-  const maxCd = qualityRules.max_cd_volume_share ?? 0.75;
-  const maxRe = qualityRules.max_reallocated_flow_share ?? 0.5;
-  const maxMissing = qualityRules.max_missing_distance_share ?? 0.05;
+  const maxCd = qualityRules.max_cd_volume_share ?? MODEL_ASSUMPTIONS.quality.max_cd_volume_share;
+  const maxRe =
+    qualityRules.max_reallocated_flow_share ?? MODEL_ASSUMPTIONS.quality.max_reallocated_flow_share;
+  const maxMissing =
+    qualityRules.max_missing_distance_share ?? MODEL_ASSUMPTIONS.quality.max_missing_distance_share;
   const alerts = [];
   let score = 100;
   if (maxShare > maxCd) {
@@ -44,7 +47,8 @@ export function evaluateScenarioQuality({ scenarioResult, baselineBundle, qualit
     });
     score -= 40;
   }
-  const baseTotal = baselineBundle?.costs?.costs?.total_with_tax || 0;
+  const baseTotal =
+    scenarioResult?.baseline_total ?? baselineBundle?.costs?.costs?.total_with_tax ?? 0;
   const delta = baseTotal ? (scenarioResult.total_with_tax - baseTotal) / baseTotal : 0;
   if (delta > 0.1) {
     alerts.push({

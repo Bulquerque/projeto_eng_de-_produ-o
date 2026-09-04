@@ -3,6 +3,7 @@ function clone(obj) {
   return JSON.parse(JSON.stringify(obj || {}));
 }
 function n(v, d = 0) {
+  if (v == null || (typeof v === 'string' && !v.trim())) return d;
   const x = Number(v);
   return Number.isFinite(x) ? x : d;
 }
@@ -10,6 +11,7 @@ export function runSensitivity({
   companyId,
   selectedScenario,
   baselineBundle,
+  baselineResult = null,
   sensitivityConfig = null,
 } = {}) {
   const cfg = sensitivityConfig || { variable: 'freight_multiplier', values: [0.9, 1.0, 1.1, 1.2] };
@@ -23,7 +25,9 @@ export function runSensitivity({
       warnings: [],
       errors: [`variável não suportada: ${cfg.variable}`],
     };
-  const baselineTotal = n(baselineBundle?.costs?.costs?.total_with_tax);
+  const baselineTotal = n(
+    baselineResult?.total_with_tax ?? baselineBundle?.costs?.costs?.total_with_tax
+  );
   const sensitivity_results = (cfg.values || []).map((value) => {
     const scenario = clone(selectedScenario);
     scenario.scenario_id = `${selectedScenario.scenario_id}__sens_${cfg.variable}_${String(value).replace('.', '_')}`;
@@ -50,6 +54,8 @@ export function runSensitivity({
   return {
     company_id: companyId,
     scenario_id: selectedScenario?.scenario_id,
+    baseline_total_with_tax: baselineTotal,
+    comparison_basis: baselineResult ? 'same_tax_regime' : 'bundle_baseline',
     sensitivity_results,
     most_sensitive_variable: cfg.variable,
     sensitivity_slope: slope,
@@ -62,6 +68,7 @@ export function runSensitivityMatrix({
   companyId,
   selectedScenario,
   baselineBundle,
+  baselineResult = null,
   matrixConfig = null,
 } = {}) {
   const cfg = matrixConfig || {
@@ -93,7 +100,9 @@ export function runSensitivityMatrix({
       errors: ['escolha duas variáveis diferentes para a matriz'],
     };
   }
-  const baselineTotal = n(baselineBundle?.costs?.costs?.total_with_tax);
+  const baselineTotal = n(
+    baselineResult?.total_with_tax ?? baselineBundle?.costs?.costs?.total_with_tax
+  );
   const matrix_results = [];
   for (const yValue of cfg.yValues || []) {
     for (const xValue of cfg.xValues || []) {
@@ -127,6 +136,8 @@ export function runSensitivityMatrix({
   return {
     company_id: companyId,
     scenario_id: selectedScenario?.scenario_id,
+    baseline_total_with_tax: baselineTotal,
+    comparison_basis: baselineResult ? 'same_tax_regime' : 'bundle_baseline',
     x_variable: cfg.xVariable,
     y_variable: cfg.yVariable,
     x_values: cfg.xValues || [],

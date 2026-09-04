@@ -4,6 +4,7 @@ import { calculateReformTax } from '../shared/tax-reform-engine.js';
 import { calculatePhysicalCosts } from './physical-cost-engine.js';
 
 function toNum(v, d = 0) {
+  if (v === null || v === undefined || v === '') return d;
   const x = Number(v);
   return Number.isFinite(x) ? x : d;
 }
@@ -62,12 +63,29 @@ function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }
     toNum(physical.distribution_cost) +
     toNum(physical.storage_cost) +
     toNum(physical.inventory_cost);
+  const baselineTotal = toNum(baselineBundle?.costs?.costs?.total_with_tax);
+  const transferProxySensitivity = physical.transfer_proxy_sensitivity
+    ? {
+        ...physical.transfer_proxy_sensitivity,
+        points: physical.transfer_proxy_sensitivity.points.map((point) => {
+          const totalWithTax = totalLogistics + toNum(point.delta_from_reference) + taxImpact;
+          const savingAbs = baselineTotal - totalWithTax;
+          return {
+            ...point,
+            total_with_tax: totalWithTax,
+            saving_abs: savingAbs,
+            saving_pct: baselineTotal ? (savingAbs / baselineTotal) * 100 : null,
+          };
+        }),
+      }
+    : null;
 
   return {
     ...physical,
     tax_impact: taxImpact,
     total_logistics_cost: totalLogistics,
     total_with_tax: totalLogistics + taxImpact,
+    transfer_proxy_sensitivity: transferProxySensitivity,
     tax_details: taxDetails,
     physical_warnings: physical.warnings,
   };

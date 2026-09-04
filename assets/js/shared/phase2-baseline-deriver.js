@@ -1,6 +1,7 @@
 import { calculatePhysicalCosts } from '../phase3/physical-cost-engine.js';
 import { buildBundleReconciliation } from './reconciliation-engine.js';
 import { runTaxCalculation } from './tax/tax-orchestrator.js';
+import { MODEL_ASSUMPTIONS } from './model-assumptions.js';
 
 function cloneValue(value) {
   if (value == null) return value;
@@ -9,6 +10,7 @@ function cloneValue(value) {
 }
 
 function toNum(value, fallback = 0) {
+  if (value == null || (typeof value === 'string' && !value.trim())) return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
@@ -25,8 +27,8 @@ function buildBaselineScenario(bundle, companyId) {
       closed_cds: [],
       freight_multiplier: 1,
       demand_multiplier: 1,
-      inventory_days: 45,
-      wacc: 0.15,
+      inventory_days: MODEL_ASSUMPTIONS.inventory.baseline_days,
+      wacc: MODEL_ASSUMPTIONS.inventory.baseline_wacc,
       tax_mode: 'current',
       reallocation_rule: 'nearest_available_cd',
     },
@@ -128,7 +130,7 @@ function refreshEmpresa1ModelMetadata(bundle) {
     metadata: {
       ...currentMetadata,
       methodology:
-        'Baseline da Empresa 1 recalculado em runtime com matriz de distância, proxy quilométrico de transferência e referência tributária oficial. O pacote bruto é mantido em phase2_raw para auditoria.',
+        'Baseline da Empresa 1 recalculado em runtime com matriz de distância, proxy quilométrico de transferência e impacto tributário parametrizado por referências oficiais. A camada tributária não constitui validação fiscal. O pacote bruto é mantido em phase2_raw para auditoria.',
       derived_baseline: {
         active: true,
         preserves_raw_snapshot: true,
@@ -163,6 +165,7 @@ export function recomputePhase2Baseline(bundle, companyId = bundle?.model?.compa
     scenario: baselineScenario,
     baselineBundle: calcBundle,
     rebuilt: { flows },
+    forceRecompute: true,
   });
 
   const taxResult = runTaxCalculation({
@@ -192,6 +195,10 @@ export function recomputePhase2Baseline(bundle, companyId = bundle?.model?.compa
     ...rawSnapshot.costs,
     costs: derivedCosts,
     cost_breakdown: buildCostBreakdown(physicalCosts, taxResult.total_tax_impact),
+    fallback_usage: cloneValue(physicalCosts.fallback_usage),
+    transfer_proxy_sensitivity: cloneValue(physicalCosts.transfer_proxy_sensitivity),
+    inventory_calculation_mode: physicalCosts.inventory_calculation_mode,
+    inventory_pooling_effect_included: physicalCosts.inventory_pooling_effect_included,
     warnings: buildDerivedWarnings(physicalCosts.warnings),
     errors: [],
   };

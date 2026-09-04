@@ -11,6 +11,7 @@ import { calculateReformTax } from './reform-tax-engine.js';
 import { combineTransitionTaxes } from './transition-tax-engine.js';
 
 function n(value, fallback = 0) {
+  if (value == null || (typeof value === 'string' && !value.trim())) return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
@@ -83,10 +84,16 @@ export function runTaxCalculation(arg1, arg2, arg3) {
   });
   const quality = auditTaxFlowCoverage(fiscal.fiscal_flows);
   const precisionMode = quality.precision_mode;
-  const calculationMode = quality.blocked ? 'top_down_fallback' : precisionMode;
+  const blocked = quality.blocked || (fiscal.errors || []).length > 0;
+  const calculationMode = blocked ? 'top_down_fallback' : precisionMode;
   const baseTax = input.baseTaxBlock || {};
   const disabled = regimeId === 'disabled' || input.taxMode === 'disabled';
   const sourceContext = input.baselineBundle?.complements || null;
+  const companyId = input.baselineBundle?.model?.company_id || null;
+  const validationScope =
+    companyId === 'empresa1'
+      ? 'parameterized_simulation_not_fiscal_validation'
+      : 'parameterized_impact_with_workbook_reconciliation_when_available';
 
   if (disabled) {
     return {
@@ -115,6 +122,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       tax_breakdown_by_fiscal_category: {},
       flow_breakdown: [],
       warnings: [...quality.warnings, ...(fiscal.warnings || [])],
+      errors: fiscal.errors || [],
       explanation: { summary: 'Camada tributária desligada.' },
       audit_trace: buildAuditTrace({
         parameterVersion: '2026-05',
@@ -129,6 +137,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
         calculation_mode: 'top_down_fallback',
         precision_mode: precisionMode,
         source_context: sourceContext,
+        validation_scope: validationScope,
       },
       source_context: sourceContext,
     };
@@ -182,6 +191,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     tax_breakdown_by_fiscal_category: combined.tax_breakdown_by_fiscal_category || {},
     flow_breakdown: combined.flow_breakdown || [],
     warnings: [...(fiscal.warnings || []), ...(quality.warnings || [])],
+    errors: fiscal.errors || [],
     explanation: {
       summary: `Regime ${regimeLabel} calculado em modo ${calculationMode}.`,
       calculation_mode: calculationMode,
@@ -201,6 +211,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       precision_mode: precisionMode,
       source: 'tax-orchestrator',
       source_context: sourceContext,
+      validation_scope: validationScope,
     },
     mode: taxMode,
     breakdown: {

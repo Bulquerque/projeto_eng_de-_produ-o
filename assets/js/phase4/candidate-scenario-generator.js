@@ -1,4 +1,5 @@
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
 function combinations(arr, k, limit = 80) {
   const out = [];
   function rec(start, cur) {
@@ -36,7 +37,11 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
   const baseCds = baselineBundle?.model?.active_cds || [];
   const maxCandidates = Number(generationConfig.max_candidates ?? 120);
   const freight = generationConfig.freight_multipliers || [0.95, 1, 1.1];
-  const inv = generationConfig.inventory_days_options || [30, 45, 60];
+  const inv = generationConfig.inventory_days_options || [
+    30,
+    MODEL_ASSUMPTIONS.inventory.baseline_days,
+    60,
+  ];
   const baseTaxMode = generationConfig.base_tax_mode || 'current';
   const baseTaxRegime = generationConfig.base_tax_regime || null;
   const tax = generationConfig.allow_tax_disabled ? [baseTaxMode, 'disabled'] : [baseTaxMode];
@@ -69,7 +74,7 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
                 freight_multiplier: fm,
                 demand_multiplier: dm,
                 inventory_days: days,
-                wacc: 0.15,
+                wacc: MODEL_ASSUMPTIONS.inventory.baseline_wacc,
                 tax_mode: tm,
                 tax_regime: baseTaxRegime,
                 reallocation_rule: 'nearest_available_cd',
