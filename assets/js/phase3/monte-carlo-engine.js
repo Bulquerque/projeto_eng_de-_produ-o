@@ -6,6 +6,7 @@ function clone(value) {
 }
 
 function n(value, fallback = 0) {
+  if (value === null || value === undefined || value === '') return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
@@ -300,8 +301,10 @@ function summarizeSamples({
   const probabilityLoss = savingValues.length
     ? savingValues.filter((value) => value < 0).length / savingValues.length
     : 0;
+  const riskAssumptions = MONTE_CARLO_ASSUMPTIONS.risk;
   const probabilityStrongPositive = savingValues.length
-    ? savingValues.filter((value) => value >= 5).length / savingValues.length
+    ? savingValues.filter((value) => value >= riskAssumptions.strong_positive_saving_min_pct)
+        .length / savingValues.length
     : 0;
   const deterministicPercentile = percentileRank(sortedSaving, deterministicSavingPct);
   const correlationMap = {};
@@ -346,9 +349,15 @@ function summarizeSamples({
   }));
 
   let riskBand = 'low';
-  if (probabilityPositive < 0.6 || p10Saving < 0) {
+  if (
+    probabilityPositive < riskAssumptions.high_probability_saving_below ||
+    p10Saving < riskAssumptions.high_p10_saving_below_pct
+  ) {
     riskBand = 'high';
-  } else if (probabilityPositive < 0.8 || p10Saving < 2) {
+  } else if (
+    probabilityPositive < riskAssumptions.medium_probability_saving_below ||
+    p10Saving < riskAssumptions.medium_p10_saving_below_pct
+  ) {
     riskBand = 'medium';
   }
 
@@ -374,6 +383,8 @@ function summarizeSamples({
     probability_saving_positive: probabilityPositive,
     probability_saving_loss: probabilityLoss,
     probability_saving_strong_positive: probabilityStrongPositive,
+    probability_saving_strong_positive_threshold_pct:
+      riskAssumptions.strong_positive_saving_min_pct,
     stddev_total_with_tax: stdTotal,
     stddev_saving_pct: stdSaving,
     risk_band: riskBand,
@@ -391,6 +402,7 @@ export function runMonteCarloSimulation({
   companyId,
   selectedScenario,
   baselineBundle,
+  baselineResult = null,
   deterministicResult = null,
   iterations = MONTE_CARLO_ASSUMPTIONS.default_iterations,
   seed = MONTE_CARLO_ASSUMPTIONS.default_seed,
@@ -439,7 +451,9 @@ export function runMonteCarloSimulation({
   );
   const baseWacc = Math.max(0, n(baseChanges.wacc, MODEL_ASSUMPTIONS.inventory.baseline_wacc));
   const baselineTotal = n(
-    deterministicResult?.total_with_tax ?? baselineBundle?.costs?.costs?.total_with_tax
+    baselineResult?.total_with_tax ??
+      deterministicResult?.baseline_total ??
+      baselineBundle?.costs?.costs?.total_with_tax
   );
   const deterministic =
     deterministicResult || runScenario({ companyId, scenario: baseScenario, baselineBundle });
@@ -467,7 +481,7 @@ export function runMonteCarloSimulation({
       samples: [],
       summary: null,
       methodology: MONTE_CARLO_METHODOLOGY,
-      warnings: deterministic.warnings || [],
+      warnings: [...warnings, ...(deterministic.warnings || [])],
       errors: deterministic.errors || ['simulação determinística inválida; Monte Carlo bloqueado.'],
     };
   }

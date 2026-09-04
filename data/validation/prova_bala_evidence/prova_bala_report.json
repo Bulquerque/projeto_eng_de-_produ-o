@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-09T18:42:23.666999+00:00",
+  "generated_at": "2026-09-04T14:42:16.307879+00:00",
   "status": "ok",
   "logic_report_path": "data/validation/prova_bala_evidence/logic_report.json",
   "ui_report_path": "data/validation/prova_bala_evidence/ui_report.json",
   "logic": {
-    "generated_at": "2026-06-09T18:42:06.919Z",
+    "generated_at": "2026-09-04T14:41:46.164Z",
     "status": "ok",
     "command": "python tests/run_all_tests.py",
     "companies": [
@@ -13,11 +13,52 @@
         "phase2": {
           "active_cds": 15,
           "flows": 36,
-          "baseline_total_with_tax": 31319475.32442116,
-          "baseline_total_logistics_cost": 31319475.32442116,
-          "tax_impact": 0,
+          "baseline_total_with_tax": 118694234.3010202,
+          "baseline_total_logistics_cost": 37196905.492667764,
+          "tax_impact": 81497328.80835244,
           "base_fit_status": "benchmark_pending",
-          "base_fit_score": null
+          "base_fit_score": null,
+          "operational_reference_results": null,
+          "source_tax_reconciliation": null,
+          "reconciliation": {
+            "company_id": "empresa1",
+            "scenario_id": "baseline_empresa1",
+            "operational": {
+              "status": "pending",
+              "label": "reconciliação operacional pendente",
+              "source": "computed_proxy",
+              "rows": [],
+              "summary": {
+                "compared_metrics": 0,
+                "missing_metrics": 0,
+                "mean_abs_error_pct": null,
+                "max_abs_error_pct": null,
+                "aligned_metrics": 0,
+                "tolerable_metrics": 0,
+                "divergent_metrics": 0
+              },
+              "warnings": [
+                "Sem referencia operacional consolidada para comparar custos."
+              ]
+            },
+            "tax": {
+              "status": "pending",
+              "label": "reconciliação tributária pendente",
+              "source": "Sem reconciliação tributária disponível.",
+              "summary": null,
+              "warnings": [
+                "Reconciliação tributaria ausente."
+              ]
+            },
+            "overall": {
+              "status": "pending",
+              "label": "reconciliação plena pendente"
+            },
+            "warnings": [
+              "Sem referencia operacional consolidada para comparar custos.",
+              "Reconciliação tributaria ausente."
+            ]
+          }
         },
         "adversarial_validation": [
           {
@@ -72,31 +113,31 @@
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6zl9tp",
-              "total_with_tax": 119453652.36506401,
+              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mtn2bb5f",
+              "total_with_tax": 110632716.08024274,
               "total_logistics_cost": 29135387.2718903,
-              "tax_impact": 90318265.09317371
+              "tax_impact": 81497328.80835244
             },
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6zl9tq",
-              "total_with_tax": 122539303.20339347,
-              "total_logistics_cost": 32221038.110219765,
-              "tax_impact": 90318265.09317371
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mtn2bb5t",
+              "total_with_tax": 113718366.91857222,
+              "total_logistics_cost": 32221038.11021977,
+              "tax_impact": 81497328.80835244
             },
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6zl9ts",
-              "total_with_tax": 125624954.04172294,
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mtn2bb60",
+              "total_with_tax": 116804017.75690167,
               "total_logistics_cost": 35306688.948549226,
-              "tax_impact": 90318265.09317371
+              "tax_impact": 81497328.80835244
             },
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6zl9tt",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mtn2bb67",
               "total_with_tax": 29135387.2718903,
               "total_logistics_cost": 29135387.2718903,
               "tax_impact": 0
@@ -104,15 +145,15 @@
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6zl9tu",
-              "total_with_tax": 32221038.110219765,
-              "total_logistics_cost": 32221038.110219765,
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mtn2bb6c",
+              "total_with_tax": 32221038.11021977,
+              "total_logistics_cost": 32221038.11021977,
               "tax_impact": 0
             },
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6zl9tv",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mtn2bb6h",
               "total_with_tax": 35306688.948549226,
               "total_logistics_cost": 35306688.948549226,
               "tax_impact": 0
@@ -120,31 +161,31 @@
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6zl9tw",
-              "total_with_tax": 126088142.20832801,
+              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mtn2bb6m",
+              "total_with_tax": 117267205.92350674,
               "total_logistics_cost": 35769877.115154296,
-              "tax_impact": 90318265.09317371
+              "tax_impact": 81497328.80835244
             },
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6zl9tx",
-              "total_with_tax": 129173793.04665747,
-              "total_logistics_cost": 38855527.95348376,
-              "tax_impact": 90318265.09317371
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mtn2bb6s",
+              "total_with_tax": 120352856.7618362,
+              "total_logistics_cost": 38855527.95348377,
+              "tax_impact": 81497328.80835244
             },
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6zl9ty",
-              "total_with_tax": 132259443.88498694,
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mtn2bb6z",
+              "total_with_tax": 123438507.60016567,
               "total_logistics_cost": 41941178.791813225,
-              "tax_impact": 90318265.09317371
+              "tax_impact": 81497328.80835244
             },
             {
               "variable": "freight_multiplier",
               "value": 0.85,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mq6zl9tz",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_0_85_mtn2bb76",
               "total_with_tax": 35769877.115154296,
               "total_logistics_cost": 35769877.115154296,
               "tax_impact": 0
@@ -152,15 +193,15 @@
             {
               "variable": "freight_multiplier",
               "value": 1,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mq6zl9u0",
-              "total_with_tax": 38855527.95348376,
-              "total_logistics_cost": 38855527.95348376,
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_mtn2bb7b",
+              "total_with_tax": 38855527.95348377,
+              "total_logistics_cost": 38855527.95348377,
               "tax_impact": 0
             },
             {
               "variable": "freight_multiplier",
               "value": 1.15,
-              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mq6zl9u1",
+              "scenario_id": "empresa1_empresa1_freight_multiplier_1_15_mtn2bb7g",
               "total_with_tax": 41941178.791813225,
               "total_logistics_cost": 41941178.791813225,
               "tax_impact": 0
@@ -172,21 +213,1337 @@
           "export_roundtrip_ok": true,
           "invalid_json_rejected": true,
           "foreign_company_rejected": true,
-          "scenario_id": "empresa1_roundtrip_de_exportacao_mq6zl9wp"
+          "scenario_id": "empresa1_roundtrip_de_exportacao_mtn2bbr8",
+          "sample_results": [
+            {
+              "scenario_id": "empresa1_sample_frete_mais_10",
+              "scenario_name": "Exemplo: frete +10%",
+              "active_cds_count": 15,
+              "changes": {
+                "active_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "GO / RIO VERDE",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS",
+                  "SP / RIBEIRAO PRETO"
+                ],
+                "freight_multiplier": 1.1,
+                "demand_multiplier": 1,
+                "inventory_days": 45,
+                "wacc": 0.15,
+                "tax_mode": "current",
+                "reallocation_rule": "nearest_available_cd"
+              },
+              "total_with_tax": 120751334.85990651,
+              "saving_abs": -2057100.5588863045,
+              "saving_pct": -1.7331090857111862,
+              "cost_components": {
+                "transfer_cost": 6465173.185071261,
+                "distribution_cost": 16162932.962678146,
+                "storage_cost": 11650032.521356668,
+                "inventory_cost": 4975867.382447997,
+                "tax_impact": 81497328.80835244,
+                "total_logistics_cost": 39254006.05155407,
+                "total_with_tax": 120751334.85990651
+              },
+              "inventory_calculation_mode": "days_wacc_only",
+              "fallback_usage": {
+                "flow_count": 36,
+                "total_flow_weight_kg": 29125081.30339167,
+                "total_flow_revenue_brl": 501768139.4065205,
+                "missing_distribution_rate_flows": 0,
+                "missing_transfer_distance_flows": 36,
+                "revenue_pct_fallback_flows": 0,
+                "storage_proxy_used": true,
+                "storage_proxy_cost_brl": 11650032.521356668,
+                "cross_company_transfer_proxy_flows": 36,
+                "cross_company_transfer_proxy_weight_kg": 29125081.30339167,
+                "cross_company_transfer_proxy_cost_brl": 6465173.185071261,
+                "missing_transfer_distance_weight_kg": 29125081.30339167,
+                "missing_transfer_distance_cost_brl": 6465173.185071261,
+                "revenue_pct_fallback_revenue_brl": 0,
+                "revenue_pct_fallback_cost_brl": 0,
+                "storage_matched_cds": [],
+                "storage_missing_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "GO / RIO VERDE",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS",
+                  "SP / RIBEIRAO PRETO"
+                ],
+                "inventory_calculation_mode": "days_wacc_only",
+                "inventory_pooling_effect_included": false,
+                "inventory_parameter_affected_flows": 36,
+                "inventory_parameter_affected_weight_kg": 29125081.30339167,
+                "inventory_parameter_affected_revenue_brl": 501768139.4065205,
+                "inventory_cost_brl": 4975867.382447997,
+                "total_physical_cost_brl": 39254006.05155407,
+                "cross_company_transfer_proxy_flow_share_pct": 100,
+                "cross_company_transfer_proxy_volume_share_pct": 100,
+                "cross_company_transfer_proxy_cost_share_pct": 16.47009779480916,
+                "missing_transfer_distance_volume_share_pct": 100,
+                "missing_transfer_distance_cost_share_pct": 16.47009779480916,
+                "revenue_pct_fallback_revenue_share_pct": 0,
+                "revenue_pct_fallback_cost_share_pct": 0,
+                "storage_proxy_cost_share_pct": 29.67858237464006
+              },
+              "warnings": [
+                "Custo de estoque usa demanda, dias de estoque e WACC; não inclui pooling por número de CDs.",
+                "Transferência da Empresa 1 usa proxy calibrado com médias ponderadas de notas fiscais de transferência da Empresa 2; não é dado observado da Empresa 1.",
+                "36 fluxo(s) sem distância exata na matriz; transferência desses fluxos estimada proporcionalmente à distribuição (40%)."
+              ]
+            },
+            {
+              "scenario_id": "empresa1_sample_fechar_ultimo_cd",
+              "scenario_name": "Exemplo: fechar SP / RIBEIRAO PRETO",
+              "active_cds_count": 14,
+              "changes": {
+                "active_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "GO / RIO VERDE",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS"
+                ],
+                "freight_multiplier": 1,
+                "demand_multiplier": 1,
+                "inventory_days": 45,
+                "wacc": 0.15,
+                "tax_mode": "current",
+                "reallocation_rule": "nearest_available_cd"
+              },
+              "total_with_tax": 118422400.20885521,
+              "saving_abs": 271834.0921649933,
+              "saving_pct": 0.22902046907821602,
+              "cost_components": {
+                "transfer_cost": 5877430.1682466,
+                "distribution_cost": 14693575.4206165,
+                "storage_cost": 11378198.429191679,
+                "inventory_cost": 4975867.382447997,
+                "tax_impact": 81497328.80835244,
+                "total_logistics_cost": 36925071.40050278,
+                "total_with_tax": 118422400.20885521
+              },
+              "inventory_calculation_mode": "days_wacc_only",
+              "fallback_usage": {
+                "flow_count": 36,
+                "total_flow_weight_kg": 29125081.30339167,
+                "total_flow_revenue_brl": 501768139.4065205,
+                "missing_distribution_rate_flows": 0,
+                "missing_transfer_distance_flows": 36,
+                "revenue_pct_fallback_flows": 0,
+                "storage_proxy_used": true,
+                "storage_proxy_cost_brl": 11378198.429191679,
+                "cross_company_transfer_proxy_flows": 36,
+                "cross_company_transfer_proxy_weight_kg": 29125081.30339167,
+                "cross_company_transfer_proxy_cost_brl": 5877430.1682466,
+                "missing_transfer_distance_weight_kg": 29125081.30339167,
+                "missing_transfer_distance_cost_brl": 5877430.1682466,
+                "revenue_pct_fallback_revenue_brl": 0,
+                "revenue_pct_fallback_cost_brl": 0,
+                "storage_matched_cds": [],
+                "storage_missing_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "GO / RIO VERDE",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS"
+                ],
+                "inventory_calculation_mode": "days_wacc_only",
+                "inventory_pooling_effect_included": false,
+                "inventory_parameter_affected_flows": 36,
+                "inventory_parameter_affected_weight_kg": 29125081.30339167,
+                "inventory_parameter_affected_revenue_brl": 501768139.4065205,
+                "inventory_cost_brl": 4975867.382447997,
+                "total_physical_cost_brl": 36925071.40050278,
+                "cross_company_transfer_proxy_flow_share_pct": 100,
+                "cross_company_transfer_proxy_volume_share_pct": 100,
+                "cross_company_transfer_proxy_cost_share_pct": 15.917180239133055,
+                "missing_transfer_distance_volume_share_pct": 100,
+                "missing_transfer_distance_cost_share_pct": 15.917180239133055,
+                "revenue_pct_fallback_revenue_share_pct": 0,
+                "revenue_pct_fallback_cost_share_pct": 0,
+                "storage_proxy_cost_share_pct": 30.81428958059307
+              },
+              "warnings": [
+                "Custo de estoque usa demanda, dias de estoque e WACC; não inclui pooling por número de CDs.",
+                "Transferência da Empresa 1 usa proxy calibrado com médias ponderadas de notas fiscais de transferência da Empresa 2; não é dado observado da Empresa 1.",
+                "36 fluxo(s) sem distância exata na matriz; transferência desses fluxos estimada proporcionalmente à distribuição (40%)."
+              ]
+            },
+            {
+              "scenario_id": "empresa1_sample_estoque_menos_10_dias",
+              "scenario_name": "Exemplo: estoque -10 dias",
+              "active_cds_count": 15,
+              "changes": {
+                "active_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "GO / RIO VERDE",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS",
+                  "SP / RIBEIRAO PRETO"
+                ],
+                "freight_multiplier": 1,
+                "demand_multiplier": 1,
+                "inventory_days": 35,
+                "wacc": 0.15,
+                "tax_mode": "current",
+                "reallocation_rule": "nearest_available_cd"
+              },
+              "total_with_tax": 117588485.99380955,
+              "saving_abs": 1105748.307210654,
+              "saving_pct": 0.9315939512330211,
+              "cost_components": {
+                "transfer_cost": 5877430.1682466,
+                "distribution_cost": 14693575.4206165,
+                "storage_cost": 11650032.521356668,
+                "inventory_cost": 3870119.075237331,
+                "tax_impact": 81497328.80835244,
+                "total_logistics_cost": 36091157.1854571,
+                "total_with_tax": 117588485.99380955
+              },
+              "inventory_calculation_mode": "days_wacc_only",
+              "fallback_usage": {
+                "flow_count": 36,
+                "total_flow_weight_kg": 29125081.30339167,
+                "total_flow_revenue_brl": 501768139.4065205,
+                "missing_distribution_rate_flows": 0,
+                "missing_transfer_distance_flows": 36,
+                "revenue_pct_fallback_flows": 0,
+                "storage_proxy_used": true,
+                "storage_proxy_cost_brl": 11650032.521356668,
+                "cross_company_transfer_proxy_flows": 36,
+                "cross_company_transfer_proxy_weight_kg": 29125081.30339167,
+                "cross_company_transfer_proxy_cost_brl": 5877430.1682466,
+                "missing_transfer_distance_weight_kg": 29125081.30339167,
+                "missing_transfer_distance_cost_brl": 5877430.1682466,
+                "revenue_pct_fallback_revenue_brl": 0,
+                "revenue_pct_fallback_cost_brl": 0,
+                "storage_matched_cds": [],
+                "storage_missing_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "GO / RIO VERDE",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS",
+                  "SP / RIBEIRAO PRETO"
+                ],
+                "inventory_calculation_mode": "days_wacc_only",
+                "inventory_pooling_effect_included": false,
+                "inventory_parameter_affected_flows": 36,
+                "inventory_parameter_affected_weight_kg": 29125081.30339167,
+                "inventory_parameter_affected_revenue_brl": 501768139.4065205,
+                "inventory_cost_brl": 3870119.075237331,
+                "total_physical_cost_brl": 36091157.1854571,
+                "cross_company_transfer_proxy_flow_share_pct": 100,
+                "cross_company_transfer_proxy_volume_share_pct": 100,
+                "cross_company_transfer_proxy_cost_share_pct": 16.284959049788807,
+                "missing_transfer_distance_volume_share_pct": 100,
+                "missing_transfer_distance_cost_share_pct": 16.284959049788807,
+                "revenue_pct_fallback_revenue_share_pct": 0,
+                "revenue_pct_fallback_cost_share_pct": 0,
+                "storage_proxy_cost_share_pct": 32.27946519279531
+              },
+              "warnings": [
+                "Custo de estoque usa demanda, dias de estoque e WACC; não inclui pooling por número de CDs.",
+                "Transferência da Empresa 1 usa proxy calibrado com médias ponderadas de notas fiscais de transferência da Empresa 2; não é dado observado da Empresa 1.",
+                "36 fluxo(s) sem distância exata na matriz; transferência desses fluxos estimada proporcionalmente à distribuição (40%)."
+              ]
+            },
+            {
+              "scenario_id": "empresa1_sample_tributario_desligado",
+              "scenario_name": "Exemplo: tributário desligado",
+              "active_cds_count": 15,
+              "changes": {
+                "active_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "GO / RIO VERDE",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS",
+                  "SP / RIBEIRAO PRETO"
+                ],
+                "freight_multiplier": 1,
+                "demand_multiplier": 1,
+                "inventory_days": 45,
+                "wacc": 0.15,
+                "tax_mode": "disabled",
+                "reallocation_rule": "nearest_available_cd"
+              },
+              "total_with_tax": 37196905.492667764,
+              "saving_abs": 81497328.80835244,
+              "saving_pct": 68.66157340184463,
+              "cost_components": {
+                "transfer_cost": 5877430.1682466,
+                "distribution_cost": 14693575.4206165,
+                "storage_cost": 11650032.521356668,
+                "inventory_cost": 4975867.382447997,
+                "tax_impact": 0,
+                "total_logistics_cost": 37196905.492667764,
+                "total_with_tax": 37196905.492667764
+              },
+              "inventory_calculation_mode": "days_wacc_only",
+              "fallback_usage": {
+                "flow_count": 36,
+                "total_flow_weight_kg": 29125081.30339167,
+                "total_flow_revenue_brl": 501768139.4065205,
+                "missing_distribution_rate_flows": 0,
+                "missing_transfer_distance_flows": 36,
+                "revenue_pct_fallback_flows": 0,
+                "storage_proxy_used": true,
+                "storage_proxy_cost_brl": 11650032.521356668,
+                "cross_company_transfer_proxy_flows": 36,
+                "cross_company_transfer_proxy_weight_kg": 29125081.30339167,
+                "cross_company_transfer_proxy_cost_brl": 5877430.1682466,
+                "missing_transfer_distance_weight_kg": 29125081.30339167,
+                "missing_transfer_distance_cost_brl": 5877430.1682466,
+                "revenue_pct_fallback_revenue_brl": 0,
+                "revenue_pct_fallback_cost_brl": 0,
+                "storage_matched_cds": [],
+                "storage_missing_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "GO / RIO VERDE",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS",
+                  "SP / RIBEIRAO PRETO"
+                ],
+                "inventory_calculation_mode": "days_wacc_only",
+                "inventory_pooling_effect_included": false,
+                "inventory_parameter_affected_flows": 36,
+                "inventory_parameter_affected_weight_kg": 29125081.30339167,
+                "inventory_parameter_affected_revenue_brl": 501768139.4065205,
+                "inventory_cost_brl": 4975867.382447997,
+                "total_physical_cost_brl": 37196905.492667764,
+                "cross_company_transfer_proxy_flow_share_pct": 100,
+                "cross_company_transfer_proxy_volume_share_pct": 100,
+                "cross_company_transfer_proxy_cost_share_pct": 15.800857868150231,
+                "missing_transfer_distance_volume_share_pct": 100,
+                "missing_transfer_distance_cost_share_pct": 15.800857868150231,
+                "revenue_pct_fallback_revenue_share_pct": 0,
+                "revenue_pct_fallback_cost_share_pct": 0,
+                "storage_proxy_cost_share_pct": 31.319897091044623
+              },
+              "warnings": [
+                "Custo de estoque usa demanda, dias de estoque e WACC; não inclui pooling por número de CDs.",
+                "Transferência da Empresa 1 usa proxy calibrado com médias ponderadas de notas fiscais de transferência da Empresa 2; não é dado observado da Empresa 1.",
+                "36 fluxo(s) sem distância exata na matriz; transferência desses fluxos estimada proporcionalmente à distribuição (40%)."
+              ]
+            },
+            {
+              "scenario_id": "empresa1_sample_centralizar_es_serra",
+              "scenario_name": "Exemplo: centralizar em ES / SERRA",
+              "active_cds_count": 1,
+              "changes": {
+                "active_cds": [
+                  "ES / SERRA"
+                ],
+                "freight_multiplier": 1.15,
+                "demand_multiplier": 1,
+                "inventory_days": 45,
+                "wacc": 0.15,
+                "tax_mode": "current",
+                "reallocation_rule": "nearest_available_cd"
+              },
+              "total_with_tax": 117974207.84903982,
+              "saving_abs": 720026.4519803822,
+              "saving_pct": 0.6066229385281888,
+              "cost_components": {
+                "transfer_cost": 6759044.693483589,
+                "distribution_cost": 16897611.733708974,
+                "storage_cost": 7844355.231046824,
+                "inventory_cost": 4975867.382447997,
+                "tax_impact": 81497328.80835244,
+                "total_logistics_cost": 36476879.04068738,
+                "total_with_tax": 117974207.84903982
+              },
+              "inventory_calculation_mode": "days_wacc_only",
+              "fallback_usage": {
+                "flow_count": 36,
+                "total_flow_weight_kg": 29125081.30339167,
+                "total_flow_revenue_brl": 501768139.4065205,
+                "missing_distribution_rate_flows": 0,
+                "missing_transfer_distance_flows": 36,
+                "revenue_pct_fallback_flows": 0,
+                "storage_proxy_used": true,
+                "storage_proxy_cost_brl": 7844355.231046824,
+                "cross_company_transfer_proxy_flows": 36,
+                "cross_company_transfer_proxy_weight_kg": 29125081.30339167,
+                "cross_company_transfer_proxy_cost_brl": 6759044.693483589,
+                "missing_transfer_distance_weight_kg": 29125081.30339167,
+                "missing_transfer_distance_cost_brl": 6759044.693483589,
+                "revenue_pct_fallback_revenue_brl": 0,
+                "revenue_pct_fallback_cost_brl": 0,
+                "storage_matched_cds": [],
+                "storage_missing_cds": [
+                  "ES / SERRA"
+                ],
+                "inventory_calculation_mode": "days_wacc_only",
+                "inventory_pooling_effect_included": false,
+                "inventory_parameter_affected_flows": 36,
+                "inventory_parameter_affected_weight_kg": 29125081.30339167,
+                "inventory_parameter_affected_revenue_brl": 501768139.4065205,
+                "inventory_cost_brl": 4975867.382447997,
+                "total_physical_cost_brl": 36476879.04068738,
+                "cross_company_transfer_proxy_flow_share_pct": 100,
+                "cross_company_transfer_proxy_volume_share_pct": 100,
+                "cross_company_transfer_proxy_cost_share_pct": 18.529668302884005,
+                "missing_transfer_distance_volume_share_pct": 100,
+                "missing_transfer_distance_cost_share_pct": 18.529668302884005,
+                "revenue_pct_fallback_revenue_share_pct": 0,
+                "revenue_pct_fallback_cost_share_pct": 0,
+                "storage_proxy_cost_share_pct": 21.505006561271315
+              },
+              "warnings": [
+                {
+                  "code": "SINGLE_CD_CONCENTRATION",
+                  "severity": "warning",
+                  "message": "Cenário com um único CD pode concentrar risco operacional."
+                },
+                "Custo de estoque usa demanda, dias de estoque e WACC; não inclui pooling por número de CDs.",
+                "Transferência da Empresa 1 usa proxy calibrado com médias ponderadas de notas fiscais de transferência da Empresa 2; não é dado observado da Empresa 1.",
+                "36 fluxo(s) sem distância exata na matriz; transferência desses fluxos estimada proporcionalmente à distribuição (40%)."
+              ]
+            }
+          ]
         },
         "phase4": {
           "objective_profiles_ok": true,
           "invalid_objectives_ok": true,
           "optimization_status": "success",
           "optimization_deterministic_ok": true,
-          "valid_optimization_best_id": "empresa1_candidate_001",
+          "valid_optimization_best_id": "empresa1_candidate_015",
+          "comparison_baseline": {
+            "scenario_id": "baseline_empresa1__reform_full_2033_reference",
+            "total_with_tax": 156868606.74112293,
+            "total_logistics_cost": 37196905.492667764,
+            "tax_impact": 119671701.24845517,
+            "tax_mode": "reform_2033",
+            "tax_regime": "reform_full_2033",
+            "comparison_basis": "same_tax_regime"
+          },
+          "objective_profile_results": [
+            {
+              "profile_id": "cost_minimum",
+              "profile": "custo mínimo",
+              "weights": {
+                "total_cost": 0.75,
+                "service_quality": 0.05,
+                "operational_risk": 0.05,
+                "tax_impact": 0.1,
+                "inventory_efficiency": 0.05
+              },
+              "winner_scenario_id": "empresa1_candidate_015",
+              "winner_scenario_name": "Candidato 015 · 14 CD(s)",
+              "final_score": 94.52504813333107,
+              "active_cds_count": 14,
+              "active_cds": [
+                "BA / LAURO DE FREITAS",
+                "CE / ITAITINGA",
+                "ES / SERRA",
+                "PA / BELEM",
+                "PE / CABO DE SANTO AGOSTINHO",
+                "PR / LONDRINA",
+                "PR / SAO JOSE DOS PINHAIS",
+                "RJ / DUQUE DE CAXIAS",
+                "RS / NOVA SANTA RITA",
+                "SC / SAO JOSE",
+                "SP / CAJAMAR",
+                "SP / CAMPINAS",
+                "SP / GUARULHOS",
+                "SP / RIBEIRAO PRETO"
+              ],
+              "closed_cds": [
+                "GO / RIO VERDE"
+              ],
+              "total_with_tax": 155296806.21491545,
+              "saving_abs": 1571800.5262074769,
+              "saving_pct": 1.0019853932924816,
+              "max_cd_volume_share": 0.18246167870153407,
+              "risk_level": "low",
+              "robustness_score": 37.85436786524345,
+              "cost_components": {
+                "transfer_cost": 5506011.187091601,
+                "distribution_cost": 13765027.967729002,
+                "storage_cost": 11378198.429191679,
+                "inventory_cost": 4975867.382447997,
+                "tax_impact": 119671701.24845517,
+                "total_logistics_cost": 35625104.96646028,
+                "total_with_tax": 155296806.21491545
+              },
+              "fallback_usage": {
+                "flow_count": 36,
+                "total_flow_weight_kg": 29125081.30339167,
+                "total_flow_revenue_brl": 501768139.4065205,
+                "missing_distribution_rate_flows": 1,
+                "missing_transfer_distance_flows": 36,
+                "revenue_pct_fallback_flows": 0,
+                "storage_proxy_used": true,
+                "storage_proxy_cost_brl": 11378198.429191679,
+                "cross_company_transfer_proxy_flows": 36,
+                "cross_company_transfer_proxy_weight_kg": 29125081.30339167,
+                "cross_company_transfer_proxy_cost_brl": 5506011.187091601,
+                "missing_transfer_distance_weight_kg": 29125081.30339167,
+                "missing_transfer_distance_cost_brl": 5506011.187091601,
+                "revenue_pct_fallback_revenue_brl": 0,
+                "revenue_pct_fallback_cost_brl": 0,
+                "storage_matched_cds": [],
+                "storage_missing_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS",
+                  "SP / RIBEIRAO PRETO"
+                ],
+                "inventory_calculation_mode": "days_wacc_only",
+                "inventory_pooling_effect_included": false,
+                "inventory_parameter_affected_flows": 36,
+                "inventory_parameter_affected_weight_kg": 29125081.30339167,
+                "inventory_parameter_affected_revenue_brl": 501768139.4065205,
+                "inventory_cost_brl": 4975867.382447997,
+                "total_physical_cost_brl": 35625104.96646028,
+                "cross_company_transfer_proxy_flow_share_pct": 100,
+                "cross_company_transfer_proxy_volume_share_pct": 100,
+                "cross_company_transfer_proxy_cost_share_pct": 15.455424460574383,
+                "missing_transfer_distance_volume_share_pct": 100,
+                "missing_transfer_distance_cost_share_pct": 15.455424460574383,
+                "revenue_pct_fallback_revenue_share_pct": 0,
+                "revenue_pct_fallback_cost_share_pct": 0,
+                "storage_proxy_cost_share_pct": 31.93870850318569
+              },
+              "transfer_proxy_sensitivity": {
+                "method": "cross_company_proxy_rate_multiplier",
+                "parameter_source": "médias ponderadas de notas fiscais de transferência da Empresa 2",
+                "points": [
+                  {
+                    "rate_multiplier": 0.75,
+                    "transfer_cost": 4129508.390318701,
+                    "total_physical_cost": 34248602.169687375,
+                    "delta_from_reference": -1376502.7967729003,
+                    "total_with_tax": 153920303.41814256,
+                    "saving_abs": 2948303.322980374,
+                    "saving_pct": 1.8794731362954595
+                  },
+                  {
+                    "rate_multiplier": 1,
+                    "transfer_cost": 5506011.187091601,
+                    "total_physical_cost": 35625104.96646028,
+                    "delta_from_reference": 0,
+                    "total_with_tax": 155296806.21491545,
+                    "saving_abs": 1571800.5262074769,
+                    "saving_pct": 1.0019853932924816
+                  },
+                  {
+                    "rate_multiplier": 1.25,
+                    "transfer_cost": 6882513.983864501,
+                    "total_physical_cost": 37001607.76323318,
+                    "delta_from_reference": 1376502.7967729003,
+                    "total_with_tax": 156673309.01168835,
+                    "saving_abs": 195297.7294345796,
+                    "saving_pct": 0.12449765028950342
+                  }
+                ]
+              },
+              "inventory_calculation_mode": "days_wacc_only"
+            },
+            {
+              "profile_id": "balanced",
+              "profile": "equilibrado",
+              "weights": {
+                "total_cost": 0.3,
+                "service_quality": 0.25,
+                "operational_risk": 0.2,
+                "tax_impact": 0.15,
+                "inventory_efficiency": 0.1
+              },
+              "winner_scenario_id": "empresa1_candidate_015",
+              "winner_scenario_name": "Candidato 015 · 14 CD(s)",
+              "final_score": 90.92509626666212,
+              "active_cds_count": 14,
+              "active_cds": [
+                "BA / LAURO DE FREITAS",
+                "CE / ITAITINGA",
+                "ES / SERRA",
+                "PA / BELEM",
+                "PE / CABO DE SANTO AGOSTINHO",
+                "PR / LONDRINA",
+                "PR / SAO JOSE DOS PINHAIS",
+                "RJ / DUQUE DE CAXIAS",
+                "RS / NOVA SANTA RITA",
+                "SC / SAO JOSE",
+                "SP / CAJAMAR",
+                "SP / CAMPINAS",
+                "SP / GUARULHOS",
+                "SP / RIBEIRAO PRETO"
+              ],
+              "closed_cds": [
+                "GO / RIO VERDE"
+              ],
+              "total_with_tax": 155296806.21491545,
+              "saving_abs": 1571800.5262074769,
+              "saving_pct": 1.0019853932924816,
+              "max_cd_volume_share": 0.18246167870153407,
+              "risk_level": "low",
+              "robustness_score": 37.85436786524345,
+              "cost_components": {
+                "transfer_cost": 5506011.187091601,
+                "distribution_cost": 13765027.967729002,
+                "storage_cost": 11378198.429191679,
+                "inventory_cost": 4975867.382447997,
+                "tax_impact": 119671701.24845517,
+                "total_logistics_cost": 35625104.96646028,
+                "total_with_tax": 155296806.21491545
+              },
+              "fallback_usage": {
+                "flow_count": 36,
+                "total_flow_weight_kg": 29125081.30339167,
+                "total_flow_revenue_brl": 501768139.4065205,
+                "missing_distribution_rate_flows": 1,
+                "missing_transfer_distance_flows": 36,
+                "revenue_pct_fallback_flows": 0,
+                "storage_proxy_used": true,
+                "storage_proxy_cost_brl": 11378198.429191679,
+                "cross_company_transfer_proxy_flows": 36,
+                "cross_company_transfer_proxy_weight_kg": 29125081.30339167,
+                "cross_company_transfer_proxy_cost_brl": 5506011.187091601,
+                "missing_transfer_distance_weight_kg": 29125081.30339167,
+                "missing_transfer_distance_cost_brl": 5506011.187091601,
+                "revenue_pct_fallback_revenue_brl": 0,
+                "revenue_pct_fallback_cost_brl": 0,
+                "storage_matched_cds": [],
+                "storage_missing_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS",
+                  "SP / RIBEIRAO PRETO"
+                ],
+                "inventory_calculation_mode": "days_wacc_only",
+                "inventory_pooling_effect_included": false,
+                "inventory_parameter_affected_flows": 36,
+                "inventory_parameter_affected_weight_kg": 29125081.30339167,
+                "inventory_parameter_affected_revenue_brl": 501768139.4065205,
+                "inventory_cost_brl": 4975867.382447997,
+                "total_physical_cost_brl": 35625104.96646028,
+                "cross_company_transfer_proxy_flow_share_pct": 100,
+                "cross_company_transfer_proxy_volume_share_pct": 100,
+                "cross_company_transfer_proxy_cost_share_pct": 15.455424460574383,
+                "missing_transfer_distance_volume_share_pct": 100,
+                "missing_transfer_distance_cost_share_pct": 15.455424460574383,
+                "revenue_pct_fallback_revenue_share_pct": 0,
+                "revenue_pct_fallback_cost_share_pct": 0,
+                "storage_proxy_cost_share_pct": 31.93870850318569
+              },
+              "transfer_proxy_sensitivity": {
+                "method": "cross_company_proxy_rate_multiplier",
+                "parameter_source": "médias ponderadas de notas fiscais de transferência da Empresa 2",
+                "points": [
+                  {
+                    "rate_multiplier": 0.75,
+                    "transfer_cost": 4129508.390318701,
+                    "total_physical_cost": 34248602.169687375,
+                    "delta_from_reference": -1376502.7967729003,
+                    "total_with_tax": 153920303.41814256,
+                    "saving_abs": 2948303.322980374,
+                    "saving_pct": 1.8794731362954595
+                  },
+                  {
+                    "rate_multiplier": 1,
+                    "transfer_cost": 5506011.187091601,
+                    "total_physical_cost": 35625104.96646028,
+                    "delta_from_reference": 0,
+                    "total_with_tax": 155296806.21491545,
+                    "saving_abs": 1571800.5262074769,
+                    "saving_pct": 1.0019853932924816
+                  },
+                  {
+                    "rate_multiplier": 1.25,
+                    "transfer_cost": 6882513.983864501,
+                    "total_physical_cost": 37001607.76323318,
+                    "delta_from_reference": 1376502.7967729003,
+                    "total_with_tax": 156673309.01168835,
+                    "saving_abs": 195297.7294345796,
+                    "saving_pct": 0.12449765028950342
+                  }
+                ]
+              },
+              "inventory_calculation_mode": "days_wacc_only"
+            },
+            {
+              "profile_id": "conservative",
+              "profile": "conservador",
+              "weights": {
+                "total_cost": 0.15,
+                "service_quality": 0.25,
+                "operational_risk": 0.45,
+                "tax_impact": 0.05,
+                "inventory_efficiency": 0.1
+              },
+              "winner_scenario_id": "empresa1_candidate_015",
+              "winner_scenario_name": "Candidato 015 · 14 CD(s)",
+              "final_score": 95.92509626666212,
+              "active_cds_count": 14,
+              "active_cds": [
+                "BA / LAURO DE FREITAS",
+                "CE / ITAITINGA",
+                "ES / SERRA",
+                "PA / BELEM",
+                "PE / CABO DE SANTO AGOSTINHO",
+                "PR / LONDRINA",
+                "PR / SAO JOSE DOS PINHAIS",
+                "RJ / DUQUE DE CAXIAS",
+                "RS / NOVA SANTA RITA",
+                "SC / SAO JOSE",
+                "SP / CAJAMAR",
+                "SP / CAMPINAS",
+                "SP / GUARULHOS",
+                "SP / RIBEIRAO PRETO"
+              ],
+              "closed_cds": [
+                "GO / RIO VERDE"
+              ],
+              "total_with_tax": 155296806.21491545,
+              "saving_abs": 1571800.5262074769,
+              "saving_pct": 1.0019853932924816,
+              "max_cd_volume_share": 0.18246167870153407,
+              "risk_level": "low",
+              "robustness_score": 37.85436786524345,
+              "cost_components": {
+                "transfer_cost": 5506011.187091601,
+                "distribution_cost": 13765027.967729002,
+                "storage_cost": 11378198.429191679,
+                "inventory_cost": 4975867.382447997,
+                "tax_impact": 119671701.24845517,
+                "total_logistics_cost": 35625104.96646028,
+                "total_with_tax": 155296806.21491545
+              },
+              "fallback_usage": {
+                "flow_count": 36,
+                "total_flow_weight_kg": 29125081.30339167,
+                "total_flow_revenue_brl": 501768139.4065205,
+                "missing_distribution_rate_flows": 1,
+                "missing_transfer_distance_flows": 36,
+                "revenue_pct_fallback_flows": 0,
+                "storage_proxy_used": true,
+                "storage_proxy_cost_brl": 11378198.429191679,
+                "cross_company_transfer_proxy_flows": 36,
+                "cross_company_transfer_proxy_weight_kg": 29125081.30339167,
+                "cross_company_transfer_proxy_cost_brl": 5506011.187091601,
+                "missing_transfer_distance_weight_kg": 29125081.30339167,
+                "missing_transfer_distance_cost_brl": 5506011.187091601,
+                "revenue_pct_fallback_revenue_brl": 0,
+                "revenue_pct_fallback_cost_brl": 0,
+                "storage_matched_cds": [],
+                "storage_missing_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS",
+                  "SP / RIBEIRAO PRETO"
+                ],
+                "inventory_calculation_mode": "days_wacc_only",
+                "inventory_pooling_effect_included": false,
+                "inventory_parameter_affected_flows": 36,
+                "inventory_parameter_affected_weight_kg": 29125081.30339167,
+                "inventory_parameter_affected_revenue_brl": 501768139.4065205,
+                "inventory_cost_brl": 4975867.382447997,
+                "total_physical_cost_brl": 35625104.96646028,
+                "cross_company_transfer_proxy_flow_share_pct": 100,
+                "cross_company_transfer_proxy_volume_share_pct": 100,
+                "cross_company_transfer_proxy_cost_share_pct": 15.455424460574383,
+                "missing_transfer_distance_volume_share_pct": 100,
+                "missing_transfer_distance_cost_share_pct": 15.455424460574383,
+                "revenue_pct_fallback_revenue_share_pct": 0,
+                "revenue_pct_fallback_cost_share_pct": 0,
+                "storage_proxy_cost_share_pct": 31.93870850318569
+              },
+              "transfer_proxy_sensitivity": {
+                "method": "cross_company_proxy_rate_multiplier",
+                "parameter_source": "médias ponderadas de notas fiscais de transferência da Empresa 2",
+                "points": [
+                  {
+                    "rate_multiplier": 0.75,
+                    "transfer_cost": 4129508.390318701,
+                    "total_physical_cost": 34248602.169687375,
+                    "delta_from_reference": -1376502.7967729003,
+                    "total_with_tax": 153920303.41814256,
+                    "saving_abs": 2948303.322980374,
+                    "saving_pct": 1.8794731362954595
+                  },
+                  {
+                    "rate_multiplier": 1,
+                    "transfer_cost": 5506011.187091601,
+                    "total_physical_cost": 35625104.96646028,
+                    "delta_from_reference": 0,
+                    "total_with_tax": 155296806.21491545,
+                    "saving_abs": 1571800.5262074769,
+                    "saving_pct": 1.0019853932924816
+                  },
+                  {
+                    "rate_multiplier": 1.25,
+                    "transfer_cost": 6882513.983864501,
+                    "total_physical_cost": 37001607.76323318,
+                    "delta_from_reference": 1376502.7967729003,
+                    "total_with_tax": 156673309.01168835,
+                    "saving_abs": 195297.7294345796,
+                    "saving_pct": 0.12449765028950342
+                  }
+                ]
+              },
+              "inventory_calculation_mode": "days_wacc_only"
+            },
+            {
+              "profile_id": "quality_service",
+              "profile": "qualidade/serviço",
+              "weights": {
+                "total_cost": 0.1,
+                "service_quality": 0.55,
+                "operational_risk": 0.2,
+                "tax_impact": 0.05,
+                "inventory_efficiency": 0.1
+              },
+              "winner_scenario_id": "empresa1_candidate_015",
+              "winner_scenario_name": "Candidato 015 · 14 CD(s)",
+              "final_score": 94.67509626666212,
+              "active_cds_count": 14,
+              "active_cds": [
+                "BA / LAURO DE FREITAS",
+                "CE / ITAITINGA",
+                "ES / SERRA",
+                "PA / BELEM",
+                "PE / CABO DE SANTO AGOSTINHO",
+                "PR / LONDRINA",
+                "PR / SAO JOSE DOS PINHAIS",
+                "RJ / DUQUE DE CAXIAS",
+                "RS / NOVA SANTA RITA",
+                "SC / SAO JOSE",
+                "SP / CAJAMAR",
+                "SP / CAMPINAS",
+                "SP / GUARULHOS",
+                "SP / RIBEIRAO PRETO"
+              ],
+              "closed_cds": [
+                "GO / RIO VERDE"
+              ],
+              "total_with_tax": 155296806.21491545,
+              "saving_abs": 1571800.5262074769,
+              "saving_pct": 1.0019853932924816,
+              "max_cd_volume_share": 0.18246167870153407,
+              "risk_level": "low",
+              "robustness_score": 37.85436786524345,
+              "cost_components": {
+                "transfer_cost": 5506011.187091601,
+                "distribution_cost": 13765027.967729002,
+                "storage_cost": 11378198.429191679,
+                "inventory_cost": 4975867.382447997,
+                "tax_impact": 119671701.24845517,
+                "total_logistics_cost": 35625104.96646028,
+                "total_with_tax": 155296806.21491545
+              },
+              "fallback_usage": {
+                "flow_count": 36,
+                "total_flow_weight_kg": 29125081.30339167,
+                "total_flow_revenue_brl": 501768139.4065205,
+                "missing_distribution_rate_flows": 1,
+                "missing_transfer_distance_flows": 36,
+                "revenue_pct_fallback_flows": 0,
+                "storage_proxy_used": true,
+                "storage_proxy_cost_brl": 11378198.429191679,
+                "cross_company_transfer_proxy_flows": 36,
+                "cross_company_transfer_proxy_weight_kg": 29125081.30339167,
+                "cross_company_transfer_proxy_cost_brl": 5506011.187091601,
+                "missing_transfer_distance_weight_kg": 29125081.30339167,
+                "missing_transfer_distance_cost_brl": 5506011.187091601,
+                "revenue_pct_fallback_revenue_brl": 0,
+                "revenue_pct_fallback_cost_brl": 0,
+                "storage_matched_cds": [],
+                "storage_missing_cds": [
+                  "BA / LAURO DE FREITAS",
+                  "CE / ITAITINGA",
+                  "ES / SERRA",
+                  "PA / BELEM",
+                  "PE / CABO DE SANTO AGOSTINHO",
+                  "PR / LONDRINA",
+                  "PR / SAO JOSE DOS PINHAIS",
+                  "RJ / DUQUE DE CAXIAS",
+                  "RS / NOVA SANTA RITA",
+                  "SC / SAO JOSE",
+                  "SP / CAJAMAR",
+                  "SP / CAMPINAS",
+                  "SP / GUARULHOS",
+                  "SP / RIBEIRAO PRETO"
+                ],
+                "inventory_calculation_mode": "days_wacc_only",
+                "inventory_pooling_effect_included": false,
+                "inventory_parameter_affected_flows": 36,
+                "inventory_parameter_affected_weight_kg": 29125081.30339167,
+                "inventory_parameter_affected_revenue_brl": 501768139.4065205,
+                "inventory_cost_brl": 4975867.382447997,
+                "total_physical_cost_brl": 35625104.96646028,
+                "cross_company_transfer_proxy_flow_share_pct": 100,
+                "cross_company_transfer_proxy_volume_share_pct": 100,
+                "cross_company_transfer_proxy_cost_share_pct": 15.455424460574383,
+                "missing_transfer_distance_volume_share_pct": 100,
+                "missing_transfer_distance_cost_share_pct": 15.455424460574383,
+                "revenue_pct_fallback_revenue_share_pct": 0,
+                "revenue_pct_fallback_cost_share_pct": 0,
+                "storage_proxy_cost_share_pct": 31.93870850318569
+              },
+              "transfer_proxy_sensitivity": {
+                "method": "cross_company_proxy_rate_multiplier",
+                "parameter_source": "médias ponderadas de notas fiscais de transferência da Empresa 2",
+                "points": [
+                  {
+                    "rate_multiplier": 0.75,
+                    "transfer_cost": 4129508.390318701,
+                    "total_physical_cost": 34248602.169687375,
+                    "delta_from_reference": -1376502.7967729003,
+                    "total_with_tax": 153920303.41814256,
+                    "saving_abs": 2948303.322980374,
+                    "saving_pct": 1.8794731362954595
+                  },
+                  {
+                    "rate_multiplier": 1,
+                    "transfer_cost": 5506011.187091601,
+                    "total_physical_cost": 35625104.96646028,
+                    "delta_from_reference": 0,
+                    "total_with_tax": 155296806.21491545,
+                    "saving_abs": 1571800.5262074769,
+                    "saving_pct": 1.0019853932924816
+                  },
+                  {
+                    "rate_multiplier": 1.25,
+                    "transfer_cost": 6882513.983864501,
+                    "total_physical_cost": 37001607.76323318,
+                    "delta_from_reference": 1376502.7967729003,
+                    "total_with_tax": 156673309.01168835,
+                    "saving_abs": 195297.7294345796,
+                    "saving_pct": 0.12449765028950342
+                  }
+                ]
+              },
+              "inventory_calculation_mode": "days_wacc_only"
+            }
+          ],
+          "winner_changes_across_profiles": false,
+          "candidate_set_sensitivity": {
+            "normalization": "min_max_by_candidate_set",
+            "removed_scenario_id": "empresa1_candidate_025",
+            "full_winner_scenario_id": "empresa1_candidate_015",
+            "reduced_winner_scenario_id": "empresa1_candidate_015",
+            "winner_changed": false
+          },
+          "monte_carlo_exploratory": {
+            "config": {
+              "iterations": 300,
+              "seed": 42,
+              "profile": "balanced",
+              "scatter_driver": "freight_multiplier",
+              "histogram_bins": 12,
+              "spread": {
+                "freight_multiplier": 0.08,
+                "demand_multiplier": 0.07,
+                "inventory_days": 9,
+                "wacc": 0.02,
+                "tax_multiplier": 0.04
+              },
+              "shared_shock": 0.32,
+              "idiosyncratic_shock": 0.65,
+              "bounds": {
+                "freight_multiplier_factor": [
+                  0.6,
+                  1.8
+                ],
+                "demand_multiplier_factor": [
+                  0.6,
+                  1.6
+                ],
+                "inventory_days": [
+                  0,
+                  120
+                ],
+                "wacc": [
+                  0,
+                  0.5
+                ],
+                "tax_multiplier": [
+                  0.7,
+                  1.35
+                ],
+                "histogram_bins": [
+                  6,
+                  30
+                ]
+              },
+              "calibration_status": "manual_spreads_not_historically_calibrated"
+            },
+            "methodology": {
+              "deterministic_core": true,
+              "role": "complementary_probabilistic_layer",
+              "distribution": "gaussian_parameterized_with_bounds",
+              "calibration_status": "manual_spreads_not_historically_calibrated",
+              "interpretation": "Análise exploratória de sensibilidade; não constitui previsão estatística validada."
+            },
+            "summary": {
+              "iterations": 300,
+              "seed": 42,
+              "profile": "balanced",
+              "scatter_driver": "freight_multiplier",
+              "baseline_total_with_tax": 156868606.74112293,
+              "deterministic_total_with_tax": 155296806.21491545,
+              "deterministic_saving_pct": 1.0019853932924816,
+              "deterministic_percentile_saving_pct": 54,
+              "mean_total_with_tax": 156115505.6986829,
+              "median_total_with_tax": 155965609.84442487,
+              "p10_total_with_tax": 145051490.23775995,
+              "p90_total_with_tax": 167979066.3123276,
+              "mean_saving_pct": 0.48008397478959314,
+              "median_saving_pct": 0.5756390111810294,
+              "p10_saving_pct": -7.082653312233479,
+              "p90_saving_pct": 7.533130273072756,
+              "best_case_saving_pct": 15.618953820359927,
+              "worst_case_saving_pct": -18.222566004157752,
+              "probability_saving_positive": 0.54,
+              "probability_saving_loss": 0.46,
+              "probability_saving_strong_positive": 0.23,
+              "probability_saving_strong_positive_threshold_pct": 5,
+              "stddev_total_with_tax": 8835883.58850174,
+              "stddev_saving_pct": 5.632665306375432,
+              "risk_band": "high",
+              "histogram": [
+                {
+                  "label": "-18.2% a -15.4%",
+                  "start": -18.222566004157752,
+                  "end": -15.402439352114612,
+                  "count": 1,
+                  "ratio": 0.0033333333333333335
+                },
+                {
+                  "label": "-15.4% a -12.6%",
+                  "start": -15.402439352114612,
+                  "end": -12.582312700071473,
+                  "count": 2,
+                  "ratio": 0.006666666666666667
+                },
+                {
+                  "label": "-12.6% a -9.8%",
+                  "start": -12.582312700071473,
+                  "end": -9.762186048028333,
+                  "count": 7,
+                  "ratio": 0.023333333333333334
+                },
+                {
+                  "label": "-9.8% a -6.9%",
+                  "start": -9.762186048028333,
+                  "end": -6.9420593959851935,
+                  "count": 21,
+                  "ratio": 0.07
+                },
+                {
+                  "label": "-6.9% a -4.1%",
+                  "start": -6.9420593959851935,
+                  "end": -4.121932743942054,
+                  "count": 31,
+                  "ratio": 0.10333333333333333
+                },
+                {
+                  "label": "-4.1% a -1.3%",
+                  "start": -4.121932743942054,
+                  "end": -1.3018060918989143,
+                  "count": 47,
+                  "ratio": 0.15666666666666668
+                },
+                {
+                  "label": "-1.3% a 1.5%",
+                  "start": -1.3018060918989143,
+                  "end": 1.5183205601442253,
+                  "count": 65,
+                  "ratio": 0.21666666666666667
+                },
+                {
+                  "label": "1.5% a 4.3%",
+                  "start": 1.5183205601442253,
+                  "end": 4.338447212187365,
+                  "count": 46,
+                  "ratio": 0.15333333333333332
+                },
+                {
+                  "label": "4.3% a 7.2%",
+                  "start": 4.338447212187365,
+                  "end": 7.158573864230505,
+                  "count": 44,
+                  "ratio": 0.14666666666666667
+                },
+                {
+                  "label": "7.2% a 10.0%",
+                  "start": 7.158573864230505,
+                  "end": 9.978700516273644,
+                  "count": 23,
+                  "ratio": 0.07666666666666666
+                },
+                {
+                  "label": "10.0% a 12.8%",
+                  "start": 9.978700516273644,
+                  "end": 12.798827168316784,
+                  "count": 11,
+                  "ratio": 0.03666666666666667
+                },
+                {
+                  "label": "12.8% a 15.6%",
+                  "start": 12.798827168316784,
+                  "end": 15.618953820359927,
+                  "count": 2,
+                  "ratio": 0.006666666666666667
+                }
+              ],
+              "percentile_curve": [
+                {
+                  "percentile": 0,
+                  "value": -18.222566004157752
+                },
+                {
+                  "percentile": 10,
+                  "value": -7.082653312233479
+                },
+                {
+                  "percentile": 20,
+                  "value": -4.26354855484504
+                },
+                {
+                  "percentile": 30,
+                  "value": -2.1786006152965895
+                },
+                {
+                  "percentile": 40,
+                  "value": -0.7517950497531722
+                },
+                {
+                  "percentile": 50,
+                  "value": 0.5756390111810294
+                },
+                {
+                  "percentile": 60,
+                  "value": 1.945012247575424
+                },
+                {
+                  "percentile": 70,
+                  "value": 3.7927825934504265
+                },
+                {
+                  "percentile": 80,
+                  "value": 5.475037063171177
+                },
+                {
+                  "percentile": 90,
+                  "value": 7.533130273072756
+                },
+                {
+                  "percentile": 100,
+                  "value": 15.618953820359927
+                }
+              ],
+              "total_percentile_curve": [
+                {
+                  "percentile": 0,
+                  "value": 132367371.49558492
+                },
+                {
+                  "percentile": 10,
+                  "value": 145051490.23775995
+                },
+                {
+                  "percentile": 20,
+                  "value": 148279992.38156623
+                },
+                {
+                  "percentile": 30,
+                  "value": 150918921.53005743
+                },
+                {
+                  "percentile": 40,
+                  "value": 153817493.12740716
+                },
+                {
+                  "percentile": 50,
+                  "value": 155965609.84442487
+                },
+                {
+                  "percentile": 60,
+                  "value": 158047937.16121948
+                },
+                {
+                  "percentile": 70,
+                  "value": 160286147.17279223
+                },
+                {
+                  "percentile": 80,
+                  "value": 163556775.95683962
+                },
+                {
+                  "percentile": 90,
+                  "value": 167979066.3123276
+                },
+                {
+                  "percentile": 100,
+                  "value": 185454092.14432672
+                }
+              ],
+              "driver_correlations": {
+                "freight_multiplier": -0.3018783228142308,
+                "demand_multiplier": -0.9057934646685933,
+                "inventory_days": -0.34758225724607394,
+                "wacc": -0.2422455355894249,
+                "tax_multiplier": -0.44110678473188697
+              },
+              "driver_importance": [
+                {
+                  "driver": "demand_multiplier",
+                  "label": "demand_multiplier",
+                  "correlation": -0.9057934646685933,
+                  "importance": 0.9057934646685933
+                },
+                {
+                  "driver": "tax_multiplier",
+                  "label": "tax_multiplier",
+                  "correlation": -0.44110678473188697,
+                  "importance": 0.44110678473188697
+                },
+                {
+                  "driver": "inventory_days",
+                  "label": "inventory_days",
+                  "correlation": -0.34758225724607394,
+                  "importance": 0.34758225724607394
+                },
+                {
+                  "driver": "freight_multiplier",
+                  "label": "freight_multiplier",
+                  "correlation": -0.3018783228142308,
+                  "importance": 0.3018783228142308
+                },
+                {
+                  "driver": "wacc",
+                  "label": "wacc",
+                  "correlation": -0.2422455355894249,
+                  "importance": 0.2422455355894249
+                }
+              ],
+              "most_sensitive_driver": "demand_multiplier",
+              "most_sensitive_driver_correlation": -0.9057934646685933
+            },
+            "invalid_sample_count": 0,
+            "warning": "Camada exploratória; não fundamenta os totais determinísticos reportados."
+          },
           "manual_selection_full_ok": true,
           "manual_selection_limited_warned": true
         },
         "phase5": {
+          "comparison_baseline_total_with_tax": 156868606.74112293,
+          "comparison_baseline_tax_regime": "reform_full_2033",
           "stress_case_count": 8,
           "conservative_case_count": 10,
-          "robustness_score": 27,
+          "robustness_score": 24.419397626287505,
           "recommendation_statuses": {
             "recommended": "recommended",
             "warning": "recommended_with_warnings",
@@ -207,216 +1564,129 @@
           "baseline_total_logistics_cost": 23574434.013195544,
           "tax_impact": 26081451.576414526,
           "base_fit_status": "benchmark_pending",
-          "base_fit_score": null
-        },
-        "adversarial_validation": [
-          {
-            "case_id": "wrong_company",
-            "status": "blocked",
-            "error_count": 1,
-            "run_status": "invalid"
+          "base_fit_score": null,
+          "operational_reference_results": {
+            "transfer_cost": 3148100.5106217293,
+            "distribution_cost": 7637802.742085703,
+            "storage_cost": 8647999.461242853,
+            "inventory_cost": 4140531.299245261,
+            "tax_impact": 26081451.576414526,
+            "freight_cost": 10785903.252707433,
+            "total_logistics_cost": 23574434.013195544,
+            "total_with_tax": 49655885.58961008
           },
-          {
-            "case_id": "empty_active_cds",
-            "status": "blocked",
-            "error_count": 1,
-            "run_status": "invalid"
+          "source_tax_reconciliation": {
+            "canonical_total": 26081451.576414526,
+            "raw_matrix_total": 25567543.94315701,
+            "matrix_total": 26081451.57641452,
+            "raw_difference": -513907.6332575157,
+            "raw_difference_pct": -1.970395059308136,
+            "difference": -3.725290298461914e-09,
+            "difference_pct": -1.428329357952874e-14,
+            "tolerance_pct": 1,
+            "status": "within_tolerance",
+            "warning": null,
+            "adjustment_factor": 0.010000000000001119,
+            "notes": [
+              "A matriz tributária foi conciliada com Δ Faturamento=0.010000000000 conforme a fórmula da aba Cenários."
+            ]
           },
-          {
-            "case_id": "negative_freight",
-            "status": "blocked",
-            "error_count": 1,
-            "run_status": "invalid"
-          },
-          {
-            "case_id": "invalid_tax_mode",
-            "status": "blocked",
-            "error_count": 1,
-            "run_status": "invalid"
-          },
-          {
-            "case_id": "invalid_tax_regime",
-            "status": "blocked",
-            "error_count": 1,
-            "run_status": "invalid"
-          },
-          {
-            "case_id": "invalid_reallocation",
-            "status": "blocked",
-            "error_count": 1,
-            "run_status": "invalid"
-          },
-          {
-            "case_id": "missing_base_scenario",
-            "status": "blocked",
-            "error_count": 1,
-            "run_status": "invalid"
-          }
-        ],
-        "brute_force": {
-          "freight_monotonic_checks": 16,
-          "demand_monotonic_checks": 16,
-          "inventory_monotonic_checks": 8,
-          "wacc_monotonic_checks": 4,
-          "samples": [
-            {
-              "variable": "freight_multiplier",
-              "value": 0.85,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6zlb30",
-              "total_with_tax": 43897468.8024587,
-              "total_logistics_cost": 17816017.22604417,
-              "tax_impact": 26081451.576414533
+          "reconciliation": {
+            "company_id": "empresa2",
+            "scenario_id": "baseline_empresa2",
+            "operational": {
+              "status": "aligned",
+              "label": "reconciliação operacional alinhada",
+              "source": "workbook_scenario_totals_cenario_1",
+              "rows": [
+                {
+                  "metric": "transfer_cost",
+                  "reference": 3148100.5106217293,
+                  "simulated": 3148100.5106217293,
+                  "absolute_error": 0,
+                  "percentage_error": 0,
+                  "status": "aligned"
+                },
+                {
+                  "metric": "distribution_cost",
+                  "reference": 7637802.742085703,
+                  "simulated": 7637802.742085703,
+                  "absolute_error": 0,
+                  "percentage_error": 0,
+                  "status": "aligned"
+                },
+                {
+                  "metric": "storage_cost",
+                  "reference": 8647999.461242853,
+                  "simulated": 8647999.461242853,
+                  "absolute_error": 0,
+                  "percentage_error": 0,
+                  "status": "aligned"
+                },
+                {
+                  "metric": "inventory_cost",
+                  "reference": 4140531.299245261,
+                  "simulated": 4140531.299245261,
+                  "absolute_error": 0,
+                  "percentage_error": 0,
+                  "status": "aligned"
+                },
+                {
+                  "metric": "tax_impact",
+                  "reference": 26081451.576414526,
+                  "simulated": 26081451.576414526,
+                  "absolute_error": 0,
+                  "percentage_error": 0,
+                  "status": "aligned"
+                },
+                {
+                  "metric": "freight_cost",
+                  "reference": 10785903.252707433,
+                  "simulated": 10785903.252707433,
+                  "absolute_error": 0,
+                  "percentage_error": 0,
+                  "status": "aligned"
+                },
+                {
+                  "metric": "total_logistics_cost",
+                  "reference": 23574434.013195544,
+                  "simulated": 23574434.013195544,
+                  "absolute_error": 0,
+                  "percentage_error": 0,
+                  "status": "aligned"
+                },
+                {
+                  "metric": "total_with_tax",
+                  "reference": 49655885.58961008,
+                  "simulated": 49655885.58961008,
+                  "absolute_error": 0,
+                  "percentage_error": 0,
+                  "status": "aligned"
+                }
+              ],
+              "summary": {
+                "compared_metrics": 8,
+                "missing_metrics": 0,
+                "mean_abs_error_pct": 0,
+                "max_abs_error_pct": 0,
+                "aligned_metrics": 8,
+                "tolerable_metrics": 0,
+                "divergent_metrics": 0
+              },
+              "warnings": []
             },
-            {
-              "variable": "freight_multiplier",
-              "value": 1,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6zlb30",
-              "total_with_tax": 45515354.29036482,
-              "total_logistics_cost": 19433902.713950284,
-              "tax_impact": 26081451.576414533
-            },
-            {
-              "variable": "freight_multiplier",
-              "value": 1.15,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6zlb31",
-              "total_with_tax": 47133239.77827093,
-              "total_logistics_cost": 21051788.201856397,
-              "tax_impact": 26081451.576414533
-            },
-            {
-              "variable": "freight_multiplier",
-              "value": 0.85,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6zlb31",
-              "total_with_tax": 17816017.22604417,
-              "total_logistics_cost": 17816017.22604417,
-              "tax_impact": 0
-            },
-            {
-              "variable": "freight_multiplier",
-              "value": 1,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6zlb32",
-              "total_with_tax": 19433902.713950284,
-              "total_logistics_cost": 19433902.713950284,
-              "tax_impact": 0
-            },
-            {
-              "variable": "freight_multiplier",
-              "value": 1.15,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6zlb32",
-              "total_with_tax": 21051788.201856397,
-              "total_logistics_cost": 21051788.201856397,
-              "tax_impact": 0
-            },
-            {
-              "variable": "freight_multiplier",
-              "value": 0.85,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6zlb32",
-              "total_with_tax": 49418177.20145239,
-              "total_logistics_cost": 23336725.625037853,
-              "tax_impact": 26081451.576414533
-            },
-            {
-              "variable": "freight_multiplier",
-              "value": 1,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6zlb33",
-              "total_with_tax": 51036062.6893585,
-              "total_logistics_cost": 24954611.112943966,
-              "tax_impact": 26081451.576414533
-            },
-            {
-              "variable": "freight_multiplier",
-              "value": 1.15,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6zlb33",
-              "total_with_tax": 52653948.177264616,
-              "total_logistics_cost": 26572496.60085008,
-              "tax_impact": 26081451.576414533
-            },
-            {
-              "variable": "freight_multiplier",
-              "value": 0.85,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_0_85_mq6zlb34",
-              "total_with_tax": 23336725.625037853,
-              "total_logistics_cost": 23336725.625037853,
-              "tax_impact": 0
-            },
-            {
-              "variable": "freight_multiplier",
-              "value": 1,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_mq6zlb34",
-              "total_with_tax": 24954611.112943966,
-              "total_logistics_cost": 24954611.112943966,
-              "tax_impact": 0
-            },
-            {
-              "variable": "freight_multiplier",
-              "value": 1.15,
-              "scenario_id": "empresa2_empresa2_freight_multiplier_1_15_mq6zlb34",
-              "total_with_tax": 26572496.60085008,
-              "total_logistics_cost": 26572496.60085008,
-              "tax_impact": 0
-            }
-          ],
-          "deterministic_repeat_ok": true
-        },
-        "phase3": {
-          "export_roundtrip_ok": true,
-          "invalid_json_rejected": true,
-          "foreign_company_rejected": true,
-          "scenario_id": "empresa2_roundtrip_de_exportacao_mq6zlb4b"
-        },
-        "phase4": {
-          "objective_profiles_ok": true,
-          "invalid_objectives_ok": true,
-          "optimization_status": "success",
-          "optimization_deterministic_ok": true,
-          "valid_optimization_best_id": "empresa2_candidate_325",
-          "manual_selection_full_ok": true,
-          "manual_selection_limited_warned": true
-        },
-        "phase5": {
-          "stress_case_count": 8,
-          "conservative_case_count": 10,
-          "robustness_score": 79.5,
-          "recommendation_statuses": {
-            "recommended": "recommended",
-            "warning": "recommended_with_warnings",
-            "rejected": "not_recommended"
-          },
-          "audit_valid": true,
-          "export_file_count": 4,
-          "qa_pass": "passed",
-          "qa_fail": "failed"
-        }
-      }
-    ],
-    "summary": {
-      "companies_tested": 2,
-      "total_freight_monotonic_checks": 32,
-      "total_demand_monotonic_checks": 32,
-      "total_inventory_monotonic_checks": 16,
-      "total_wacc_monotonic_checks": 8
-    }
-  },
-  "ui": {
-    "generated_at": "2026-06-09T18:42:23.666350+00:00",
-    "screenshots": [
-      "ui_invalid_route_fallback_desktop.png",
-      "ui_corrupted_storage_baseline_desktop.png",
-      "ui_final_delivery_mobile.png"
-    ],
-    "checks": [
-      {
-        "case": "invalid_route_fallback",
-        "status": "ok"
-      },
-      {
-        "case": "corrupted_storage_baseline",
-        "status": "ok"
-      },
-      {
-        "case": "final_delivery_mobile",
-        "status": "ok"
-      }
-    ]
-  }
-}
+            "tax": {
+              "status": "aligned",
+              "raw_status": "within_tolerance",
+              "label": "reconciliação tributária alinhada",
+              "source": "dados_tributario / scenario_totals",
+              "summary": {
+                "canonical_total": 26081451.576414526,
+                "raw_matrix_total": 25567543.94315701,
+                "matrix_total": 26081451.57641452,
+                "raw_difference": -513907.6332575157,
+                "raw_difference_pct": -1.970395059308136,
+                "difference": -3.725290298461914e-09,
+                "difference_pct": -1.428329357952874e-14,
+                "tolerance_pct": 1,
+          

@@ -27,6 +27,7 @@ export const MODEL_ASSUMPTIONS = Object.freeze({
     }),
     fallback_rate_brl_per_kg_km: 0.005,
     missing_distance_distribution_share: 0.4,
+    sensitivity_rate_multipliers: Object.freeze([0.75, 1, 1.25]),
   }),
   empresa2_freight: Object.freeze({
     missing_cif_revenue_share: 0.025,
@@ -36,6 +37,38 @@ export const MODEL_ASSUMPTIONS = Object.freeze({
     max_cd_volume_share: 0.75,
     max_reallocated_flow_share: 0.5,
     max_missing_distance_share: 0.05,
+  }),
+  scoring: Object.freeze({
+    objective_profiles: Object.freeze({
+      cost_minimum: Object.freeze({
+        total_cost: 0.75,
+        service_quality: 0.05,
+        operational_risk: 0.05,
+        tax_impact: 0.1,
+        inventory_efficiency: 0.05,
+      }),
+      balanced: Object.freeze({
+        total_cost: 0.3,
+        service_quality: 0.25,
+        operational_risk: 0.2,
+        tax_impact: 0.15,
+        inventory_efficiency: 0.1,
+      }),
+      conservative: Object.freeze({
+        total_cost: 0.15,
+        service_quality: 0.25,
+        operational_risk: 0.45,
+        tax_impact: 0.05,
+        inventory_efficiency: 0.1,
+      }),
+      quality_service: Object.freeze({
+        total_cost: 0.1,
+        service_quality: 0.55,
+        operational_risk: 0.2,
+        tax_impact: 0.05,
+        inventory_efficiency: 0.1,
+      }),
+    }),
   }),
   monte_carlo: Object.freeze({
     default_iterations: 300,
@@ -50,6 +83,13 @@ export const MODEL_ASSUMPTIONS = Object.freeze({
       wacc: Object.freeze([0, 0.5]),
       tax_multiplier: Object.freeze([0.7, 1.35]),
       histogram_bins: Object.freeze([6, 30]),
+    }),
+    risk: Object.freeze({
+      high_probability_saving_below: 0.6,
+      medium_probability_saving_below: 0.8,
+      high_p10_saving_below_pct: 0,
+      medium_p10_saving_below_pct: 2,
+      strong_positive_saving_min_pct: 5,
     }),
     profiles: Object.freeze({
       conservative: Object.freeze({
@@ -174,6 +214,33 @@ export const MODEL_ASSUMPTIONS = Object.freeze({
       activation: 'qualidade ou risco ausentes',
       justification:
         'permite cálculo explícito, acompanhado de warning; não representa probabilidade empírica',
+    }),
+    quality_thresholds: Object.freeze({
+      classification: 'parameter',
+      company: 'ambas',
+      value: 'concentração 75%; realocação 50%; distância ausente 5%',
+      unit: 'percentual dos fluxos ou volume',
+      origin: 'premissas manuais do modelo',
+      activation: 'avaliação de qualidade de todos os cenários',
+      justification: 'limites de triagem operacional; não representam níveis de serviço observados',
+    }),
+    recommendation_thresholds: Object.freeze({
+      classification: 'parameter',
+      company: 'ambas',
+      value: 'robustez 70/45; probabilidade Monte Carlo 65%/50%',
+      unit: 'índice e probabilidade simulada',
+      origin: 'premissas manuais do modelo',
+      activation: 'geração da recomendação executiva',
+      justification: 'régua decisória parametrizada, não validação empírica',
+    }),
+    reconciliation_thresholds: Object.freeze({
+      classification: 'parameter',
+      company: 'ambas',
+      value: 'alinhado até 3%; tolerável acima de 3% até 10%; divergente acima de 10%',
+      unit: 'erro percentual absoluto',
+      origin: 'régua metodológica do projeto',
+      activation: 'quando existe referência independente comparável',
+      justification: 'padronizar a leitura sem fabricar benchmark ausente',
     }),
   }),
 });

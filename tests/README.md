@@ -1,33 +1,62 @@
-# Testes organizados
+# Testes e critérios de aprovação
 
-Os testes foram separados por objetivo.
+As suítes são separadas conforme a necessidade de acesso aos dados criptografados. A separação evita que um teste dependente de dados seja apresentado como aprovado quando a credencial não está disponível.
 
-```text
-tests/
-├── 00_basicos/                 # presença mínima do pacote
-├── 01_paths_auditoria/          # paths, auditorias e regeneração
-├── 02_fase1_frontend/           # HTML/CSS/JS e servidor estático
-├── 03_contratos_modulos/        # documentação dos módulos e contratos
-├── 04_e2e_visual_opcional/      # Playwright opcional
-└── run_all_tests.py             # roda os testes principais
-```
-
-Para rodar tudo que é obrigatório:
+## Suíte pública
 
 ```bash
-python tests/run_all_tests.py
+npm run test:public
 ```
 
-O teste Playwright é opcional porque depende de navegador disponível no ambiente.
+Executa os 27 arquivos declarados em `tests/suite_manifest.py`, incluindo:
 
-## Fase 5
+- integridade dos arquivos criptografados;
+- estrutura, paths e contratos;
+- sintaxe e servidores HTTP das cinco fases;
+- aliases tributários e regimes sem dados protegidos;
+- regressões de Monte Carlo, estoque, fallbacks, reconciliação e score com fixtures sintéticas.
 
-A Fase 5 adiciona testes em `tests/08_fase5_entrega_final/` para estrutura, sintaxe JS, stress test, recomendação, audit trail, exportação, QA final e servidor HTTP.
+O marcador de conclusão é `PUBLIC_TEST_SUITE_OK`. A mensagem `PROTECTED_TESTS_NOT_RUN` registra explicitamente o escopo não executado.
 
-Comando principal local:
+## Suíte completa
+
+Configure `VISAGIO_DATA_PASSWORD` em `.env.local` ou no ambiente e rode:
 
 ```bash
-python tests/run_all_tests.py
+npm test
 ```
 
-Em ambientes com limite curto de tempo, rode por grupos, como nos relatórios de validação.
+A suíte acrescenta os 12 arquivos protegidos declarados no manifesto, cobrindo:
+
+- contratos e reconciliação dos dados reais;
+- baseline e cenários de ambas as empresas;
+- regimes e transição tributária;
+- score, stress, robustez e recomendação;
+- importação, exportação, sessão e tratamento de falhas;
+- E2E desktop e mobile;
+- auditoria adversarial quantitativa e geração de evidências.
+
+O marcador final é `FULL_TEST_SUITE_OK`. Sem a credencial, o runner para com `FULL_SUITE_BLOCKED` e nenhum teste protegido é considerado aprovado.
+
+## Qualidade de código
+
+```bash
+npm run lint
+npm run format:check
+```
+
+Os comandos executam ESLint e Ruff, além da verificação de formatação por Prettier e Ruff.
+
+## CI e duas auditorias
+
+O workflow `Quality` executa:
+
+1. suíte pública;
+2. Rodada 1 protegida em runner limpo;
+3. Rodada 2 protegida em outro runner limpo, somente após aprovação da Rodada 1.
+
+Cada rodada publica log e evidências próprios. A ausência do secret `VISAGIO_DATA_PASSWORD` reprova a etapa protegida; não existe `skip` silencioso.
+
+## Princípio dos testes
+
+Os testes quantitativos devem conferir fórmulas, valores, limites, componentes e invariantes. Verificações que apenas procuram texto ou a existência de um arquivo são usadas somente para contratos estruturais, nunca como prova de correção numérica.

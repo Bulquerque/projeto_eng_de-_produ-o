@@ -2,6 +2,7 @@ import { flowMeasure } from '../../phase3/scenario-flow-rebuilder.js';
 import { getFiscalCategoryRule, normalizeFiscalCategory } from './fiscal-category-rules.js';
 
 function n(value, fallback = 0) {
+  if (value == null || (typeof value === 'string' && !value.trim())) return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }

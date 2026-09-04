@@ -26,6 +26,7 @@ PUBLIC_TESTS = [
     'tests/09_polish_debug_restructure/test_debug_system.py',
     'tests/09_polish_debug_restructure/test_phase_folders_and_module_docs.py',
     'tests/09_polish_debug_restructure/test_polish_file_preservation.py',
+    'tests/09_polish_debug_restructure/test_report_content.py',
 ]
 
 PROTECTED_TESTS = [

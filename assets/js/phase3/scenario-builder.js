@@ -4,6 +4,7 @@ import {
   taxRegimeLabel,
 } from '../shared/tax-reform-config.js';
 import { sameCdLabel } from '../shared/cd-utils.js';
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
 function slugify(value) {
   return (
     String(value || 'cenario')
@@ -52,8 +53,8 @@ export function buildScenarioFromForm({
     closed_cds: deriveClosedCds(baseCds, requested),
     freight_multiplier: Number(formValues.freight_multiplier ?? 1),
     demand_multiplier: Number(formValues.demand_multiplier ?? 1),
-    inventory_days: Number(formValues.inventory_days ?? 45),
-    wacc: Number(formValues.wacc ?? 0.15),
+    inventory_days: Number(formValues.inventory_days ?? MODEL_ASSUMPTIONS.inventory.baseline_days),
+    wacc: Number(formValues.wacc ?? MODEL_ASSUMPTIONS.inventory.baseline_wacc),
     tax_mode: taxMode,
     tax_regime: taxRegime,
     tax_regime_label: taxRegimeLabel(taxRegime),
@@ -87,7 +88,8 @@ export function buildChangeLog(scenario) {
   if ((c.closed_cds || []).length) out.push(`CDs fechados: ${c.closed_cds.join(', ')}`);
   if (Number(c.freight_multiplier) !== 1) out.push(`Frete x${c.freight_multiplier}`);
   if (Number(c.demand_multiplier) !== 1) out.push(`Demanda x${c.demand_multiplier}`);
-  if (Number(c.inventory_days) !== 45) out.push(`Estoque: ${c.inventory_days} dias`);
+  if (Number(c.inventory_days) !== MODEL_ASSUMPTIONS.inventory.baseline_days)
+    out.push(`Estoque: ${c.inventory_days} dias`);
   if (c.tax_mode === 'disabled') out.push('Tributário desligado');
   if (c.tax_regime && c.tax_regime !== 'legacy_current')
     out.push(`Regime fiscal: ${taxRegimeLabel(c.tax_regime)}`);

@@ -1,6 +1,7 @@
 import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
 
 function n(v, d = 0) {
+  if (v === null || v === undefined || v === '') return d;
   const x = Number(v);
   return Number.isFinite(x) ? x : d;
 }
@@ -17,12 +18,18 @@ export function calculateRobustness({
   const worstCaseSavingPct = total ? Math.min(...stressResults.map((r) => n(r.saving_pct))) : 0;
   const assumptions = MODEL_ASSUMPTIONS.robustness;
   const qualityScore = n(quality.quality_score, assumptions.default_quality_score);
-  if (!Number.isFinite(Number(quality.quality_score))) {
+  if (
+    quality.quality_score === null ||
+    quality.quality_score === undefined ||
+    quality.quality_score === '' ||
+    !Number.isFinite(Number(quality.quality_score))
+  ) {
     warnings.push(
       `quality_score ausente; proxy explícito ${assumptions.default_quality_score} aplicado.`
     );
   }
-  if (!quality.risk_level) warnings.push('risk_level ausente; proxy explícito "medium" aplicado.');
+  if (!String(quality.risk_level || '').trim())
+    warnings.push('risk_level ausente; proxy explícito "medium" aplicado.');
   const risk = String(quality.risk_level || 'medium').toLowerCase();
   const riskPenalty =
     risk === 'high'

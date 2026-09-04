@@ -1,6 +1,8 @@
 import { resolveTaxRegime, taxRegimeLabel } from './tax-reform-config.js';
+import { MODEL_ASSUMPTIONS } from './model-assumptions.js';
 
 function toNum(value, fallback = 0) {
+  if (value == null || (typeof value === 'string' && !value.trim())) return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
@@ -48,7 +50,10 @@ export function buildScenarioSummary({
     active_cds_count: activeCds.length,
     freight_multiplier: toNum(changes.freight_multiplier ?? 1, 1),
     demand_multiplier: toNum(changes.demand_multiplier ?? 1, 1),
-    inventory_days: toNum(changes.inventory_days ?? 45, 45),
+    inventory_days: toNum(
+      changes.inventory_days ?? MODEL_ASSUMPTIONS.inventory.baseline_days,
+      MODEL_ASSUMPTIONS.inventory.baseline_days
+    ),
     tax_regime_label: resolveScenarioTaxRegimeLabel(scenarioSource, taxResults),
     transfer_cost: toNum(result?.costs?.transfer_cost),
     tax_impact: toNum(result?.costs?.tax_impact ?? taxResults.total_tax_impact),

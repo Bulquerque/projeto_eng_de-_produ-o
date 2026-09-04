@@ -100,6 +100,8 @@ function renderTabs() {
   $('phase5CompanyLabel').textContent = label(state.companyId);
 }
 function baselineResult() {
+  const comparable = state.optimizer?.baseline_reference?.result;
+  if (comparable?.total_with_tax != null) return comparable;
   return {
     scenario_id: state.bundle?.model?.scenario_id,
     total_with_tax: state.bundle?.costs?.costs?.total_with_tax,
@@ -108,10 +110,16 @@ function baselineResult() {
   };
 }
 function scenarioComparison(selected) {
-  const base = Number(state.bundle?.costs?.costs?.total_with_tax || 0);
+  const reference = baselineResult();
+  const base = Number(reference?.total_with_tax || 0);
   const total = Number(selected?.result?.total_with_tax || selected?.total_with_tax || 0);
   return {
     baseline_total: base,
+    baseline_scenario_id: reference?.scenario_id || null,
+    comparison_basis: state.optimizer?.baseline_reference?.comparison_basis || 'same_tax_regime',
+    tax_mode: reference?.tax_results?.tax_mode || reference?.scenario?.changes?.tax_mode || null,
+    tax_regime:
+      reference?.tax_results?.tax_regime || reference?.scenario?.changes?.tax_regime || null,
     scenario_total: total,
     saving_abs: base - total,
     saving_pct: base ? ((base - total) / base) * 100 : 0,
@@ -234,6 +242,7 @@ function runDecisionPipeline() {
     companyId: state.companyId,
     selectedScenario: scenario,
     baselineBundle: state.bundle,
+    baselineResult: baselineResult(),
     sensitivityConfig: {
       variable: $('phase5SensitivityVariable')?.value || 'freight_multiplier',
       values: sensitivityValues($('phase5SensitivityVariable')?.value || 'freight_multiplier'),
@@ -243,6 +252,7 @@ function runDecisionPipeline() {
     companyId: state.companyId,
     selectedScenario: scenario,
     baselineBundle: state.bundle,
+    baselineResult: baselineResult(),
     matrixConfig: {
       xVariable: $('phase5SensitivityX')?.value || 'freight_multiplier',
       yVariable: $('phase5SensitivityY')?.value || 'demand_multiplier',
@@ -278,6 +288,7 @@ function runDecisionPipeline() {
     company_id: state.companyId,
     selected_scenario_id: state.selection.selected_scenario_id,
     baseline_scenario_id: state.bundle.model.scenario_id,
+    comparison_baseline: state.optimizer.baseline_reference,
     objective: state.objective,
     recommendation: state.recommendation,
     stress_test: state.stress.summary,

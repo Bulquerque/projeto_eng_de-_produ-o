@@ -29,11 +29,13 @@ for (const companyId of ['empresa1','empresa2']) {
  if(Number(selected.scenario?.changes?.demand_multiplier ?? 1)!==1) throw new Error('selected scenario changed demand');
  if(Number(selected.scenario?.changes?.inventory_days ?? 45)!==45) throw new Error('selected scenario changed inventory');
  if((selected.scenario?.changes?.tax_mode || '')==='disabled') throw new Error('selected scenario disabled tax');
- const stress=runStressTests({companyId,selectedScenario:selected.scenario,baselineBundle:bundle});
+ const comparisonBaseline=opt.baseline_reference.result;
+ const stress=runStressTests({companyId,selectedScenario:selected.scenario,baselineBundle:bundle,baselineResult:comparisonBaseline});
  const robustness=calculateRobustness({companyId,scenarioId:selected.scenario_id,stressResults:stress.stress_results,quality:selected.quality});
  const rec=buildRecommendation({companyId,selectedScenario:selected,comparison:{saving_pct:1,saving_abs:1},quality:selected.quality,robustness,objective});
- const audit=buildAuditTrail({companyId,selectedScenario:selected,baselineBundle:bundle,objective,recommendation:rec});
+ const audit=buildAuditTrail({companyId,selectedScenario:selected,baselineBundle:bundle,objective,recommendation:rec,optimizerResult:opt});
  const valid=validateAuditTrail(audit); if(!valid.valid) throw new Error(valid.errors.join(';'));
+ if(audit.comparison_baseline?.total_with_tax!==comparisonBaseline.total_with_tax) throw new Error('comparison baseline missing from audit');
  const workbookParity=buildWorkbookParitySummary(bundle.base_fit);
  const html=buildExecutiveReportHtml({companyId,selectedScenario:selected,recommendation:rec,stress,robustness,audit,comparison:{saving_abs:1},workbookParity});
  if(!html.includes('Relatório executivo') || !html.includes(companyId)) throw new Error('bad report html');

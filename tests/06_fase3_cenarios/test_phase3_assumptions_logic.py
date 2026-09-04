@@ -5,11 +5,13 @@ ROOT = Path(__file__).resolve().parents[2]
 
 code = r"""
 import {calculatePhysicalCosts} from './assets/js/phase3/physical-cost-engine.js';
+import {rebuildScenarioFlows} from './assets/js/phase3/scenario-flow-rebuilder.js';
 import {MODEL_ASSUMPTIONS} from './assets/js/shared/model-assumptions.js';
 import {runScenario} from './assets/js/phase3/scenario-simulator.js';
 import {runMonteCarloSimulation} from './assets/js/phase3/monte-carlo-engine.js';
 import {calculateRobustness} from './assets/js/phase5/robustness-scorer.js';
-import {classifyReconciliationPct} from './assets/js/shared/reconciliation-engine.js';
+import {buildRecommendation} from './assets/js/phase5/recommendation-engine.js';
+import {buildBundleReconciliation, classifyReconciliationPct} from './assets/js/shared/reconciliation-engine.js';
 import {normalizeMetrics} from './assets/js/phase4/metric-normalizer.js';
 
 function assert(condition, message) {
@@ -55,7 +57,19 @@ function scenario(activeCds, id='test') {
 }
 
 const rebuilt = {flows:baselineBundle.flows};
-const full = calculatePhysicalCosts({companyId:'empresa1', scenario:scenario(['SP/CD1','RJ/CD2'],'full'), baselineBundle, rebuilt});
+const normalizedBaseline = rebuildScenarioFlows({
+  scenario:scenario(['SP/CD1','RJ/CD2'],'normalized-baseline'),
+  baselineFlows:[{...baselineBundle.flows[0], cd:'CD1'}],
+  distanceMatrix:baselineBundle.core_data.distance_matrix,
+});
+assert(normalizedBaseline.flows[0].cd === 'CD1', 'unchanged flow must preserve its exact source CD label');
+const supplierFlow = rebuildScenarioFlows({
+  scenario:scenario(['SP/CD1','RJ/CD2'],'supplier-baseline'),
+  baselineFlows:[{flow_id:'supplier', cd:'SUPPLIER/1001', origin:'SUPPLIER/1001', annual_revenue:100}],
+});
+assert(supplierFlow.flows[0].cd === 'SUPPLIER/1001', 'non-CD source must not be reallocated in the baseline');
+assert(supplierFlow.flow_summary.reallocated_flows === 0, 'non-CD source was incorrectly counted as reallocated');
+const full = calculatePhysicalCosts({companyId:'empresa1', scenario:scenario(['SP/CD1','RJ/CD2'],'full'), baselineBundle, rebuilt, forceRecompute:true});
 const central = calculatePhysicalCosts({companyId:'empresa1', scenario:scenario(['SP/CD1'],'central'), baselineBundle, rebuilt});
 assert(full.inventory_cost === central.inventory_cost, 'inventory must not imply unimplemented CD pooling');
 assert(full.inventory_calculation_mode === 'days_wacc_only', 'inventory mode must be explicit');
@@ -63,12 +77,22 @@ assert(full.inventory_pooling_effect_included === false, 'pooling flag must be f
 assert(full.warnings.some(x => x.includes('não inclui pooling')), 'inventory limitation warning missing');
 assert(full.warnings.some(x => x.includes('Empresa 2')), 'cross-company transfer proxy warning missing');
 assert(full.fallback_usage.cross_company_transfer_proxy_flows === 2, 'proxy coverage count mismatch');
+assert(full.transfer_proxy_sensitivity.points.length === 3, 'transfer proxy sensitivity points missing');
+assert(full.transfer_proxy_sensitivity.points[0].total_physical_cost < full.transfer_proxy_sensitivity.points[2].total_physical_cost, 'transfer proxy sensitivity must be monotonic');
+
+const missingRateBundle = structuredClone(baselineBundle);
+missingRateBundle.core_data.distance_matrix = [
+  {ORIGEM:'SP/CD1', DESTINO:'DESTINO1', UF_ORIGEM:'SP', UF_DESTINO:'SP', 'Frete (R$/Kg)':null, 'Distancia(KM)':100},
+];
+const missingRate = calculatePhysicalCosts({companyId:'empresa1', scenario:scenario(['SP/CD1','RJ/CD2'],'missing-rate'), baselineBundle:missingRateBundle, rebuilt, forceRecompute:true});
+assert(missingRate.calculation_method === 'heuristic_fallback', 'blank freight rate must not be treated as observed zero');
 
 const e2 = calculatePhysicalCosts({
   companyId:'empresa2',
   scenario:{changes:{active_cds:['ES'], freight_multiplier:1, demand_multiplier:1, inventory_days:45, wacc:0.15}},
   baselineBundle:{model:{active_cds:['ES']}, costs:{costs:{storage_cost:100, inventory_cost:50}}, core_data:{}},
   rebuilt:{flows:[{flow_id:'e2f', cd:'ES', destination:'XX', annual_weight_kg:10, annual_revenue:1000, reallocation_status:'reallocated'}]},
+  forceRecompute:true,
 });
 assert(e2.transfer_cost === 25, '2.5% revenue transfer fallback mismatch');
 assert(e2.fallback_usage.storage_proxy_used === true, 'storage fallback must be reported');
@@ -84,6 +108,7 @@ const e2PartialStorage = calculatePhysicalCosts({
     core_data:{aux_custo_armazenagem:[{Filial:'ES', Custo:10}]},
   },
   rebuilt:{flows:[]},
+  forceRecompute:true,
 });
 assert(e2PartialStorage.storage_cost === 1200, 'partial storage table must not be treated as complete');
 assert(e2PartialStorage.warnings.some(x => x.includes('1 CD(s)')), 'missing storage CD warning must report coverage');
@@ -91,10 +116,15 @@ assert(e2PartialStorage.warnings.some(x => x.includes('1 CD(s)')), 'missing stor
 const selected = scenario(['SP/CD1','RJ/CD2'],'mc');
 const deterministic = runScenario({companyId:'empresa1', scenario:selected, baselineBundle});
 assert(deterministic.simulation_status === 'success', 'synthetic deterministic scenario failed');
+assert(deterministic.total_with_tax === baselineBundle.costs.costs.total_with_tax, 'identity scenario must reproduce canonical baseline');
 const mcA = runMonteCarloSimulation({companyId:'empresa1', selectedScenario:selected, baselineBundle, deterministicResult:deterministic, iterations:80, seed:123});
 const mcB = runMonteCarloSimulation({companyId:'empresa1', selectedScenario:selected, baselineBundle, deterministicResult:deterministic, iterations:80, seed:123});
 const mcC = runMonteCarloSimulation({companyId:'empresa1', selectedScenario:selected, baselineBundle, deterministicResult:deterministic, iterations:80, seed:124});
 assert(mcA.samples.length === 80, 'Monte Carlo iteration count mismatch');
+assert(mcA.invalid_sample_count === 0, 'valid Monte Carlo samples were marked invalid');
+assert(mcA.summary.baseline_total_with_tax === baselineBundle.costs.costs.total_with_tax, 'Monte Carlo must compare against company baseline');
+assert(mcA.summary.deterministic_total_with_tax === deterministic.total_with_tax, 'deterministic total mismatch');
+assert(mcA.summary.deterministic_saving_pct === ((baselineBundle.costs.costs.total_with_tax-deterministic.total_with_tax)/baselineBundle.costs.costs.total_with_tax)*100, 'deterministic saving uses wrong baseline');
 assert(JSON.stringify(mcA.summary) === JSON.stringify(mcB.summary), 'same seed must reproduce summary');
 assert(JSON.stringify(mcA.summary) !== JSON.stringify(mcC.summary), 'different seeds must change summary');
 for (const driver of ['freight_multiplier','demand_multiplier','inventory_days','wacc','tax_multiplier']) {
@@ -104,6 +134,7 @@ for (const driver of ['freight_multiplier','demand_multiplier','inventory_days',
 assert(mcA.summary.p10_saving_pct <= mcA.summary.median_saving_pct, 'p10 must not exceed median');
 assert(mcA.summary.median_saving_pct <= mcA.summary.p90_saving_pct, 'median must not exceed p90');
 assert(mcA.summary.probability_saving_positive >= 0 && mcA.summary.probability_saving_positive <= 1, 'invalid saving probability');
+assert(mcA.summary.probability_saving_positive === mcA.samples.filter(row => row.saving_pct > 0).length/mcA.samples.length, 'saving probability does not match sample count');
 assert(MODEL_ASSUMPTIONS.monte_carlo.default_iterations === 300, 'canonical Monte Carlo defaults missing');
 assert(mcA.methodology.calibration_status === 'manual_spreads_not_historically_calibrated', 'Monte Carlo calibration limitation missing');
 assert(mcA.warnings.some(x => x.includes('exploratória')), 'Monte Carlo exploratory warning missing');
@@ -142,11 +173,35 @@ assert(invalidMc.monte_carlo_status === 'error' && invalidMc.samples.length === 
 const robustness = calculateRobustness({companyId:'empresa1', scenarioId:'x', stressResults:[]});
 assert(robustness.calculation_mode === 'parameterized_proxy', 'robustness proxy mode missing');
 assert(robustness.warnings.length === 2, 'silent robustness defaults remain');
+const nullRobustness = calculateRobustness({companyId:'empresa1', scenarioId:'x', stressResults:[], quality:{quality_score:null, risk_level:null}});
+assert(nullRobustness.robustness_score === 13, 'null quality must use explicit default instead of numeric zero');
+
+const proxyRecommendation = buildRecommendation({
+  companyId:'empresa1',
+  selectedScenario:{
+    scenario_id:'proxy-sensitive',
+    result:{costs:{
+      fallback_usage:{cross_company_transfer_proxy_flows:2},
+      transfer_proxy_sensitivity:{points:[{saving_pct:2},{saving_pct:-1}]},
+    }},
+  },
+  comparison:{saving_pct:2},
+  quality:{risk_level:'low'},
+  robustness:{robustness_score:80},
+});
+assert(proxyRecommendation.recommendation_status === 'recommended_with_warnings', 'proxy sensitivity that reverses saving must downgrade clean recommendation');
+assert(proxyRecommendation.warnings.length === 1, 'recommendation must disclose cross-company proxy');
 
 assert(classifyReconciliationPct(3) === 'aligned', '3% must be aligned');
 assert(classifyReconciliationPct(-10) === 'tolerable', '10% must be tolerable');
 assert(classifyReconciliationPct(10.01) === 'divergent', 'above 10% must be divergent');
 assert(classifyReconciliationPct(null) === 'pending', 'missing comparison must be pending');
+const missingReconciliation = buildBundleReconciliation({
+  model:{company_id:'empresa1'},
+  costs:{reference_results:{distribution_cost:100}, costs:{distribution_cost:null}},
+  base_fit:{status:'benchmark_pending'},
+});
+assert(missingReconciliation.operational.rows[0].status === 'pending', 'missing simulated metric must not be coerced to zero');
 
 const normalized = normalizeMetrics({
   companyId:'empresa1',

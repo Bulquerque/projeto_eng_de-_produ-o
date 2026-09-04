@@ -1,4 +1,5 @@
 function n(v, d = 0) {
+  if (v == null || (typeof v === 'string' && !v.trim())) return d;
   const x = Number(v);
   return Number.isFinite(x) ? x : d;
 }

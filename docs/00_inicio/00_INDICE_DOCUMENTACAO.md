@@ -47,6 +47,14 @@ A documentação foi reorganizada por tema.
 
 - manifesto da documentação.
 
+## 07_auditoria
+
+- diagnóstico reproduzível e escopo da credencial;
+- matriz problema → correção → teste → evidência;
+- catálogo de premissas, proxies e fallbacks;
+- resultados canônicos e proveniência;
+- relatórios independentes das Rodadas 1 e 2.
+
 
 ## Fase 2
 

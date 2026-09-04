@@ -1,4 +1,5 @@
 import { resolveTaxRegime, taxRegimeLabel } from '../shared/tax-reform-config.js';
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
 function pct(v) {
   return Number.isFinite(Number(v))
     ? `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`
@@ -25,7 +26,7 @@ export function explainScenarioChanges({
     out.push(`Demanda multiplicada por ${c.demand_multiplier}.`);
     drivers.push('alteração de demanda');
   }
-  if (Number(c.inventory_days) !== 45) {
+  if (Number(c.inventory_days) !== MODEL_ASSUMPTIONS.inventory.baseline_days) {
     out.push(`Política de estoque ajustada para ${c.inventory_days} dias.`);
     drivers.push('estoque');
   }

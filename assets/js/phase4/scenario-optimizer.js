@@ -7,6 +7,7 @@ import { normalizeMetrics } from './metric-normalizer.js';
 import { scoreScenarios } from './scenario-scoring.js';
 import {
   SUPPORTED_METHOD,
+  attachBaselineReference,
   buildBaselineScenario,
   buildFailureResult,
   buildSearchLog,
@@ -111,17 +112,51 @@ export function runOptimization({
     });
   }
 
+  const baselineScenario = buildBaselineScenario(companyId, baselineBundle, {
+    taxMode: canonicalConfig.tax_mode,
+    taxRegime: canonicalConfig.tax_regime,
+  });
+  const simulatedBaseline = runScenario({
+    companyId,
+    scenario: baselineScenario,
+    baselineBundle,
+  });
+  if (simulatedBaseline.simulation_status !== 'success') {
+    const message = 'Falha ao simular o baseline comparável no regime fiscal da otimização.';
+    return buildFailureResult({
+      companyId,
+      searchLog: buildSearchLog({
+        methodRequested: requestedMethod,
+        methodApplied: SUPPORTED_METHOD,
+        generatedCandidates: generatedCount,
+        refinementRounds,
+        refinementSeedCount,
+        invalidReasons: [message],
+      }),
+      warnings: searchWarnings,
+      errors: [message],
+    });
+  }
+  const baselineResult = attachBaselineReference(simulatedBaseline, simulatedBaseline);
+  const baselineRecord = {
+    scenario: baselineScenario,
+    result: baselineResult,
+    quality: evaluateScenarioQuality({ scenarioResult: baselineResult, baselineBundle }),
+    constraint: { passes_constraints: true, violations: [], warnings: [] },
+  };
+
   const scenarioRecords = [];
   let invalid = 0;
   const invalidReasons = [];
 
   for (const scenario of generated.candidate_scenarios) {
-    const result = runScenario({ companyId, scenario, baselineBundle });
-    if (result.simulation_status !== 'success') {
+    const simulatedResult = runScenario({ companyId, scenario, baselineBundle });
+    if (simulatedResult.simulation_status !== 'success') {
       invalid++;
-      invalidReasons.push(result.errors?.[0] || 'simulação inválida');
+      invalidReasons.push(simulatedResult.errors?.[0] || 'simulação inválida');
       continue;
     }
+    const result = attachBaselineReference(simulatedResult, baselineResult);
 
     const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle });
     const constraint = evaluateConstraints({
@@ -138,35 +173,6 @@ export function runOptimization({
 
     scenarioRecords.push({ scenario, result, quality, constraint });
   }
-
-  const baselineScenario = buildBaselineScenario(companyId, baselineBundle);
-  const baselineResult = runScenario({ companyId, scenario: baselineScenario, baselineBundle });
-  if (baselineResult.simulation_status !== 'success') {
-    const message = 'Falha ao simular o baseline de referência.';
-    return buildFailureResult({
-      companyId,
-      searchLog: buildSearchLog({
-        methodRequested: requestedMethod,
-        methodApplied: SUPPORTED_METHOD,
-        generatedCandidates: generatedCount,
-        simulatedCandidates: scenarioRecords.length,
-        validCandidates: scenarioRecords.length,
-        invalidCandidates: invalid,
-        refinementRounds,
-        refinementSeedCount,
-        invalidReasons: [message],
-      }),
-      warnings: searchWarnings,
-      errors: [message],
-    });
-  }
-
-  const baselineRecord = {
-    scenario: baselineScenario,
-    result: baselineResult,
-    quality: evaluateScenarioQuality({ scenarioResult: baselineResult, baselineBundle }),
-    constraint: { passes_constraints: true, violations: [], warnings: [] },
-  };
 
   const preliminaryMetrics = extractScenarioMetrics({
     companyId,
@@ -238,12 +244,13 @@ export function runOptimization({
     if (seenScenarioIds.has(scenario.scenario_id)) continue;
     seenScenarioIds.add(scenario.scenario_id);
     refinedSimulated += 1;
-    const result = runScenario({ companyId, scenario, baselineBundle });
-    if (result.simulation_status !== 'success') {
+    const simulatedResult = runScenario({ companyId, scenario, baselineBundle });
+    if (simulatedResult.simulation_status !== 'success') {
       refinedInvalid += 1;
-      refinedInvalidReasons.push(result.errors?.[0] || 'simulação inválida');
+      refinedInvalidReasons.push(simulatedResult.errors?.[0] || 'simulação inválida');
       continue;
     }
+    const result = attachBaselineReference(simulatedResult, baselineResult);
     const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle });
     const constraint = evaluateConstraints({
       scenarioResult: result,
@@ -338,6 +345,14 @@ export function runOptimization({
     company_id: companyId,
     optimizer_status: 'success',
     search_strategy: 'broad_then_refine',
+    baseline_reference: {
+      scenario: baselineScenario,
+      result: baselineResult,
+      quality: baselineRecord.quality,
+      comparison_basis: 'same_tax_regime',
+      tax_mode: baselineResult.tax_results?.tax_mode || canonicalConfig.tax_mode,
+      tax_regime: baselineResult.tax_results?.tax_regime || canonicalConfig.tax_regime,
+    },
     best_scenarios,
     best_by_total_cost,
     scored_scenarios: enriched,
