@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "description": "Visagio Static Simulator - Code Quality Tools",
   "main": "assets/js/app.js",
+  "type": "module",
   "scripts": {
+    "serve": "python -m http.server 8000",
+    "test": "python tests/run_all_tests.py",
+    "test:public": "python tests/run_public_tests.py",
+    "lint": "npm run lint:js && ruff check .",
+    "format:check": "npm run format:js:check && ruff format --check .",
     "lint:js": "eslint \"assets/js/**/*.js\"",
     "format:js:check": "prettier --check \"assets/js/**/*.js\"",
     "format:js:write": "prettier --write \"assets/js/**/*.js\""
@@ -12,6 +18,10 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.2.5"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
   },
   "private": true
 }

@@ -18,8 +18,7 @@ ROOT = find_project_root()
 def check_python_standards():
     ruff_bin = shutil.which('ruff')
     if not ruff_bin:
-        print("[WARNING] Ruff is not installed. Run 'pip install ruff' to check Python standards.")
-        return
+        raise AssertionError("Ruff não está instalado. Execute 'python -m pip install -r requirements-dev.txt'.")
 
     print('Checking Python linting with Ruff...')
     res_lint = subprocess.run([ruff_bin, 'check', '.'], cwd=ROOT, capture_output=True, text=True)
@@ -43,13 +42,11 @@ def check_python_standards():
 def check_js_standards():
     node_modules = ROOT / 'node_modules'
     if not node_modules.exists():
-        print("[WARNING] node_modules not found. Run 'npm install' to enable JavaScript linting and formatting checks.")
-        return
+        raise AssertionError("node_modules ausente. Execute 'npm ci'.")
 
     npm_bin = shutil.which('npm')
     if not npm_bin:
-        print('[WARNING] npm not found. Cannot run JavaScript checks.')
-        return
+        raise AssertionError('npm não encontrado; a verificação JavaScript não pode ser executada.')
 
     print('Checking JavaScript linting (ESLint)...')
     res_lint = subprocess.run([npm_bin, 'run', 'lint:js'], cwd=ROOT, capture_output=True, text=True)
