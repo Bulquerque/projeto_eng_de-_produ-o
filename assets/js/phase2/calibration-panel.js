@@ -1,4 +1,5 @@
 import { escapeHtml, formatBRL, formatPct, renderTable, statusClass } from '../shared/common.js';
+import { classifyReconciliationPct } from '../shared/reconciliation-engine.js';
 
 function n(value) {
   const parsed = Number(value);
@@ -7,7 +8,12 @@ function n(value) {
 
 function buildReferenceRows(fit, costs) {
   const directRows = Array.isArray(fit?.errors_by_metric) ? fit.errors_by_metric : [];
-  if (directRows.length) return directRows;
+  if (directRows.length) {
+    return directRows.map((row) => ({
+      ...row,
+      status: classifyReconciliationPct(n(row.percentage_error)),
+    }));
+  }
   const referenceResults = costs?.reference_results || null;
   const simulated = costs?.costs || {};
   if (!referenceResults || !Object.keys(referenceResults).length) return [];
@@ -20,15 +26,7 @@ function buildReferenceRows(fit, costs) {
       referenceValue === 0 || simulatedValue == null || referenceValue == null
         ? null
         : ((simulatedValue - referenceValue) / referenceValue) * 100;
-    const absPct = percentageError == null ? null : Math.abs(percentageError);
-    const status =
-      absPct == null
-        ? 'sem_referencia'
-        : absPct <= 3
-          ? 'OK'
-          : absPct <= 10
-            ? 'atenção'
-            : 'alto_desvio';
+    const status = classifyReconciliationPct(percentageError);
     return {
       metric,
       reference: referenceValue,
@@ -90,6 +88,6 @@ export function buildCalibrationWarnings(fit, costs = null) {
         ];
   }
   return rows
-    .filter((r) => String(r.status || '').toLowerCase() !== 'ok')
+    .filter((r) => r.status !== 'aligned')
     .map((r) => `${r.metric}: erro ${r.percentage_error}%`);
 }

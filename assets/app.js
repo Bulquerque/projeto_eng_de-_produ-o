@@ -509,7 +509,7 @@ function renderSheetInventory() {
 const manualChecks = [
   { id: 'empresa1_dados', label: 'Cliquei em Empresa 1 e vi demanda, distância e premissas', detail: 'Empresa 1 deve mostrar somente os datasets dela.' },
   { id: 'empresa2_dados', label: 'Cliquei em Empresa 2 e vi os datasets da planilha de malha', detail: 'Empresa 2 deve mostrar custos, estoque, faturamento, tributário e cenários.' },
-  { id: 'sem_mistura_1', label: 'Confirmei que Empresa 1 não mostra dados da Empresa 2', detail: 'Não pode aparecer faturamento_uf, estoque ou dados_tributario na Empresa 1.' },
+  { id: 'sem_mistura_1', label: 'Confirmei a separação dos datasets das empresas', detail: 'Empresa 1 não exibe faturamento_uf, estoque ou dados_tributario da Empresa 2. A única premissa cruzada é o proxy de taxa de transferência, declarado na Fase 3.' },
   { id: 'sem_mistura_2', label: 'Confirmei que Empresa 2 não mostra dados da Empresa 1', detail: 'Não pode aparecer demand_records ou distance_matrix como core da Empresa 2.' },
   { id: 'paths_zero', label: 'Conferi que não há paths faltantes', detail: 'O painel de auditoria deve mostrar 0 caminhos faltantes.' },
   { id: 'cenario_blocos', label: 'Conferi que Cenários da Empresa 2 aparece como bloco especial', detail: 'Deve existir scenario_blocks e scenario_totals nos datasets.' },
@@ -585,8 +585,8 @@ function runPhase1Checks() {
     },
     {
       id: 'no_company_mixing',
-      label: 'Empresas não estão misturadas no catálogo',
-      detail: 'Empresa 1 não deve ter dados_tributario; Empresa 2 não deve ter demand_records.',
+      label: 'Datasets das empresas estão separados no catálogo',
+      detail: 'Empresa 1 não tem dados_tributario; Empresa 2 não tem demand_records. O proxy cruzado de transferência é uma premissa explícita fora do catálogo.',
       pass: !e1Ids.has('dados_tributario') && !e2Ids.has('demand_records')
     },
     {

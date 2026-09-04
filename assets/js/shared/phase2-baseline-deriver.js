@@ -128,7 +128,7 @@ function refreshEmpresa1ModelMetadata(bundle) {
     metadata: {
       ...currentMetadata,
       methodology:
-        'Baseline da Empresa 1 recalculado em runtime com matriz de distância, proxy quilométrico de transferência e referência tributária oficial. O pacote bruto é mantido em phase2_raw para auditoria.',
+        'Baseline da Empresa 1 recalculado em runtime com matriz de distância, proxy quilométrico de transferência e impacto tributário parametrizado por referências oficiais. A camada tributária não constitui validação fiscal. O pacote bruto é mantido em phase2_raw para auditoria.',
       derived_baseline: {
         active: true,
         preserves_raw_snapshot: true,

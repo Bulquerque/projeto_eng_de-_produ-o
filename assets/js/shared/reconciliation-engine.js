@@ -1,13 +1,15 @@
+import { MODEL_ASSUMPTIONS } from './model-assumptions.js';
+
 function n(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function classifyPct(value) {
+export function classifyReconciliationPct(value) {
   if (value == null) return 'pending';
   const absPct = Math.abs(value);
-  if (absPct <= 3) return 'aligned';
-  if (absPct <= 10) return 'tolerable';
+  if (absPct <= MODEL_ASSUMPTIONS.reconciliation.aligned_max_abs_error_pct) return 'aligned';
+  if (absPct <= MODEL_ASSUMPTIONS.reconciliation.tolerable_max_abs_error_pct) return 'tolerable';
   return 'divergent';
 }
 
@@ -30,7 +32,7 @@ function buildMetricRows(simulated = {}, referenceResults = {}) {
       simulated: simulatedValue,
       absolute_error: absoluteError,
       percentage_error: percentageError,
-      status: classifyPct(percentageError),
+      status: classifyReconciliationPct(percentageError),
     };
   });
 }
@@ -62,12 +64,20 @@ function buildOperationalReconciliation(bundle) {
   const rows = buildMetricRows(simulated, referenceResults || {});
   const summary = summarizeRows(rows);
   const available = rows.length > 0;
-  const status = !available ? 'pending' : summary.divergent_metrics > 0 ? 'partial' : 'aligned';
-  const label = !available
-    ? 'reconciliaçao operacional pendente'
+  const status = !available
+    ? 'pending'
     : summary.divergent_metrics > 0
-      ? 'reconciliaçao operacional parcial'
-      : 'reconciliaçao operacional alinhada';
+      ? 'divergent'
+      : summary.tolerable_metrics > 0
+        ? 'tolerable'
+        : 'aligned';
+  const label = !available
+    ? 'reconciliação operacional pendente'
+    : status === 'divergent'
+      ? 'reconciliação operacional divergente'
+      : status === 'tolerable'
+        ? 'reconciliação operacional tolerável'
+        : 'reconciliação operacional alinhada';
 
   return {
     status,
@@ -92,20 +102,28 @@ function buildTaxReconciliation(bundle) {
   if (!recon) {
     return {
       status: 'pending',
-      label: 'reconciliaçao tributaria pendente',
-      source: 'Sem reconciliacao tributaria disponivel.',
+      label: 'reconciliação tributária pendente',
+      source: 'Sem reconciliação tributária disponível.',
       summary: null,
       warnings: ['Reconciliação tributaria ausente.'],
     };
   }
+  const rawStatus = recon.status || 'pending';
+  const status =
+    rawStatus === 'within_tolerance' || rawStatus === 'aligned'
+      ? 'aligned'
+      : rawStatus === 'divergent'
+        ? 'divergent'
+        : 'pending';
   return {
-    status: recon.status || 'pending',
+    status,
+    raw_status: rawStatus,
     label:
-      recon.status === 'within_tolerance'
-        ? 'reconciliaçao tributaria alinhada'
+      status === 'aligned'
+        ? 'reconciliação tributária alinhada'
         : recon.status === 'divergent'
-          ? 'reconciliaçao tributaria divergente'
-          : 'reconciliaçao tributaria pendente',
+          ? 'reconciliação tributária divergente'
+          : 'reconciliação tributária pendente',
     source: 'dados_tributario / scenario_totals',
     summary: recon,
     warnings: recon.warning ? [recon.warning] : [],
@@ -118,21 +136,18 @@ function buildOverallStatus(operational, tax, baseFit) {
     tax.status === 'pending' &&
     baseFit?.status === 'benchmark_pending'
   ) {
-    return { status: 'pending', label: 'reconciliaçao plena pendente' };
+    return { status: 'pending', label: 'reconciliação plena pendente' };
   }
-  if (operational.status === 'aligned' && tax.status === 'within_tolerance') {
-    return { status: 'fully_reconciled', label: 'reconciliaçao plena' };
+  if (operational.status === 'aligned' && tax.status === 'aligned') {
+    return { status: 'aligned', label: 'reconciliação plena alinhada' };
   }
-  if (operational.status === 'aligned' && tax.status === 'divergent') {
-    return {
-      status: 'partial_tax_divergence',
-      label: 'reconciliaçao operacional completa com divergencia tributaria',
-    };
+  if (operational.status === 'divergent' || tax.status === 'divergent') {
+    return { status: 'divergent', label: 'reconciliação divergente' };
   }
-  if (operational.status === 'partial' || tax.status === 'divergent') {
-    return { status: 'partial', label: 'reconciliaçao parcial' };
+  if (operational.status === 'tolerable') {
+    return { status: 'tolerable', label: 'reconciliação tolerável' };
   }
-  return { status: 'pending', label: 'reconciliaçao pendente' };
+  return { status: 'pending', label: 'reconciliação pendente' };
 }
 
 export function buildBundleReconciliation(bundle = {}) {
