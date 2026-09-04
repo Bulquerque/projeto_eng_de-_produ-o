@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { buildScenarioFromForm } from '../../assets/js/phase3/scenario-builder.js';
 import { validateScenario } from '../../assets/js/phase3/scenario-validator.js';
 import { runScenario } from '../../assets/js/phase3/scenario-simulator.js';
+import { runMonteCarloSimulation } from '../../assets/js/phase3/monte-carlo-engine.js';
 import {
   exportScenarioJson,
   parseImportedScenario,
@@ -15,6 +16,8 @@ import { buildObjective } from '../../assets/js/phase4/objective-builder.js';
 import { validateObjective } from '../../assets/js/phase4/objective-validator.js';
 import { validateConstraintConfig } from '../../assets/js/phase4/constraint-engine.js';
 import { runOptimization } from '../../assets/js/phase4/scenario-optimizer.js';
+import { normalizeMetrics } from '../../assets/js/phase4/metric-normalizer.js';
+import { scoreScenarios } from '../../assets/js/phase4/scenario-scoring.js';
 import {
   compareExactRanking,
   buildBaselineScenario,
@@ -31,6 +34,9 @@ import { calculateRobustness } from '../../assets/js/phase5/robustness-scorer.js
 import { buildAuditTrail, validateAuditTrail } from '../../assets/js/phase5/audit-trail-engine.js';
 import { buildExportPackage } from '../../assets/js/phase5/export-center.js';
 import { runFinalQAChecks } from '../../assets/js/phase5/final-qa-checker.js';
+import { MODEL_ASSUMPTIONS } from '../../assets/js/shared/model-assumptions.js';
+import { recomputePhase2Baseline } from '../../assets/js/shared/phase2-baseline-deriver.js';
+import { buildBundleReconciliation } from '../../assets/js/shared/reconciliation-engine.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -42,7 +48,12 @@ function readPassword() {
   if (fs.existsSync(envPath)) {
     for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
       if (line.startsWith('VISAGIO_DATA_PASSWORD=')) {
-        return line.split('=').slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
+        return line
+          .split('=')
+          .slice(1)
+          .join('=')
+          .trim()
+          .replace(/^['"]|['"]$/g, '');
       }
     }
   }
@@ -50,7 +61,9 @@ function readPassword() {
 }
 
 function decryptJson(relPath) {
-  const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'encrypted_manifest.json'), 'utf8'));
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'data', 'encrypted_manifest.json'), 'utf8')
+  );
   const entry = manifest.entries.find((item) => item.original_path === relPath);
   if (!entry) throw new Error(`missing encrypted entry ${relPath}`);
   const envelope = JSON.parse(fs.readFileSync(path.join(ROOT, entry.encrypted_path), 'utf8'));
@@ -67,7 +80,39 @@ function decryptJson(relPath) {
   const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(envelope.iv, 'base64'));
   decipher.setAAD(Buffer.from(relPath, 'utf8'));
   decipher.setAuthTag(tag);
-  return JSON.parse(Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8'));
+  return JSON.parse(
+    Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8')
+  );
+}
+
+function readJson(relPath) {
+  return JSON.parse(fs.readFileSync(path.join(ROOT, relPath), 'utf8'));
+}
+
+function loadRuntimeBundle(companyId) {
+  const bundle = decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
+  bundle.core_data = bundle.core_data || {};
+  if (companyId === 'empresa1') {
+    bundle.core_data.distance_matrix = decryptJson('data/empresa1/core/distance_matrix.json');
+    bundle.core_data.aux_custo_transferencia = decryptJson(
+      'data/empresa2/core/aux_custo_transferencia.json'
+    );
+    bundle.core_data.tax_data = readJson(
+      'data/complements/shared/tax_reference/icms_interstate_matrix.json'
+    );
+  } else {
+    bundle.core_data.lat_long = decryptJson('data/empresa2/core/lat_long.json');
+    bundle.core_data.rotas_mapa = decryptJson('data/empresa2/core/rotas_mapa.json');
+    bundle.core_data.tax_data = decryptJson('data/empresa2/core/dados_tributario.json');
+    bundle.core_data.tabelas_cif_dist = decryptJson('data/empresa2/core/tabelas_cif_dist.json');
+    bundle.core_data.aux_custo_transferencia = decryptJson(
+      'data/empresa2/core/aux_custo_transferencia.json'
+    );
+    bundle.core_data.aux_custo_armazenagem = decryptJson(
+      'data/empresa2/core/aux_custo_armazenagem.json'
+    );
+  }
+  return recomputePhase2Baseline(bundle, companyId);
 }
 
 function ensure(condition, message, details = null) {
@@ -141,7 +186,9 @@ function validateAndRunScenario({ companyId, baselineBundle, scenario, expectVal
     finiteNumber(run.costs?.tax_impact, 'tax_impact');
     ensure(
       Math.abs(
-        Number(run.costs.total_logistics_cost) + Number(run.costs.tax_impact) - Number(run.total_with_tax)
+        Number(run.costs.total_logistics_cost) +
+          Number(run.costs.tax_impact) -
+          Number(run.total_with_tax)
       ) < 0.1,
       'totais do cenário não fecham',
       {
@@ -168,7 +215,10 @@ function validateAndRunScenario({ companyId, baselineBundle, scenario, expectVal
 }
 
 function hasMessage(messages, pattern) {
-  const text = messages.map((msg) => String(msg?.message || msg)).join(' | ').toLowerCase();
+  const text = messages
+    .map((msg) => String(msg?.message || msg))
+    .join(' | ')
+    .toLowerCase();
   return text.includes(pattern.toLowerCase());
 }
 
@@ -196,7 +246,7 @@ function monotonicNonDecreasing(values, label, meta) {
 }
 
 async function runPhaseCompanyAudit(companyId) {
-  const baselineBundle = decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
+  const baselineBundle = loadRuntimeBundle(companyId);
   const companyReport = {
     company_id: companyId,
     phase2: {},
@@ -214,10 +264,14 @@ async function runPhaseCompanyAudit(companyId) {
   ensure(baselineBundle?.model?.baseline_ready === true, 'baseline deveria estar pronto', {
     companyId,
   });
-  ensure(baselineBundle?.base_fit?.status === 'benchmark_pending', 'Base Fit não deveria ser inventado', {
-    companyId,
-    base_fit: baselineBundle?.base_fit,
-  });
+  ensure(
+    baselineBundle?.base_fit?.status === 'benchmark_pending',
+    'Base Fit não deveria ser inventado',
+    {
+      companyId,
+      base_fit: baselineBundle?.base_fit,
+    }
+  );
   ensure(
     baselineBundle?.base_fit?.base_fit_score === null ||
       baselineBundle?.base_fit?.base_fit_score === undefined,
@@ -242,7 +296,11 @@ async function runPhaseCompanyAudit(companyId) {
   );
 
   const baselineScenario = buildBaselineScenario(companyId, baselineBundle);
-  const baselineValidation = validateScenario({ companyId, scenario: baselineScenario, baselineBundle });
+  const baselineValidation = validateScenario({
+    companyId,
+    scenario: baselineScenario,
+    baselineBundle,
+  });
   const baselineRun = runScenario({ companyId, scenario: baselineScenario, baselineBundle });
   ensure(baselineValidation.valid, 'baseline deveria ser válido', {
     companyId,
@@ -253,6 +311,25 @@ async function runPhaseCompanyAudit(companyId) {
     simulation_status: baselineRun.simulation_status,
     errors: baselineRun.errors,
   });
+  ensure(
+    Math.abs(
+      Number(baselineRun.total_with_tax) - Number(baselineBundle.costs.costs.total_with_tax)
+    ) < 0.1,
+    'execução do baseline deve reproduzir o total apresentado pela aplicação',
+    {
+      companyId,
+      runtime_bundle_total: baselineBundle.costs.costs.total_with_tax,
+      baseline_run_total: baselineRun.total_with_tax,
+      baseline_flow_summary: baselineRun.flow_summary,
+      baseline_cd_normalization: baselineRun.flows.map((flow, index) => ({
+        source_cd: baselineBundle.flows[index]?.cd,
+        source_origin: baselineBundle.flows[index]?.origin,
+        rebuilt_cd: flow.cd,
+      })),
+      runtime_bundle_components: baselineBundle.costs.costs,
+      baseline_run_components: baselineRun.costs,
+    }
+  );
 
   companyReport.phase2 = {
     active_cds: baselineBundle.model.active_cds.length,
@@ -262,7 +339,18 @@ async function runPhaseCompanyAudit(companyId) {
     tax_impact: baselineBundle.costs.costs.tax_impact,
     base_fit_status: baselineBundle.base_fit.status,
     base_fit_score: baselineBundle.base_fit.base_fit_score,
+    operational_reference_results: baselineBundle.costs?.reference_results || null,
+    source_tax_reconciliation:
+      baselineBundle.tax_results?.tax_reconciliation ||
+      baselineBundle.tax_results?.tax_results?.tax_reconciliation ||
+      null,
+    reconciliation: buildBundleReconciliation(baselineBundle),
   };
+  if (companyId === 'empresa2') {
+    companyReport.phase2.workbook_scenario_totals = decryptJson(
+      'data/empresa2/core/scenario_totals.json'
+    );
+  }
 
   const invalidCases = [
     {
@@ -375,10 +463,7 @@ async function runPhaseCompanyAudit(companyId) {
   }
 
   const activeCds = baselineBundle.model.active_cds || [];
-  const activeSets = uniqueSets([
-    activeCds,
-    [activeCds[0]],
-  ]);
+  const activeSets = uniqueSets([activeCds, [activeCds[0]]]);
   const freightValues = [0.85, 1, 1.15];
   const demandValues = [0.9, 1, 1.1];
   const inventoryValues = [30, 45, 60];
@@ -423,7 +508,9 @@ async function runPhaseCompanyAudit(companyId) {
       finiteNumber(run.costs?.total_logistics_cost, `${variable} total_logistics_cost`);
       ensure(
         Math.abs(
-          Number(run.costs.total_logistics_cost) + Number(run.costs.tax_impact) - Number(run.total_with_tax)
+          Number(run.costs.total_logistics_cost) +
+            Number(run.costs.tax_impact) -
+            Number(run.total_with_tax)
         ) < 0.1,
         `sweep de ${variable} não fecha`,
         { companyId, variable, value, run }
@@ -618,22 +705,95 @@ async function runPhaseCompanyAudit(companyId) {
   }
   ensure(invalidJsonRejected, 'JSON corrompido deveria ser rejeitado', { companyId });
   ensure(
-    !validateImportedScenario(companyId === 'empresa1' ? 'empresa2' : 'empresa1', parsedScenario).valid,
+    !validateImportedScenario(companyId === 'empresa1' ? 'empresa2' : 'empresa1', parsedScenario)
+      .valid,
     'cenário importado deveria rejeitar empresa errada',
     { companyId }
+  );
+  const baselineTotalForSamples = Number(baselineBundle.costs.costs.total_with_tax);
+  const sampleResults = decryptJson(`data/${companyId}/phase3/sample_scenarios.json`).map(
+    (sampleScenario) => {
+      const sampleRun = runScenario({ companyId, scenario: sampleScenario, baselineBundle });
+      ensure(sampleRun.simulation_status === 'success', 'cenário amostral deveria simular', {
+        companyId,
+        scenario_id: sampleScenario.scenario_id,
+        errors: sampleRun.errors,
+      });
+      const total = Number(sampleRun.total_with_tax);
+      return {
+        scenario_id: sampleScenario.scenario_id,
+        scenario_name: sampleScenario.scenario_name,
+        active_cds_count: sampleScenario.changes?.active_cds?.length ?? null,
+        changes: sampleScenario.changes,
+        total_with_tax: total,
+        saving_abs: baselineTotalForSamples - total,
+        saving_pct: baselineTotalForSamples
+          ? ((baselineTotalForSamples - total) / baselineTotalForSamples) * 100
+          : null,
+        cost_components: {
+          transfer_cost: sampleRun.costs?.transfer_cost ?? null,
+          distribution_cost: sampleRun.costs?.distribution_cost ?? null,
+          storage_cost: sampleRun.costs?.storage_cost ?? null,
+          inventory_cost: sampleRun.costs?.inventory_cost ?? null,
+          tax_impact: sampleRun.costs?.tax_impact ?? null,
+          total_logistics_cost: sampleRun.costs?.total_logistics_cost ?? null,
+          total_with_tax: sampleRun.costs?.total_with_tax ?? null,
+        },
+        inventory_calculation_mode: sampleRun.costs?.inventory_calculation_mode ?? null,
+        fallback_usage: sampleRun.costs?.fallback_usage ?? null,
+        warnings: sampleRun.warnings,
+      };
+    }
   );
   companyReport.phase3 = {
     export_roundtrip_ok: true,
     invalid_json_rejected: true,
     foreign_company_rejected: true,
     scenario_id: exportScenario.scenario_id,
+    sample_results: sampleResults,
   };
 
   const validProfiles = [
-    { name: 'balanced', weights: { total_cost: 30, service_quality: 25, operational_risk: 20, tax_impact: 15, inventory_efficiency: 10 } },
-    { name: 'cost_heavy', weights: { total_cost: 80, service_quality: 5, operational_risk: 5, tax_impact: 5, inventory_efficiency: 5 } },
-    { name: 'service_heavy', weights: { total_cost: 10, service_quality: 60, operational_risk: 10, tax_impact: 10, inventory_efficiency: 10 } },
-    { name: 'risk_heavy', weights: { total_cost: 20, service_quality: 10, operational_risk: 50, tax_impact: 10, inventory_efficiency: 10 } },
+    {
+      name: 'balanced',
+      weights: {
+        total_cost: 30,
+        service_quality: 25,
+        operational_risk: 20,
+        tax_impact: 15,
+        inventory_efficiency: 10,
+      },
+    },
+    {
+      name: 'cost_heavy',
+      weights: {
+        total_cost: 80,
+        service_quality: 5,
+        operational_risk: 5,
+        tax_impact: 5,
+        inventory_efficiency: 5,
+      },
+    },
+    {
+      name: 'service_heavy',
+      weights: {
+        total_cost: 10,
+        service_quality: 60,
+        operational_risk: 10,
+        tax_impact: 10,
+        inventory_efficiency: 10,
+      },
+    },
+    {
+      name: 'risk_heavy',
+      weights: {
+        total_cost: 20,
+        service_quality: 10,
+        operational_risk: 50,
+        tax_impact: 10,
+        inventory_efficiency: 10,
+      },
+    },
   ];
   for (const profile of validProfiles) {
     const objective = buildObjective({
@@ -654,7 +814,13 @@ async function runPhaseCompanyAudit(companyId) {
       objective: buildObjective({
         companyId,
         objectiveName: 'negative_weight',
-        weights: { total_cost: -1, service_quality: 25, operational_risk: 25, tax_impact: 25, inventory_efficiency: 26 },
+        weights: {
+          total_cost: -1,
+          service_quality: 25,
+          operational_risk: 25,
+          tax_impact: 25,
+          inventory_efficiency: 26,
+        },
       }),
       expected: 'negativo',
     },
@@ -672,7 +838,13 @@ async function runPhaseCompanyAudit(companyId) {
       objective: buildObjective({
         companyId,
         objectiveName: 'all_zero',
-        weights: { total_cost: 0, service_quality: 0, operational_risk: 0, tax_impact: 0, inventory_efficiency: 0 },
+        weights: {
+          total_cost: 0,
+          service_quality: 0,
+          operational_risk: 0,
+          tax_impact: 0,
+          inventory_efficiency: 0,
+        },
       }),
       expected: 'zerados',
     },
@@ -693,7 +865,13 @@ async function runPhaseCompanyAudit(companyId) {
   const selectedObjective = buildObjective({
     companyId,
     objectiveName: 'prova_bala',
-    weights: { total_cost: 30, service_quality: 25, operational_risk: 20, tax_impact: 15, inventory_efficiency: 10 },
+    weights: {
+      total_cost: 30,
+      service_quality: 25,
+      operational_risk: 20,
+      tax_impact: 15,
+      inventory_efficiency: 10,
+    },
   });
   const constraintValidation = validateConstraintConfig({
     min_active_cds: 1,
@@ -702,13 +880,21 @@ async function runPhaseCompanyAudit(companyId) {
     max_risk_level: 'high',
     allow_tax_disabled: true,
   });
-  ensure(constraintValidation.valid, 'constraint config válida deveria passar', constraintValidation);
+  ensure(
+    constraintValidation.valid,
+    'constraint config válida deveria passar',
+    constraintValidation
+  );
   const invalidConstraintValidation = validateConstraintConfig({
     min_active_cds: 3,
     max_active_cds: 1,
     max_cd_volume_share: 0,
   });
-  ensure(!invalidConstraintValidation.valid, 'constraint config inválida deveria falhar', invalidConstraintValidation);
+  ensure(
+    !invalidConstraintValidation.valid,
+    'constraint config inválida deveria falhar',
+    invalidConstraintValidation
+  );
 
   const optimization1 = runOptimization({
     companyId,
@@ -766,6 +952,171 @@ async function runPhaseCompanyAudit(companyId) {
       best2: optimization2.best_scenarios[0]?.scenario_id,
     }
   );
+  const comparableBaseline = optimization1.baseline_reference?.result;
+  ensure(
+    comparableBaseline?.simulation_status === 'success' && comparableBaseline?.total_with_tax > 0,
+    'otimizador deveria expor baseline comparável válido',
+    { companyId, baseline_reference: optimization1.baseline_reference }
+  );
+  ensure(
+    optimization1.baseline_reference?.comparison_basis === 'same_tax_regime',
+    'base da otimização deveria usar o mesmo regime fiscal',
+    { companyId, baseline_reference: optimization1.baseline_reference }
+  );
+  for (const record of optimization1.scenario_records) {
+    ensure(
+      record.result?.tax_results?.tax_regime === comparableBaseline.tax_results?.tax_regime,
+      'candidato e baseline comparável devem usar o mesmo regime tributário',
+      {
+        companyId,
+        scenario_id: record.result?.scenario_id,
+        candidate_regime: record.result?.tax_results?.tax_regime,
+        baseline_regime: comparableBaseline.tax_results?.tax_regime,
+      }
+    );
+    const expectedSaving = comparableBaseline.total_with_tax - record.result.total_with_tax;
+    ensure(
+      Math.abs(expectedSaving - record.result.saving_abs) < 0.01,
+      'saving do candidato deve usar o baseline comparável',
+      {
+        companyId,
+        scenario_id: record.result?.scenario_id,
+        expected_saving: expectedSaving,
+        reported_saving: record.result?.saving_abs,
+      }
+    );
+  }
+
+  const profileLabels = {
+    cost_minimum: 'custo mínimo',
+    balanced: 'equilibrado',
+    conservative: 'conservador',
+    quality_service: 'qualidade/serviço',
+  };
+  const recordById = new Map(
+    optimization1.scenario_records.map((record) => [record.result.scenario_id, record])
+  );
+  const profileStressCases = buildStressCaseLibrary({ companyId }).stress_cases;
+  const objectiveProfileResults = [];
+  for (const [profileId, weights] of Object.entries(MODEL_ASSUMPTIONS.scoring.objective_profiles)) {
+    const profileObjective = buildObjective({
+      companyId,
+      objectiveName: profileLabels[profileId],
+      weights,
+    });
+    const rescored = scoreScenarios({
+      companyId,
+      objective: profileObjective,
+      normalizedMetrics: optimization1.normalized.normalized_metrics,
+    });
+    const winner = rescored.scored_scenarios
+      .map((score) => {
+        const record = recordById.get(score.scenario_id);
+        return {
+          ...score,
+          scenario: record?.scenario,
+          result: record?.result,
+          quality: record?.quality,
+        };
+      })
+      .sort(compareExactRanking)[0];
+    ensure(winner?.result, `perfil ${profileId} não produziu vencedor auditável`, {
+      companyId,
+      profileId,
+    });
+    const profileStress = runStressTests({
+      companyId,
+      selectedScenario: winner.scenario,
+      baselineBundle,
+      baselineResult: comparableBaseline,
+      stressCases: profileStressCases,
+    });
+    const profileRobustness = calculateRobustness({
+      companyId,
+      scenarioId: winner.scenario_id,
+      stressResults: profileStress.stress_results,
+      quality: winner.quality,
+    });
+    const baselineTotal = Number(comparableBaseline.total_with_tax);
+    const total = Number(winner.result.total_with_tax);
+    objectiveProfileResults.push({
+      profile_id: profileId,
+      profile: profileLabels[profileId],
+      weights,
+      winner_scenario_id: winner.scenario_id,
+      winner_scenario_name: winner.scenario_name,
+      final_score: winner.final_score,
+      active_cds_count: winner.scenario?.changes?.active_cds?.length ?? null,
+      active_cds: winner.scenario?.changes?.active_cds || [],
+      closed_cds: winner.scenario?.changes?.closed_cds || [],
+      total_with_tax: total,
+      saving_abs: baselineTotal - total,
+      saving_pct: baselineTotal ? ((baselineTotal - total) / baselineTotal) * 100 : null,
+      max_cd_volume_share: winner.quality?.quality_metrics?.max_cd_volume_share ?? null,
+      risk_level: winner.quality?.risk_level ?? null,
+      robustness_score: profileRobustness.robustness_score,
+      cost_components: {
+        transfer_cost: winner.result.costs?.transfer_cost ?? null,
+        distribution_cost: winner.result.costs?.distribution_cost ?? null,
+        storage_cost: winner.result.costs?.storage_cost ?? null,
+        inventory_cost: winner.result.costs?.inventory_cost ?? null,
+        tax_impact: winner.result.costs?.tax_impact ?? null,
+        total_logistics_cost: winner.result.costs?.total_logistics_cost ?? null,
+        total_with_tax: winner.result.costs?.total_with_tax ?? null,
+      },
+      fallback_usage: winner.result.costs?.fallback_usage ?? null,
+      transfer_proxy_sensitivity: winner.result.costs?.transfer_proxy_sensitivity ?? null,
+      inventory_calculation_mode: winner.result.costs?.inventory_calculation_mode ?? null,
+    });
+  }
+  const balancedWinnerId = objectiveProfileResults.find(
+    (row) => row.profile_id === 'balanced'
+  )?.winner_scenario_id;
+  const balancedWinnerRecord = recordById.get(balancedWinnerId);
+  const exploratoryMonteCarlo = runMonteCarloSimulation({
+    companyId,
+    selectedScenario: balancedWinnerRecord?.scenario,
+    baselineBundle,
+    baselineResult: comparableBaseline,
+    deterministicResult: balancedWinnerRecord?.result,
+    iterations: MODEL_ASSUMPTIONS.monte_carlo.default_iterations,
+    seed: MODEL_ASSUMPTIONS.monte_carlo.default_seed,
+    config: { profile: 'balanced' },
+  });
+  ensure(
+    exploratoryMonteCarlo.monte_carlo_status === 'success',
+    'Monte Carlo exploratório do vencedor equilibrado deveria executar',
+    { companyId, errors: exploratoryMonteCarlo.errors }
+  );
+
+  const candidateMetrics = optimization1.metrics.scenario_metrics;
+  const removableCandidate = [...candidateMetrics].sort(
+    (a, b) => Number(b.total_cost) - Number(a.total_cost)
+  )[0];
+  const reducedCandidateMetrics = candidateMetrics.filter(
+    (row) => row.scenario_id !== removableCandidate?.scenario_id
+  );
+  const balancedObjective = buildObjective({
+    companyId,
+    objectiveName: 'equilibrado — sensibilidade do conjunto',
+    weights: MODEL_ASSUMPTIONS.scoring.objective_profiles.balanced,
+  });
+  const fullCandidateOnlyRanking = scoreScenarios({
+    companyId,
+    objective: balancedObjective,
+    normalizedMetrics: normalizeMetrics({
+      companyId,
+      scenarioMetrics: candidateMetrics,
+    }).normalized_metrics,
+  });
+  const reducedCandidateOnlyRanking = scoreScenarios({
+    companyId,
+    objective: balancedObjective,
+    normalizedMetrics: normalizeMetrics({
+      companyId,
+      scenarioMetrics: reducedCandidateMetrics,
+    }).normalized_metrics,
+  });
   const invalidOptimization = runOptimization({
     companyId,
     baselineBundle,
@@ -821,36 +1172,78 @@ async function runPhaseCompanyAudit(companyId) {
     limitedPool
   );
   ensure(
-    String((limitedPool.warnings || []).join(' ')).toLowerCase().includes('top-10'),
+    String((limitedPool.warnings || []).join(' '))
+      .toLowerCase()
+      .includes('top-10'),
     'aviso de top-10 deveria aparecer',
     limitedPool
   );
 
   ensure(
     compareExactRanking(
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'medium', quality_score: 80 }, scenario_id: 'a' },
-      { final_score: 90, result: { total_with_tax: 110 }, quality: { risk_level: 'medium', quality_score: 80 }, scenario_id: 'b' }
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'medium', quality_score: 80 },
+        scenario_id: 'a',
+      },
+      {
+        final_score: 90,
+        result: { total_with_tax: 110 },
+        quality: { risk_level: 'medium', quality_score: 80 },
+        scenario_id: 'b',
+      }
     ) < 0,
     'tie-break por custo deveria favorecer menor total'
   );
   ensure(
     compareExactRanking(
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'low', quality_score: 80 }, scenario_id: 'a' },
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'high', quality_score: 80 }, scenario_id: 'b' }
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'low', quality_score: 80 },
+        scenario_id: 'a',
+      },
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'high', quality_score: 80 },
+        scenario_id: 'b',
+      }
     ) < 0,
     'tie-break por risco deveria favorecer menor risco'
   );
   ensure(
     compareExactRanking(
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'medium', quality_score: 90 }, scenario_id: 'a' },
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'medium', quality_score: 70 }, scenario_id: 'b' }
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'medium', quality_score: 90 },
+        scenario_id: 'a',
+      },
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'medium', quality_score: 70 },
+        scenario_id: 'b',
+      }
     ) < 0,
     'tie-break por qualidade deveria favorecer maior quality_score'
   );
   ensure(
     compareExactRanking(
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'medium', quality_score: 80 }, scenario_id: 'a' },
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'medium', quality_score: 80 }, scenario_id: 'b' }
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'medium', quality_score: 80 },
+        scenario_id: 'a',
+      },
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'medium', quality_score: 80 },
+        scenario_id: 'b',
+      }
     ) < 0,
     'tie-break final deveria favorecer scenario_id lexicograficamente menor'
   );
@@ -861,6 +1254,35 @@ async function runPhaseCompanyAudit(companyId) {
     optimization_status: optimization1.optimizer_status,
     optimization_deterministic_ok: true,
     valid_optimization_best_id: optimization1.best_scenarios[0]?.scenario_id || null,
+    comparison_baseline: {
+      scenario_id: comparableBaseline.scenario_id,
+      total_with_tax: comparableBaseline.total_with_tax,
+      total_logistics_cost: comparableBaseline.costs?.total_logistics_cost,
+      tax_impact: comparableBaseline.costs?.tax_impact,
+      tax_mode: comparableBaseline.tax_results?.tax_mode,
+      tax_regime: comparableBaseline.tax_results?.tax_regime,
+      comparison_basis: optimization1.baseline_reference?.comparison_basis,
+    },
+    objective_profile_results: objectiveProfileResults,
+    winner_changes_across_profiles:
+      new Set(objectiveProfileResults.map((row) => row.winner_scenario_id)).size > 1,
+    candidate_set_sensitivity: {
+      normalization: 'min_max_by_candidate_set',
+      removed_scenario_id: removableCandidate?.scenario_id || null,
+      full_winner_scenario_id: fullCandidateOnlyRanking.scored_scenarios[0]?.scenario_id || null,
+      reduced_winner_scenario_id:
+        reducedCandidateOnlyRanking.scored_scenarios[0]?.scenario_id || null,
+      winner_changed:
+        fullCandidateOnlyRanking.scored_scenarios[0]?.scenario_id !==
+        reducedCandidateOnlyRanking.scored_scenarios[0]?.scenario_id,
+    },
+    monte_carlo_exploratory: {
+      config: exploratoryMonteCarlo.config,
+      methodology: exploratoryMonteCarlo.methodology,
+      summary: exploratoryMonteCarlo.summary,
+      invalid_sample_count: exploratoryMonteCarlo.invalid_sample_count,
+      warning: 'Camada exploratória; não fundamenta os totais determinísticos reportados.',
+    },
     manual_selection_full_ok: true,
     manual_selection_limited_warned: true,
   };
@@ -884,7 +1306,11 @@ async function runPhaseCompanyAudit(companyId) {
     companyId,
     stressProfile: 'conservative',
   });
-  ensure(stressLibrary.stress_cases.length >= 7, 'stress library deveria ter casos suficientes', stressLibrary);
+  ensure(
+    stressLibrary.stress_cases.length >= 7,
+    'stress library deveria ter casos suficientes',
+    stressLibrary
+  );
   ensure(
     conservativeStressLibrary.stress_cases.length > stressLibrary.stress_cases.length,
     'perfil conservador deveria adicionar casos',
@@ -892,10 +1318,13 @@ async function runPhaseCompanyAudit(companyId) {
   );
   const stressed = applyStressCaseToScenario({
     scenario: selectedRawScenario,
-    stressCase: stressLibrary.stress_cases.find((item) => item.case_id === 'frete_mais_20') || stressLibrary.stress_cases[0],
+    stressCase:
+      stressLibrary.stress_cases.find((item) => item.case_id === 'frete_mais_20') ||
+      stressLibrary.stress_cases[0],
   });
   ensure(
-    JSON.stringify(selectedRawScenario) === JSON.stringify(selectedScenario.scenario || selectedRawScenario),
+    JSON.stringify(selectedRawScenario) ===
+      JSON.stringify(selectedScenario.scenario || selectedRawScenario),
     'stress não deveria mutar cenário original',
     { companyId }
   );
@@ -908,6 +1337,7 @@ async function runPhaseCompanyAudit(companyId) {
     companyId,
     selectedScenario: selectedRawScenario,
     baselineBundle,
+    baselineResult: comparableBaseline,
     stressCases: stressLibrary.stress_cases,
   });
   ensure(
@@ -916,9 +1346,21 @@ async function runPhaseCompanyAudit(companyId) {
     stress.summary
   );
   ensure(
-    stress.stress_results.every((result) => Array.isArray(result.warnings) && Array.isArray(result.errors)),
+    stress.stress_results.every(
+      (result) => Array.isArray(result.warnings) && Array.isArray(result.errors)
+    ),
     'stress results deveriam expor warnings/errors como arrays',
     stress.stress_results[0]
+  );
+  ensure(
+    stress.stress_results.every(
+      (result) =>
+        Math.abs(
+          result.saving_vs_baseline - (comparableBaseline.total_with_tax - result.total_with_tax)
+        ) < 0.01
+    ),
+    'stress deveria calcular saving contra o baseline comparável',
+    stress.stress_results
   );
   const stressQuality = calculateRobustness({
     companyId,
@@ -935,6 +1377,7 @@ async function runPhaseCompanyAudit(companyId) {
     companyId,
     selectedScenario: selectedRawScenario,
     baselineBundle,
+    baselineResult: comparableBaseline,
     sensitivityConfig: { variable: 'freight_multiplier', values: [0.9, 1, 1.1] },
   });
   ensure(
@@ -962,6 +1405,7 @@ async function runPhaseCompanyAudit(companyId) {
     companyId,
     selectedScenario: selectedRawScenario,
     baselineBundle,
+    baselineResult: comparableBaseline,
     matrixConfig: {
       xVariable: 'freight_multiplier',
       yVariable: 'demand_multiplier',
@@ -1045,7 +1489,11 @@ async function runPhaseCompanyAudit(companyId) {
     robustness: { robustness_score: 20, alerts: ['custo acima do baseline'] },
     objective: selectedObjective,
   });
-  ensure(recommendationRecommended.recommendation_status === 'recommended', 'recomendação positiva deveria ser recomendada', recommendationRecommended);
+  ensure(
+    recommendationRecommended.recommendation_status === 'recommended',
+    'recomendação positiva deveria ser recomendada',
+    recommendationRecommended
+  );
   ensure(
     recommendationWarning.recommendation_status === 'recommended_with_warnings',
     'recomendação intermediária deveria sair com alertas',
@@ -1067,6 +1515,12 @@ async function runPhaseCompanyAudit(companyId) {
   });
   const auditValidation = validateAuditTrail(audit);
   ensure(auditValidation.valid, 'audit trail deveria ser válido', auditValidation);
+  ensure(
+    audit.comparison_baseline?.total_with_tax === comparableBaseline.total_with_tax &&
+      audit.comparison_baseline?.tax_regime === comparableBaseline.tax_results?.tax_regime,
+    'audit trail deveria registrar total e regime do baseline comparável',
+    audit.comparison_baseline
+  );
   const auditInvalid = validateAuditTrail({ ...audit, data_sources: [] });
   ensure(!auditInvalid.valid, 'audit trail sem fontes deveria ser inválido', auditInvalid);
 
@@ -1096,9 +1550,21 @@ async function runPhaseCompanyAudit(companyId) {
       rows: [],
     },
   });
-  ensure(exportPackage.export_status === 'ready', 'export package deveria ficar pronto', exportPackage);
-  ensure(exportPackage.files.length === 4, 'export package deveria gerar 4 arquivos', exportPackage.files);
-  ensure(exportPackage.files.every((file) => file.content && file.filename), 'export files deveriam ter conteúdo', exportPackage.files);
+  ensure(
+    exportPackage.export_status === 'ready',
+    'export package deveria ficar pronto',
+    exportPackage
+  );
+  ensure(
+    exportPackage.files.length === 4,
+    'export package deveria gerar 4 arquivos',
+    exportPackage.files
+  );
+  ensure(
+    exportPackage.files.every((file) => file.content && file.filename),
+    'export files deveriam ter conteúdo',
+    exportPackage.files
+  );
   ensure(
     exportPackage.files.some((file) => file.filename.endsWith('.json')) &&
       exportPackage.files.some((file) => file.filename.endsWith('.csv')) &&
@@ -1123,10 +1589,20 @@ async function runPhaseCompanyAudit(companyId) {
     recommendation: {},
     audit: {},
   });
-  ensure(qaPass.final_qa_status === 'passed', 'QA final deveria passar com dados completos', qaPass);
-  ensure(qaFail.final_qa_status === 'failed', 'QA final deveria falhar com dados incompletos', qaFail);
+  ensure(
+    qaPass.final_qa_status === 'passed',
+    'QA final deveria passar com dados completos',
+    qaPass
+  );
+  ensure(
+    qaFail.final_qa_status === 'failed',
+    'QA final deveria falhar com dados incompletos',
+    qaFail
+  );
 
   companyReport.phase5 = {
+    comparison_baseline_total_with_tax: comparableBaseline.total_with_tax,
+    comparison_baseline_tax_regime: comparableBaseline.tax_results?.tax_regime,
     stress_case_count: stressLibrary.stress_cases.length,
     conservative_case_count: conservativeStressLibrary.stress_cases.length,
     robustness_score: stressQuality.robustness_score,
@@ -1158,12 +1634,28 @@ async function main() {
   }
   report.summary = {
     companies_tested: report.companies.length,
-    total_freight_monotonic_checks: report.companies.reduce((acc, c) => acc + c.brute_force.freight_monotonic_checks, 0),
-    total_demand_monotonic_checks: report.companies.reduce((acc, c) => acc + c.brute_force.demand_monotonic_checks, 0),
-    total_inventory_monotonic_checks: report.companies.reduce((acc, c) => acc + c.brute_force.inventory_monotonic_checks, 0),
-    total_wacc_monotonic_checks: report.companies.reduce((acc, c) => acc + c.brute_force.wacc_monotonic_checks, 0),
+    total_freight_monotonic_checks: report.companies.reduce(
+      (acc, c) => acc + c.brute_force.freight_monotonic_checks,
+      0
+    ),
+    total_demand_monotonic_checks: report.companies.reduce(
+      (acc, c) => acc + c.brute_force.demand_monotonic_checks,
+      0
+    ),
+    total_inventory_monotonic_checks: report.companies.reduce(
+      (acc, c) => acc + c.brute_force.inventory_monotonic_checks,
+      0
+    ),
+    total_wacc_monotonic_checks: report.companies.reduce(
+      (acc, c) => acc + c.brute_force.wacc_monotonic_checks,
+      0
+    ),
   };
-  fs.writeFileSync(path.join(OUT_DIR, 'logic_report.json'), JSON.stringify(report, null, 2), 'utf8');
+  fs.writeFileSync(
+    path.join(OUT_DIR, 'logic_report.json'),
+    JSON.stringify(report, null, 2),
+    'utf8'
+  );
   process.stdout.write(JSON.stringify(report));
 }
 

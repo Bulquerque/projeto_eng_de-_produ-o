@@ -22,6 +22,7 @@ export function buildAuditTrail({
   const monteCarloEnvelope =
     selectedScenario?.monte_carlo || selectedScenario?.scenario?.monte_carlo || null;
   const selectedResult = selectedScenario?.result || selectedScenario || {};
+  const comparisonBaseline = optimizerResult?.baseline_reference || null;
   const sources = [
     `data/${companyId}/phase2/phase2_bundle.json.enc.json`,
     `data/${companyId}/phase3/sample_scenarios.json.enc.json`,
@@ -33,9 +34,23 @@ export function buildAuditTrail({
     company_id: companyId,
     selected_scenario_id: scenarioId,
     baseline_scenario_id: baselineBundle?.model?.scenario_id,
+    comparison_baseline: comparisonBaseline
+      ? {
+          scenario_id: comparisonBaseline.result?.scenario_id || null,
+          total_with_tax: comparisonBaseline.result?.total_with_tax ?? null,
+          comparison_basis: comparisonBaseline.comparison_basis || 'same_tax_regime',
+          tax_mode:
+            comparisonBaseline.tax_mode || comparisonBaseline.result?.tax_results?.tax_mode || null,
+          tax_regime:
+            comparisonBaseline.tax_regime ||
+            comparisonBaseline.result?.tax_results?.tax_regime ||
+            null,
+        }
+      : null,
     data_sources: sources,
     assumptions: selectedScenario?.scenario?.changes || selectedScenario?.changes || {},
     model_assumptions_version: MODEL_ASSUMPTIONS.version,
+    assumption_catalog: MODEL_ASSUMPTIONS.fallback_catalog,
     fallback_usage: selectedResult?.costs?.fallback_usage || null,
     inventory_calculation_mode:
       selectedResult?.costs?.inventory_calculation_mode || 'days_wacc_only',
@@ -67,6 +82,9 @@ export function buildAuditTrail({
           generated_candidates: searchLog.generated_candidates ?? null,
           valid_candidates: searchLog.valid_candidates ?? null,
           best_scenario_id: searchLog.best_scenario_id || null,
+          comparison_basis: comparisonBaseline?.comparison_basis || null,
+          baseline_total_with_tax: comparisonBaseline?.result?.total_with_tax ?? null,
+          baseline_tax_regime: comparisonBaseline?.tax_regime || null,
         }
       : null,
     model_versions: {

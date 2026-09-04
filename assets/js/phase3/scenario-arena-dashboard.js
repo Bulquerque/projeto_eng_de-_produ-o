@@ -3,7 +3,11 @@ import { loadScenarioLibrary } from './scenario-library.js';
 import { buildScenarioFromForm } from './scenario-builder.js';
 import { validateScenario } from './scenario-validator.js';
 import { runScenario } from './scenario-simulator.js';
-import { compareScenarios, componentDelta } from './scenario-comparator.js';
+import {
+  buildComparableBaselineResult,
+  compareScenarios,
+  componentDelta,
+} from './scenario-comparator.js';
 import { evaluateScenarioQuality } from './scenario-quality-check.js';
 import { explainScenarioChanges } from './scenario-change-explainer.js';
 import {
@@ -127,6 +131,7 @@ const state = {
   library: null,
   currentScenario: null,
   currentResult: null,
+  comparisonBaseline: null,
   comparison: null,
   quality: null,
   explanation: null,
@@ -225,6 +230,7 @@ function logError(msg, error, data = null) {
 function resetAnalysisPanels() {
   state.currentScenario = null;
   state.currentResult = null;
+  state.comparisonBaseline = null;
   state.comparison = null;
   state.quality = null;
   state.explanation = null;
@@ -494,7 +500,11 @@ function renderComponentDeltas() {
     return;
   }
 
-  const deltas = componentDelta(state.library.baselineBundle, state.currentResult);
+  const deltas = componentDelta(
+    state.library.baselineBundle,
+    state.currentResult,
+    state.comparisonBaseline
+  );
   setHtml(
     'componentDeltaPanel',
     deltas
@@ -822,6 +832,7 @@ function runMonteCarloForCurrentScenario({ rerender = true } = {}) {
     companyId: state.companyId,
     selectedScenario: state.currentScenario,
     baselineBundle: state.library.baselineBundle,
+    baselineResult: state.comparisonBaseline,
     deterministicResult: state.currentResult,
     iterations: state.monteCarloConfig.iterations,
     seed: state.monteCarloConfig.seed,
@@ -904,6 +915,7 @@ function runCurrentScenario() {
   if (!validation.valid) {
     state.currentScenario = scenario;
     state.currentResult = null;
+    state.comparisonBaseline = null;
     state.comparison = null;
     state.quality = null;
     state.explanation = null;
@@ -922,6 +934,16 @@ function runCurrentScenario() {
     scenario,
     baselineBundle: state.library.baselineBundle,
   });
+  state.comparisonBaseline = buildComparableBaselineResult({
+    companyId: state.companyId,
+    baselineBundle: state.library.baselineBundle,
+    scenario,
+  });
+  state.currentResult = {
+    ...state.currentResult,
+    baseline_total: state.comparisonBaseline.total_with_tax,
+    comparison_basis: 'same_tax_regime',
+  };
   state.quality = evaluateScenarioQuality({
     scenarioResult: state.currentResult,
     baselineBundle: state.library.baselineBundle,
@@ -929,6 +951,7 @@ function runCurrentScenario() {
   state.comparison = compareScenarios({
     companyId: state.companyId,
     baselineBundle: state.library.baselineBundle,
+    baselineResult: state.comparisonBaseline,
     scenarioResults: [state.currentResult],
   });
 

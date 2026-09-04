@@ -5,6 +5,7 @@ import {
 } from '../shared/reconciliation-engine.js';
 
 function n(value) {
+  if (value == null || (typeof value === 'string' && !value.trim())) return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }

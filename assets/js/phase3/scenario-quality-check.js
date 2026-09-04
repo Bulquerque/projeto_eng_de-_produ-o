@@ -47,7 +47,8 @@ export function evaluateScenarioQuality({ scenarioResult, baselineBundle, qualit
     });
     score -= 40;
   }
-  const baseTotal = baselineBundle?.costs?.costs?.total_with_tax || 0;
+  const baseTotal =
+    scenarioResult?.baseline_total ?? baselineBundle?.costs?.costs?.total_with_tax ?? 0;
   const delta = baseTotal ? (scenarioResult.total_with_tax - baseTotal) / baseTotal : 0;
   if (delta > 0.1) {
     alerts.push({

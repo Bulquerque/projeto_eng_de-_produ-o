@@ -11,9 +11,10 @@ A documentação foi separada por tema para facilitar manutenção e leitura.
 5. `04_dados_caminhos_auditoria/` — dados, caminhos, auditoria e dicionário.
 6. `05_testes_aceite/` — testes e critérios de aceite.
 7. `06_manifestos/` — manifestos de documentação.
+8. `07_auditoria/` — diagnóstico, premissas, resultados canônicos e duas rodadas de auditoria.
 
-8. `../phases/` — documentação por feature/módulo.
-9. `../assets/js/features/` — entrypoints canônicos por fase.
-10. `../assets/js/core/` — utilitários compartilhados canônicos.
+9. `../phases/` — documentação por feature/módulo.
+10. `../assets/js/features/` — entrypoints canônicos por fase.
+11. `../assets/js/core/` — utilitários compartilhados canônicos.
 
 Debug: abra `/debug/`.

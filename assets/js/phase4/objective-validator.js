@@ -6,6 +6,7 @@ const KNOWN_METRICS = [
   'inventory_efficiency',
 ];
 function n(v) {
+  if (v == null || (typeof v === 'string' && !v.trim())) return NaN;
   const x = Number(v);
   return Number.isFinite(x) ? x : NaN;
 }

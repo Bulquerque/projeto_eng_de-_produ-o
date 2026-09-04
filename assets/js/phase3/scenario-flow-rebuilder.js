@@ -51,12 +51,16 @@ export function rebuildScenarioFlows({ scenario, baselineFlows = [], distanceMat
     uncovered = 0;
   const flows = baselineFlows.map((flow, idx) => {
     const baseCd = normalizeCd(flow);
-    const baseMatch = findMatchingCdLabel(baseCd, activeCds);
     const isClosed = closedCds.some((cd) => sameCdLabel(cd, baseCd));
-    const shouldMove = isClosed || !baseMatch;
-    const target = shouldMove
-      ? pickActiveCd(flow, activeCds, rule, distanceMatrix)
-      : baseMatch || baseCd;
+    // A source that is not a distribution centre (for example, supplier or
+    // factory flows in Empresa 2) must not be reassigned merely because it is
+    // absent from the active-CD list. Only a CD explicitly closed by the
+    // scenario triggers reallocation.
+    const shouldMove = isClosed;
+    // Preserve the source label when the flow stays in its current CD. Replacing
+    // a city label with the UI label "UF / city" changes exact matrix matches
+    // and makes the baseline simulation diverge from the displayed baseline.
+    const target = shouldMove ? pickActiveCd(flow, activeCds, rule, distanceMatrix) : baseCd;
     if (!target) {
       uncovered++;
       return {

@@ -32,14 +32,16 @@ export function buildOptimizerInputTableHtml({
   constraints,
   optimizerConfig,
   searchLog,
+  baselineReference = null,
 }) {
   const c = bundle?.costs?.costs || {};
+  const comparableTotal = baselineReference?.result?.total_with_tax;
   const rows = [
     ['Empresa', companyId === 'empresa2' ? 'Empresa 2' : 'Empresa 1'],
     ['Baseline usado', bundle?.model?.scenario_id || '—'],
     ['CDs ativos no baseline', formatNumber((bundle?.model?.active_cds || []).length)],
     ['Fluxos avaliados', formatNumber((bundle?.flows || []).length)],
-    ['Total baseline', formatBRL(c.total_with_tax, true)],
+    ['Baseline estrutural (regime atual)', formatBRL(c.total_with_tax, true)],
     [
       'Regime fiscal fixo',
       taxRegimeLabel(
@@ -48,6 +50,10 @@ export function buildOptimizerInputTableHtml({
           taxRegime: CANONICAL_OPTIMIZATION_POLICY.tax_regime,
         })
       ),
+    ],
+    [
+      'Baseline comparável no regime fixo',
+      comparableTotal == null ? 'calculado ao executar' : formatBRL(comparableTotal, true),
     ],
     ['Frete fixo', formatMultiplierDisplay(CANONICAL_OPTIMIZATION_POLICY.freight_multiplier)],
     ['Demanda fixa', formatMultiplierDisplay(CANONICAL_OPTIMIZATION_POLICY.demand_multiplier)],

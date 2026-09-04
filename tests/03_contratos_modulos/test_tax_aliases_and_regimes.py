@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 code = r"""
+import fs from 'node:fs';
 import {runTaxCalculation} from './assets/js/shared/tax/tax-orchestrator.js';
 import {resolveTaxRegime} from './assets/js/shared/tax-reform-config.js';
 
@@ -14,10 +15,7 @@ function assert(condition, message) {
 const aliasFiles = [
   'fiscal-category-rules.js',
   'fiscal-flow-builder.js',
-  'legacy-tax-engine.js',
-  'reform-tax-engine.js',
   'tax-orchestrator.js',
-  'tax-quality-gate.js',
   'tax-reform-parameters.js',
   'tax-regime-catalog.js',
 ];
@@ -31,6 +29,10 @@ for (const file of aliasFiles) {
   for (const key of canonicalKeys) {
     assert(alias[key] === canonical[key], `${file}: ${key} is not a direct reexport`);
   }
+}
+
+for (const file of ['legacy-tax-engine.js', 'reform-tax-engine.js', 'tax-quality-gate.js']) {
+  assert(!fs.existsSync(`./assets/js/core/tax/${file}`), `${file}: código morto remanescente`);
 }
 
 assert(resolveTaxRegime({taxMode:'current'}) === 'legacy_current', 'current alias failed');
