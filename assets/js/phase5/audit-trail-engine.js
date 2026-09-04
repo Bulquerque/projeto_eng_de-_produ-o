@@ -1,3 +1,5 @@
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
+
 export function buildAuditTrail({
   companyId,
   selectedScenario,
@@ -17,6 +19,9 @@ export function buildAuditTrail({
     selectedScenario?.scenario?.monte_carlo?.summary ||
     selectedScenario?.monte_carlo_summary ||
     null;
+  const monteCarloEnvelope =
+    selectedScenario?.monte_carlo || selectedScenario?.scenario?.monte_carlo || null;
+  const selectedResult = selectedScenario?.result || selectedScenario || {};
   const sources = [
     `data/${companyId}/phase2/phase2_bundle.json.enc.json`,
     `data/${companyId}/phase3/sample_scenarios.json.enc.json`,
@@ -30,6 +35,10 @@ export function buildAuditTrail({
     baseline_scenario_id: baselineBundle?.model?.scenario_id,
     data_sources: sources,
     assumptions: selectedScenario?.scenario?.changes || selectedScenario?.changes || {},
+    model_assumptions_version: MODEL_ASSUMPTIONS.version,
+    fallback_usage: selectedResult?.costs?.fallback_usage || null,
+    inventory_calculation_mode:
+      selectedResult?.costs?.inventory_calculation_mode || 'days_wacc_only',
     objective,
     recommendation_status: recommendation.recommendation_status || null,
     probabilistic_summary: monteCarlo
@@ -43,6 +52,11 @@ export function buildAuditTrail({
           p90_saving_pct: monteCarlo.p90_saving_pct ?? null,
           risk_band: monteCarlo.risk_band || null,
           most_sensitive_driver: monteCarlo.most_sensitive_driver || null,
+          spread: monteCarloEnvelope?.config?.spread || null,
+          calibration_status:
+            monteCarloEnvelope?.methodology?.calibration_status ||
+            monteCarloEnvelope?.config?.calibration_status ||
+            'manual_spreads_not_historically_calibrated',
         }
       : null,
     optimization: searchLog
@@ -62,7 +76,7 @@ export function buildAuditTrail({
       phase4: 'implemented',
       phase5: 'implemented',
     },
-    warnings: [],
+    warnings: [...(selectedResult?.warnings || []), ...(monteCarloEnvelope?.warnings || [])],
     created_at: 'browser_runtime',
   };
 }

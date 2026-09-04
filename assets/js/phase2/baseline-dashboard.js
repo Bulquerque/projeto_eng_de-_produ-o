@@ -157,7 +157,7 @@ function renderTaxSourceSummary(bundle, companyId) {
     .join('');
   const companyNote =
     companyId === 'empresa1'
-      ? 'Empresa 1 prioriza dados observados e completa o tributário ausente com fontes oficiais e proxy declarado.'
+      ? 'Empresa 1 prioriza dados observados e estima o impacto tributário ausente com parâmetros oficiais e proxies declarados; isso não constitui validação fiscal.'
       : 'Empresa 2 usa observação direta como base e mantém apoio oficial para reforma.';
   return `<div class="small-note"><strong>Fonte da informação</strong><p>${escapeHtml(profile.display_name || companyNote)}</p><ul>${items}</ul><p>${escapeHtml(context.fallback_policy?.rule || companyNote)}</p></div>`;
 }

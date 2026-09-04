@@ -59,22 +59,56 @@ function workbookParitySection(workbookParity = {}) {
   `;
 }
 function monteCarloSection(selectedScenario = {}) {
-  const monteCarlo =
-    selectedScenario?.monte_carlo?.summary ||
-    selectedScenario?.scenario?.monte_carlo?.summary ||
-    selectedScenario?.monte_carlo_summary ||
-    null;
+  const envelope = selectedScenario?.monte_carlo || selectedScenario?.scenario?.monte_carlo || null;
+  const monteCarlo = envelope?.summary || selectedScenario?.monte_carlo_summary || null;
   if (!monteCarlo) return '';
+  const config = envelope?.config || {};
+  const spread = config.spread || {};
 
   return `
     <h3>Análise probabilística</h3>
     <table class="executive-table-premium"><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>
       <tr><td>Perfil</td><td>${esc(monteCarlo.profile || '—')}</td></tr>
       <tr><td>Iterações</td><td>${esc(monteCarlo.iterations ?? '—')}</td></tr>
+      <tr><td>Seed</td><td>${esc(monteCarlo.seed ?? config.seed ?? '—')}</td></tr>
+      <tr><td>Spreads utilizados</td><td>${esc(
+        Object.keys(spread).length
+          ? Object.entries(spread)
+              .map(([key, value]) => `${key}=${value}`)
+              .join('; ')
+          : 'não disponíveis no pacote'
+      )}</td></tr>
       <tr><td>Prob. saving positivo</td><td>${esc(pct(Number(monteCarlo.probability_saving_positive || 0) * 100))}</td></tr>
       <tr><td>Saving p10 / p50 / p90</td><td>${esc(pct(monteCarlo.p10_saving_pct))} · ${esc(pct(monteCarlo.median_saving_pct))} · ${esc(pct(monteCarlo.p90_saving_pct))}</td></tr>
       <tr><td>Driver mais influente</td><td>${esc(monteCarlo.most_sensitive_driver || '—')}</td></tr>
       <tr><td>Faixa de risco</td><td>${esc(monteCarlo.risk_band || '—')}</td></tr>
+      <tr><td>Calibração</td><td>spreads parametrizados manualmente; análise exploratória, sem calibração histórica validada</td></tr>
+    </tbody></table>
+  `;
+}
+
+function fallbackSection(selectedScenario = {}) {
+  const result = selectedScenario?.result || selectedScenario;
+  const costs = result?.costs || {};
+  const fallback = costs.fallback_usage || null;
+  if (!fallback) return '';
+  const rows = [
+    ['Modo do estoque', costs.inventory_calculation_mode || 'days_wacc_only'],
+    [
+      'Pooling de estoque por CDs',
+      costs.inventory_pooling_effect_included ? 'incluído' : 'não incluído',
+    ],
+    ['Fluxos com proxy cruzada de transferência', fallback.cross_company_transfer_proxy_flows ?? 0],
+    ['Peso sob proxy cruzada', pct(fallback.cross_company_transfer_proxy_volume_share_pct)],
+    ['Custo físico sob proxy cruzada', pct(fallback.cross_company_transfer_proxy_cost_share_pct)],
+    ['Fluxos com fallback de distância', fallback.missing_transfer_distance_flows ?? 0],
+    ['Receita coberta pelo fallback de 2,5%', pct(fallback.revenue_pct_fallback_revenue_share_pct)],
+    ['Custo físico sob armazenagem proporcional', pct(fallback.storage_proxy_cost_share_pct)],
+  ];
+  return `
+    <h3>Premissas, proxies e fallbacks acionados</h3>
+    <table class="executive-table-premium"><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>
+      ${rows.map(([label, value]) => `<tr><td>${esc(label)}</td><td>${esc(value)}</td></tr>`).join('')}
     </tbody></table>
   `;
 }
@@ -135,6 +169,7 @@ export function buildExecutiveReportHtml({
       <tr><td>Parecer Final</td><td>${esc(status(recommendation?.recommendation_status))}</td></tr>
     </tbody></table>
     ${scenarioConfigurationSection(selectedScenario)}
+    ${fallbackSection(selectedScenario)}
     <h3>Stress test</h3>
     <p>${esc(stress?.summary?.cases_positive || 0)} de ${esc(stress?.summary?.cases_run || 0)} casos mantiveram resultado melhor ou igual ao baseline.</p>
     ${monteCarloSection(selectedScenario)}

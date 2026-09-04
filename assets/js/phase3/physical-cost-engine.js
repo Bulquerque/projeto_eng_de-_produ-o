@@ -1,3 +1,5 @@
+import { MODEL_ASSUMPTIONS } from '../shared/model-assumptions.js';
+
 /**
  * physical-cost-engine.js
  *
@@ -37,7 +39,9 @@ function flowRevenue(flow) {
 
 /** Proportional storage estimate when the real table has no match. */
 function storageRatioCost(base, activeCds, baselineCds, dm) {
-  const ratio = 0.65 + 0.35 * (activeCds.length / (baselineCds || 1));
+  const { fixed_share_proxy: fixedShare, active_cd_share_proxy: activeShare } =
+    MODEL_ASSUMPTIONS.storage;
+  const ratio = fixedShare + activeShare * (activeCds.length / (baselineCds || 1));
   return toNum(base.storage_cost) * dm * ratio;
 }
 
@@ -47,7 +51,11 @@ function heuristicFallback(base, fm, dm, companyId = '') {
   const baseTransfer = toNum(base.transfer_cost);
   if (companyId === 'empresa1' && baseTransfer === 0) {
     return {
-      transfer_cost: baseDist * fm * dm * 0.4,
+      transfer_cost:
+        baseDist *
+        fm *
+        dm *
+        MODEL_ASSUMPTIONS.empresa1_transfer_proxy.missing_distance_distribution_share,
       distribution_cost: baseDist * fm * dm,
     };
   }
@@ -226,7 +234,7 @@ function calcFlowFreightE2(flow, maps, fm) {
   if (!row) {
     const revenue = flowRevenue(flow);
     if (revenue > 0) {
-      const pct = 0.025; // 2.5% revenue fallback when no CIF row exists
+      const pct = MODEL_ASSUMPTIONS.empresa2_freight.missing_cif_revenue_share;
       return { cost: revenue * pct * fmNum, method: 'revenue_pct_fallback', rate: pct };
     }
     return { cost: 0, method: 'missing_cif_row', rate: 0 };
@@ -286,21 +294,80 @@ function buildStorageCostMapE2(storageTable) {
   return map;
 }
 
-/** Returns the real annual storage cost for the active CDs, or null if no match. */
+/** Returns annual table cost only when every active CD has a match. */
 function resolveStorageCostFromTable(storageCostMap, activeCds, dm) {
-  if (!Object.keys(storageCostMap).length) return null;
-
-  let total = 0;
-  for (const cd of activeCds) {
-    const key = up(cd);
-    const cost =
-      storageCostMap[key] ||
-      Object.entries(storageCostMap).find(([k]) => key.includes(k) || k.includes(key))?.[1] ||
-      0;
-    total += cost;
+  if (!Object.keys(storageCostMap).length) {
+    return { cost: null, matched_cds: [], missing_cds: [...activeCds] };
   }
 
-  return total > 0 ? total * 12 * dm : null; // annualise monthly figures
+  let total = 0;
+  const matchedCds = [];
+  const missingCds = [];
+  for (const cd of activeCds) {
+    const key = up(cd);
+    const exact = storageCostMap[key];
+    const partial = Object.entries(storageCostMap).find(
+      ([k]) => key.includes(k) || k.includes(key)
+    );
+    const cost = exact || partial?.[1] || 0;
+    if (cost > 0) {
+      total += cost;
+      matchedCds.push(cd);
+    } else {
+      missingCds.push(cd);
+    }
+  }
+
+  return {
+    cost: total > 0 && missingCds.length === 0 ? total * 12 * dm : null,
+    matched_cds: matchedCds,
+    missing_cds: missingCds,
+  }; // valores da tabela são mensais
+}
+
+function pct(numerator, denominator) {
+  return denominator > 0 ? (numerator / denominator) * 100 : 0;
+}
+
+function finalizeFallbackUsage(usage, costs) {
+  const totalPhysicalCost =
+    toNum(costs.transfer_cost) +
+    toNum(costs.distribution_cost) +
+    toNum(costs.storage_cost) +
+    toNum(costs.inventory_cost);
+  return {
+    ...usage,
+    total_physical_cost_brl: totalPhysicalCost,
+    cross_company_transfer_proxy_flow_share_pct: pct(
+      usage.cross_company_transfer_proxy_flows,
+      usage.flow_count
+    ),
+    cross_company_transfer_proxy_volume_share_pct: pct(
+      usage.cross_company_transfer_proxy_weight_kg,
+      usage.total_flow_weight_kg
+    ),
+    cross_company_transfer_proxy_cost_share_pct: pct(
+      usage.cross_company_transfer_proxy_cost_brl,
+      totalPhysicalCost
+    ),
+    missing_transfer_distance_volume_share_pct: pct(
+      usage.missing_transfer_distance_weight_kg,
+      usage.total_flow_weight_kg
+    ),
+    missing_transfer_distance_cost_share_pct: pct(
+      usage.missing_transfer_distance_cost_brl,
+      totalPhysicalCost
+    ),
+    revenue_pct_fallback_revenue_share_pct: pct(
+      usage.revenue_pct_fallback_revenue_brl,
+      usage.total_flow_revenue_brl
+    ),
+    revenue_pct_fallback_cost_share_pct: pct(
+      usage.revenue_pct_fallback_cost_brl,
+      totalPhysicalCost
+    ),
+    storage_proxy_cost_share_pct: pct(usage.storage_proxy_cost_brl, totalPhysicalCost),
+  };
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
@@ -316,14 +383,43 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
   const c = scenario.changes || {};
   const fm = toNum(c.freight_multiplier, 1);
   const dm = toNum(c.demand_multiplier, 1);
-  const invDays = toNum(c.inventory_days, 45);
-  const wacc = toNum(c.wacc, 0.15);
+  const invDays = toNum(c.inventory_days, MODEL_ASSUMPTIONS.inventory.baseline_days);
+  const wacc = toNum(c.wacc, MODEL_ASSUMPTIONS.inventory.baseline_wacc);
   const activeCds = c.active_cds || [];
   const base = baselineBundle?.costs?.costs || {};
   const coreData = baselineBundle?.core_data || {};
   const baselineCds = (baselineBundle?.model?.active_cds || []).length;
-  const inventory = toNum(base.inventory_cost) * dm * (invDays / 45) * (wacc / 0.15);
+  const inventoryAssumptions = MODEL_ASSUMPTIONS.inventory;
+  const inventory =
+    toNum(base.inventory_cost) *
+    dm *
+    (invDays / inventoryAssumptions.baseline_days) *
+    (wacc / inventoryAssumptions.baseline_wacc);
   const warnings = [];
+  const fallbackUsage = {
+    flow_count: Array.isArray(rebuilt?.flows) ? rebuilt.flows.length : 0,
+    total_flow_weight_kg: (rebuilt?.flows || []).reduce((sum, flow) => sum + flowWeight(flow), 0),
+    total_flow_revenue_brl: (rebuilt?.flows || []).reduce(
+      (sum, flow) => sum + flowRevenue(flow),
+      0
+    ),
+    missing_distribution_rate_flows: 0,
+    missing_transfer_distance_flows: 0,
+    revenue_pct_fallback_flows: 0,
+    storage_proxy_used: false,
+    storage_proxy_cost_brl: 0,
+    cross_company_transfer_proxy_flows: 0,
+    cross_company_transfer_proxy_weight_kg: 0,
+    cross_company_transfer_proxy_cost_brl: 0,
+    missing_transfer_distance_weight_kg: 0,
+    missing_transfer_distance_cost_brl: 0,
+    revenue_pct_fallback_revenue_brl: 0,
+    revenue_pct_fallback_cost_brl: 0,
+  };
+
+  warnings.push(
+    'Custo de estoque usa demanda, dias de estoque e WACC; não inclui pooling por número de CDs.'
+  );
 
   if (companyId === 'empresa1') {
     const matrix = coreData.distance_matrix || [];
@@ -335,14 +431,14 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
     // ── Kilometric transfer rates calibrated from Empresa 2 NF data ──────────
     // Source: aux_custo_transferencia — weighted avg geodesic R$/kg-km per dest UF
     // SP: 0.0083 | MG: 0.0049 | ES: 0.0176 | RJ: 0.0133
-    const KILOMETRIC_RATE_BY_UF = {
-      SP: 0.0083,
-      MG: 0.0049,
-      ES: 0.0176,
-      RJ: 0.0133,
-    };
-    // Conservative fallback: lowest observed cross-state rate
-    const KILOMETRIC_RATE_FALLBACK = 0.005;
+    const transferProxy = MODEL_ASSUMPTIONS.empresa1_transfer_proxy;
+    const KILOMETRIC_RATE_BY_UF = transferProxy.rate_by_destination_uf_brl_per_kg_km;
+    const KILOMETRIC_RATE_FALLBACK = transferProxy.fallback_rate_brl_per_kg_km;
+    const MISSING_DISTANCE_SHARE = transferProxy.missing_distance_distribution_share;
+
+    warnings.push(
+      `Transferência da Empresa 1 usa proxy calibrado com ${transferProxy.source_description}; não é dado observado da Empresa 1.`
+    );
 
     let totalDist = 0;
     let totalTransfer = 0;
@@ -364,7 +460,7 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
         transferCost = wKg * ratePerKgKm * distKm * fm * dm;
       } else if (wKg > 0 && distKm === 0) {
         // Distance not found — estimate as 40% of distribution cost for this flow
-        transferCost = distCost * 0.4;
+        transferCost = distCost * MISSING_DISTANCE_SHARE;
         missingDistCount++;
       }
 
@@ -380,8 +476,31 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
         dest_uf: destUf,
         method,
         rate,
+        transfer_is_cross_company_proxy: wKg > 0,
+        transfer_fallback_used: wKg > 0 && distKm === 0,
       });
     }
+
+    fallbackUsage.missing_distribution_rate_flows = missingCount;
+    fallbackUsage.missing_transfer_distance_flows = missingDistCount;
+    fallbackUsage.cross_company_transfer_proxy_flows = flowCostDetail.filter(
+      (row) => row.transfer_is_cross_company_proxy
+    ).length;
+    fallbackUsage.cross_company_transfer_proxy_weight_kg = rebuilt.flows.reduce(
+      (sum, flow) => sum + flowWeight(flow),
+      0
+    );
+    fallbackUsage.cross_company_transfer_proxy_cost_brl = totalTransfer;
+    fallbackUsage.missing_transfer_distance_weight_kg = rebuilt.flows.reduce(
+      (sum, flow, index) =>
+        sum + (flowCostDetail[index]?.transfer_fallback_used ? flowWeight(flow) : 0),
+      0
+    );
+    fallbackUsage.missing_transfer_distance_cost_brl = flowCostDetail.reduce(
+      (sum, row) => sum + (row.transfer_fallback_used ? row.transfer_cost : 0),
+      0
+    );
+    fallbackUsage.storage_proxy_used = true;
 
     if (missingCount > 0) {
       warnings.push(
@@ -405,13 +524,28 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
         dm,
         companyId
       ));
+      fallbackUsage.missing_transfer_distance_flows = fallbackUsage.flow_count;
+      fallbackUsage.missing_transfer_distance_weight_kg = fallbackUsage.total_flow_weight_kg;
+      fallbackUsage.missing_transfer_distance_cost_brl = totalTransfer;
+      fallbackUsage.cross_company_transfer_proxy_cost_brl = totalTransfer;
     }
+
+    const storage = storageRatioCost(base, activeCds, baselineCds, dm);
+    fallbackUsage.storage_proxy_cost_brl = storage;
 
     return {
       transfer_cost: totalTransfer,
       distribution_cost: totalDist,
-      storage_cost: storageRatioCost(base, activeCds, baselineCds, dm),
+      storage_cost: storage,
       inventory_cost: inventory,
+      inventory_calculation_mode: inventoryAssumptions.calculation_mode,
+      inventory_pooling_effect_included: inventoryAssumptions.pooling_effect_included,
+      fallback_usage: finalizeFallbackUsage(fallbackUsage, {
+        transfer_cost: totalTransfer,
+        distribution_cost: totalDist,
+        storage_cost: storage,
+        inventory_cost: inventory,
+      }),
       calculation_method: anyPriced ? 'physical_distance_matrix_kilometric' : 'heuristic_fallback',
       flow_cost_detail: flowCostDetail,
       warnings,
@@ -437,6 +571,7 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
     let totalDist = 0;
     let totalTransfer = 0;
     let missingCount = 0;
+    let revenueFallbackCount = 0;
     const flowCostDetail = [];
 
     for (const flow of rebuilt.flows) {
@@ -448,27 +583,36 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
       const distributionCost = distCost * dm;
 
       let transferCost = 0;
+      let transferFallbackUsed = false;
       if (flow.reallocation_status === 'reallocated') {
         const originUf = up(flow.cd_uf || flow.origin_uf || flow.cd).slice(0, 2);
         const destUf = up(flow.destination_uf);
         const key = `${originUf}→${destUf}`;
         const ratePerKg = transferRateMap[key] || transferRateMap[`${originUf}→`] || 0;
         const wKg = flowWeight(flow);
-        transferCost =
-          wKg > 0 && ratePerKg > 0
-            ? wKg * ratePerKg * fm * dm
-            : flowRevenue(flow) * 0.025 * fm * dm; // 2.5% revenue fallback
+        if (wKg > 0 && ratePerKg > 0) {
+          transferCost = wKg * ratePerKg * fm * dm;
+        } else {
+          transferCost =
+            flowRevenue(flow) *
+            MODEL_ASSUMPTIONS.empresa2_freight.missing_transfer_rate_revenue_share *
+            fm *
+            dm;
+          transferFallbackUsed = transferCost > 0;
+        }
       }
 
       totalDist += distributionCost;
       totalTransfer += transferCost;
       if (distMethod === 'missing_cif_row') missingCount++;
+      if (distMethod === 'revenue_pct_fallback') revenueFallbackCount++;
       flowCostDetail.push({
         flow_id: flow.flow_id,
         distribution_cost: distributionCost,
         transfer_cost: transferCost,
         dist_method: distMethod,
         dist_rate: distRate,
+        transfer_fallback_used: transferFallbackUsed,
       });
     }
 
@@ -491,19 +635,54 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
       ));
     }
 
-    const realStorage = resolveStorageCostFromTable(storageCostMap, activeCds, dm);
+    const storageResolution = resolveStorageCostFromTable(storageCostMap, activeCds, dm);
+    const realStorage = storageResolution.cost;
     if (realStorage === null) {
       warnings.push(
-        'CDs do cenário sem correspondência na tabela de armazenagem; usando custo proporcional do baseline.'
+        `${storageResolution.missing_cds.length} CD(s) do cenário sem correspondência completa na tabela de armazenagem; usando custo proporcional do baseline.`
       );
     }
     const storage = realStorage ?? storageRatioCost(base, activeCds, baselineCds, dm);
+    fallbackUsage.missing_distribution_rate_flows = missingCount;
+    fallbackUsage.revenue_pct_fallback_flows = revenueFallbackCount;
+    fallbackUsage.storage_proxy_used = realStorage === null;
+    fallbackUsage.revenue_pct_fallback_revenue_brl = rebuilt.flows.reduce(
+      (sum, flow, index) =>
+        sum +
+        (flowCostDetail[index]?.dist_method === 'revenue_pct_fallback' ||
+        flowCostDetail[index]?.transfer_fallback_used
+          ? flowRevenue(flow)
+          : 0),
+      0
+    );
+    fallbackUsage.revenue_pct_fallback_cost_brl = flowCostDetail.reduce(
+      (sum, row) =>
+        sum +
+        (row.dist_method === 'revenue_pct_fallback' ? row.distribution_cost : 0) +
+        (row.transfer_fallback_used ? row.transfer_cost : 0),
+      0
+    );
+    fallbackUsage.storage_proxy_cost_brl = realStorage === null ? storage : 0;
+
+    if (flowCostDetail.some((row) => row.transfer_fallback_used)) {
+      warnings.push(
+        'Há fluxos realocados sem tarifa de transferência; foi aplicado fallback de 2,5% da receita.'
+      );
+    }
 
     return {
       transfer_cost: totalTransfer,
       distribution_cost: totalDist,
       storage_cost: storage,
       inventory_cost: inventory,
+      inventory_calculation_mode: inventoryAssumptions.calculation_mode,
+      inventory_pooling_effect_included: inventoryAssumptions.pooling_effect_included,
+      fallback_usage: finalizeFallbackUsage(fallbackUsage, {
+        transfer_cost: totalTransfer,
+        distribution_cost: totalDist,
+        storage_cost: storage,
+        inventory_cost: inventory,
+      }),
       calculation_method: anyPriced ? 'physical_cif_table' : 'heuristic_fallback',
       flow_cost_detail: flowCostDetail,
       warnings,
@@ -517,6 +696,17 @@ export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, re
     distribution_cost: toNum(base.distribution_cost) * fm * dm,
     storage_cost: storageRatioCost(base, activeCds, baselineCds, dm),
     inventory_cost: inventory,
+    inventory_calculation_mode: inventoryAssumptions.calculation_mode,
+    inventory_pooling_effect_included: inventoryAssumptions.pooling_effect_included,
+    fallback_usage: finalizeFallbackUsage(
+      { ...fallbackUsage, storage_proxy_used: true },
+      {
+        transfer_cost: toNum(base.transfer_cost) * fm * dm,
+        distribution_cost: toNum(base.distribution_cost) * fm * dm,
+        storage_cost: storageRatioCost(base, activeCds, baselineCds, dm),
+        inventory_cost: inventory,
+      }
+    ),
     calculation_method: 'heuristic_fallback',
     flow_cost_detail: [],
     warnings,
