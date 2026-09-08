@@ -1,14 +1,8 @@
+import { classifyReconciliationDeviation } from './model-configuration.js';
+
 function n(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function classifyPct(value) {
-  if (value == null) return 'pending';
-  const absPct = Math.abs(value);
-  if (absPct <= 3) return 'aligned';
-  if (absPct <= 10) return 'tolerable';
-  return 'divergent';
 }
 
 function buildMetricRows(simulated = {}, referenceResults = {}) {
@@ -30,7 +24,7 @@ function buildMetricRows(simulated = {}, referenceResults = {}) {
       simulated: simulatedValue,
       absolute_error: absoluteError,
       percentage_error: percentageError,
-      status: classifyPct(percentageError),
+      status: classifyReconciliationDeviation(percentageError),
     };
   });
 }

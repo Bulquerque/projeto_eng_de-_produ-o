@@ -2,6 +2,7 @@ import { calculatePhysicalCosts } from '../phase3/physical-cost-engine.js';
 import { buildBundleReconciliation } from '../core/reconciliation-engine.js';
 import { runTaxCalculation } from '../core/tax/tax-orchestrator.js';
 import { safeNumber } from '../core/common.js';
+import { MODEL_DEFAULTS } from '../core/model-configuration.js';
 
 function cloneValue(value) {
   if (value == null) return value;
@@ -21,8 +22,8 @@ function buildBaselineScenario(bundle, companyId) {
       closed_cds: [],
       freight_multiplier: 1,
       demand_multiplier: 1,
-      inventory_days: 45,
-      wacc: 0.15,
+      inventory_days: MODEL_DEFAULTS.inventory_days,
+      wacc: MODEL_DEFAULTS.reference_wacc,
       tax_mode: 'current',
       reallocation_rule: 'nearest_available_cd',
     },
@@ -84,7 +85,7 @@ function buildTaxCoverage(bundle, taxResult) {
   };
 }
 
-function buildDerivedTaxResults(taxResult) {
+function buildDerivedTaxResults(taxResult, companyId) {
   const currentTax =
     taxResult?.total_current_tax ??
     taxResult?.breakdown?.current_component ??
@@ -94,6 +95,14 @@ function buildDerivedTaxResults(taxResult) {
     icms_estimated: safeNumber(currentTax),
     difal_estimated: safeNumber(taxResult?.total_reform_tax),
     total_tax_impact: safeNumber(taxResult?.total_tax_impact),
+    tax_source_classification:
+      companyId === 'empresa1'
+        ? 'official_shared_tax_reference_proxy'
+        : 'observed_tax_inputs_reconciled',
+    tax_source_label:
+      companyId === 'empresa1'
+        ? 'Proxy tributário — referência compartilhada'
+        : 'Dados tributários observados — reconciliados',
   };
 }
 
@@ -189,6 +198,8 @@ export function recomputePhase2Baseline(bundle, companyId = bundle?.model?.compa
     ...rawSnapshot.costs,
     costs: derivedCosts,
     cost_breakdown: buildCostBreakdown(physicalCosts, taxResult.total_tax_impact),
+    flow_cost_detail: cloneValue(physicalCosts.flow_cost_detail || []),
+    diagnostics: cloneValue(physicalCosts.diagnostics || {}),
     warnings: buildDerivedWarnings(physicalCosts.warnings),
     errors: [],
   };
@@ -196,7 +207,7 @@ export function recomputePhase2Baseline(bundle, companyId = bundle?.model?.compa
   const taxWarnings = buildDerivedWarnings(taxResult.warnings);
   bundle.tax_results = {
     ...rawSnapshot.tax_results,
-    tax_results: buildDerivedTaxResults(taxResult),
+    tax_results: buildDerivedTaxResults(taxResult, companyId),
     tax_coverage: buildTaxCoverage(bundle, taxResult),
     warnings: taxWarnings,
     errors: [],

@@ -16,7 +16,14 @@ export function renderSearchLog(searchLog) {
     ['Estratégia', searchLog.search_strategy || '—'],
     ['Método', method],
     ['Espaço exato', searchLog.exact_search_space ? 'sim' : 'não'],
+    ['Motivo da cobertura', searchLog.exactness_reason || '—'],
     ['Cobertura', coverage],
+    [
+      'Interpretação',
+      searchLog.exact_search_space
+        ? 'ótimo global no espaço enumerado'
+        : 'melhor cenário entre os candidatos avaliados',
+    ],
     ['Gerados', formatNumber(searchLog.generated_candidates)],
     ['Simulados', formatNumber(searchLog.simulated_candidates)],
     ['Válidos', formatNumber(searchLog.valid_candidates)],
@@ -115,10 +122,10 @@ export function buildRankingTableHtml(bestScenarios = []) {
         quality: s.quality,
         baselineTotal: Number(s.result?.baseline_total ?? 0),
       });
-      return `<tr><td>${escapeHtml(summary.scenario_name || s.scenario_id)}</td><td>${Number(s.final_score).toFixed(1)}</td><td>${formatNumber(summary.active_cds_count)}</td><td>${escapeHtml(formatMultiplierDisplay(summary.freight_multiplier))}</td><td>${escapeHtml(formatMultiplierDisplay(summary.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(summary.inventory_days))}</td><td>${escapeHtml(summary.tax_regime_label)}</td><td>${formatBRL(summary.transfer_cost, true)}</td><td>${formatBRL(summary.tax_impact, true)}</td><td>${formatBRL(summary.total_with_tax, true)}</td><td>${escapeHtml(summary.risk_level || '—')}</td></tr>`;
+      return `<tr><td>${escapeHtml(summary.scenario_name || s.scenario_id)}</td><td>${Number(s.final_score).toFixed(1)}</td><td>${formatNumber(summary.active_cds_count)}</td><td>${escapeHtml(formatMultiplierDisplay(summary.freight_multiplier))}</td><td>${escapeHtml(formatMultiplierDisplay(summary.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(summary.inventory_days))}</td><td>${escapeHtml(summary.tax_regime_label)}</td><td>${escapeHtml(summary.tax_source_label || '—')}</td><td>${formatBRL(summary.transfer_cost, true)}</td><td>${formatBRL(summary.tax_impact, true)}</td><td>${formatBRL(summary.total_with_tax, true)}</td><td>${escapeHtml(summary.risk_level || '—')}</td></tr>`;
     })
     .join('');
-  return `<table><thead><tr><th>Cenário</th><th>Score</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Risco</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return `<table><thead><tr><th>Cenário</th><th>Score</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Fonte tributária</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Risco</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 export function buildTradeoffTableHtml(frontier) {

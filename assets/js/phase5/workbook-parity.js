@@ -1,5 +1,6 @@
 import { escapeHtml, formatBRL, formatPct, renderTable } from '../core/common.js';
 import { buildBundleReconciliation } from '../core/reconciliation-engine.js';
+import { classifyReconciliationDeviation } from '../core/model-configuration.js';
 
 function n(value) {
   const parsed = Number(value);
@@ -43,14 +44,7 @@ function fitRows(fit, costs, reconciliation) {
       absolute_error:
         simulatedValue == null || referenceValue == null ? null : simulatedValue - referenceValue,
       percentage_error: percentageError,
-      status:
-        absPct == null
-          ? 'sem_referencia'
-          : absPct <= 3
-            ? 'OK'
-            : absPct <= 10
-              ? 'atenção'
-              : 'alto_desvio',
+      status: absPct == null ? 'sem_referencia' : classifyReconciliationDeviation(percentageError),
     };
   });
 }

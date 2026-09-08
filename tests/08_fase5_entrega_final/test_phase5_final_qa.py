@@ -12,8 +12,9 @@ code = (
 import fs from 'fs';
 import {runFinalQAChecks} from './assets/js/phase5/final-qa-checker.js';
 import {validateRelease} from './assets/js/phase5/release-validator.js';
+import {loadRuntimeBundle} from './tests/runtime_bundle_support.mjs';
 for (const companyId of ['empresa1','empresa2']) {
- const bundle=decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
+ const bundle=loadRuntimeBundle({companyId,decryptJson});
  const selectedScenario={final_score:88, scenario_id:`${companyId}_fake`, result:{company_id:companyId}, quality:{risk_level:'low'}};
  const stress={stress_results:[{case_id:'a'}]}; const recommendation={recommendation_status:'recommended'}; const audit={company_id:companyId,selected_scenario_id:selectedScenario.scenario_id,baseline_scenario_id:bundle.model.scenario_id};
  const qa=runFinalQAChecks({companyId,bundle,selectedScenario,stress,recommendation,audit});

@@ -31,6 +31,7 @@ import { calculateRobustness } from '../../assets/js/phase5/robustness-scorer.js
 import { buildAuditTrail, validateAuditTrail } from '../../assets/js/phase5/audit-trail-engine.js';
 import { buildExportPackage } from '../../assets/js/phase5/export-center.js';
 import { runFinalQAChecks } from '../../assets/js/phase5/final-qa-checker.js';
+import { loadRuntimeBundle } from '../runtime_bundle_support.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -196,7 +197,8 @@ function monotonicNonDecreasing(values, label, meta) {
 }
 
 async function runPhaseCompanyAudit(companyId) {
-  const baselineBundle = decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
+  const rawBundle = decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
+  const baselineBundle = loadRuntimeBundle({ companyId, decryptJson, bundle: rawBundle });
   const companyReport = {
     company_id: companyId,
     phase2: {},
@@ -226,6 +228,31 @@ async function runPhaseCompanyAudit(companyId) {
   );
   finiteNumber(baselineBundle?.costs?.costs?.total_logistics_cost, 'baseline total_logistics_cost');
   finiteNumber(baselineBundle?.costs?.costs?.total_with_tax, 'baseline total_with_tax');
+  if (companyId === 'empresa1') {
+    ensure(
+      baselineBundle?.core_data?.distance_matrix?.length > 0,
+      'runtime deveria anexar a matriz de distância da Empresa 1',
+      { companyId }
+    );
+    ensure(
+      baselineBundle?.phase2_raw?.costs?.costs?.total_with_tax !== undefined,
+      'auditoria deveria preservar o baseline bruto para comparação',
+      { companyId }
+    );
+    ensure(
+      baselineBundle?.costs?.diagnostics?.source_classification ===
+        'observed_distribution_plus_cross_company_calibrated_transfer_proxy',
+      'Empresa 1 deveria classificar o proxy de transferência',
+      { companyId, diagnostics: baselineBundle?.costs?.diagnostics }
+    );
+    ensure(
+      String(baselineBundle?.tax_results?.tax_results?.tax_source_label || '').includes(
+        'Proxy tributário'
+      ),
+      'Empresa 1 deveria expor a fonte tributária proxy',
+      { companyId, tax_results: baselineBundle?.tax_results }
+    );
+  }
   ensure(
     Math.abs(
       Number(baselineBundle.costs.costs.total_logistics_cost) +
@@ -253,10 +280,39 @@ async function runPhaseCompanyAudit(companyId) {
     simulation_status: baselineRun.simulation_status,
     errors: baselineRun.errors,
   });
+  ensure(
+    Math.abs(
+      Number(baselineRun.total_with_tax) - Number(baselineBundle.costs.costs.total_with_tax)
+    ) < 0.1,
+    'baseline simulado deveria reproduzir o baseline canônico',
+    {
+      companyId,
+      simulated: baselineRun.total_with_tax,
+      canonical: baselineBundle.costs.costs.total_with_tax,
+    }
+  );
+  ensure(
+    baselineRun.calculation_method === 'canonical_baseline_reference',
+    'baseline simulado deveria declarar a referência canônica',
+    {
+      companyId,
+      calculation_method: baselineRun.calculation_method,
+    }
+  );
+  ensure(
+    baselineRun.diagnostics?.canonical_baseline_reference === true,
+    'baseline simulado deveria marcar a referência canônica nos diagnostics',
+    {
+      companyId,
+      diagnostics: baselineRun.diagnostics,
+    }
+  );
 
   companyReport.phase2 = {
     active_cds: baselineBundle.model.active_cds.length,
     flows: baselineBundle.flows.length,
+    runtime_recomputed: companyId === 'empresa1',
+    raw_baseline_total_with_tax: baselineBundle.phase2_raw?.costs?.costs?.total_with_tax ?? null,
     baseline_total_with_tax: baselineBundle.costs.costs.total_with_tax,
     baseline_total_logistics_cost: baselineBundle.costs.costs.total_logistics_cost,
     tax_impact: baselineBundle.costs.costs.tax_impact,

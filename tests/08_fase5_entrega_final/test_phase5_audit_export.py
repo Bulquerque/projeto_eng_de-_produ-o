@@ -20,8 +20,9 @@ import {buildAuditTrail,validateAuditTrail} from './assets/js/phase5/audit-trail
 import {buildWorkbookParitySummary} from './assets/js/phase5/workbook-parity.js';
 import {buildExecutiveReportHtml} from './assets/js/phase5/executive-report-builder.js';
 import {buildExportPackage} from './assets/js/phase5/export-center.js';
+import {loadRuntimeBundle} from './tests/runtime_bundle_support.mjs';
 for (const companyId of ['empresa1','empresa2']) {
- const bundle=decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
+ const bundle=loadRuntimeBundle({companyId,decryptJson});
  const objective=buildObjective({companyId,objectiveName:'Teste',weights:{total_cost:30,service_quality:25,operational_risk:20,tax_impact:15,inventory_efficiency:10}});
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:11}});
  const selected=selectFinalScenario({companyId,optimizerResult:opt,selectionMode:'best_by_score'}).selected_scenario;

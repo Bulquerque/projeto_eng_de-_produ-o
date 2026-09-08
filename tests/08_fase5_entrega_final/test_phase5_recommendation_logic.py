@@ -16,8 +16,9 @@ import {selectFinalScenario} from './assets/js/phase5/final-scenario-selector.js
 import {runStressTests} from './assets/js/phase5/stress-test-engine.js';
 import {calculateRobustness} from './assets/js/phase5/robustness-scorer.js';
 import {buildRecommendation} from './assets/js/phase5/recommendation-engine.js';
+import {loadRuntimeBundle} from './tests/runtime_bundle_support.mjs';
 for (const companyId of ['empresa1','empresa2']) {
- const bundle=decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
+ const bundle=loadRuntimeBundle({companyId,decryptJson});
  const objective=buildObjective({companyId,objectiveName:'Teste',weights:{total_cost:30,service_quality:25,operational_risk:20,tax_impact:15,inventory_efficiency:10}});
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:11}});
  const sel=selectFinalScenario({companyId,optimizerResult:opt,selectionMode:'best_by_score'});
@@ -35,6 +36,9 @@ for (const companyId of ['empresa1','empresa2']) {
  if(!rec.executive_summary) throw new Error('missing executive summary');
  if(comp.saving_pct<0 && rec.recommendation_status==='recommended') throw new Error('negative saving cannot be clean recommended');
 }
+const neutral=buildRecommendation({companyId:'empresa1',comparison:{saving_pct:0,saving_abs:0},quality:{risk_level:'low'},robustness:{robustness_score:100,alerts:[]},objective:{objective_id:'neutral'}});
+if(neutral.recommendation_status!=='not_recommended') throw new Error('zero saving cannot be recommended');
+if(!neutral.main_reasons.includes('custo igual ao baseline; não há saving operacional')) throw new Error('zero saving reason missing');
 console.log('PHASE5_NODE_RECOMMENDATION_OK');
 """
 )

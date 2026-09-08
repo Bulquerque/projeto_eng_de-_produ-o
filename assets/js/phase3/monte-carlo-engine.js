@@ -1,5 +1,6 @@
 import { runScenario } from './scenario-simulator.js';
 import { safeNumber } from '../core/common.js';
+import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
 function clone(value) {
   return JSON.parse(JSON.stringify(value || {}));
 }
@@ -10,7 +11,7 @@ function clamp(value, min, max) {
 
 function hashSeed(seed) {
   if (Number.isFinite(Number(seed))) {
-    return Math.trunc(Number(seed)) >>> 0 || 1;
+    return Math.trunc(Number(seed)) >>> 0;
   }
 
   const text = String(seed || '42');
@@ -19,7 +20,7 @@ function hashSeed(seed) {
     hash ^= text.charCodeAt(i);
     hash = Math.imul(hash, 16777619);
   }
-  return hash >>> 0 || 1;
+  return hash >>> 0;
 }
 
 function createRng(seed) {
@@ -201,6 +202,13 @@ function buildMonteCarloConfig({
   return {
     iterations: normalizedIterations,
     seed,
+    seed_effective: hashSeed(seed),
+    rng_algorithm: 'mulberry32-v1',
+    model: 'monte_carlo_complementary_v2',
+    analysis_type: 'exploratory_uncertainty_analysis',
+    forecast: false,
+    historical_distribution: false,
+    deterministic_method: 'scenario_simulation',
     profile: normalizedProfile,
     scatter_driver: normalizedDriver,
     histogram_bins: clamp(Math.round(safeNumber(histogramBins, 12)), 6, 30),
@@ -346,11 +354,15 @@ function summarizeSamples({
   return {
     iterations: samples.length,
     seed: config.seed,
+    seed_effective: config.seed_effective,
+    rng_algorithm: config.rng_algorithm,
     profile: config.profile,
     scatter_driver: config.scatter_driver,
     baseline_total_with_tax: baselineTotal,
     deterministic_total_with_tax: deterministicTotal,
     deterministic_saving_pct: deterministicSavingPct,
+    iterations_requested: config.iterations,
+    iterations_valid: samples.length,
     deterministic_percentile_saving_pct: deterministicPercentile,
     mean_total_with_tax: meanTotal,
     median_total_with_tax: p50Total,
@@ -398,6 +410,9 @@ export function runMonteCarloSimulation({
       company_id: companyId,
       scenario_id: selectedScenario?.scenario_id || null,
       monte_carlo_status: 'error',
+      analysis_type: 'exploratory_uncertainty_analysis',
+      forecast: false,
+      historical_distribution: false,
       config: buildMonteCarloConfig({ iterations, seed, ...config }),
       samples: [],
       summary: null,
@@ -414,26 +429,31 @@ export function runMonteCarloSimulation({
     histogramBins: config.histogram_bins || 12,
   });
   const preset = PROFILE_PRESETS[normalizedConfig.profile];
-  const rng = createRng(normalizedConfig.seed);
+  const rng = createRng(normalizedConfig.seed_effective);
   const baseScenario = clone(selectedScenario);
   delete baseScenario.monte_carlo;
   delete baseScenario.analysis;
   const baseChanges = baseScenario.changes || {};
   const baseFreight = Math.max(0.0001, safeNumber(baseChanges.freight_multiplier, 1));
   const baseDemand = Math.max(0.0001, safeNumber(baseChanges.demand_multiplier, 1));
-  const baseInventory = Math.max(0, safeNumber(baseChanges.inventory_days, 45));
-  const baseWacc = Math.max(0, safeNumber(baseChanges.wacc, 0.15));
-  const baselineTotal = safeNumber(
-    deterministicResult?.total_with_tax ?? baselineBundle?.costs?.costs?.total_with_tax
+  const baseInventory = Math.max(
+    0,
+    safeNumber(baseChanges.inventory_days, MODEL_DEFAULTS.inventory_days)
   );
+  const baseWacc = Math.max(0, safeNumber(baseChanges.wacc, MODEL_DEFAULTS.reference_wacc));
+  const baselineTotal = safeNumber(baselineBundle?.costs?.costs?.total_with_tax);
   const deterministic =
     deterministicResult || runScenario({ companyId, scenario: baseScenario, baselineBundle });
+  const baselineScenarioId = baselineBundle?.model?.scenario_id || null;
 
   if (deterministic?.errors?.length) {
     return {
       company_id: companyId,
       scenario_id: selectedScenario?.scenario_id || null,
       monte_carlo_status: 'blocked',
+      analysis_type: 'exploratory_uncertainty_analysis',
+      forecast: false,
+      historical_distribution: false,
       config: normalizedConfig,
       samples: [],
       summary: null,
@@ -507,7 +527,7 @@ export function runMonteCarloSimulation({
       sampled,
       index,
       profile: normalizedConfig.profile,
-      seed: normalizedConfig.seed,
+      seed: normalizedConfig.seed_effective,
     });
 
     const result = runScenario({ companyId, scenario: sampledScenario, baselineBundle });
@@ -520,8 +540,7 @@ export function runMonteCarloSimulation({
     const totalLogistics = safeNumber(result.costs?.total_logistics_cost);
     const adjustedTaxImpact = Math.max(0, taxImpact * sampled.tax_multiplier);
     const adjustedTotal = totalLogistics + adjustedTaxImpact;
-    const savingAbs = baselineTotal - adjustedTotal;
-    const savingPct = baselineTotal ? (savingAbs / baselineTotal) * 100 : 0;
+    const saving = calculateSaving({ baselineTotal, scenarioTotal: adjustedTotal });
 
     samples.push({
       sample_id: `${selectedScenario.scenario_id || 'scenario'}__mc_${String(index + 1).padStart(4, '0')}`,
@@ -530,9 +549,11 @@ export function runMonteCarloSimulation({
       scenario_id: result.scenario_id,
       total_with_tax: adjustedTotal,
       total_logistics_cost: totalLogistics,
+      raw_tax_impact: taxImpact,
       tax_impact: adjustedTaxImpact,
-      saving_abs: savingAbs,
-      saving_pct: savingPct,
+      tax_multiplier: sampled.tax_multiplier,
+      saving_abs: saving.saving_abs,
+      saving_pct: saving.saving_pct,
       warnings: result.warnings || [],
       errors: [],
     });
@@ -543,6 +564,9 @@ export function runMonteCarloSimulation({
       company_id: companyId,
       scenario_id: selectedScenario?.scenario_id || null,
       monte_carlo_status: 'error',
+      analysis_type: 'exploratory_uncertainty_analysis',
+      forecast: false,
+      historical_distribution: false,
       config: normalizedConfig,
       samples: [],
       summary: null,
@@ -551,20 +575,32 @@ export function runMonteCarloSimulation({
     };
   }
 
+  const deterministicSaving = calculateSaving({
+    baselineTotal,
+    scenarioTotal: deterministic.total_with_tax,
+  });
   const summary = summarizeSamples({
     samples,
     baselineTotal,
     deterministicTotal: safeNumber(deterministic.total_with_tax),
-    deterministicSavingPct: baselineTotal
-      ? ((baselineTotal - safeNumber(deterministic.total_with_tax)) / baselineTotal) * 100
-      : 0,
+    deterministicSavingPct: deterministicSaving.saving_pct,
     config: normalizedConfig,
   });
 
   return {
     company_id: companyId,
     scenario_id: selectedScenario?.scenario_id || null,
+    baseline_scenario_id: baselineScenarioId,
+    deterministic_scenario_id: deterministic?.scenario_id || selectedScenario?.scenario_id || null,
     monte_carlo_status: 'success',
+    analysis_type: 'exploratory_uncertainty_analysis',
+    forecast: false,
+    historical_distribution: false,
+    deterministic_reference: {
+      scenario_id: deterministic?.scenario_id || selectedScenario?.scenario_id || null,
+      total_with_tax: safeNumber(deterministic?.total_with_tax),
+      saving_pct: deterministicSaving.saving_pct,
+    },
     config: normalizedConfig,
     samples,
     summary,

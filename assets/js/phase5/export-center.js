@@ -19,6 +19,7 @@ export function buildExportPackage({
   comparison,
   robustness,
   workbookParity,
+  rankingSensitivity,
 } = {}) {
   const monteCarlo =
     selectedScenario?.monte_carlo || selectedScenario?.scenario?.monte_carlo || null;
@@ -31,11 +32,21 @@ export function buildExportPackage({
     audit,
     comparison,
     workbookParity,
+    rankingSensitivity,
   });
   const json = JSON.stringify(
     {
       company_id: companyId,
       decision_package: decisionPackage,
+      selected_scenario: selectedScenario
+        ? {
+            scenario_id: selectedScenario.scenario_id || selectedScenario.scenario?.scenario_id,
+            scenario: selectedScenario.scenario || null,
+            result: selectedScenario.result || null,
+            quality: selectedScenario.quality || null,
+            monte_carlo: monteCarlo,
+          }
+        : null,
       recommendation,
       stress,
       sensitivity,
@@ -44,6 +55,14 @@ export function buildExportPackage({
       audit,
       workbook_parity: workbookParity,
       monte_carlo: monteCarlo,
+      financial_summary: {
+        baseline_total: comparison?.baseline_total ?? null,
+        scenario_total: comparison?.scenario_total ?? null,
+        saving_abs: comparison?.saving_abs ?? null,
+        saving_pct: comparison?.saving_pct ?? null,
+        components: selectedScenario?.result?.costs || selectedScenario?.costs || null,
+      },
+      comparison,
     },
     null,
     2

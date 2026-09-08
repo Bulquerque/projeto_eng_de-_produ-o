@@ -24,6 +24,7 @@ import {
   formatInventoryDaysDisplay,
   formatMultiplierDisplay,
 } from '../core/scenario-summary.js';
+import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
 import {
   getTaxRegimeDefinition,
   resolveTaxRegime,
@@ -54,8 +55,8 @@ const DEFAULT_FORM_VALUES = {
   scenario_name: 'Cenário customizado',
   freight_multiplier: 1,
   demand_multiplier: 1,
-  inventory_days: 45,
-  wacc: 0.15,
+  inventory_days: MODEL_DEFAULTS.inventory_days,
+  wacc: MODEL_DEFAULTS.reference_wacc,
   tax_mode: 'current',
   reallocation_rule: 'nearest_available_cd',
 };
@@ -465,15 +466,17 @@ function renderScenarioExecutiveTable() {
   const base = state.library?.baselineBundle?.costs?.costs || {};
   const result = state.currentResult;
   const quality = state.quality;
-  const saving = Number(base.total_with_tax || 0) - Number(result.total_with_tax || 0);
-  const savingPct = base.total_with_tax ? (saving / Number(base.total_with_tax)) * 100 : 0;
+  const savingResult = calculateSaving({
+    baselineTotal: base.total_with_tax,
+    scenarioTotal: result.total_with_tax,
+  });
   const rows = [
     ['Baseline', formatBRL(base.total_with_tax, true), '—', 'referência'],
     [
       result.scenario_name,
       formatBRL(result.total_with_tax, true),
-      formatBRL(saving, true),
-      formatPct(savingPct, 2),
+      formatBRL(savingResult.saving_abs, true),
+      formatPct(savingResult.saving_pct, 2),
     ],
     [
       'Quality Score',
@@ -538,6 +541,7 @@ function renderComparison() {
         tax_results: {
           tax_regime: row.tax_regime,
           regime_label: row.tax_regime_label,
+          tax_source_label: row.tax_source_label,
         },
       },
       baselineTotal: state.comparison.comparison[0]?.total_with_tax || 0,
@@ -547,10 +551,10 @@ function renderComparison() {
   }));
   setHtml(
     'comparisonTable',
-    `<table><thead><tr><th>Cenário</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Rank</th><th>Status</th></tr></thead><tbody>${rows
+    `<table><thead><tr><th>Cenário</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Fonte tributária</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Rank</th><th>Status</th></tr></thead><tbody>${rows
       .map(
         (row) =>
-          `<tr><td>${escapeHtml(row.scenario_name)}</td><td>${formatNumber(row.active_cds_count)}</td><td>${escapeHtml(formatMultiplierDisplay(row.freight_multiplier))}</td><td>${escapeHtml(formatMultiplierDisplay(row.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(row.inventory_days))}</td><td>${escapeHtml(row.tax_regime_label)}</td><td>${formatBRL(row.transfer_cost)}</td><td>${formatBRL(row.tax_impact)}</td><td>${formatBRL(row.total_with_tax)}</td><td class="${row.saving_abs >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving_abs)}</td><td>${formatPct(row.saving_pct, 2)}</td><td>${row.rank_by_total_cost}</td><td>${escapeHtml(row.status)}</td></tr>`
+          `<tr><td>${escapeHtml(row.scenario_name)}</td><td>${formatNumber(row.active_cds_count)}</td><td>${escapeHtml(formatMultiplierDisplay(row.freight_multiplier))}</td><td>${escapeHtml(formatMultiplierDisplay(row.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(row.inventory_days))}</td><td>${escapeHtml(row.tax_regime_label)}</td><td>${escapeHtml(row.tax_source_label || '—')}</td><td>${formatBRL(row.transfer_cost)}</td><td>${formatBRL(row.tax_impact)}</td><td>${formatBRL(row.total_with_tax)}</td><td class="${row.saving_abs >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving_abs)}</td><td>${formatPct(row.saving_pct, 2)}</td><td>${row.rank_by_total_cost}</td><td>${escapeHtml(row.status)}</td></tr>`
       )
       .join('')}</tbody></table>`
   );
@@ -581,7 +585,7 @@ function renderLibraryComparisonTable() {
             active_cds: state.library.baselineBundle.model?.active_cds || [],
             freight_multiplier: 1,
             demand_multiplier: 1,
-            inventory_days: 45,
+            inventory_days: MODEL_DEFAULTS.inventory_days,
             tax_mode: 'current',
           },
         },
@@ -635,7 +639,7 @@ function renderLibraryComparisonTable() {
       : [];
   setHtml(
     'scenarioLibraryComparisonTable',
-    `<table><thead><tr><th>Cenário</th><th>Tipo</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Quality</th><th>Risco</th></tr></thead><tbody>${[...rows, ...current, ...libraryRows].map((row) => `<tr><td>${escapeHtml(row.scenario_name)}</td><td>${escapeHtml(row.type || '—')}</td><td>${escapeHtml(String(row.active_cds_count ?? '—'))}</td><td>${escapeHtml(formatMultiplier(row.freight_multiplier))}</td><td>${escapeHtml(formatMultiplier(row.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(row.inventory_days))}</td><td>${escapeHtml(row.tax_regime_label || '—')}</td><td>${formatBRL(row.transfer_cost, true)}</td><td>${formatBRL(row.tax_impact, true)}</td><td>${formatBRL(row.total_with_tax, true)}</td><td class="${row.saving_abs >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving_abs, true)}</td><td>${formatPct(row.saving_pct, 2)}</td><td>${escapeHtml(row.quality_score == null ? '—' : String(row.quality_score))}</td><td>${escapeHtml(row.risk_level || '—')}</td></tr>`).join('')}</tbody></table>`
+    `<table><thead><tr><th>Cenário</th><th>Tipo</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Fonte tributária</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Quality</th><th>Risco</th></tr></thead><tbody>${[...rows, ...current, ...libraryRows].map((row) => `<tr><td>${escapeHtml(row.scenario_name)}</td><td>${escapeHtml(row.type || '—')}</td><td>${escapeHtml(String(row.active_cds_count ?? '—'))}</td><td>${escapeHtml(formatMultiplier(row.freight_multiplier))}</td><td>${escapeHtml(formatMultiplier(row.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(row.inventory_days))}</td><td>${escapeHtml(row.tax_regime_label || '—')}</td><td>${escapeHtml(row.tax_source_label || '—')}</td><td>${formatBRL(row.transfer_cost, true)}</td><td>${formatBRL(row.tax_impact, true)}</td><td>${formatBRL(row.total_with_tax, true)}</td><td class="${row.saving_abs >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving_abs, true)}</td><td>${formatPct(row.saving_pct, 2)}</td><td>${escapeHtml(row.quality_score == null ? '—' : String(row.quality_score))}</td><td>${escapeHtml(row.risk_level || '—')}</td></tr>`).join('')}</tbody></table>`
   );
 }
 
@@ -741,7 +745,11 @@ function renderMonteCarloSummaryCards() {
         `${Number(summary.deterministic_percentile_saving_pct || 0).toFixed(0)}º`,
         'posição do cenário base na distribuição'
       ),
-      metric('Iterações', formatNumber(summary.iterations, 0), `seed ${summary.seed}`),
+      metric(
+        'Iterações',
+        formatNumber(summary.iterations_valid ?? summary.iterations, 0),
+        `${formatNumber(summary.iterations_requested ?? summary.iterations, 0)} solicitadas · seed ${summary.seed_effective ?? summary.seed}`
+      ),
     ].join('');
   }
 
@@ -751,6 +759,8 @@ function renderMonteCarloSummaryCards() {
         <thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
         <tbody>
           <tr><td>Perfil</td><td>${escapeHtml(monteCarloProfileLabel(summary.profile))}</td></tr>
+          <tr><td>Seed / RNG</td><td>${escapeHtml(String(summary.seed_effective ?? summary.seed ?? '—'))} · ${escapeHtml(summary.rng_algorithm || '—')}</td></tr>
+          <tr><td>Modelo</td><td>Monte Carlo exploratório complementar, com premissas sintéticas; não é previsão histórica</td></tr>
           <tr><td>Leitura executiva</td><td>${escapeHtml(monteCarloInterpretation(summary))}</td></tr>
           <tr><td>Prob. saving positivo</td><td>${formatPct(summary.probability_saving_positive * 100, 1)}</td></tr>
           <tr><td>Prob. saving negativo</td><td>${formatPct(summary.probability_saving_loss * 100, 1)}</td></tr>

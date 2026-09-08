@@ -121,7 +121,7 @@ function renderProfiles() {
 function renderOptimizer() {
   if (!state.optimizer) {
     $('searchLogPanel').innerHTML =
-      '<div class="empty-state">Rode a otimização exata para ver o log.</div>';
+      '<div class="empty-state">Rode a busca discreta para ver o log e a cobertura do espaço avaliado.</div>';
     $('rankingPanel').innerHTML = '<div class="empty-state">Sem ranking ainda.</div>';
     $('rankingExplanation').innerHTML = '<div class="empty-state">Sem explicação ainda.</div>';
     $('tradeoffPanel').innerHTML = '<div class="empty-state">Sem fronteira ainda.</div>';
@@ -133,7 +133,7 @@ function renderOptimizer() {
   const opt = state.optimizer;
   if (opt.optimizer_status !== 'success') {
     $('searchLogPanel').innerHTML =
-      `<div class="alert-box error"><strong>Otimização não concluída</strong><p>${escapeHtml((opt.errors || []).join('; ') || 'Falha na busca exata.')}</p></div>${renderSearchLog(opt.search_log)}`;
+      `<div class="alert-box error"><strong>Busca não concluída</strong><p>${escapeHtml((opt.errors || []).join('; ') || 'Falha na busca discreta.')}</p></div>${renderSearchLog(opt.search_log)}`;
     $('rankingPanel').innerHTML = '<div class="empty-state">Sem ranking disponível.</div>';
     $('rankingExplanation').innerHTML = '<div class="empty-state">Sem explicação disponível.</div>';
     $('tradeoffPanel').innerHTML = '<div class="empty-state">Sem fronteira disponível.</div>';
@@ -199,7 +199,7 @@ function runOpt() {
     return;
   }
   $('runOptimizer').disabled = true;
-  $('runOptimizer').textContent = 'Rodando otimização exata...';
+  $('runOptimizer').textContent = 'Rodando busca discreta...';
   setTimeout(() => {
     try {
       state.optimizer = runOptimization({
@@ -215,13 +215,13 @@ function runOpt() {
         alert((state.optimizer.errors || ['Falha na otimização']).join('; '));
         return;
       }
-      log('Otimização exata executada', state.optimizer.search_log);
+      log('Busca discreta executada', state.optimizer.search_log);
     } catch (e) {
       logError('Erro no otimizador', e.message);
       alert(e.message);
     } finally {
       $('runOptimizer').disabled = false;
-      $('runOptimizer').textContent = 'Rodar otimização exata';
+      $('runOptimizer').textContent = 'Rodar busca discreta';
     }
   }, 20);
 }

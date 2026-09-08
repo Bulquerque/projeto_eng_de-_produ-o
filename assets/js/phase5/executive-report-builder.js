@@ -23,9 +23,12 @@ function pct(v) {
 }
 function status(v) {
   return (
-    { recommended: 'recomendado', not_recommended: 'não recomendado', review_required: 'revisar' }[
-      v
-    ] ||
+    {
+      recommended: 'recomendado',
+      recommended_with_warnings: 'recomendado com alertas',
+      not_recommended: 'não recomendado',
+      review_required: 'revisar',
+    }[v] ||
     v ||
     '—'
   );
@@ -59,6 +62,7 @@ function workbookParitySection(workbookParity = {}) {
   `;
 }
 function monteCarloSection(selectedScenario = {}) {
+  const monteCarloConfig = selectedScenario?.monte_carlo?.config || {};
   const monteCarlo =
     selectedScenario?.monte_carlo?.summary ||
     selectedScenario?.scenario?.monte_carlo?.summary ||
@@ -70,12 +74,62 @@ function monteCarloSection(selectedScenario = {}) {
     <h3>Análise probabilística</h3>
     <table class="executive-table-premium"><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>
       <tr><td>Perfil</td><td>${esc(monteCarlo.profile || '—')}</td></tr>
-      <tr><td>Iterações</td><td>${esc(monteCarlo.iterations ?? '—')}</td></tr>
+      <tr><td>Iterações válidas / solicitadas</td><td>${esc(monteCarlo.iterations_valid ?? monteCarlo.iterations ?? '—')} / ${esc(monteCarlo.iterations_requested ?? monteCarlo.iterations ?? '—')}</td></tr>
+      <tr><td>Seed / RNG</td><td>${esc(monteCarlo.seed_effective ?? monteCarlo.seed ?? '—')} · ${esc(monteCarlo.rng_algorithm || '—')}</td></tr>
+      <tr><td>Modelo</td><td>${esc(monteCarloConfig.model || 'complementar')}</td></tr>
+      <tr><td>Distribuições</td><td>${esc(JSON.stringify(monteCarloConfig.spread || {}))}</td></tr>
       <tr><td>Prob. saving positivo</td><td>${esc(pct(Number(monteCarlo.probability_saving_positive || 0) * 100))}</td></tr>
       <tr><td>Saving p10 / p50 / p90</td><td>${esc(pct(monteCarlo.p10_saving_pct))} · ${esc(pct(monteCarlo.median_saving_pct))} · ${esc(pct(monteCarlo.p90_saving_pct))}</td></tr>
       <tr><td>Driver mais influente</td><td>${esc(monteCarlo.most_sensitive_driver || '—')}</td></tr>
       <tr><td>Faixa de risco</td><td>${esc(monteCarlo.risk_band || '—')}</td></tr>
     </tbody></table>
+  `;
+}
+
+function rankingSensitivitySection(rankingSensitivity = null) {
+  if (!rankingSensitivity) return '';
+  const winners = rankingSensitivity.winner_frequency || [];
+  return `
+    <h3>Sensibilidade do ranking aos pesos</h3>
+    <table class="executive-table-premium"><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>
+      <tr><td>Perfis avaliados</td><td>${esc(rankingSensitivity.profiles_evaluated ?? '—')}</td></tr>
+      <tr><td>Status de estabilidade</td><td>${esc(rankingSensitivity.stability_status || '—')}</td></tr>
+      <tr><td>Cenário mais frequente</td><td>${esc(rankingSensitivity.most_stable_scenario_id || '—')}</td></tr>
+      <tr><td>Frequência do vencedor</td><td>${esc(pct(Number(rankingSensitivity.stability_ratio || 0) * 100))}</td></tr>
+    </tbody></table>
+    ${
+      winners.length
+        ? `<table class="executive-table-premium" style="margin-top:12px"><thead><tr><th>Cenário</th><th>Perfis</th><th>Frequência</th></tr></thead><tbody>${winners
+            .map(
+              (winner) =>
+                `<tr><td>${esc(winner.scenario_id)}</td><td>${esc(winner.profile_count)}</td><td>${esc(pct(Number(winner.profile_share || 0) * 100))}</td></tr>`
+            )
+            .join('')}</tbody></table>`
+        : '<p>Não há vencedores registrados para os perfis avaliados.</p>'
+    }
+  `;
+}
+
+function methodologySection(selectedScenario = {}, audit = {}) {
+  const result = selectedScenario?.result || selectedScenario;
+  const costs = result?.costs || {};
+  const diagnostics = costs.diagnostics || {};
+  const changes = selectedScenario?.scenario?.changes || selectedScenario?.changes || {};
+  const warnings = [...new Set([...(costs.warnings || []), ...(result?.warnings || [])])];
+  return `
+    <h3>Metodologia e rastreabilidade</h3>
+    <table class="executive-table-premium"><thead><tr><th>Item</th><th>Registro</th></tr></thead><tbody>
+      <tr><td>Método de custo</td><td>${esc(costs.calculation_method || '—')}</td></tr>
+      <tr><td>Classificação da fonte</td><td>${esc(diagnostics.source_classification || '—')}</td></tr>
+      <tr><td>Fonte tributária</td><td>${esc(result?.tax_results?.tax_source_label || '—')}</td></tr>
+      <tr><td>Regime tributário do cenário</td><td>${esc(result?.tax_results?.tax_regime || changes.tax_regime || changes.tax_mode || '—')}</td></tr>
+      <tr><td>Estoque</td><td>Escolha B — independente da quantidade de CDs ativos</td></tr>
+      <tr><td>Fallbacks físicos</td><td>${esc(JSON.stringify({ counts: diagnostics.fallback_counts || {}, rates: diagnostics.fallback_rates || {}, flow_count: diagnostics.flow_count ?? null }))}</td></tr>
+      <tr><td>Proveniência do proxy de transferência</td><td>${esc(JSON.stringify(diagnostics.transfer_proxy_provenance || '—'))}</td></tr>
+      <tr><td>Audit ID</td><td>${esc(audit?.audit_id || '—')}</td></tr>
+    </tbody></table>
+    <p class="small-note">Os custos sem observação direta são identificados como proxy ou fallback no resultado e no pacote JSON. Eles não devem ser lidos como tarifa histórica validada.</p>
+    ${warnings.length ? `<p><strong>Alertas do cálculo:</strong> ${warnings.map((warning) => esc(warning)).join(' · ')}</p>` : ''}
   `;
 }
 
@@ -111,6 +165,7 @@ export function buildExecutiveReportHtml({
   audit,
   comparison,
   workbookParity,
+  rankingSensitivity,
 } = {}) {
   const scenarioName =
     selectedScenario?.scenario_name ||
@@ -123,7 +178,7 @@ export function buildExecutiveReportHtml({
   const savingPct = comparison?.saving_pct;
   return `<article class="executive-report-content">
     <h2>Relatório executivo — ${esc(companyId)}</h2>
-    <h3>Cenário recomendado</h3>
+    <h3>Cenário e parecer</h3>
     <p><strong>${esc(scenarioName)}</strong></p>
     <p>${esc(recommendation?.executive_summary || '')}</p>
     <h3>Resultado financeiro</h3>
@@ -138,6 +193,8 @@ export function buildExecutiveReportHtml({
     <h3>Stress test</h3>
     <p>${esc(stress?.summary?.cases_positive || 0)} de ${esc(stress?.summary?.cases_run || 0)} casos mantiveram resultado melhor ou igual ao baseline.</p>
     ${monteCarloSection(selectedScenario)}
+    ${rankingSensitivitySection(rankingSensitivity || audit?.ranking_sensitivity)}
+    ${methodologySection(selectedScenario, audit)}
     ${workbookParitySection(workbookParity)}
     <h3>Principais razões</h3>
     <ul>${(recommendation?.main_reasons || []).map((x) => `<li>${esc(x)}</li>`).join('')}</ul>

@@ -5,6 +5,7 @@ export function buildAuditTrail({
   objective = {},
   recommendation = {},
   optimizerResult = null,
+  rankingSensitivity = null,
   extraSources = [],
 } = {}) {
   const scenarioId =
@@ -35,7 +36,13 @@ export function buildAuditTrail({
     probabilistic_summary: monteCarlo
       ? {
           iterations: monteCarlo.iterations ?? null,
+          iterations_requested: monteCarlo.iterations_requested ?? null,
+          iterations_valid: monteCarlo.iterations_valid ?? null,
           seed: monteCarlo.seed ?? null,
+          seed_effective: monteCarlo.seed_effective ?? null,
+          rng_algorithm: monteCarlo.rng_algorithm || null,
+          baseline_scenario_id: monteCarlo.baseline_scenario_id || null,
+          deterministic_scenario_id: monteCarlo.deterministic_scenario_id || null,
           profile: monteCarlo.profile || null,
           probability_saving_positive: monteCarlo.probability_saving_positive ?? null,
           p10_saving_pct: monteCarlo.p10_saving_pct ?? null,
@@ -55,6 +62,7 @@ export function buildAuditTrail({
           best_scenario_id: searchLog.best_scenario_id || null,
         }
       : null,
+    ranking_sensitivity: rankingSensitivity || optimizerResult?.ranking_sensitivity || null,
     model_versions: {
       phase1: 'implemented',
       phase2: 'implemented',

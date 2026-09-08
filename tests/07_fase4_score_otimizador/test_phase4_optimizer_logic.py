@@ -14,8 +14,9 @@ import {buildObjective} from './assets/js/phase4/objective-builder.js';
 import {generateCandidateScenarios} from './assets/js/phase4/candidate-scenario-generator.js';
 import {runOptimization} from './assets/js/phase4/scenario-optimizer.js';
 import {buildTradeoffFrontier} from './assets/js/phase4/tradeoff-frontier.js';
+import {loadRuntimeBundle} from './tests/runtime_bundle_support.mjs';
 for (const companyId of ['empresa1','empresa2']) {
- const bundle=decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
+ const bundle=loadRuntimeBundle({companyId,decryptJson});
  const objective=buildObjective({companyId,objectiveName:'Teste',weights:{total_cost:40,service_quality:20,operational_risk:15,tax_impact:15,inventory_efficiency:10}});
  const gen=generateCandidateScenarios({companyId,baselineBundle:bundle,generationConfig:{max_candidates:15}});
  if(gen.candidate_scenarios.length===0) throw new Error('no candidates');

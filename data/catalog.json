@@ -12,7 +12,9 @@
           "id": "demand_records",
           "csv": "data/empresa1/core/demand_records.csv",
           "json": "data/empresa1/core/demand_records.json",
-          "rows": 60311,
+          "rows": 60308,
+          "raw_rows": 60311,
+          "invalid_rows": 3,
           "columns": 10,
           "headers": [
             "UF",

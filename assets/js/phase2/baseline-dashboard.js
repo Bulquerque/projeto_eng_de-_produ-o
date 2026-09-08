@@ -173,7 +173,7 @@ function renderTax(bundle, companyId) {
       ? `${formatNumber(summary.flows_with_tax_data || 0)} linhas`
       : 'sem matriz tributária';
   $('taxPanel').innerHTML =
-    `<div class="metric-grid compact">${metric('Impacto tributário', formatBRL(summary.total_tax_impact, true), 'valor canônico')}${metric('Cobertura tributária', formatPct(summary.coverage_pct || 0), coverageLabel)}${metric('Fonte canônica', sourceLabel, recon.status === 'within_tolerance' ? 'sem conflito' : 'alerta ativo')}</div>${renderTaxSourceSummary(bundle, companyId)}`;
+    `<div class="metric-grid compact">${metric('Impacto tributário', formatBRL(summary.total_tax_impact, true), 'valor canônico')}${metric('Cobertura tributária', formatPct(summary.coverage_pct || 0), coverageLabel)}${metric('Fonte canônica', sourceLabel, recon.status === 'within_tolerance' ? 'sem conflito' : 'alerta ativo')}</div><p class="small-note">Escopo: cálculo parametrizado e reconciliado. Não é validação fiscal oficial.</p>${renderTaxSourceSummary(bundle, companyId)}`;
 }
 function renderEvidence(costs) {
   const ev = costs.raw_operational_evidence;

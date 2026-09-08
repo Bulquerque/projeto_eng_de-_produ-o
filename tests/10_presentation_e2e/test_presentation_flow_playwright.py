@@ -149,6 +149,11 @@ def test_presentation_flow_playwright():
         page.locator('#runOptimizer').click()
         page.locator('#rankingPanel table tbody tr').first.wait_for(state='visible', timeout=30000)
         assert page.locator('#rankingPanel table tbody tr').count() > 0
+        page.locator('#global-company-switcher button[data-company="empresa2"]').click()
+        page.locator('#phase4CompanyLabel').filter(has_text='Empresa 2').wait_for(state='visible', timeout=30000)
+        page.locator('#runOptimizer').click()
+        page.locator('#rankingPanel table tbody tr').first.wait_for(state='visible', timeout=30000)
+        assert 'Empresa 2' in page.locator('#phase4CompanyLabel').inner_text()
         save_screenshot(page, '04_optimizer_desktop')
         assert_no_runtime_errors(page, console_events, page_errors, request_failures)
         report.append({'step': 'optimizer', 'status': 'ok', 'prompts': prompts})

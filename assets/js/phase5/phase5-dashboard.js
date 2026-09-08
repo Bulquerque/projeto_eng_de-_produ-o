@@ -13,6 +13,7 @@ import { buildExecutiveReportHtml } from './executive-report-builder.js';
 import { buildExportPackage, triggerBrowserDownload } from './export-center.js';
 import { runFinalQAChecks } from './final-qa-checker.js';
 import { validateRelease } from './release-validator.js';
+import { runMonteCarloSimulation } from '../phase3/monte-carlo-engine.js';
 import { renderSensitivityChart, renderStressChart, renderRobustnessChart } from './charts.js';
 import { buildWorkbookParitySummary, renderWorkbookParityPanel } from './workbook-parity.js';
 import { appendSharedDebugEntry } from '../core/debug-tools.js';
@@ -22,6 +23,7 @@ import {
   formatInventoryDaysDisplay,
   formatMultiplierDisplay,
 } from '../core/scenario-summary.js';
+import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
 
 const state = {
   companyId: 'empresa1',
@@ -38,6 +40,7 @@ const state = {
   exportPackage: null,
   finalQA: null,
   release: null,
+  monteCarlo: null,
   workbookParity: null,
   isLoading: false,
 };
@@ -86,7 +89,7 @@ function constraints() {
   return {
     min_active_cds: 1,
     max_active_cds: 999,
-    max_cd_volume_share: 1,
+    max_cd_volume_share: 0.75,
     max_risk_level: 'high',
     allow_tax_disabled: false,
   };
@@ -108,14 +111,10 @@ function baselineResult() {
   };
 }
 function scenarioComparison(selected) {
-  const base = Number(state.bundle?.costs?.costs?.total_with_tax || 0);
-  const total = Number(selected?.result?.total_with_tax || selected?.total_with_tax || 0);
-  return {
-    baseline_total: base,
-    scenario_total: total,
-    saving_abs: base - total,
-    saving_pct: base ? ((base - total) / base) * 100 : 0,
-  };
+  return calculateSaving({
+    baselineTotal: state.bundle?.costs?.costs?.total_with_tax,
+    scenarioTotal: selected?.result?.total_with_tax || selected?.total_with_tax,
+  });
 }
 function blockedDecisionState(message) {
   state.stress = {
@@ -172,6 +171,7 @@ function blockedDecisionState(message) {
     objective: state.objective || {},
     recommendation: state.recommendation,
     optimizerResult: state.optimizer,
+    rankingSensitivity: state.optimizer?.ranking_sensitivity,
     extraSources: state.bundle?.complements?.audit_sources || [],
   });
   state.exportPackage = { export_status: 'blocked', files: [], warnings: [], errors: [message] };
@@ -184,6 +184,7 @@ function blockedDecisionState(message) {
     audit: state.audit,
   });
   state.release = validateRelease({ finalQA: state.finalQA });
+  state.monteCarlo = null;
 }
 function runDecisionPipeline() {
   state.objective = defaultObjective();
@@ -201,7 +202,9 @@ function runDecisionPipeline() {
   });
   if (state.optimizer.optimizer_status !== 'success') {
     state.selection = null;
-    blockedDecisionState((state.optimizer.errors || ['Falha na otimização exata.']).join('; '));
+    blockedDecisionState(
+      (state.optimizer.errors || ['Falha na busca discreta de cenários.']).join('; ')
+    );
     return;
   }
   state.selection = selectFinalScenario({
@@ -219,6 +222,17 @@ function runDecisionPipeline() {
   const selected = state.selection.selected_scenario;
   const scenario = selected?.scenario;
   const quality = selected?.quality || {};
+  state.monteCarlo = runMonteCarloSimulation({
+    companyId: state.companyId,
+    selectedScenario: scenario,
+    baselineBundle: state.bundle,
+    deterministicResult: selected?.result,
+    iterations: 300,
+    seed: 42,
+    config: { profile: 'balanced', scatter_driver: 'freight_multiplier' },
+  });
+  const selectedWithMonteCarlo = { ...selected, monte_carlo: state.monteCarlo };
+  state.selection.selected_scenario = selectedWithMonteCarlo;
   state.workbookParity = buildWorkbookParitySummary(state.bundle);
   state.stress = runStressTests({
     companyId: state.companyId,
@@ -256,18 +270,19 @@ function runDecisionPipeline() {
     stressResults: state.stress.stress_results,
     quality,
   });
-  const comparison = scenarioComparison(selected);
+  const comparison = scenarioComparison(selectedWithMonteCarlo);
   state.recommendation = buildRecommendation({
     companyId: state.companyId,
-    selectedScenario: selected,
+    selectedScenario: selectedWithMonteCarlo,
     comparison,
     quality,
     robustness: state.robustness,
+    rankingSensitivity: state.optimizer?.ranking_sensitivity,
     objective: state.objective,
   });
   state.audit = buildAuditTrail({
     companyId: state.companyId,
-    selectedScenario: selected,
+    selectedScenario: selectedWithMonteCarlo,
     baselineBundle: state.bundle,
     objective: state.objective,
     recommendation: state.recommendation,
@@ -283,6 +298,8 @@ function runDecisionPipeline() {
     stress_test: state.stress.summary,
     robustness: state.robustness,
     audit: state.audit,
+    ranking_sensitivity: state.optimizer?.ranking_sensitivity,
+    monte_carlo: state.monteCarlo,
   };
   state.exportPackage = buildExportPackage({
     companyId: state.companyId,
@@ -292,15 +309,16 @@ function runDecisionPipeline() {
     sensitivityMatrix: state.sensitivityMatrix,
     audit: state.audit,
     recommendation: state.recommendation,
-    selectedScenario: selected,
+    selectedScenario: selectedWithMonteCarlo,
     comparison,
     robustness: state.robustness,
     workbookParity: state.workbookParity,
+    rankingSensitivity: state.optimizer?.ranking_sensitivity,
   });
   state.finalQA = runFinalQAChecks({
     companyId: state.companyId,
     bundle: state.bundle,
-    selectedScenario: selected,
+    selectedScenario: selectedWithMonteCarlo,
     stress: state.stress,
     recommendation: state.recommendation,
     audit: state.audit,
@@ -312,8 +330,14 @@ function runDecisionPipeline() {
   });
 }
 function sensitivityValues(variable, compact = false) {
-  if (variable === 'inventory_days') return compact ? [30, 45, 60] : [30, 45, 60];
-  if (variable === 'wacc') return compact ? [0.1, 0.15, 0.2] : [0.1, 0.15, 0.2];
+  if (variable === 'inventory_days')
+    return compact
+      ? [30, MODEL_DEFAULTS.inventory_days, 60]
+      : [30, MODEL_DEFAULTS.inventory_days, 60];
+  if (variable === 'wacc')
+    return compact
+      ? [0.1, MODEL_DEFAULTS.reference_wacc, 0.2]
+      : [0.1, MODEL_DEFAULTS.reference_wacc, 0.2];
   return compact ? [0.9, 1.0, 1.1] : [0.9, 1.0, 1.1, 1.2];
 }
 function variableLabel(variable) {
@@ -328,9 +352,12 @@ function variableLabel(variable) {
 }
 function recommendationLabel(status) {
   return (
-    { recommended: 'recomendado', not_recommended: 'não recomendado', review_required: 'revisar' }[
-      status
-    ] ||
+    {
+      recommended: 'recomendado',
+      recommended_with_warnings: 'recomendado com alertas',
+      not_recommended: 'não recomendado',
+      review_required: 'revisar',
+    }[status] ||
     status ||
     '—'
   );

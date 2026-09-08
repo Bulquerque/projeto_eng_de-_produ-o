@@ -41,6 +41,14 @@
       </div>
     </nav>
 
+    <div class="global-company-switcher" id="global-company-switcher" aria-label="Empresa ativa">
+      <span class="eyebrow">Empresa ativa</span>
+      <div class="company-toggle" role="tablist" aria-label="Selecionar empresa em todas as fases">
+        <button type="button" class="company-tab active" data-company="empresa1" role="tab" aria-selected="true">Empresa 1</button>
+        <button type="button" class="company-tab" data-company="empresa2" role="tab" aria-selected="false">Empresa 2</button>
+      </div>
+    </div>
+
     <section class="hero-grid" aria-labelledby="hero-title">
       <div class="hero-copy">
         <span class="status-chip status-ok" id="heroStatus">carregando diagnóstico</span>
@@ -528,8 +536,8 @@
       <section class="section">
         <div class="section-heading">
           <p class="eyebrow">restrições e busca</p>
-          <h2>Configuração do Otimizador Exato</h2>
-          <p>O otimizador enumera o espaço discreto modelado. Nesta versão, apenas a malha de CDs varia; frete e tributo ficam fixos.</p>
+            <h2>Configuração da Busca Discreta</h2>
+            <p>A busca avalia o espaço discreto modelado e informa a cobertura efetivamente examinada. Nesta versão, apenas a malha de CDs varia; frete e tributo ficam fixos.</p>
         </div>
         <div class="two-column-grid">
           <article class="card constraint-panel">
@@ -555,7 +563,7 @@
                   <option value="reform_2030">2030 (Transição 20%)</option>
                   <option value="reform_2031">2031 (Transição 30%)</option>
                   <option value="reform_2032">2032 (Transição 40%)</option>
-                  <option value="reform_2033" selected>2033 (Regime pleno)</option>
+                  <option value="reform_2033">2033 (Regime pleno)</option>
                 </optgroup>
               </select>
             </label>
@@ -565,12 +573,12 @@
             <h3>Busca</h3>
             <label>Método
               <select id="optimizerMethod">
-                <option value="exact_discrete">busca exata nos cenários modelados</option>
+                <option value="exact_discrete">busca discreta reproduzível</option>
               </select>
             </label>
             <label>Limite de cenários avaliados<small>Trava de segurança para execução no navegador.</small><input id="maxCandidates" type="number" min="100" max="10000" step="100" value="2000"></label>
             <label>Identificador da execução<small>Mantém a enumeração reproduzível.</small><input id="optimizerSeed" type="number" step="1" value="42"></label>
-            <button type="button" class="primary-button" id="runOptimizer">Rodar otimização exata</button>
+            <button type="button" class="primary-button" id="runOptimizer">Rodar busca discreta</button>
           </article>
         </div>
       </section>

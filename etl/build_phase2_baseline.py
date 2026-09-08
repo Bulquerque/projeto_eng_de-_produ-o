@@ -376,6 +376,12 @@ def build_empresa1():
             'phase': 2,
             'generated_at_utc': datetime.now(timezone.utc).isoformat(),
             'methodology': 'Demanda mensal agregada por UF/centroide; destino atendido pela origem/CD com menor frete R$/kg na matriz de distância. Transferência e tributo não são inferidos por ausência de fonte específica.',
+            'demand_quality': {
+                'raw_rows': len(demand),
+                'canonical_rows': len(demand) - invalid,
+                'invalid_rows_dropped': invalid,
+                'invalid_row_rule': 'UF e CENTROIDE obrigatórios; linhas de rodapé/fórmula não entram no grão canônico.',
+            },
         },
         'warnings': warnings
         + [

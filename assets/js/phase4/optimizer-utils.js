@@ -1,12 +1,22 @@
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
 import { resolveTaxRegime } from '../core/tax-reform-config.js';
 import { safeNumber } from '../core/common.js';
+import { MODEL_DEFAULTS } from '../core/model-configuration.js';
 
 export const SUPPORTED_METHOD = 'exact_discrete';
-const RISK_ORDER = { low: 1, baixo: 1, medium: 2, medio: 2, médio: 2, high: 3, alto: 3 };
+export const RISK_LEVELS = Object.freeze({
+  low: 1,
+  baixo: 1,
+  medium: 2,
+  medio: 2,
+  médio: 2,
+  high: 3,
+  alto: 3,
+});
+export const SUPPORTED_RISK_LEVELS = Object.freeze(Object.keys(RISK_LEVELS));
 
 export function riskVal(v) {
-  return RISK_ORDER[String(v || 'medium').toLowerCase()] || 2;
+  return RISK_LEVELS[String(v || 'medium').toLowerCase()] || RISK_LEVELS.medium;
 }
 
 export function compareExactRanking(a, b) {
@@ -62,8 +72,8 @@ export function buildBaselineScenario(companyId, baselineBundle) {
       active_cds: base.active_cds || [],
       freight_multiplier: 1,
       demand_multiplier: 1,
-      inventory_days: 45,
-      wacc: 0.15,
+      inventory_days: MODEL_DEFAULTS.inventory_days,
+      wacc: MODEL_DEFAULTS.reference_wacc,
       tax_mode: 'current',
       tax_regime: resolveTaxRegime({ taxMode: 'current' }),
       reallocation_rule: 'nearest_available_cd',
@@ -108,6 +118,7 @@ export function buildSearchLog({
   bestByTotalCostScenarioId = null,
   bestByTotalCostValue = null,
   exactSearchSpace = true,
+  exactnessReason = null,
   spaceLimited = false,
   invalidReasons = [],
 }) {
@@ -130,6 +141,7 @@ export function buildSearchLog({
     best_by_total_cost_scenario_id: bestByTotalCostScenarioId,
     best_by_total_cost_value: bestByTotalCostValue,
     exact_search_space: exactSearchSpace,
+    exactness_reason: exactnessReason,
     space_limited: spaceLimited,
     invalid_reasons: invalidReasons,
   };

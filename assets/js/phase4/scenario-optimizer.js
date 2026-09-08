@@ -19,6 +19,8 @@ import {
   buildCanonicalOptimizationConfig,
 } from '../core/optimization-policy.js';
 import { safeNumber } from '../core/common.js';
+import { validateObjective } from './objective-validator.js';
+import { assessObjectiveSensitivity } from './optimization-sensitivity.js';
 
 const REFINEMENT_CONFIG = Object.freeze({
   allow_tax_toggle: false,
@@ -124,6 +126,21 @@ export function runOptimization({
     1,
     Math.floor(Number(optimizerConfig.refinement_seed_count ?? 5))
   );
+  const objectiveValidation = validateObjective(objective);
+  if (!objectiveValidation.valid) {
+    return buildFailureResult({
+      companyId,
+      searchLog: buildSearchLog({
+        methodRequested: String(optimizerConfig.method || 'exact_discrete'),
+        methodApplied: null,
+        refinementRounds,
+        refinementSeedCount,
+        invalidReasons: objectiveValidation.errors,
+      }),
+      warnings: objectiveValidation.warnings,
+      errors: objectiveValidation.errors,
+    });
+  }
   const constraintValidation = validateConstraintConfig(constraints);
   if (!constraintValidation.valid) {
     return buildFailureResult({
@@ -150,12 +167,19 @@ export function runOptimization({
       base_tax_regime: CANONICAL_OPTIMIZATION_POLICY.tax_regime,
       allow_tax_disabled: CANONICAL_OPTIMIZATION_POLICY.allow_tax_disabled,
       demand_multipliers: [CANONICAL_OPTIMIZATION_POLICY.demand_multiplier],
+      seed: canonicalConfig.seed,
+      exhaustive_subsets: optimizerConfig.exhaustive_subsets === true,
     },
   });
 
   const generatedCount = generated.candidate_scenarios.length;
   const searchWarnings = [...(generated.warnings || [])];
   const searchErrors = [...(generated.errors || [])];
+  if (!generated.generation_summary?.search_space_complete) {
+    searchWarnings.push(
+      'O espaço de CDs foi catalogado por uma estratégia limitada; o resultado é ótimo somente dentro dos candidatos avaliados.'
+    );
+  }
 
   if (requestedMethod !== SUPPORTED_METHOD) {
     const message = `Método de otimização "${requestedMethod}" não é suportado. Use "${SUPPORTED_METHOD}".`;
@@ -185,6 +209,7 @@ export function runOptimization({
         refinementRounds,
         refinementSeedCount,
         spaceLimited: true,
+        exactSearchSpace: Boolean(generated.generation_summary?.search_space_complete),
         invalidReasons: [message],
       }),
       warnings: searchWarnings,
@@ -298,6 +323,18 @@ export function runOptimization({
   const totalValid = scenarioRecords.length + refinedRecords.length;
   const totalInvalid = invalid + refinedInvalid;
   const coverageRatio = candidateSpaceSize > 0 ? totalSimulated / candidateSpaceSize : 0;
+  const baseSpaceComplete = Boolean(generated.generation_summary?.search_space_complete);
+  const exactSearchSpace =
+    baseSpaceComplete &&
+    !generated.generation_summary?.limited_by_max_candidates &&
+    refinementGenerated === 0;
+  const exactnessReason = exactSearchSpace
+    ? 'Todas as combinações discretas declaradas foram enumeradas sem truncamento ou refino adicional.'
+    : baseSpaceComplete && refinementGenerated > 0
+      ? 'A enumeração-base é completa, mas o refino adicionou candidatos fora do espaço declarado.'
+      : generated.generation_summary?.limited_by_max_candidates
+        ? 'A enumeração foi truncada pelo limite máximo de candidatos.'
+        : 'A estratégia de CDs é um catálogo limitado; não representa todas as combinações possíveis.';
 
   if (!allScenarioRecords.length) {
     const message = 'Nenhum cenário viável encontrado no espaço discreto modelado.';
@@ -316,6 +353,8 @@ export function runOptimization({
         refinementSeedCount,
         refinementCandidatesGenerated: refinementGenerated,
         refinementCandidatesSimulated: refinedSimulated,
+        exactSearchSpace,
+        exactnessReason,
         invalidReasons: [...invalidReasons, ...refinedInvalidReasons, message],
       }),
       warnings: searchWarnings,
@@ -333,6 +372,11 @@ export function runOptimization({
     companyId,
     objective,
     normalizedMetrics: normalized.normalized_metrics,
+  });
+  const rankingSensitivity = assessObjectiveSensitivity({
+    companyId,
+    scenarioMetrics: metrics.scenario_metrics,
+    referenceMetrics: buildBaselineReferenceMetrics(baselineRecord),
   });
   const enriched = buildRankedScenarios(scoring, allScenarioRecords);
   const best_scenarios = enriched.slice(0, 10);
@@ -353,6 +397,7 @@ export function runOptimization({
     scenario_records: allScenarioRecords,
     metrics,
     normalized,
+    ranking_sensitivity: rankingSensitivity,
     search_log: buildSearchLog({
       methodRequested: requestedMethod,
       methodApplied: SUPPORTED_METHOD,
@@ -362,6 +407,8 @@ export function runOptimization({
       invalidCandidates: totalInvalid,
       candidateSpaceSize,
       coverageRatio,
+      exactSearchSpace,
+      exactnessReason,
       refinementRounds,
       refinementSeedCount,
       refinementCandidatesGenerated: refinementGenerated,
@@ -377,6 +424,7 @@ export function runOptimization({
       ...(metrics.warnings || []),
       ...(normalized.warnings || []),
       ...(scoring.warnings || []),
+      ...(rankingSensitivity.warnings || []),
     ],
     errors: [],
   };

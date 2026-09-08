@@ -432,14 +432,15 @@ function renderDataQualityPanel() {
   const core = quality.core_files || company?.core_files || [];
   const errors = quality.errors || quality.data_errors || [];
   const warnings = quality.warnings || quality.data_warnings || [];
-  const score = quality.data_quality_score ?? (errors.length ? 70 : warnings.length ? 88 : 100);
-  const statusOk = errors.length === 0;
+  const score = quality.data_quality_score;
+  const scoreLabel = score == null ? 'não calculado' : `${formatNumber(score)}/100`;
+  const statusOk = errors.length === 0 && warnings.length === 0 && score != null;
 
   $('dataQualityPanel').innerHTML = `
-    ${statusChip(statusOk ? 'qualidade OK' : 'tem erros', statusOk, warnings.length > 0)}
+    ${statusChip(statusOk ? 'qualidade OK' : 'revisar qualidade', statusOk, true)}
     <h3>Qualidade dos dados — ${escapeHtml(company?.label || '')}</h3>
-    <div class="metric-value">${formatNumber(score)}/100</div>
-    <div class="metric-label">score aproximado da Fase 1</div>
+    <div class="metric-value">${escapeHtml(scoreLabel)}</div>
+    <div class="metric-label">score materializado pela auditoria</div>
     <div class="mini-metrics">
       <div class="mini-card"><strong>${formatNumber(required.length)}</strong><span>fontes requeridas</span></div>
       <div class="mini-card"><strong>${formatNumber(core.length)}</strong><span>arquivos core</span></div>
@@ -449,7 +450,7 @@ function renderDataQualityPanel() {
     <details class="details-card" open>
       <summary>Fontes e alertas</summary>
       <p><b>Fontes:</b> ${required.map(escapeHtml).join(', ') || '—'}</p>
-      ${warnings.length ? `<p><b>Warnings:</b> ${warnings.map(escapeHtml).join(', ')}</p>` : '<p><b>Warnings:</b> nenhum warning crítico declarado.</p>'}
+      ${warnings.length ? `<p><b>Warnings:</b> ${warnings.map(escapeHtml).join(', ')}</p>` : '<p><b>Warnings:</b> nenhum warning declarado.</p>'}
       ${errors.length ? `<p><b>Erros:</b> ${errors.map(escapeHtml).join(', ')}</p>` : '<p><b>Erros:</b> nenhum erro declarado.</p>'}
     </details>
   `;

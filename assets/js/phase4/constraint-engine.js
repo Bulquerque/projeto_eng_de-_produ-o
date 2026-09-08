@@ -1,7 +1,5 @@
-const RISK_ORDER = { low: 1, baixo: 1, medium: 2, medio: 2, médio: 2, high: 3, alto: 3 };
-function riskVal(v) {
-  return RISK_ORDER[String(v || 'medium').toLowerCase()] || 2;
-}
+import { riskVal, SUPPORTED_RISK_LEVELS } from './optimizer-utils.js';
+
 export function evaluateConstraints({ scenarioResult, quality, scenario, constraints = {} }) {
   const violations = [];
   const warnings = [];
@@ -12,8 +10,10 @@ export function evaluateConstraints({ scenarioResult, quality, scenario, constra
   if (activeCount < min) violations.push(`CDs ativos abaixo do mínimo (${activeCount}<${min}).`);
   if (activeCount > max) violations.push(`CDs ativos acima do máximo (${activeCount}>${max}).`);
   const maxShare = Number(constraints.max_cd_volume_share ?? constraints.max_cd_concentration ?? 1);
-  const share = Number(quality?.quality_metrics?.max_cd_volume_share ?? 0);
-  if (share > maxShare)
+  const share = Number(quality?.quality_metrics?.max_cd_volume_share);
+  if (!Number.isFinite(share)) {
+    violations.push('Concentração por CD indisponível; cenário não pode ser validado.');
+  } else if (share > maxShare)
     violations.push(
       `Concentração em CD acima do limite (${(share * 100).toFixed(1)}% > ${(maxShare * 100).toFixed(1)}%).`
     );
@@ -43,7 +43,15 @@ export function validateConstraintConfig(constraints = {}) {
   if (!Number.isFinite(max) || max < 1) errors.push('max_active_cds precisa ser >= 1.');
   if (Number.isFinite(min) && Number.isFinite(max) && max < min)
     errors.push('max_active_cds precisa ser maior ou igual ao mínimo.');
-  if (!Number.isFinite(share) || share <= 0)
-    errors.push('max_cd_volume_share precisa ser positivo.');
+  if (!Number.isFinite(share) || share <= 0 || share > 1)
+    errors.push('max_cd_volume_share precisa estar no intervalo (0,1].');
+  const maxRisk = String(constraints.max_risk_level ?? 'high').toLowerCase();
+  if (!SUPPORTED_RISK_LEVELS.includes(maxRisk))
+    errors.push('max_risk_level precisa ser low, medium ou high.');
+  if (
+    typeof constraints.allow_tax_disabled !== 'undefined' &&
+    typeof constraints.allow_tax_disabled !== 'boolean'
+  )
+    errors.push('allow_tax_disabled precisa ser booleano.');
   return { valid: errors.length === 0, errors, warnings: [] };
 }

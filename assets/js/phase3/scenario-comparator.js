@@ -1,7 +1,8 @@
 import { buildScenarioSummary } from '../core/scenario-summary.js';
 import { safeNumber } from '../core/common.js';
+import { MODEL_DEFAULTS } from '../core/model-configuration.js';
 
-function baselineResult(bundle) {
+function buildBaselineResult(bundle) {
   const costs = bundle?.costs?.costs || {};
   return {
     scenario_id: bundle?.model?.scenario_id || 'baseline',
@@ -12,8 +13,8 @@ function baselineResult(bundle) {
         active_cds: bundle?.model?.active_cds || [],
         freight_multiplier: 1,
         demand_multiplier: 1,
-        inventory_days: 45,
-        wacc: 0.15,
+        inventory_days: MODEL_DEFAULTS.inventory_days,
+        wacc: MODEL_DEFAULTS.reference_wacc,
         tax_mode: 'current',
         reallocation_rule: 'nearest_available_cd',
       },
@@ -53,6 +54,7 @@ function comparisonRow({ base, companyId, result }) {
       result?.scenario?.changes?.tax_regime ||
       result?.scenario?.changes?.tax_mode,
     tax_regime_label: summary.tax_regime_label,
+    tax_source_label: summary.tax_source_label,
     total_with_tax: summary.total_with_tax,
     total_logistics_cost: safeNumber(result.costs?.total_logistics_cost),
     transfer_cost: summary.transfer_cost,
@@ -74,8 +76,13 @@ function comparisonRow({ base, companyId, result }) {
   };
 }
 
-export function compareScenarios({ companyId, baselineBundle, scenarioResults = [] }) {
-  const base = baselineResult(baselineBundle);
+export function compareScenarios({
+  companyId,
+  baselineBundle,
+  baselineResult = null,
+  scenarioResults = [],
+}) {
+  const base = baselineResult || buildBaselineResult(baselineBundle);
   const rows = [base, ...scenarioResults]
     .filter(Boolean)
     .map((result) => comparisonRow({ base, companyId, result }));

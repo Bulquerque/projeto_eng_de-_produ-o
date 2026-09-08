@@ -1,5 +1,6 @@
 import { runScenario } from '../phase3/scenario-simulator.js';
 import { safeNumber } from '../core/common.js';
+import { calculateSaving } from '../core/model-configuration.js';
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj || {}));
 }
@@ -26,14 +27,12 @@ export function runSensitivity({
     scenario.scenario_id = `${selectedScenario.scenario_id}__sens_${cfg.variable}_${String(value).replace('.', '_')}`;
     scenario.changes = { ...(scenario.changes || {}), [cfg.variable]: value };
     const result = runScenario({ companyId, scenario, baselineBundle });
-    const saving_pct = baselineTotal
-      ? ((baselineTotal - safeNumber(result.total_with_tax)) / baselineTotal) * 100
-      : 0;
+    const saving = calculateSaving({ baselineTotal, scenarioTotal: result.total_with_tax });
     return {
       variable: cfg.variable,
       value,
       total_with_tax: safeNumber(result.total_with_tax),
-      saving_pct,
+      saving_pct: saving.saving_pct,
       errors: result.errors || [],
       warnings: result.warnings || [],
     };
@@ -107,15 +106,15 @@ export function runSensitivityMatrix({
       };
       const result = runScenario({ companyId, scenario, baselineBundle });
       const total = safeNumber(result.total_with_tax);
-      const saving_abs = baselineTotal - total;
+      const saving = calculateSaving({ baselineTotal, scenarioTotal: total });
       matrix_results.push({
         x_variable: cfg.xVariable,
         y_variable: cfg.yVariable,
         x_value: xValue,
         y_value: yValue,
         total_with_tax: total,
-        saving_abs,
-        saving_pct: baselineTotal ? (saving_abs / baselineTotal) * 100 : 0,
+        saving_abs: saving.saving_abs,
+        saving_pct: saving.saving_pct,
         errors: result.errors || [],
         warnings: result.warnings || [],
       });

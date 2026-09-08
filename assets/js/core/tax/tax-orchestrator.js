@@ -58,6 +58,23 @@ function buildAuditTrace({
     tax_parameter_hash: `${regimeId}:${parameterVersion}`,
     data_quality_score: qualityReport?.data_quality_score ?? 0,
     precision_mode: qualityReport?.precision_mode || 'top_down_fallback',
+    validation_scope: 'parametric_model_reconciliation',
+    official_fiscal_validation: false,
+    limitation: 'Resultado parametrizado e reconciliado; não constitui validação fiscal oficial.',
+  };
+}
+
+function buildTaxScopeMetadata({ calculationMode, precisionMode, sourceContext }) {
+  return {
+    calculation_mode: calculationMode,
+    precision_mode: precisionMode,
+    validation_scope: 'parametric_model_reconciliation',
+    official_fiscal_validation: false,
+    source_classification: sourceContext?.package_name
+      ? 'official_reference_parameters'
+      : 'internal_reference_or_fallback',
+    scope_note:
+      'Aplica parâmetros disponíveis e reconcilia o resultado; não substitui validação fiscal oficial.',
   };
 }
 
@@ -125,6 +142,11 @@ export function runTaxCalculation(arg1, arg2, arg3) {
         calculation_mode: 'top_down_fallback',
         precision_mode: precisionMode,
         source_context: sourceContext,
+        ...buildTaxScopeMetadata({
+          calculationMode: 'top_down_fallback',
+          precisionMode,
+          sourceContext,
+        }),
       },
       source_context: sourceContext,
     };
@@ -197,6 +219,11 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       precision_mode: precisionMode,
       source: 'tax-orchestrator',
       source_context: sourceContext,
+      ...buildTaxScopeMetadata({
+        calculationMode,
+        precisionMode,
+        sourceContext,
+      }),
     },
     mode: taxMode,
     breakdown: {

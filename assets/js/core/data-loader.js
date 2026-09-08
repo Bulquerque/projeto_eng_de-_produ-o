@@ -4,6 +4,7 @@ import { assertCompanyPath, setActiveCompany } from './company-context.js';
 import { loadComplementPackage } from './complements.js';
 import { requireHttpRuntime } from './runtime-env.js';
 import { resolveProjectPath, resolveProjectUrl } from './project-paths.js';
+import { getCoreDataPaths, SHARED_TAX_REFERENCE_PATH } from './runtime-bundle-contract.js';
 import { recomputePhase2Baseline } from '../phase2/baseline-deriver.js';
 
 let encryptedManifest = null;
@@ -96,53 +97,33 @@ export async function loadPhase2Bundle(companyId) {
 
       // Attach derived core data needed by the physical simulation path.
       bundle.core_data = bundle.core_data || {};
-      const loadCore = async (id, fileName) => {
+      const loadCore = async (id, path) => {
         try {
-          bundle.core_data[id] = await fetchEncryptedJson(`data/${companyId}/core/${fileName}`);
+          assertCompanyPath(companyId, path);
+          bundle.core_data[id] = await fetchEncryptedJson(path);
         } catch (e) {
           console.warn(`[data-loader] Could not load core ${id} for real formulas:`, e.message);
         }
       };
 
+      const coreLoads = Object.entries(getCoreDataPaths(companyId)).map(([id, path]) =>
+        loadCore(id, path)
+      );
       if (companyId === 'empresa1') {
-        await Promise.all([
-          loadCore('distance_matrix', 'distance_matrix.json'),
+        coreLoads.push(
           (async () => {
             try {
-              bundle.core_data.aux_custo_transferencia = await fetchEncryptedJson(
-                'data/empresa2/core/aux_custo_transferencia.json'
-              );
-            } catch (e) {
-              console.warn(
-                '[data-loader] Could not load proxy aux_custo_transferencia for Empresa 1:',
-                e.message
-              );
-            }
-          })(),
-          (async () => {
-            try {
-              bundle.core_data.tax_data = await fetchJson(
-                'data/complements/shared/tax_reference/icms_interstate_matrix.json'
-              );
+              bundle.core_data.tax_data = await fetchJson(SHARED_TAX_REFERENCE_PATH);
             } catch (e) {
               console.warn(
                 '[data-loader] Could not load proxy icms_interstate_matrix for Empresa 1:',
                 e.message
               );
             }
-          })(),
-        ]);
-      } else if (companyId === 'empresa2') {
-        await Promise.all([
-          loadCore('lat_long', 'lat_long.json'),
-          loadCore('rotas_mapa', 'rotas_mapa.json'),
-          loadCore('tax_data', 'dados_tributario.json'),
-          // Physical cost engine tables
-          loadCore('tabelas_cif_dist', 'tabelas_cif_dist.json'),
-          loadCore('aux_custo_transferencia', 'aux_custo_transferencia.json'),
-          loadCore('aux_custo_armazenagem', 'aux_custo_armazenagem.json'),
-        ]);
+          })()
+        );
       }
+      await Promise.all(coreLoads);
 
       try {
         bundle.complements = { available: true, ...(await loadComplementPackage(companyId)) };

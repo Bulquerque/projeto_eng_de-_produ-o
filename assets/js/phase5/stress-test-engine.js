@@ -1,7 +1,7 @@
 import { runScenario } from '../phase3/scenario-simulator.js';
-import { compareScenarios } from '../phase3/scenario-comparator.js';
 import { buildStressCaseLibrary } from './stress-case-library.js';
 import { safeNumber } from '../core/common.js';
+import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj || {}));
 }
@@ -20,10 +20,12 @@ export function applyStressCaseToScenario({ scenario, stressCase }) {
       safeNumber(stressed.changes.demand_multiplier, 1) *
       (1 + safeNumber(c.demand_multiplier_delta));
   if (c.wacc_delta !== undefined)
-    stressed.changes.wacc = safeNumber(stressed.changes.wacc, 0.15) + safeNumber(c.wacc_delta);
+    stressed.changes.wacc =
+      safeNumber(stressed.changes.wacc, MODEL_DEFAULTS.reference_wacc) + safeNumber(c.wacc_delta);
   if (c.inventory_days_delta !== undefined)
     stressed.changes.inventory_days =
-      safeNumber(stressed.changes.inventory_days, 45) + safeNumber(c.inventory_days_delta);
+      safeNumber(stressed.changes.inventory_days, MODEL_DEFAULTS.inventory_days) +
+      safeNumber(c.inventory_days_delta);
   if (c.tax_mode) stressed.changes.tax_mode = c.tax_mode;
   if (c.tax_regime) stressed.changes.tax_regime = c.tax_regime;
   stressed.metadata = {
@@ -50,16 +52,11 @@ export function runStressTests({
   for (const stressCase of cases) {
     const stressedScenario = applyStressCaseToScenario({ scenario: selectedScenario, stressCase });
     const result = runScenario({ companyId, scenario: stressedScenario, baselineBundle });
-    const comparison = compareScenarios({
-      companyId,
-      baselineResult: {
-        scenario_id: baselineBundle?.model?.scenario_id,
-        total_with_tax: baseTotal,
-      },
-      scenarioResults: [result],
-    });
-    const row = comparison.comparison?.[0] || {};
     const stillBetter = safeNumber(result.total_with_tax) <= baseTotal;
+    const saving = calculateSaving({
+      baselineTotal: baseTotal,
+      scenarioTotal: result.total_with_tax,
+    });
     const caseWarnings = [...(result.warnings || [])];
     if (!stillBetter) caseWarnings.push('Saving ficou negativo neste caso de stress.');
     stress_results.push({
@@ -70,8 +67,8 @@ export function runStressTests({
       total_with_tax: safeNumber(result.total_with_tax),
       total_logistics_cost: safeNumber(result.costs?.total_logistics_cost),
       tax_impact: safeNumber(result.tax_results?.total_tax_impact),
-      saving_vs_baseline: safeNumber(row.saving_abs ?? baseTotal - result.total_with_tax),
-      saving_pct: safeNumber(row.saving_pct),
+      saving_vs_baseline: saving.saving_abs,
+      saving_pct: saving.saving_pct,
       scenario_still_better_than_baseline: stillBetter,
       warnings: caseWarnings,
       errors: result.errors || [],

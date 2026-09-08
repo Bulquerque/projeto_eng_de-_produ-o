@@ -22,7 +22,9 @@
     ]
   },
   "empresa1_minimum_required_data": {
-    "demand_records_rows": 60311,
+    "demand_records_rows": 60308,
+    "demand_records_raw_rows": 60311,
+    "demand_records_invalid_rows": 3,
     "distance_matrix_rows": 576,
     "premissas_rows": 3,
     "demand_ufs": 21,

@@ -1,5 +1,6 @@
 import { resolveTaxRegime, taxRegimeLabel } from './tax-reform-config.js';
 import { safeNumber } from './common.js';
+import { calculateSaving, MODEL_DEFAULTS } from './model-configuration.js';
 
 export function formatMultiplierDisplay(value) {
   const number = Number(value);
@@ -34,8 +35,7 @@ export function buildScenarioSummary({
   const taxResults = result?.tax_results || scenarioSource?.tax_results || {};
   const totalWithTax = safeNumber(result?.total_with_tax ?? result?.costs?.total_with_tax);
   const activeCds = Array.isArray(changes.active_cds) ? changes.active_cds : [];
-  const savingAbs = baselineTotal ? baselineTotal - totalWithTax : 0;
-  const savingPct = baselineTotal ? (savingAbs / baselineTotal) * 100 : 0;
+  const saving = calculateSaving({ baselineTotal, scenarioTotal: totalWithTax });
 
   return {
     scenario_id: scenarioSource?.scenario_id || result?.scenario_id || null,
@@ -44,13 +44,21 @@ export function buildScenarioSummary({
     active_cds_count: activeCds.length,
     freight_multiplier: safeNumber(changes.freight_multiplier ?? 1, 1),
     demand_multiplier: safeNumber(changes.demand_multiplier ?? 1, 1),
-    inventory_days: safeNumber(changes.inventory_days ?? 45, 45),
+    inventory_days: safeNumber(
+      changes.inventory_days ?? MODEL_DEFAULTS.inventory_days,
+      MODEL_DEFAULTS.inventory_days
+    ),
     tax_regime_label: resolveScenarioTaxRegimeLabel(scenarioSource, taxResults),
+    tax_source_label:
+      taxResults?.tax_source_label ||
+      (scenarioSource?.company_id === 'empresa1'
+        ? 'Proxy tributário — referência compartilhada'
+        : 'Dados tributários observados — reconciliados'),
     transfer_cost: safeNumber(result?.costs?.transfer_cost),
     tax_impact: safeNumber(result?.costs?.tax_impact ?? taxResults.total_tax_impact),
     total_with_tax: totalWithTax,
-    saving_abs: savingAbs,
-    saving_pct: savingPct,
+    saving_abs: saving.saving_abs,
+    saving_pct: saving.saving_pct,
     quality_score: quality?.quality_score ?? result?.quality?.quality_score ?? null,
     risk_level: quality?.risk_level ?? result?.quality?.risk_level ?? '—',
   };

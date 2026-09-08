@@ -3,6 +3,16 @@
   "package_version": "7.0-phase1-static-ui-implemented",
   "companies": {
     "empresa1": {
+      "data_quality_score": null,
+      "quality_status": "not_calculated",
+      "errors": [
+        "3 linhas de rodape/formula sem UF e CENTROIDE foram identificadas e devem ser excluidas do grao canonico.",
+        "2 de 36 destinos demandados dependem de fallback de cidade; a chave UF+CENTROIDE nao fecha integralmente."
+      ],
+      "warnings": [
+        "A cobertura tributaria especifica da Empresa 1 permanece indisponivel no baseline.",
+        "O caminho de transferencia usa proxy quilometrico explicitamente marcado, nao dado observado."
+      ],
       "required_sources": [
         "Dados de Demanda(3).xlsx",
         "Dados de Distância(3).xlsx",
@@ -13,7 +23,9 @@
           "id": "demand_records",
           "csv": "data/empresa1/core/demand_records.csv",
           "json": "data/empresa1/core/demand_records.json",
-          "rows": 60311,
+          "rows": 60308,
+          "raw_rows": 60311,
+          "invalid_rows": 3,
           "columns": 10,
           "headers": [
             "UF",
@@ -76,6 +88,16 @@
       ]
     },
     "empresa2": {
+      "data_quality_score": null,
+      "quality_status": "not_calculated",
+      "errors": [
+        "A base possui UFs invalidas ou sem cobertura tributaria correspondente; a cobertura nao deve ser declarada como 100%.",
+        "A base auxiliar de distribuicao contem placeholders e valores fora do dominio; ela nao e fonte canonica sem filtragem."
+      ],
+      "warnings": [
+        "A reconciliação tributaria ajustada fecha, mas a diferença bruta precisa permanecer visivel.",
+        "Cenarios 2 e N do workbook ainda dependem de adaptador de participacao por CD para comparacao like-for-like."
+      ],
       "required_sources": [
         "Analise_Malha_Empresa2(1).xlsx"
       ],

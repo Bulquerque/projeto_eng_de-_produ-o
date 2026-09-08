@@ -7,12 +7,17 @@ export function buildRecommendation({
   quality = {},
   robustness = {},
   objective = {},
+  rankingSensitivity = null,
 } = {}) {
   const scenarioId =
     selectedScenario?.scenario_id ||
     selectedScenario?.scenario?.scenario_id ||
     selectedScenario?.result?.scenario_id;
-  const savingPct = safeNumber(comparison.saving_pct ?? comparison.comparison?.[0]?.saving_pct);
+  const comparisonRow = (comparison.comparison || []).find(
+    (row) => row?.scenario_id === scenarioId
+  );
+  const savingPct = safeNumber(comparison.saving_pct ?? comparisonRow?.saving_pct);
+  const hasPositiveSaving = savingPct > 0;
   const risk = String(
     quality.risk_level || selectedScenario?.quality?.risk_level || 'medium'
   ).toLowerCase();
@@ -26,24 +31,31 @@ export function buildRecommendation({
     ? safeNumber(monteCarlo.probability_saving_positive, null)
     : null;
   const mcP10 = monteCarlo ? safeNumber(monteCarlo.p10_saving_pct, null) : null;
+  const rankingStable =
+    !rankingSensitivity || safeNumber(rankingSensitivity.stability_ratio, 0) >= 0.5;
   let status = 'not_recommended';
   if (
-    savingPct >= 0 &&
+    hasPositiveSaving &&
     risk !== 'high' &&
     robustnessScore >= 70 &&
     (mcProbability === null || mcProbability >= 0.65) &&
-    (mcP10 === null || mcP10 >= 0)
+    (mcP10 === null || mcP10 >= 0) &&
+    rankingStable
   ) {
     status = 'recommended';
   } else if (
-    savingPct >= 0 &&
+    hasPositiveSaving &&
     robustnessScore >= 45 &&
     (mcProbability === null || mcProbability >= 0.5)
   ) {
     status = 'recommended_with_warnings';
   }
   const main_reasons = [];
-  if (savingPct >= 0) main_reasons.push('saving positivo contra o baseline');
+  if (hasPositiveSaving) {
+    main_reasons.push('saving positivo contra o baseline');
+  } else if (savingPct === 0) {
+    main_reasons.push('custo igual ao baseline; não há saving operacional');
+  }
   if (selectedScenario?.final_score !== undefined)
     main_reasons.push('bom score no objetivo selecionado');
   if (robustnessScore >= 55) main_reasons.push('robustez aceitável nos testes de stress');
@@ -65,6 +77,8 @@ export function buildRecommendation({
   if (risk === 'high' || risk === 'medium')
     main_risks.push(`risco operacional ${risk === 'high' ? 'alto' : 'médio'}`);
   if (robustness.alerts?.length) main_risks.push(...robustness.alerts);
+  if (rankingSensitivity?.stability_status === 'unstable')
+    main_risks.push('o ranking muda entre perfis de pesos; decisão sensível ao objetivo');
   if (savingPct < 0) main_risks.push('custo maior que o baseline');
   if (monteCarlo && mcProbability != null && mcProbability < 0.5)
     main_risks.push('baixa probabilidade de saving positivo na análise Monte Carlo');

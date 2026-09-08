@@ -19,12 +19,13 @@ import {evaluateScenarioQuality} from './assets/js/phase3/scenario-quality-check
 import {runMonteCarloSimulation} from './assets/js/phase3/monte-carlo-engine.js';
 import {resolveTaxRegime} from './assets/js/core/tax-reform-config.js';
 import {getRegimeTaxRates} from './assets/js/core/tax/tax-reform-parameters.js';
+import {loadRuntimeBundle} from './tests/runtime_bundle_support.mjs';
 const testRates2026 = getRegimeTaxRates('reform_2026');
 if (testRates2026.cbs !== 0.009 || testRates2026.ibs !== 0.001) throw new Error('reform_2026 rates mismatch');
 const cbsRates2028 = getRegimeTaxRates('reform_2027_2028');
 if (cbsRates2028.cbs !== 0.088 || cbsRates2028.ibs !== 0) throw new Error('reform_2027_2028 rates mismatch');
 for (const companyId of ['empresa1','empresa2']) {
-  const bundle = decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
+  const bundle = loadRuntimeBundle({companyId, decryptJson});
   const cds = bundle.model.active_cds;
   const active = cds.slice(0, Math.max(1, cds.length - 1));
   const scenario = buildScenarioFromForm({companyId, baselineBundle: bundle, formValues: {scenario_name:'Teste lógica', active_cds: active, freight_multiplier:1.1, demand_multiplier:1, inventory_days:35, wacc:0.15, tax_mode:'disabled'}});
@@ -55,6 +56,9 @@ for (const companyId of ['empresa1','empresa2']) {
   const mcB = runMonteCarloSimulation({companyId, selectedScenario: scenario, baselineBundle: bundle, deterministicResult: result, iterations: 80, seed: 33, config: { profile: 'balanced', scatter_driver: 'freight_multiplier' }});
   if (!mcA.summary || mcA.samples.length === 0) throw new Error('monte carlo summary missing');
   if (JSON.stringify(mcA.summary) !== JSON.stringify(mcB.summary)) throw new Error('monte carlo not reproducible');
+  if (Math.abs(Number(mcA.summary.baseline_total_with_tax) - Number(bundle.costs.costs.total_with_tax)) > 0.1) throw new Error('monte carlo denominator is not the official baseline');
+  if (mcA.baseline_scenario_id !== bundle.model.scenario_id) throw new Error('monte carlo baseline id mismatch');
+  if (mcA.deterministic_scenario_id !== result.scenario_id) throw new Error('monte carlo deterministic id mismatch');
   if (!mcA.summary.total_percentile_curve || mcA.summary.total_percentile_curve.length !== 11) throw new Error('total percentile curve missing');
   if (!mcA.summary.driver_importance || mcA.summary.driver_importance.length < 3) throw new Error('driver importance missing');
   const reformScenario = buildScenarioFromForm({companyId, baselineBundle: bundle, formValues: {scenario_name:'reforma', active_cds: active, freight_multiplier:1, demand_multiplier:1, inventory_days:45, wacc:0.15, tax_mode:'reform_2028'}});

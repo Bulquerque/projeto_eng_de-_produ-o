@@ -15,11 +15,6 @@ export function getDefaultStressCases(profile = 'standard') {
       changes: { inventory_days_delta: 15 },
     },
     {
-      case_id: 'tributario_desligado',
-      name: 'Tributário desligado',
-      changes: { tax_mode: 'disabled', tax_regime: 'disabled' },
-    },
-    {
       case_id: 'reforma_2033',
       name: 'Reforma 2033 (Regime Pleno)',
       changes: { tax_mode: 'reform_2033', tax_regime: 'reform_full_2033' },
