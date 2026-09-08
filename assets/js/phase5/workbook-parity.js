@@ -1,5 +1,5 @@
-import { escapeHtml, formatBRL, formatPct, renderTable } from '../shared/common.js';
-import { buildBundleReconciliation } from '../shared/reconciliation-engine.js';
+import { escapeHtml, formatBRL, formatPct, renderTable } from '../core/common.js';
+import { buildBundleReconciliation } from '../core/reconciliation-engine.js';
 
 function n(value) {
   const parsed = Number(value);

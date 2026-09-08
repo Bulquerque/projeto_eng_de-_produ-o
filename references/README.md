@@ -1,10 +1,9 @@
 # Referências e fontes brutas
 
-Esta pasta preserva os arquivos enviados e usados como origem, além de notas de apoio.
+Esta pasta preserva os arquivos enviados e usados como origem.
 
 ```text
 raw_sources/      # XLSX, PDF, PPTX, ZIP e CSV originais
-source_notes/     # notas markdown preservadas
 source_documents_manifest.csv
 ```
 

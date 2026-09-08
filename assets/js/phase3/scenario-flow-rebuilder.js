@@ -1,5 +1,5 @@
-import { findNearestCd } from '../shared/geo-utils.js';
-import { findMatchingCdLabel, sameCdLabel } from '../shared/cd-utils.js';
+import { findNearestCd } from '../core/geo-utils.js';
+import { findMatchingCdLabel, sameCdLabel } from '../core/cd-utils.js';
 
 function normalizeCd(flow) {
   return flow.cd || flow.origin || flow.destination || '';

@@ -12,8 +12,7 @@
     "export center",
     "final QA checker",
     "release validator",
-    "phase 5 dashboard",
-    "browser test panel"
+    "phase 5 dashboard"
   ],
   "modules": [
     "FinalScenarioSelector",
@@ -27,8 +26,7 @@
     "ExportCenter",
     "FinalQAChecker",
     "ReleaseValidator",
-    "Phase5Dashboard",
-    "Phase5TestPanel"
+    "Phase5Dashboard"
   ],
   "status": "implemented_and_ready_for_tests"
 }

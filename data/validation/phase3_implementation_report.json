@@ -12,8 +12,7 @@
     "ScenarioChangeExplainer",
     "ScenarioPersistence",
     "ScenarioImportExport",
-    "ScenarioArenaDashboard",
-    "Phase3TestPanel"
+    "ScenarioArenaDashboard"
   ],
   "page": "fase-3-cenarios/index.html",
   "companies": {

@@ -1,4 +1,4 @@
-import { renderScatterChart, renderBarChart, destroyChart } from '../shared/chart-renderer.js';
+import { renderScatterChart, renderBarChart, destroyChart } from '../core/chart-renderer.js';
 
 export function renderTradeoffChart(frontierResult) {
   if (

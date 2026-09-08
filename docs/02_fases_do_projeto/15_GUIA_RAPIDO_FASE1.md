@@ -37,12 +37,12 @@ Na página, confira nesta ordem:
 ## 3. Rodar testes no terminal
 
 ```bash
-python tests/check_package.py
-python tests/test_full_workbook_paths.py
-python tests/test_paths_and_regeneration.py
-python tests/test_final_deep_audit.py
-python tests/test_phase1_static_site.py
-python tests/test_phase1_http_server.py
+python tests/00_basicos/check_package.py
+python tests/01_paths_auditoria/test_full_workbook_paths.py
+python tests/01_paths_auditoria/test_paths_and_regeneration.py
+python tests/01_paths_auditoria/test_final_deep_audit.py
+python tests/02_fase1_frontend/test_phase1_static_site.py
+python tests/02_fase1_frontend/test_phase1_http_server.py
 ```
 
 O resultado esperado é parecido com:
@@ -59,7 +59,7 @@ PHASE1_HTTP_SERVER_OK
 O teste Playwright também existe:
 
 ```bash
-python tests/test_phase1_playwright.py
+python tests/04_e2e_visual_opcional/test_phase1_playwright.py
 ```
 
 Ele pode marcar skip se o navegador Chromium bloquear `localhost` no seu ambiente.

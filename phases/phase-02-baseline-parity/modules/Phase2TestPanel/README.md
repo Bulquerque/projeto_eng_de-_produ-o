@@ -7,7 +7,7 @@ Fase 2 — `phase-02-baseline-parity`
 Executa e renderiza testes automáticos da Fase 2 no navegador.
 
 ## Implementação real
-`assets/js/phase2/phase2-tests.js`
+`assets/js/phase2/baseline-checks.js`
 
 ## Input JSON
 ```json
@@ -27,8 +27,8 @@ Executa e renderiza testes automáticos da Fase 2 no navegador.
 ```
 
 ## Funções internas
-- `runPhase2Checks`
-- `renderChecks`
+- `runBaselineChecks`
+- `renderCheckList`
 
 ## Módulos chamados
 - `CostEngine`

@@ -42,7 +42,7 @@
       "sha256": "d8ff9047f985cece07f97c84125c423b0d81441660e211c46d54d4a030436c6f"
     },
     {
-      "path": "assets/app.js",
+      "path": "assets/js/phase1/main.js",
       "exists": true,
       "kind": "file",
       "size_bytes": 26569,
@@ -105,7 +105,7 @@
       "sha256": "36cb5d64056f6730b184e0c075f4d36243890fb6b908f1f720ab3800ec5e6a1f"
     },
     {
-      "path": "data/validation/final_v6_audit_summary.json",
+      "path": "data/validation/audit-summary.json",
       "exists": true,
       "kind": "file",
       "size_bytes": 22042,
@@ -133,7 +133,7 @@
       "sha256": "e2acbc5b1bfc614131510cc093efe4f9e7b1aa0cb2c78bb12067fbb50283658d"
     },
     {
-      "path": "data/contracts/module_contracts_all_phases.json",
+      "path": "data/contracts/module-contracts.json",
       "exists": true,
       "kind": "file",
       "size_bytes": 60572,

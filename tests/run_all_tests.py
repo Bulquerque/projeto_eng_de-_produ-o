@@ -33,12 +33,12 @@ TESTS = [
     'tests/08_fase5_entrega_final/test_phase5_audit_export.py',
     'tests/08_fase5_entrega_final/test_phase5_final_qa.py',
     'tests/08_fase5_entrega_final/test_phase5_http_server.py',
-    'tests/09_polish_debug_restructure/test_phase2_refactor_modules.py',
-    'tests/09_polish_debug_restructure/test_debug_system.py',
-    'tests/09_polish_debug_restructure/test_phase_folders_and_module_docs.py',
-    'tests/09_polish_debug_restructure/test_polish_file_preservation.py',
+    'tests/09_quality_checks/test_phase2_refactor_modules.py',
+    'tests/09_quality_checks/test_debug_system.py',
+    'tests/09_quality_checks/test_phase_folders_and_module_docs.py',
+    'tests/09_quality_checks/test_protected_data_integrity.py',
     'tests/10_presentation_e2e/test_presentation_flow_playwright.py',
-    'tests/11_prova_bala/test_prova_bala_e2e_adversarial.py',
+    'tests/11_regression_e2e/test_regression_e2e.py',
 ]
 
 for rel in TESTS:

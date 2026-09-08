@@ -165,7 +165,7 @@ def main() -> int:
         report['states']['empresa2_after_click'] = build_state_snapshot(page, 'empresa2')
         report['states']['company_buttons_after_click'] = button_snapshot(page)
 
-        page.locator('#rerunPhase2Checks').click()
+        page.locator('#rerunBaselineChecks').click()
         page.wait_for_timeout(150)
         report['states']['empresa2_after_rerun'] = {
             'check_summary': page.locator('#phase2CheckSummary').text_content().strip(),

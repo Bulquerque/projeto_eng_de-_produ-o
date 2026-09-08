@@ -13,7 +13,7 @@ A documentação foi separada por tema para facilitar manutenção e leitura.
 7. `06_manifestos/` — manifestos de documentação.
 
 8. `../phases/` — documentação por feature/módulo.
-9. `../assets/js/features/` — entrypoints canônicos por fase.
+9. `../assets/js/phase1/` a `../assets/js/phase5/` — entrypoints e módulos de domínio das fases.
 10. `../assets/js/core/` — utilitários compartilhados canônicos.
 
 Debug: abra `/debug/`.

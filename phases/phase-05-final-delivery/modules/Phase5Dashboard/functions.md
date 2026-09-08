@@ -15,4 +15,3 @@
 - `ExportCenter`
 - `FinalQAChecker`
 - `ReleaseValidator`
-- `Phase5TestPanel`

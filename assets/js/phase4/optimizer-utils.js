@@ -1,30 +1,26 @@
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
-import { resolveTaxRegime } from '../shared/tax-reform-config.js';
+import { resolveTaxRegime } from '../core/tax-reform-config.js';
+import { safeNumber } from '../core/common.js';
 
 export const SUPPORTED_METHOD = 'exact_discrete';
 const RISK_ORDER = { low: 1, baixo: 1, medium: 2, medio: 2, médio: 2, high: 3, alto: 3 };
-
-export function n(v, d = 0) {
-  const x = Number(v);
-  return Number.isFinite(x) ? x : d;
-}
 
 export function riskVal(v) {
   return RISK_ORDER[String(v || 'medium').toLowerCase()] || 2;
 }
 
 export function compareExactRanking(a, b) {
-  const scoreDiff = n(b.final_score) - n(a.final_score);
+  const scoreDiff = safeNumber(b.final_score) - safeNumber(a.final_score);
   if (scoreDiff) return scoreDiff;
 
-  const totalA = n(a.result?.total_with_tax, Number.POSITIVE_INFINITY);
-  const totalB = n(b.result?.total_with_tax, Number.POSITIVE_INFINITY);
+  const totalA = safeNumber(a.result?.total_with_tax, Number.POSITIVE_INFINITY);
+  const totalB = safeNumber(b.result?.total_with_tax, Number.POSITIVE_INFINITY);
   if (totalA !== totalB) return totalA - totalB;
 
   const riskDiff = riskVal(a.quality?.risk_level) - riskVal(b.quality?.risk_level);
   if (riskDiff) return riskDiff;
 
-  const qualityDiff = n(b.quality?.quality_score) - n(a.quality?.quality_score);
+  const qualityDiff = safeNumber(b.quality?.quality_score) - safeNumber(a.quality?.quality_score);
   if (qualityDiff) return qualityDiff;
 
   return String(a.scenario_id || '').localeCompare(String(b.scenario_id || ''));

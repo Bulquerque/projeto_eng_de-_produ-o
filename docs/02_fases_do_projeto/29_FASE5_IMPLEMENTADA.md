@@ -18,7 +18,6 @@ Página: `/fase-5-entrega-final/`.
 - FinalQAChecker
 - ReleaseValidator
 - Phase5Dashboard
-- Phase5TestPanel
 
 ## Observação metodológica
 

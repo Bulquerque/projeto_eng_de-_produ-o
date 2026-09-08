@@ -1,7 +1,7 @@
 {
   "created_at_utc": "2026-05-06T21:53:03.249267+00:00",
   "result": "OK",
-  "package": "visagio_static_simulator_FASE2_IMPLEMENTADA_v1",
+  "package": "visagio_static_simulator_1.0",
   "phase": "phase_2_baseline_implemented",
   "path_count_checked": 24,
   "missing_paths": [],
@@ -14,14 +14,14 @@
       "sha256": "80cfec8e169ad46052252f5d7e8c28a610364ed3eea58204958ee34ffe90450f"
     },
     {
-      "path": "assets/js/shared/common.js",
+      "path": "assets/js/core/common.js",
       "exists": true,
       "kind": "file",
       "size_bytes": 2082,
       "sha256": "5df32968c13aec7a64373e367da164d32d1083fcf46a5151f4533d806af89e1b"
     },
     {
-      "path": "assets/js/shared/data-loader.js",
+      "path": "assets/js/core/data-loader.js",
       "exists": true,
       "kind": "file",
       "size_bytes": 467,
@@ -42,7 +42,7 @@
       "sha256": "9316e88e6c99b05351748597bf9ef5e3cb75e9bc60e78af3e78dbe973617ccea"
     },
     {
-      "path": "assets/js/phase2/phase2-tests.js",
+      "path": "assets/js/phase2/baseline-checks.js",
       "exists": true,
       "kind": "file",
       "size_bytes": 1704,

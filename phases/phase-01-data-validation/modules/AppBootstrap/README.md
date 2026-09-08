@@ -17,7 +17,7 @@ Inicializa o site estático, carrega os artefatos mínimos da Fase 1 e dispara a
     "catalog": "data/catalog.json",
     "qualitySummary": "data/data_quality_summary.json",
     "pathReport": "data/validation/path_resolution_report.json",
-    "auditSummary": "data/validation/final_v6_audit_summary.json",
+    "auditSummary": "data/validation/audit-summary.json",
     "workbookInventory": "data/validation/workbook_sheet_inventory.csv"
   },
   "defaultCompany": "empresa1"

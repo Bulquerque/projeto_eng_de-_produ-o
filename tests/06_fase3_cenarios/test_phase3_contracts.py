@@ -19,5 +19,5 @@ for company in ['empresa1', 'empresa2']:
         assert s['changes']['tax_mode'] in ['current', 'disabled']
 report = json.load(open(ROOT / 'data/validation/phase3_implementation_report.json', encoding='utf-8'))
 assert report['result'] == 'OK'
-assert len(report['modules']) >= 11
+assert len(report['modules']) >= 10
 print('PHASE3_CONTRACTS_OK')

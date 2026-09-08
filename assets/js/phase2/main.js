@@ -1,14 +1,14 @@
-import { $, escapeHtml, formatBRL, formatNumber, metric } from '../shared/common.js';
-import { loadCatalog, loadPhase2Bundle, loadPhase2Report } from '../shared/data-loader.js';
+import { $, escapeHtml, formatBRL, formatNumber, metric } from '../core/common.js';
+import { loadCatalog, loadPhase2Bundle, loadPhase2Report } from '../core/data-loader.js';
 import { renderDashboard } from './baseline-dashboard.js';
 import {
   appendSharedDebugEntry,
   createDebugSession,
   renderDebugEntries,
-} from '../shared/debug-tools.js';
+} from '../core/debug-tools.js';
 import { normalizePhase2Bundle, validateNormalizedInput } from './baseline-data-adapter.js';
 import { buildBaselineScenario, checkBaselineCompleteness } from './baseline-builder.js';
-import { runPhase2Checks, renderChecks } from './phase2-tests.js';
+import { runBaselineChecks, renderCheckList } from './baseline-checks.js';
 
 // loadCompany is the page entrypoint used by the company tabs after encrypted data is unlocked.
 const state = {
@@ -63,12 +63,12 @@ function setCompanyButtonsDisabled(disabled) {
   });
 }
 function renderTests(bundle, companyId) {
-  const checks = runPhase2Checks(bundle, companyId);
+  const checks = runBaselineChecks(bundle, companyId);
   const passed = checks.filter((check) => check.pass).length;
   const summary = $('phase2CheckSummary');
   const list = $('phase2AutoChecks');
   if (summary) summary.textContent = `${passed}/${checks.length} verificações automáticas OK`;
-  if (list) list.innerHTML = renderChecks(checks);
+  if (list) list.innerHTML = renderCheckList(checks);
 }
 async function loadCompany(companyId) {
   if (state.isLoading) {

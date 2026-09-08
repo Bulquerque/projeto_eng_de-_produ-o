@@ -3,7 +3,7 @@ import {
   renderBarChart,
   renderDonutChart,
   destroyChart,
-} from '../shared/chart-renderer.js';
+} from '../core/chart-renderer.js';
 
 export function renderSensitivityChart(sensitivityResults) {
   if (!sensitivityResults || sensitivityResults.length === 0) {

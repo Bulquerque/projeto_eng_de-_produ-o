@@ -1,5 +1,5 @@
-import { loadPhase2Bundle } from '../shared/data-loader.js';
-import { $, escapeHtml, formatBRL, formatNumber, formatPct, metric } from '../shared/common.js';
+import { loadPhase2Bundle } from '../core/data-loader.js';
+import { $, escapeHtml, formatBRL, formatNumber, formatPct, metric } from '../core/common.js';
 import { buildObjective } from '../phase4/objective-builder.js';
 import { runOptimization } from '../phase4/scenario-optimizer.js';
 import { selectFinalScenario } from './final-scenario-selector.js';
@@ -15,13 +15,13 @@ import { runFinalQAChecks } from './final-qa-checker.js';
 import { validateRelease } from './release-validator.js';
 import { renderSensitivityChart, renderStressChart, renderRobustnessChart } from './charts.js';
 import { buildWorkbookParitySummary, renderWorkbookParityPanel } from './workbook-parity.js';
-import { appendSharedDebugEntry } from '../shared/debug-tools.js';
-import { buildCanonicalOptimizationConfig } from '../shared/optimization-policy.js';
+import { appendSharedDebugEntry } from '../core/debug-tools.js';
+import { buildCanonicalOptimizationConfig } from '../core/optimization-policy.js';
 import {
   buildScenarioSummary,
   formatInventoryDaysDisplay,
   formatMultiplierDisplay,
-} from '../shared/scenario-summary.js';
+} from '../core/scenario-summary.js';
 
 const state = {
   companyId: 'empresa1',

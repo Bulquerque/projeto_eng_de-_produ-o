@@ -7,20 +7,20 @@ Pacote pronto para uso como versão polida: Fases 1 a 5 preservadas, Fase 2 modu
 ## Principais mudanças
 
 - Visual mais clean e moderno em `assets/styles.css`, mantendo a paleta institucional usada no pacote.
-- Fase 2 separada em módulos JS próprios: `BaselineBuilder`, `BaselineDataAdapter`, `FlowBuilder`, `DistanceResolver`, `TaxEngineBasic`, `ReferenceResultExtractor`, `CalibrationPanel` e outros.
+- Fase 2 separada em módulos JS próprios: `BaselineBuilder`, `BaselineDataAdapter`, `FlowBuilder`, `TaxEngineBasic`, `ReferenceResultExtractor`, `CalibrationPanel` e outros.
 - Nova pasta `debug/` com uma página de diagnóstico para localizar problemas de paths, módulos, dados e testes.
 - Nova pasta `phases/`, organizada por fase e módulo, com `README.md`, `contract.json`, `functions.md` e `tests.md` por módulo.
-- Testes novos em `tests/09_polish_debug_restructure/`.
-- Relatório de preservação em `data/validation/file_preservation_report.json`.
+- Testes novos em `tests/09_quality_checks/`.
+- Relatório de preservação em `data/validation/protected-data-integrity.json`.
 
 ## Como validar
 
 ```bash
 python tests/00_basicos/check_package.py
-python tests/09_polish_debug_restructure/test_polish_file_preservation.py
-python tests/09_polish_debug_restructure/test_phase2_refactor_modules.py
-python tests/09_polish_debug_restructure/test_debug_system.py
-python tests/09_polish_debug_restructure/test_phase_folders_and_module_docs.py
+python tests/09_quality_checks/test_protected_data_integrity.py
+python tests/09_quality_checks/test_phase2_refactor_modules.py
+python tests/09_quality_checks/test_debug_system.py
+python tests/09_quality_checks/test_phase_folders_and_module_docs.py
 ```
 
 Para rodar todas as fases, use os testes por grupo caso o ambiente tenha timeout.

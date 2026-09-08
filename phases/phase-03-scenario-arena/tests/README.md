@@ -1,6 +1,5 @@
 # Testes da Fase 3
 
-- `Phase3TestPanel`: {"unit": ["test_phase3_logic.py"], "integration": ["test_phase3_http_server.py"], "manual": ["checklist na página /fase-3-cenarios/"], "acceptance": ["tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"]}
 - `ScenarioArenaDashboard`: {"unit": ["test_phase3_logic.py"], "integration": ["test_phase3_http_server.py"], "manual": ["checklist na página /fase-3-cenarios/"], "acceptance": ["tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"]}
 - `ScenarioBuilder`: {"unit": ["cenário mantém company", "changesApplied registra mudanças"], "integration": ["cenário criado aparece no comparador"], "manual": ["fechar um CD e conferir mudança visual"], "acceptance": ["cenário inválido gera erro claro"]}
 - `ScenarioChangeExplainer`: {"unit": ["test_phase3_logic.py"], "integration": ["test_phase3_http_server.py"], "manual": ["checklist na página /fase-3-cenarios/"], "acceptance": ["tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"]}

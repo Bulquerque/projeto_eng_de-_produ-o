@@ -1,5 +1,5 @@
 {
-  "package": "visagio_static_simulator_FASE3_IMPLEMENTADA_v1",
+  "package": "visagio_static_simulator",
   "version": "8.0-phase2-baseline-implemented",
   "generated_at_utc": "2026-05-06T18:57:02.185564+00:00",
   "companies": {
@@ -508,7 +508,7 @@
       ]
     }
   },
-  "contracts": "data/contracts/module_contracts.json",
+  "contracts": "data/contracts/module-contracts.json",
   "phase_tests": "data/validation/phase_tests.json",
   "data_presence_proof": "data/validation/data_presence_proof.json",
   "source_manifest": "references/source_documents_manifest.csv",
@@ -516,7 +516,7 @@
   "regeneration_compare_report": "data/validation/regeneration_compare_report.json",
   "full_workbook_path_audit": "data/validation/full_workbook_path_audit.json",
   "workbook_sheet_inventory": "data/validation/workbook_sheet_inventory.csv",
-  "final_audit": "data/validation/final_v6_audit_summary.json",
+  "final_audit": "data/validation/audit-summary.json",
   "phase_1": {
     "implemented": true,
     "entrypoints": [
@@ -526,14 +526,14 @@
     "updated_files": [
       "index.html",
       "assets/styles.css",
-      "assets/app.js",
+      "assets/js/phase1/main.js",
       "fase-1-validacao/index.html"
     ],
     "implementation_report": "data/validation/phase1_implementation_report.json",
     "tests": [
-      "tests/test_phase1_static_site.py",
-      "tests/test_phase1_http_server.py",
-      "tests/test_phase1_playwright.py"
+      "tests/02_fase1_frontend/test_phase1_static_site.py",
+      "tests/02_fase1_frontend/test_phase1_http_server.py",
+      "tests/04_e2e_visual_opcional/test_phase1_playwright.py"
     ],
     "test_results": "data/validation/phase1_test_results.json"
   },

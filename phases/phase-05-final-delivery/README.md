@@ -12,7 +12,6 @@ Organização por feature da Fase 5.
 - [`FinalQAChecker`](modules/FinalQAChecker/README.md) — Executa checagens finais do simulador e isolamento de empresas.
 - [`FinalScenarioSelector`](modules/FinalScenarioSelector/README.md) — Seleciona o cenário final por score, custo, robustez ou escolha manual.
 - [`Phase5Dashboard`](modules/Phase5Dashboard/README.md) — Renderiza a página final da Fase 5.
-- [`Phase5TestPanel`](modules/Phase5TestPanel/README.md) — Executa testes automáticos da Fase 5 no navegador.
 - [`RecommendationEngine`](modules/RecommendationEngine/README.md) — Gera recomendação executiva explicável.
 - [`RecommendationPanel`](modules/RecommendationPanel/README.md) — Apresenta recomendação final com ressalvas: melhor cenário por objetivo, robustez, riscos e próximos passos.
 - [`ReleaseValidator`](modules/ReleaseValidator/README.md) — Define se o release final está pronto ou bloqueado.

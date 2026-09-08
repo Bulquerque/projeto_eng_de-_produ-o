@@ -2,7 +2,6 @@
 
 Organização por feature da Fase 3.
 
-- [`Phase3TestPanel`](modules/Phase3TestPanel/README.md) — Executa testes automáticos da Fase 3 na interface.
 - [`ScenarioArenaDashboard`](modules/ScenarioArenaDashboard/README.md) — Renderiza a página principal da Fase 3.
 - [`ScenarioBuilder`](modules/ScenarioBuilder/README.md) — Permite criar cenários manuais a partir do baseline, mudando CDs ativos, alocação, frete, estoque, demanda, modo tributário e outras premissas controladas.
 - [`ScenarioChangeExplainer`](modules/ScenarioChangeExplainer/README.md) — Gera explicação textual do que mudou e por que o cenário ganhou ou perdeu.

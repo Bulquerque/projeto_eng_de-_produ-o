@@ -29,4 +29,4 @@ Todo módulo planejado ou implementado precisa ter:
 - testes unitários, integração, manuais e aceite;
 - critérios para não misturar Empresa 1 e Empresa 2.
 
-A especificação completa está em `docs/23_MODULOS_TODAS_FASES_CONTRATOS.md` e em `data/contracts/module_contracts_all_phases.json`.
+A especificação completa está em `docs/03_modulos_contratos_funcoes/23_MODULOS_TODAS_FASES_CONTRATOS.md` e em `data/contracts/module-contracts.json`.

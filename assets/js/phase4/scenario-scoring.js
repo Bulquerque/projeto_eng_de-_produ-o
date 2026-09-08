@@ -1,7 +1,5 @@
-function n(v, d = 0) {
-  const x = Number(v);
-  return Number.isFinite(x) ? x : d;
-}
+import { safeNumber } from '../core/common.js';
+
 export function scoreScenarios({ companyId, objective, normalizedMetrics = [] }) {
   const weights = objective?.weights || {};
   const warnings = [];
@@ -10,7 +8,7 @@ export function scoreScenarios({ companyId, objective, normalizedMetrics = [] })
       const score_components = {};
       let final = 0;
       for (const [metric, weight] of Object.entries(weights)) {
-        const component = n(row[`${metric}_score`]) * n(weight);
+        const component = safeNumber(row[`${metric}_score`]) * safeNumber(weight);
         score_components[metric] = component;
         final += component;
       }

@@ -1,0 +1,11 @@
+{
+  "status": "OK_PROTECTED_DATA_UNCHANGED",
+  "protected_paths": [
+    "data/empresa1",
+    "data/empresa2",
+    "data/encrypted_manifest.json",
+    "references/raw_sources"
+  ],
+  "policy": "A limpeza estrutural pode remover artefatos gerados e documentação redundante, mas não altera dados criptografados nem fontes originais.",
+  "verified_by": "tests/09_quality_checks/test_protected_data_integrity.py"
+}

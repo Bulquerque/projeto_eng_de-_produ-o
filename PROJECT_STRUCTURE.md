@@ -13,13 +13,12 @@ Este pacote foi reorganizado para deixar cada tipo de artefato em uma pasta clar
 ├── debug/                          # Debug Center isolado
 ├── assets/
 │   ├── styles.css                  # estilo global
-│   ├── app.js                     # compatibilidade da Fase 1
+│   ├── js/phase1/                  # entrypoint e módulos da Fase 1
 │   └── js/
-│       ├── core/                  # utilitários compartilhados canônicos
+│       ├── core/                  # utilitários compartilhados únicos
 │       ├── debug/                 # runtime do Debug Center
-│       ├── features/              # entrypoints preferenciais por fase
-│       ├── phase2/phase3/phase4/phase5  # compatibilidade com a estrutura anterior
-│       └── shared/                # compatibilidade com a estrutura anterior
+│       ├── phase1/                 # validação inicial
+│       └── phase2/phase3/phase4/phase5  # módulos de domínio por fase
 ├── data/                           # dados tratados, contratos e relatórios de validação
 │   ├── empresa1/                   # dados da Empresa 1
 │   ├── empresa2/                   # dados da Empresa 2
@@ -31,17 +30,16 @@ Este pacote foi reorganizado para deixar cada tipo de artefato em uma pasta clar
 └── tests/                          # testes separados por tipo
 ```
 
-O runtime do site continua simples: `index.html` lê `assets/` e `data/` por caminhos relativos.
-As rotas novas preferenciais estão em `assets/js/features/`, mas os caminhos legados seguem funcionais para não quebrar os testes e bookmarks existentes.
+O runtime do site continua simples: `index.html` carrega cada fase por seu próprio `main.js` em `assets/js/phase1/` a `assets/js/phase5/`, sempre com caminhos relativos.
 
 
 ## Fase 2 adicionada
 
 ```text
 fase-2-baseline/                  Página estática da Fase 2
-assets/js/features/phase-2/       Entrypoint preferencial da Fase 2
-assets/js/phase2/                 Compatibilidade com a estrutura anterior
-assets/js/core/                   Utilitários compartilhados canônicos
+assets/js/phase2/main.js          Entry point da Fase 2
+assets/js/phase2/                 Módulos do domínio de baseline
+assets/js/core/                   Única camada de utilitários compartilhados
 data/empresa1/phase2/             Artefatos derivados da Empresa 1 para baseline
 data/empresa2/phase2/             Artefatos derivados da Empresa 2 para baseline
 tests/05_fase2_baseline/          Testes da Fase 2

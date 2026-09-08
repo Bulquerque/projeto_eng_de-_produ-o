@@ -1,7 +1,5 @@
-function n(v, d = 0) {
-  const x = Number(v);
-  return Number.isFinite(x) ? x : d;
-}
+import { safeNumber } from '../core/common.js';
+
 export function buildRecommendation({
   companyId,
   selectedScenario,
@@ -14,18 +12,20 @@ export function buildRecommendation({
     selectedScenario?.scenario_id ||
     selectedScenario?.scenario?.scenario_id ||
     selectedScenario?.result?.scenario_id;
-  const savingPct = n(comparison.saving_pct ?? comparison.comparison?.[0]?.saving_pct);
+  const savingPct = safeNumber(comparison.saving_pct ?? comparison.comparison?.[0]?.saving_pct);
   const risk = String(
     quality.risk_level || selectedScenario?.quality?.risk_level || 'medium'
   ).toLowerCase();
-  const robustnessScore = n(robustness.robustness_score, 0);
+  const robustnessScore = safeNumber(robustness.robustness_score, 0);
   const monteCarlo =
     selectedScenario?.monte_carlo?.summary ||
     selectedScenario?.scenario?.monte_carlo?.summary ||
     selectedScenario?.monte_carlo_summary ||
     null;
-  const mcProbability = monteCarlo ? n(monteCarlo.probability_saving_positive, null) : null;
-  const mcP10 = monteCarlo ? n(monteCarlo.p10_saving_pct, null) : null;
+  const mcProbability = monteCarlo
+    ? safeNumber(monteCarlo.probability_saving_positive, null)
+    : null;
+  const mcP10 = monteCarlo ? safeNumber(monteCarlo.p10_saving_pct, null) : null;
   let status = 'not_recommended';
   if (
     savingPct >= 0 &&

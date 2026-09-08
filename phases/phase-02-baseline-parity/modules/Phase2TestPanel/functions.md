@@ -1,7 +1,7 @@
 # Funções internas
 
-- `runPhase2Checks`
-- `renderChecks`
+- `runBaselineChecks`
+- `renderCheckList`
 
 # Dependências externas
 

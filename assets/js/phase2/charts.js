@@ -1,4 +1,4 @@
-import { renderBarChart, renderDonutChart, destroyChart } from '../shared/chart-renderer.js';
+import { renderBarChart, renderDonutChart, destroyChart } from '../core/chart-renderer.js';
 
 export function renderCostBreakdownChart(costs) {
   if (!costs) {

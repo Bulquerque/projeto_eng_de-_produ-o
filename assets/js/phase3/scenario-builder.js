@@ -2,8 +2,8 @@ import {
   resolveTaxRegime,
   resolveTaxModeForRegime,
   taxRegimeLabel,
-} from '../shared/tax-reform-config.js';
-import { sameCdLabel } from '../shared/cd-utils.js';
+} from '../core/tax-reform-config.js';
+import { sameCdLabel } from '../core/cd-utils.js';
 function slugify(value) {
   return (
     String(value || 'cenario')
@@ -89,7 +89,7 @@ export function buildChangeLog(scenario) {
   if (Number(c.demand_multiplier) !== 1) out.push(`Demanda x${c.demand_multiplier}`);
   if (Number(c.inventory_days) !== 45) out.push(`Estoque: ${c.inventory_days} dias`);
   if (c.tax_mode === 'disabled') out.push('Tributário desligado');
-  if (c.tax_regime && c.tax_regime !== 'legacy_current')
+  if (c.tax_regime && c.tax_regime !== 'current')
     out.push(`Regime fiscal: ${taxRegimeLabel(c.tax_regime)}`);
   return out;
 }

@@ -7,7 +7,7 @@ import {
   metric,
   renderTable,
   statusClass,
-} from '../shared/common.js';
+} from '../core/common.js';
 import { summarizeFlows, validateFlowCoverage } from './flow-builder.js';
 import { summarizeTaxResults } from './tax-engine-basic.js';
 import { extractReferenceResults } from './reference-result-extractor.js';

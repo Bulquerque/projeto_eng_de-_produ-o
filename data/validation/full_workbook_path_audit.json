@@ -27,7 +27,7 @@
   "warnings": [],
   "declared_path_checks": [
     {
-      "path": "data/contracts/module_contracts.json",
+      "path": "data/contracts/module-contracts.json",
       "exists": true,
       "kind": "file",
       "size_bytes": 3505,
@@ -76,7 +76,7 @@
       "sha256": "784601cec168aefbe7c3223bd0b0f8fcbc47bbc4216b5d99154d9d8e445154b0"
     },
     {
-      "path": "assets/app.js",
+      "path": "assets/js/phase1/main.js",
       "exists": true,
       "kind": "file",
       "size_bytes": 3878,
@@ -2180,5 +2180,5 @@
     "Analise_Malha_Empresa2(1).xlsx e Análise Malha Logística - vCaracol(3).xlsx têm SHA256 idêntico e foram preservados como fontes duplicadas equivalentes."
   ],
   "reviewed_at_utc_v6": "2026-05-06T18:25:59.475428+00:00",
-  "v6_note": "v6 is a cleaned packaging pass over the v5 full workbook XML audit: stale legacy scripts were removed, all runtime/catalog paths were rechecked, and the original per-sheet workbook audit remains intact."
+  "v6_note": "v6 is a cleaned packaging pass over the v5 full workbook XML audit: stale current scripts were removed, all runtime/catalog paths were rechecked, and the original per-sheet workbook audit remains intact."
 }

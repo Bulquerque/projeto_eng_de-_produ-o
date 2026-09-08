@@ -3,7 +3,7 @@
   "phase": 2,
   "status": "implemented_refactored_polish_v2",
   "page": "/fase-2-baseline/",
-  "file": "assets/js/phase2/phase2-tests.js",
+  "file": "assets/js/phase2/baseline-checks.js",
   "purpose": "Executa e renderiza testes automáticos da Fase 2 no navegador.",
   "inputs": {
     "company_id": "empresa1|empresa2",
@@ -15,8 +15,8 @@
     "errors": "[]"
   },
   "internal_functions": [
-    "runPhase2Checks",
-    "renderChecks"
+    "runBaselineChecks",
+    "renderCheckList"
   ],
   "external_calls": [
     "CostEngine",

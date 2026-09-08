@@ -2,11 +2,11 @@ import {
   resolveTaxRegime,
   resolveTaxModeForRegime,
   listTaxModes,
-} from '../shared/tax-reform-config.js';
-import { sameCdLabel } from '../shared/cd-utils.js';
+} from '../core/tax-reform-config.js';
+import { sameCdLabel } from '../core/cd-utils.js';
 const VALID_TAX_MODES = new Set(listTaxModes());
 const VALID_TAX_REGIMES = new Set([
-  'legacy_current',
+  'current',
   'disabled',
   'reform_2026',
   'reform_2027_2028',

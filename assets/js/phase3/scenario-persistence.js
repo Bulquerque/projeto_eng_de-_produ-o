@@ -1,4 +1,4 @@
-import { readStorageJSON, removeStorageKey, writeStorageJSON } from '../shared/browser-storage.js';
+import { readStorageJSON, removeStorageKey, writeStorageJSON } from '../core/browser-storage.js';
 
 function key(companyId) {
   return `visagio_phase3_scenarios_${companyId}`;

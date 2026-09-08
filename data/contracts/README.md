@@ -5,7 +5,7 @@ Esta pasta contém a documentação estruturada dos módulos de todas as fases.
 Principais arquivos:
 
 ```text
-module_contracts_all_phases.json
+module-contracts.json
 module_dependency_matrix.csv|json
 module_tests_matrix.csv|json
 ```

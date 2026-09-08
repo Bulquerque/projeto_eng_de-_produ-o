@@ -22,7 +22,6 @@
   ],
   "phase3_modules_files": [
     "main.js",
-    "phase3-tests.js",
     "scenario-arena-dashboard.js",
     "scenario-builder.js",
     "scenario-change-explainer.js",

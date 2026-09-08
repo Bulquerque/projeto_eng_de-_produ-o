@@ -1,10 +1,7 @@
 # Core JS
 
-Este diretório é a camada preferencial para utilitários compartilhados do runtime.
+Este diretório contém a única camada de utilitários compartilhados do runtime.
 
-A migração para `assets/js/core/` é feita de forma compatível:
-
-- `assets/js/shared/` continua disponível como alias legada enquanto o código é reorganizado.
-- Os entrypoints novos ficam em `assets/js/features/phase-*/`.
+Os módulos de domínio e seus entrypoints ficam em `assets/js/phase1/` a `assets/js/phase5/`. Todos importam daqui.
 
 Use este diretório como referência para novas funções compartilhadas e para reduzir acoplamento entre fases.

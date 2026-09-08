@@ -7,7 +7,7 @@ Fase 4 — `phase-04-scoring-optimizer`
 Renderiza log da busca com candidatos gerados, simulados, válidos, inválidos e melhor score.
 
 ## Implementação real
-`assets/js/phase4/search-log-panel.js`
+`assets/js/phase4/phase4-dashboard-templates.js`
 
 ## Input JSON
 ```json

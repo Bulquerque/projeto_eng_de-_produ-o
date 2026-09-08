@@ -3,7 +3,7 @@
   "phase": 4,
   "status": "implemented_phase_4",
   "page": "/fase-4-score-otimizador/",
-  "file": "assets/js/phase4/search-log-panel.js",
+  "file": "assets/js/phase4/phase4-dashboard-templates.js",
   "purpose": "Renderiza log da busca com candidatos gerados, simulados, válidos, inválidos e melhor score.",
   "inputs": {
     "company_id": "empresa1|empresa2",

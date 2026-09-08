@@ -4,7 +4,7 @@
   "html_css_js_present": [
     "index.html",
     "assets/styles.css",
-    "assets/app.js"
+    "assets/js/phase1/main.js"
   ],
   "visagio_palette_from_uploaded_pptx": {
     "source": "202509_RefsVisagio_Apoio Malha Log com efeito tributário.pptx / ppt/theme/theme6.xml",

@@ -38,13 +38,13 @@ E que você está servindo a pasta raiz do pacote, não uma subpasta errada.
 Confirme que existe:
 
 ```text
-assets/app.js
+assets/js/phase1/main.js
 ```
 
 Rode:
 
 ```bash
-node --check assets/app.js
+node --check assets/js/phase1/main.js
 ```
 
 Se não tiver Node instalado, rode pelo menos os testes Python do pacote.
@@ -60,7 +60,7 @@ data/catalog.json
 E rode:
 
 ```bash
-python tests/test_phase1_static_site.py
+python tests/02_fase1_frontend/test_phase1_static_site.py
 ```
 
 ## `missing_paths` maior que zero
@@ -90,7 +90,7 @@ Se aparecer algo como bloqueio de Chromium ou `ERR_BLOCKED_BY_ADMINISTRATOR`, is
 Valide com:
 
 ```bash
-python tests/test_phase1_http_server.py
+python tests/02_fase1_frontend/test_phase1_http_server.py
 ```
 
 E abra manualmente no navegador.

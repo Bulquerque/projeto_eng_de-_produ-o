@@ -79,7 +79,7 @@
       "page": "/fase-2-baseline/",
       "implementation": "assets/js/phase2/base-fit-score.js",
       "module_docs": "phases/phase-02-*/modules/BaseFitScore/README.md",
-      "status": "implemented_refactored_polish_v2"
+      "status": "implemented"
     },
     {
       "phase": 2,
@@ -87,7 +87,7 @@
       "page": "/fase-2-baseline/",
       "implementation": "assets/js/phase2/baseline-builder.js",
       "module_docs": "phases/phase-02-*/modules/BaselineBuilder/README.md",
-      "status": "implemented_refactored_polish_v2"
+      "status": "implemented"
     },
     {
       "phase": 2,
@@ -95,7 +95,7 @@
       "page": "/fase-2-baseline/",
       "implementation": "assets/js/phase2/baseline-dashboard.js",
       "module_docs": "phases/phase-02-*/modules/BaselineDashboard/README.md",
-      "status": "implemented_refactored_polish_v2"
+      "status": "implemented"
     },
     {
       "phase": 2,
@@ -103,7 +103,7 @@
       "page": "/fase-2-baseline/",
       "implementation": "assets/js/phase2/baseline-data-adapter.js",
       "module_docs": "phases/phase-02-*/modules/BaselineDataAdapter/README.md",
-      "status": "implemented_refactored_polish_v2"
+      "status": "implemented"
     },
     {
       "phase": 2,
@@ -111,7 +111,7 @@
       "page": "/fase-2-baseline/",
       "implementation": "assets/js/phase2/calibration-panel.js",
       "module_docs": "phases/phase-02-*/modules/CalibrationPanel/README.md",
-      "status": "implemented_refactored_polish_v2"
+      "status": "implemented"
     },
     {
       "phase": 2,
@@ -119,15 +119,7 @@
       "page": "/fase-2-baseline/",
       "implementation": "assets/js/phase2/cost-engine.js",
       "module_docs": "phases/phase-02-*/modules/CostEngine/README.md",
-      "status": "implemented_refactored_polish_v2"
-    },
-    {
-      "phase": 2,
-      "module": "DistanceResolver",
-      "page": "/fase-2-baseline/",
-      "implementation": "assets/js/phase2/distance-resolver.js",
-      "module_docs": "phases/phase-02-*/modules/DistanceResolver/README.md",
-      "status": "implemented_refactored_polish_v2"
+      "status": "implemented"
     },
     {
       "phase": 2,
@@ -135,15 +127,15 @@
       "page": "/fase-2-baseline/",
       "implementation": "assets/js/phase2/flow-builder.js",
       "module_docs": "phases/phase-02-*/modules/FlowBuilder/README.md",
-      "status": "implemented_refactored_polish_v2"
+      "status": "implemented"
     },
     {
       "phase": 2,
       "module": "Phase2TestPanel",
       "page": "/fase-2-baseline/",
-      "implementation": "assets/js/phase2/phase2-tests.js",
+      "implementation": "assets/js/phase2/baseline-checks.js",
       "module_docs": "phases/phase-02-*/modules/Phase2TestPanel/README.md",
-      "status": "implemented_refactored_polish_v2"
+      "status": "implemented"
     },
     {
       "phase": 2,
@@ -151,7 +143,7 @@
       "page": "/fase-2-baseline/",
       "implementation": "assets/js/phase2/reference-result-extractor.js",
       "module_docs": "phases/phase-02-*/modules/ReferenceResultExtractor/README.md",
-      "status": "implemented_refactored_polish_v2"
+      "status": "implemented"
     },
     {
       "phase": 2,
@@ -159,15 +151,7 @@
       "page": "/fase-2-baseline/",
       "implementation": "assets/js/phase2/tax-engine-basic.js",
       "module_docs": "phases/phase-02-*/modules/TaxEngineBasic/README.md",
-      "status": "implemented_refactored_polish_v2"
-    },
-    {
-      "phase": 3,
-      "module": "Phase3TestPanel",
-      "page": "/fase-3-cenarios/",
-      "implementation": "assets/js/phase3/phase3-tests.js",
-      "module_docs": "phases/phase-03-*/modules/Phase3TestPanel/README.md",
-      "status": "implemented_phase_3"
+      "status": "implemented"
     },
     {
       "phase": 3,
@@ -315,14 +299,6 @@
     },
     {
       "phase": 4,
-      "module": "Phase4TestPanel",
-      "page": "/fase-4-score-otimizador/",
-      "implementation": "assets/js/phase4/phase4-tests.js",
-      "module_docs": "phases/phase-04-*/modules/Phase4TestPanel/README.md",
-      "status": "implemented_phase_4"
-    },
-    {
-      "phase": 4,
       "module": "RankingExplainer",
       "page": "/fase-4-score-otimizador/",
       "implementation": "assets/js/phase4/ranking-explainer.js",
@@ -357,7 +333,7 @@
       "phase": 4,
       "module": "SearchLogPanel",
       "page": "/fase-4-score-otimizador/",
-      "implementation": "assets/js/phase4/search-log-panel.js",
+      "implementation": "assets/js/phase4/phase4-dashboard-templates.js",
       "module_docs": "phases/phase-04-*/modules/SearchLogPanel/README.md",
       "status": "implemented_phase_4"
     },
@@ -447,14 +423,6 @@
       "page": "/fase-5-entrega-final/",
       "implementation": "assets/js/phase5/phase5-dashboard.js",
       "module_docs": "phases/phase-05-*/modules/Phase5Dashboard/README.md",
-      "status": "implemented_phase_5"
-    },
-    {
-      "phase": 5,
-      "module": "Phase5TestPanel",
-      "page": "/fase-5-entrega-final/",
-      "implementation": "assets/js/phase5/phase5-tests.js",
-      "module_docs": "phases/phase-05-*/modules/Phase5TestPanel/README.md",
       "status": "implemented_phase_5"
     },
     {

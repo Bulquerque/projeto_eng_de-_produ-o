@@ -499,36 +499,6 @@
   },
   {
     "phase": 2,
-    "module": "DistanceResolver",
-    "test_type": "unit",
-    "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
-  },
-  {
-    "phase": 2,
-    "module": "DistanceResolver",
-    "test_type": "unit",
-    "test": "tests/05_fase2_baseline/test_phase2_data_contracts.py"
-  },
-  {
-    "phase": 2,
-    "module": "DistanceResolver",
-    "test_type": "integration",
-    "test": "tests/05_fase2_baseline/test_phase2_http_server.py"
-  },
-  {
-    "phase": 2,
-    "module": "DistanceResolver",
-    "test_type": "manual",
-    "test": "checklist na página /fase-2-baseline/"
-  },
-  {
-    "phase": 2,
-    "module": "DistanceResolver",
-    "test_type": "acceptance",
-    "test": "python tests/run_all_tests.py"
-  },
-  {
-    "phase": 2,
     "module": "FlowBuilder",
     "test_type": "unit",
     "test": "tests/05_fase2_baseline/test_phase2_static_site.py"
@@ -646,30 +616,6 @@
     "module": "TaxEngineBasic",
     "test_type": "acceptance",
     "test": "python tests/run_all_tests.py"
-  },
-  {
-    "phase": 3,
-    "module": "Phase3TestPanel",
-    "test_type": "unit",
-    "test": "test_phase3_logic.py"
-  },
-  {
-    "phase": 3,
-    "module": "Phase3TestPanel",
-    "test_type": "integration",
-    "test": "test_phase3_http_server.py"
-  },
-  {
-    "phase": 3,
-    "module": "Phase3TestPanel",
-    "test_type": "manual",
-    "test": "checklist na página /fase-3-cenarios/"
-  },
-  {
-    "phase": 3,
-    "module": "Phase3TestPanel",
-    "test_type": "acceptance",
-    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
   },
   {
     "phase": 3,
@@ -1172,36 +1118,6 @@
   {
     "phase": 4,
     "module": "Phase4Dashboard",
-    "test_type": "acceptance",
-    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4TestPanel",
-    "test_type": "unit",
-    "test": "tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4TestPanel",
-    "test_type": "unit",
-    "test": "tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4TestPanel",
-    "test_type": "integration",
-    "test": "tests/07_fase4_score_otimizador/test_phase4_http_server.py"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4TestPanel",
-    "test_type": "manual",
-    "test": "checklist na página /fase-4-score-otimizador/"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4TestPanel",
     "test_type": "acceptance",
     "test": "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
   },
@@ -1754,48 +1670,6 @@
   {
     "phase": 5,
     "module": "Phase5Dashboard",
-    "test_type": "acceptance",
-    "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "test_type": "unit",
-    "test": "tests/08_fase5_entrega_final/test_phase5_stress_logic.py"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "test_type": "unit",
-    "test": "tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "test_type": "unit",
-    "test": "tests/08_fase5_entrega_final/test_phase5_audit_export.py"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "test_type": "unit",
-    "test": "tests/08_fase5_entrega_final/test_phase5_final_qa.py"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "test_type": "integration",
-    "test": "tests/08_fase5_entrega_final/test_phase5_http_server.py"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "test_type": "manual",
-    "test": "checklist na página /fase-5-entrega-final/"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
     "test_type": "acceptance",
     "test": "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
   },

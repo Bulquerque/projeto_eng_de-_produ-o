@@ -11,4 +11,3 @@
 - `SearchLogPanel`
 - `RankingExplainer`
 - `TradeoffFrontier`
-- `Phase4TestPanel`

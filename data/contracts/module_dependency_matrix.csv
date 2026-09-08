@@ -25,16 +25,13 @@ phase,module,calls,file
 2,CalibrationPanel,BaseFitScore,assets/js/phase2/calibration-panel.js
 2,CalibrationPanel,ReferenceResultExtractor,assets/js/phase2/calibration-panel.js
 2,CostEngine,FlowBuilder,assets/js/phase2/cost-engine.js
-2,DistanceResolver,FlowBuilder,assets/js/phase2/distance-resolver.js
-2,DistanceResolver,CostEngine,assets/js/phase2/distance-resolver.js
 2,FlowBuilder,BaselineBuilder,assets/js/phase2/flow-builder.js
-2,Phase2TestPanel,CostEngine,assets/js/phase2/phase2-tests.js
-2,Phase2TestPanel,BaseFitScore,assets/js/phase2/phase2-tests.js
-2,Phase2TestPanel,BaselineBuilder,assets/js/phase2/phase2-tests.js
+2,Phase2TestPanel,CostEngine,assets/js/phase2/baseline-checks.js
+2,Phase2TestPanel,BaseFitScore,assets/js/phase2/baseline-checks.js
+2,Phase2TestPanel,BaselineBuilder,assets/js/phase2/baseline-checks.js
 2,ReferenceResultExtractor,BaseFitScore,assets/js/phase2/reference-result-extractor.js
 2,TaxEngineBasic,FlowBuilder,assets/js/phase2/tax-engine-basic.js
 2,TaxEngineBasic,CostEngine,assets/js/phase2/tax-engine-basic.js
-3,Phase3TestPanel,módulos phase2/phase3 conforme implementação,assets/js/phase3/phase3-tests.js
 3,ScenarioArenaDashboard,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-arena-dashboard.js
 3,ScenarioBuilder,"['ScenarioValidator', 'Valida alterações.']",assets/js/phase3/scenario-builder.js
 3,ScenarioBuilder,"['FlowBuilder', 'Recria fluxos.']",assets/js/phase3/scenario-builder.js
@@ -72,12 +69,6 @@ phase,module,calls,file
 4,Phase4Dashboard,SearchLogPanel,assets/js/phase4/phase4-dashboard.js
 4,Phase4Dashboard,RankingExplainer,assets/js/phase4/phase4-dashboard.js
 4,Phase4Dashboard,TradeoffFrontier,assets/js/phase4/phase4-dashboard.js
-4,Phase4Dashboard,Phase4TestPanel,assets/js/phase4/phase4-dashboard.js
-4,Phase4TestPanel,ObjectiveBuilder,assets/js/phase4/phase4-tests.js
-4,Phase4TestPanel,MetricNormalizer,assets/js/phase4/phase4-tests.js
-4,Phase4TestPanel,ScenarioScoring,assets/js/phase4/phase4-tests.js
-4,Phase4TestPanel,CandidateScenarioGenerator,assets/js/phase4/phase4-tests.js
-4,Phase4TestPanel,ScenarioOptimizer,assets/js/phase4/phase4-tests.js
 4,RankingExplainer,ScenarioScoring,assets/js/phase4/ranking-explainer.js
 4,RankingExplainer,ScenarioComparator,assets/js/phase4/ranking-explainer.js
 4,ScenarioMetricExtractor,ScenarioSimulator,assets/js/phase4/scenario-metric-extractor.js
@@ -90,7 +81,6 @@ phase,module,calls,file
 4,ScenarioOptimizer,ScenarioScoring,assets/js/phase4/scenario-optimizer.js
 4,ScenarioScoring,ObjectiveValidator,assets/js/phase4/scenario-scoring.js
 4,ScenarioScoring,MetricNormalizer,assets/js/phase4/scenario-scoring.js
-4,SearchLogPanel,ScenarioOptimizer,assets/js/phase4/search-log-panel.js
 4,TradeoffFrontier,ScenarioScoring,assets/js/phase4/tradeoff-frontier.js
 4,TradeoffFrontier,ScenarioQualityCheck,assets/js/phase4/tradeoff-frontier.js
 5,AuditTrail,"['ScenarioPersistence', 'Recebe cenários salvos/importados.']",
@@ -118,7 +108,6 @@ phase,module,calls,file
 5,ExportEngine,"['AuditTrail', 'Exporta auditoria.']",
 5,ExportEngine,"['ScenarioPersistence', 'Exporta/importa cenários.']",
 5,FinalQAChecker,DataLoader,assets/js/phase5/final-qa-checker.js
-5,FinalQAChecker,Phase5TestPanel,assets/js/phase5/final-qa-checker.js
 5,FinalScenarioSelector,ScenarioScoring,assets/js/phase5/final-scenario-selector.js
 5,FinalScenarioSelector,ScenarioOptimizer,assets/js/phase5/final-scenario-selector.js
 5,FinalScenarioSelector,ScenarioComparator,assets/js/phase5/final-scenario-selector.js
@@ -132,14 +121,6 @@ phase,module,calls,file
 5,Phase5Dashboard,ExportCenter,assets/js/phase5/phase5-dashboard.js
 5,Phase5Dashboard,FinalQAChecker,assets/js/phase5/phase5-dashboard.js
 5,Phase5Dashboard,ReleaseValidator,assets/js/phase5/phase5-dashboard.js
-5,Phase5Dashboard,Phase5TestPanel,assets/js/phase5/phase5-dashboard.js
-5,Phase5TestPanel,StressTestEngine,assets/js/phase5/phase5-tests.js
-5,Phase5TestPanel,RobustnessScorer,assets/js/phase5/phase5-tests.js
-5,Phase5TestPanel,RecommendationEngine,assets/js/phase5/phase5-tests.js
-5,Phase5TestPanel,AuditTrailEngine,assets/js/phase5/phase5-tests.js
-5,Phase5TestPanel,ExecutiveReportBuilder,assets/js/phase5/phase5-tests.js
-5,Phase5TestPanel,ExportCenter,assets/js/phase5/phase5-tests.js
-5,Phase5TestPanel,FinalQAChecker,assets/js/phase5/phase5-tests.js
 5,RecommendationEngine,ScenarioScoring,assets/js/phase5/recommendation-engine.js
 5,RecommendationEngine,ScenarioComparator,assets/js/phase5/recommendation-engine.js
 5,RecommendationEngine,ScenarioQualityCheck,assets/js/phase5/recommendation-engine.js

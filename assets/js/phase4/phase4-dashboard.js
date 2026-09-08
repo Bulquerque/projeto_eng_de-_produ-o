@@ -1,9 +1,8 @@
-import { loadPhase2Bundle } from '../shared/data-loader.js';
-import { $, escapeHtml } from '../shared/common.js';
+import { loadPhase2Bundle } from '../core/data-loader.js';
+import { $, escapeHtml } from '../core/common.js';
 import { loadDefaultProfiles, cloneProfileAsObjective } from './objective-profile-library.js';
 import { buildObjective, buildObjectivePreviewText } from './objective-builder.js';
 import { runOptimization } from './scenario-optimizer.js';
-import { renderSearchLog } from './search-log-panel.js';
 import { explainRanking } from './ranking-explainer.js';
 import { buildTradeoffFrontier } from './tradeoff-frontier.js';
 import { validateConstraintConfig } from './constraint-engine.js';
@@ -12,13 +11,14 @@ import {
   buildBaselineCardsHtml,
   buildOptimizerInputTableHtml,
   buildRankingTableHtml,
+  renderSearchLog,
   buildTradeoffTableHtml,
 } from './phase4-dashboard-templates.js';
-import { appendSharedDebugEntry } from '../shared/debug-tools.js';
+import { appendSharedDebugEntry } from '../core/debug-tools.js';
 import {
   CANONICAL_OPTIMIZATION_POLICY,
   buildCanonicalOptimizationConfig,
-} from '../shared/optimization-policy.js';
+} from '../core/optimization-policy.js';
 const state = {
   companyId: 'empresa1',
   bundle: null,

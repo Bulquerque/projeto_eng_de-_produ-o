@@ -2,7 +2,7 @@
 
 Este documento é a especificação principal dos módulos do simulador estático. Ele foi reorganizado para servir como base de reconstrução do projeto, não só como texto explicativo.
 
-Cada módulo tem: fase, status, página prevista, descrição, input JSON, output JSON, funções internas, chamadas para outros módulos e testes. A versão estruturada em JSON fica em `data/contracts/module_contracts_all_phases.json`.
+Cada módulo tem: fase, status, página prevista, descrição, input JSON, output JSON, funções internas, chamadas para outros módulos e testes. A versão estruturada em JSON fica em `data/contracts/module-contracts.json`.
 
 Regra central: Empresa 1 e Empresa 2 são empresas diferentes. Nenhum módulo pode misturar dados, cenários, baseline, score ou relatório entre elas.
 
@@ -65,7 +65,7 @@ Regra central: Empresa 1 e Empresa 2 são empresas diferentes. Nenhum módulo po
     "catalog": "data/catalog.json",
     "qualitySummary": "data/data_quality_summary.json",
     "pathReport": "data/validation/path_resolution_report.json",
-    "auditSummary": "data/validation/final_v6_audit_summary.json",
+    "auditSummary": "data/validation/audit-summary.json",
     "workbookInventory": "data/validation/workbook_sheet_inventory.csv"
   },
   "defaultCompany": "empresa1"

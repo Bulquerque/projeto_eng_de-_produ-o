@@ -96,7 +96,7 @@ export function buildRefinementVariants({
   if (allowTaxToggle) {
     add(current.tax_mode === 'disabled' ? 'tax_on' : 'tax_off', {
       tax_mode: current.tax_mode === 'disabled' ? 'current' : 'disabled',
-      tax_regime: current.tax_mode === 'disabled' ? 'legacy_current' : 'disabled',
+      tax_regime: current.tax_mode === 'disabled' ? 'current' : 'disabled',
     });
   }
 

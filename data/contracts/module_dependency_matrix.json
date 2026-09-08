@@ -199,18 +199,6 @@
   },
   {
     "phase": 2,
-    "module": "DistanceResolver",
-    "calls": "FlowBuilder",
-    "file": "assets/js/phase2/distance-resolver.js"
-  },
-  {
-    "phase": 2,
-    "module": "DistanceResolver",
-    "calls": "CostEngine",
-    "file": "assets/js/phase2/distance-resolver.js"
-  },
-  {
-    "phase": 2,
     "module": "FlowBuilder",
     "calls": "BaselineBuilder",
     "file": "assets/js/phase2/flow-builder.js"
@@ -219,19 +207,19 @@
     "phase": 2,
     "module": "Phase2TestPanel",
     "calls": "CostEngine",
-    "file": "assets/js/phase2/phase2-tests.js"
+    "file": "assets/js/phase2/baseline-checks.js"
   },
   {
     "phase": 2,
     "module": "Phase2TestPanel",
     "calls": "BaseFitScore",
-    "file": "assets/js/phase2/phase2-tests.js"
+    "file": "assets/js/phase2/baseline-checks.js"
   },
   {
     "phase": 2,
     "module": "Phase2TestPanel",
     "calls": "BaselineBuilder",
-    "file": "assets/js/phase2/phase2-tests.js"
+    "file": "assets/js/phase2/baseline-checks.js"
   },
   {
     "phase": 2,
@@ -250,12 +238,6 @@
     "module": "TaxEngineBasic",
     "calls": "CostEngine",
     "file": "assets/js/phase2/tax-engine-basic.js"
-  },
-  {
-    "phase": 3,
-    "module": "Phase3TestPanel",
-    "calls": "módulos phase2/phase3 conforme implementação",
-    "file": "assets/js/phase3/phase3-tests.js"
   },
   {
     "phase": 3,
@@ -506,12 +488,6 @@
   {
     "phase": 4,
     "module": "Phase4Dashboard",
-    "calls": "SearchLogPanel",
-    "file": "assets/js/phase4/phase4-dashboard.js"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4Dashboard",
     "calls": "RankingExplainer",
     "file": "assets/js/phase4/phase4-dashboard.js"
   },
@@ -520,42 +496,6 @@
     "module": "Phase4Dashboard",
     "calls": "TradeoffFrontier",
     "file": "assets/js/phase4/phase4-dashboard.js"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4Dashboard",
-    "calls": "Phase4TestPanel",
-    "file": "assets/js/phase4/phase4-dashboard.js"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4TestPanel",
-    "calls": "ObjectiveBuilder",
-    "file": "assets/js/phase4/phase4-tests.js"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4TestPanel",
-    "calls": "MetricNormalizer",
-    "file": "assets/js/phase4/phase4-tests.js"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4TestPanel",
-    "calls": "ScenarioScoring",
-    "file": "assets/js/phase4/phase4-tests.js"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4TestPanel",
-    "calls": "CandidateScenarioGenerator",
-    "file": "assets/js/phase4/phase4-tests.js"
-  },
-  {
-    "phase": 4,
-    "module": "Phase4TestPanel",
-    "calls": "ScenarioOptimizer",
-    "file": "assets/js/phase4/phase4-tests.js"
   },
   {
     "phase": 4,
@@ -633,7 +573,7 @@
     "phase": 4,
     "module": "SearchLogPanel",
     "calls": "ScenarioOptimizer",
-    "file": "assets/js/phase4/search-log-panel.js"
+    "file": "assets/js/phase4/phase4-dashboard-templates.js"
   },
   {
     "phase": 4,
@@ -838,12 +778,6 @@
   },
   {
     "phase": 5,
-    "module": "FinalQAChecker",
-    "calls": "Phase5TestPanel",
-    "file": "assets/js/phase5/final-qa-checker.js"
-  },
-  {
-    "phase": 5,
     "module": "FinalScenarioSelector",
     "calls": "ScenarioScoring",
     "file": "assets/js/phase5/final-scenario-selector.js"
@@ -919,54 +853,6 @@
     "module": "Phase5Dashboard",
     "calls": "ReleaseValidator",
     "file": "assets/js/phase5/phase5-dashboard.js"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5Dashboard",
-    "calls": "Phase5TestPanel",
-    "file": "assets/js/phase5/phase5-dashboard.js"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "calls": "StressTestEngine",
-    "file": "assets/js/phase5/phase5-tests.js"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "calls": "RobustnessScorer",
-    "file": "assets/js/phase5/phase5-tests.js"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "calls": "RecommendationEngine",
-    "file": "assets/js/phase5/phase5-tests.js"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "calls": "AuditTrailEngine",
-    "file": "assets/js/phase5/phase5-tests.js"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "calls": "ExecutiveReportBuilder",
-    "file": "assets/js/phase5/phase5-tests.js"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "calls": "ExportCenter",
-    "file": "assets/js/phase5/phase5-tests.js"
-  },
-  {
-    "phase": 5,
-    "module": "Phase5TestPanel",
-    "calls": "FinalQAChecker",
-    "file": "assets/js/phase5/phase5-tests.js"
   },
   {
     "phase": 5,

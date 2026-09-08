@@ -9,7 +9,7 @@ Esta versão confere, de cabo a rabo, os caminhos de execução do site e o mape
 ## O que foi verificado
 
 - Todos os arquivos declarados em `data/catalog.json` existem.
-- `index.html`, `assets/styles.css` e `assets/app.js` existem e usam caminhos relativos.
+- `index.html`, `assets/styles.css` e `assets/js/phase1/main.js` existem e usam caminhos relativos.
 - As duas empresas continuam separadas.
 - Os 5 workbooks XLSX enviados foram preservados em `references/raw_sources/`.
 - As 53 abas encontradas nesses workbooks têm export próprio em `data/<empresa>/source_exports/<source_id>/`.
@@ -30,15 +30,15 @@ Esta versão confere, de cabo a rabo, os caminhos de execução do site e o mape
 
 - `data/validation/workbook_sheet_inventory.csv`: uma linha por aba, com workbook, source_id, nome da aba, dimensão e caminho do CSV exportado.
 - `data/validation/full_workbook_path_audit.json`: relatório completo em JSON.
-- `data/validation/final_v6_audit_summary.json`: resumo final, mais fácil de ler.
+- `data/validation/audit-summary.json`: resumo final, mais fácil de ler.
 
 ## Como testar
 
 ```bash
-python tests/check_package.py
-python tests/test_full_workbook_paths.py
-python tests/test_paths_and_regeneration.py
-python tests/test_final_deep_audit.py
+python tests/00_basicos/check_package.py
+python tests/01_paths_auditoria/test_full_workbook_paths.py
+python tests/01_paths_auditoria/test_paths_and_regeneration.py
+python tests/01_paths_auditoria/test_final_deep_audit.py
 ```
 
 Resultado esperado:

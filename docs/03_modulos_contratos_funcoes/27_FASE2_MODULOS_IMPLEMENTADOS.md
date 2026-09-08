@@ -73,7 +73,7 @@
 
 **Funções internas:** `buildEmpresa1Flows`, `buildEmpresa2Flows`.
 
-**Módulos chamados:** `DistanceResolver`, `BaselineDataAdapter`.
+**Módulos chamados:** `BaselineDataAdapter`.
 
 **Testes:** verifica se há fluxos, se empresa é preservada e se destinos são cobertos.
 

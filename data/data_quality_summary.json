@@ -1365,7 +1365,7 @@
       "source_id": "icms_216",
       "kind": "reference_csv",
       "rows": 216,
-      "path": "data/references/icms_216_linhas.csv"
+      "path": "references/raw_sources/icms_216_linhas.csv"
     }
   ],
   "phase_1_frontend_implemented": true

@@ -1,10 +1,7 @@
 import { runScenario } from '../phase3/scenario-simulator.js';
+import { safeNumber } from '../core/common.js';
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj || {}));
-}
-function n(v, d = 0) {
-  const x = Number(v);
-  return Number.isFinite(x) ? x : d;
 }
 export function runSensitivity({
   companyId,
@@ -23,19 +20,19 @@ export function runSensitivity({
       warnings: [],
       errors: [`variável não suportada: ${cfg.variable}`],
     };
-  const baselineTotal = n(baselineBundle?.costs?.costs?.total_with_tax);
+  const baselineTotal = safeNumber(baselineBundle?.costs?.costs?.total_with_tax);
   const sensitivity_results = (cfg.values || []).map((value) => {
     const scenario = clone(selectedScenario);
     scenario.scenario_id = `${selectedScenario.scenario_id}__sens_${cfg.variable}_${String(value).replace('.', '_')}`;
     scenario.changes = { ...(scenario.changes || {}), [cfg.variable]: value };
     const result = runScenario({ companyId, scenario, baselineBundle });
     const saving_pct = baselineTotal
-      ? ((baselineTotal - n(result.total_with_tax)) / baselineTotal) * 100
+      ? ((baselineTotal - safeNumber(result.total_with_tax)) / baselineTotal) * 100
       : 0;
     return {
       variable: cfg.variable,
       value,
-      total_with_tax: n(result.total_with_tax),
+      total_with_tax: safeNumber(result.total_with_tax),
       saving_pct,
       errors: result.errors || [],
       warnings: result.warnings || [],
@@ -93,7 +90,7 @@ export function runSensitivityMatrix({
       errors: ['escolha duas variáveis diferentes para a matriz'],
     };
   }
-  const baselineTotal = n(baselineBundle?.costs?.costs?.total_with_tax);
+  const baselineTotal = safeNumber(baselineBundle?.costs?.costs?.total_with_tax);
   const matrix_results = [];
   for (const yValue of cfg.yValues || []) {
     for (const xValue of cfg.xValues || []) {
@@ -109,7 +106,7 @@ export function runSensitivityMatrix({
         [cfg.yVariable]: yValue,
       };
       const result = runScenario({ companyId, scenario, baselineBundle });
-      const total = n(result.total_with_tax);
+      const total = safeNumber(result.total_with_tax);
       const saving_abs = baselineTotal - total;
       matrix_results.push({
         x_variable: cfg.xVariable,

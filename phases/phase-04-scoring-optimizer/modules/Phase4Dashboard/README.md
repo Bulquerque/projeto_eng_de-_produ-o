@@ -42,7 +42,6 @@ Renderiza a página /fase-4-score-otimizador/ com objective builder, ranking, ot
 - `SearchLogPanel`
 - `RankingExplainer`
 - `TradeoffFrontier`
-- `Phase4TestPanel`
 
 ## Testes
 ```json

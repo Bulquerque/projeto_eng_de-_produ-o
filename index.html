@@ -7,9 +7,6 @@
   <meta name="description" content="Portal integrado do simulador estático: diagnóstico, baseline, cenários, decisão e entrega final em uma jornada única.">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="assets/styles.css">
-  <script type="importmap">
-    { "imports": { "chart.js": "./assets/vendor/chart.esm.js" } }
-  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Pular para o conteúdo</a>
@@ -71,7 +68,6 @@
   </header>
 
   <main id="main">
-    <!-- Pillar A: Diagnóstico & Baseline -->
     <div id="sec-diagnostico-baseline" class="spa-pillar">
       <section class="section" id="visao-geral" aria-labelledby="visao-geral-title">
         <div class="section-heading">
@@ -282,7 +278,6 @@
       </section>
     </div>
 
-    <!-- Pillar B: Simulação & Otimização -->
     <div id="sec-simulacao-otimizacao" class="spa-pillar hidden">
       <section class="section">
         <div class="section-heading">
@@ -490,7 +485,6 @@
         </div>
       </section>
 
-      <!-- FASE 4: Otimização de Malha -->
       <section class="section" id="arena4">
         <div class="section-heading row-heading">
           <div>
@@ -616,7 +610,6 @@
       </section>
     </div>
 
-    <!-- Pillar C: Homologação & Relatório -->
     <div id="sec-homologacao-relatorio" class="spa-pillar hidden">
       <section class="section final-dashboard">
         <div class="section-heading row-heading">
@@ -747,7 +740,6 @@
         </div>
       </section>
 
-      <!-- Centralized Console & Technical Log -->
       <section class="section" id="erros" aria-labelledby="erros-title">
         <div class="section-heading">
           <p class="eyebrow">logs de sistema</p>
@@ -765,12 +757,12 @@
     <p>Simulador Estático de Malha Logística implementado. Use <code>python -m http.server 8000</code> e abra no navegador.</p>
   </footer>
 
-  <!-- Legacy entrypoint preserved for compatibility: assets/app.js -->
-  <script type="module" src="assets/js/features/phase-1/main.js"></script>
-  <script type="module" src="assets/js/features/phase-2/main.js"></script>
-  <script type="module" src="assets/js/features/phase-3/main.js"></script>
-  <script type="module" src="assets/js/features/phase-4/main.js"></script>
-  <script type="module" src="assets/js/features/phase-5/main.js"></script>
-  <script type="module" src="assets/js/shared/router.js"></script>
+  <!-- Entry points por fase -->
+  <script type="module" src="assets/js/phase1/main.js"></script>
+  <script type="module" src="assets/js/phase2/main.js"></script>
+  <script type="module" src="assets/js/phase3/main.js"></script>
+  <script type="module" src="assets/js/phase4/main.js"></script>
+  <script type="module" src="assets/js/phase5/main.js"></script>
+  <script type="module" src="assets/js/core/router.js"></script>
 </body>
 </html>

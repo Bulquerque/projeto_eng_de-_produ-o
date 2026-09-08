@@ -1,9 +1,5 @@
-import { buildScenarioSummary } from '../shared/scenario-summary.js';
-
-function n(value, fallback = 0) {
-  const number = Number(value);
-  return Number.isFinite(number) ? number : fallback;
-}
+import { buildScenarioSummary } from '../core/scenario-summary.js';
+import { safeNumber } from '../core/common.js';
 
 function baselineResult(bundle) {
   const costs = bundle?.costs?.costs || {};
@@ -22,7 +18,7 @@ function baselineResult(bundle) {
         reallocation_rule: 'nearest_available_cd',
       },
     },
-    total_with_tax: n(costs.total_with_tax),
+    total_with_tax: safeNumber(costs.total_with_tax),
     costs,
     tax_results: bundle?.tax_results?.tax_results || {},
   };
@@ -58,11 +54,11 @@ function comparisonRow({ base, companyId, result }) {
       result?.scenario?.changes?.tax_mode,
     tax_regime_label: summary.tax_regime_label,
     total_with_tax: summary.total_with_tax,
-    total_logistics_cost: n(result.costs?.total_logistics_cost),
+    total_logistics_cost: safeNumber(result.costs?.total_logistics_cost),
     transfer_cost: summary.transfer_cost,
-    distribution_cost: n(result.costs?.distribution_cost),
-    storage_cost: n(result.costs?.storage_cost),
-    inventory_cost: n(result.costs?.inventory_cost),
+    distribution_cost: safeNumber(result.costs?.distribution_cost),
+    storage_cost: safeNumber(result.costs?.storage_cost),
+    inventory_cost: safeNumber(result.costs?.inventory_cost),
     tax_impact: summary.tax_impact,
     tax_calculation_mode: taxResults.calculation_mode,
     tax_precision_mode: taxResults.precision_mode,
@@ -113,8 +109,8 @@ export function componentDelta(baselineBundle, result) {
 
   return metrics.map((metric) => ({
     metric,
-    baseline: n(baselineCosts[metric]),
-    scenario: n(scenarioCosts[metric]),
-    delta: n(scenarioCosts[metric]) - n(baselineCosts[metric]),
+    baseline: safeNumber(baselineCosts[metric]),
+    scenario: safeNumber(scenarioCosts[metric]),
+    delta: safeNumber(scenarioCosts[metric]) - safeNumber(baselineCosts[metric]),
   }));
 }

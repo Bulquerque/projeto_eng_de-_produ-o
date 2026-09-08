@@ -14,11 +14,10 @@
     "SearchLogPanel",
     "RankingExplainer",
     "TradeoffFrontier",
-    "Phase4Dashboard",
-    "Phase4TestPanel"
+    "Phase4Dashboard"
   ],
   "page": "/fase-4-score-otimizador/",
-  "module_count": 14,
+  "module_count": 13,
   "tests": [
     "PHASE4_FILE_STRUCTURE_OK",
     "PHASE4_JS_SYNTAX_OK",

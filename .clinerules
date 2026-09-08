@@ -9,7 +9,7 @@ Siga rigorosamente as instruções abaixo para garantir a qualidade, consistênc
 ## 1. Arquitetura do Repositório
 
 O projeto é dividido em duas frentes fundamentais:
-1. **Front-end (Vanilla JS/HTML/CSS):** Lógica da simulação localizada em `assets/js/` (dividida por fases e módulos compartilhados em `assets/js/shared/`) e interface visual nos arquivos HTML correspondentes a cada fase (ex: `fase-2-baseline/`, `fase-3-cenarios/`, etc.).
+1. **Front-end (Vanilla JS/HTML/CSS):** Lógica da simulação localizada em `assets/js/` (entrypoints em `phase1/` a `phase5/`, utilitários em `core/` e módulos de domínio por fase) e interface visual em `index.html`.
 2. **ETL e Testes (Python 3.10+):** Scripts auxiliares em `etl/` e toda a suíte de testes unitários/integrados localizada em `tests/`.
 
 ---
@@ -69,5 +69,5 @@ ruff format .
 
 ## 4. Padrões de Código (Code Standards)
 
-Consulte o documento oficial [CODING_STANDARDS.md](file:///home/bulquerque/Downloads/visagio_static_simulator_FINAL_POLIDO_v2%20%282%29/docs/CODING_STANDARDS.md) para regras detalhadas sobre ESModules JavaScript, tipagem Python e variáveis CSS.
+Consulte o documento oficial [CODING_STANDARDS.md](docs/CODING_STANDARDS.md) para regras detalhadas sobre ESModules JavaScript, tipagem Python e variáveis CSS.
 Regra de ouro: **Seja limpo, explícito, tipado onde apropriado, evite placeholders (`TODO`) e garanta que todas as alterações tenham testes automatizados correspondentes.**

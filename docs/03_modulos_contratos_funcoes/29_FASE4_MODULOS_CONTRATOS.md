@@ -200,6 +200,6 @@ Todos os módulos abaixo pertencem à Fase 4 e estão implementados em `assets/j
 
 **Testes:** respeita o limite de segurança do espaço discreto; desempate é estável; inválidos não entram no ranking.
 
-## SearchLogPanel, RankingExplainer, TradeoffFrontier, Phase4Dashboard e Phase4TestPanel
+## SearchLogPanel, RankingExplainer, TradeoffFrontier e Phase4Dashboard
 
-Esses módulos renderizam a interface, o log, a explicação, a fronteira de trade-off e os testes. Todos têm arquivos separados em `assets/js/phase4/` e são testados por `tests/07_fase4_score_otimizador/`.
+Esses módulos renderizam a interface, o log, a explicação e a fronteira de trade-off. Todos têm arquivos separados em `assets/js/phase4/` e são testados por `tests/07_fase4_score_otimizador/`.

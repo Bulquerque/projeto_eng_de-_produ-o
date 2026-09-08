@@ -63,7 +63,7 @@ Este documento mostra os principais dados disponíveis no pacote e os caminhos q
 | `data/validation/full_workbook_path_audit.json` | Auditoria dos workbooks e exports |
 | `data/validation/workbook_sheet_inventory.csv` | Inventário por aba dos workbooks |
 | `data/validation/regeneration_compare_report.json` | Comparação de regeneração dos dados críticos |
-| `data/validation/final_v6_audit_summary.json` | Resumo final de auditoria do pacote base |
+| `data/validation/audit-summary.json` | Resumo final de auditoria do pacote base |
 
 ## Resultado atual de path audit
 

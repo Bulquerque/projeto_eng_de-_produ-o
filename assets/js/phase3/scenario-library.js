@@ -1,4 +1,4 @@
-import { loadPhase2Bundle, loadPhase3Samples } from '../shared/data-loader.js';
+import { loadPhase2Bundle, loadPhase3Samples } from '../core/data-loader.js';
 import { loadSavedScenarios } from './scenario-persistence.js';
 export async function loadScenarioLibrary(companyId) {
   const baselineBundle = await loadPhase2Bundle(companyId);
@@ -22,7 +22,7 @@ export async function loadScenarioLibrary(companyId) {
       inventory_days: 45,
       wacc: 0.15,
       tax_mode: 'current',
-      tax_regime: 'legacy_current',
+      tax_regime: 'current',
       reallocation_rule: 'nearest_available_cd',
     },
     metadata: { phase: 3, source: 'phase2_bundle', editable: false },

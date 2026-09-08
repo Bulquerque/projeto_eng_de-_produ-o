@@ -47,7 +47,6 @@ Renderiza a página final da Fase 5.
 - `ExportCenter`
 - `FinalQAChecker`
 - `ReleaseValidator`
-- `Phase5TestPanel`
 
 ## Testes
 ```json

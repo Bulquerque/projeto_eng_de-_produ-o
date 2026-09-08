@@ -29,8 +29,7 @@
     "ScenarioOptimizer",
     "SearchLogPanel",
     "RankingExplainer",
-    "TradeoffFrontier",
-    "Phase4TestPanel"
+    "TradeoffFrontier"
   ],
   "tests": {
     "unit": [

@@ -25,7 +25,6 @@
   ],
   "external_calls": [
     "DataLoader",
-    "Phase5TestPanel"
   ],
   "tests": {
     "unit": [

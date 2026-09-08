@@ -7,11 +7,11 @@ Este documento explica como a Fase 1 está organizada tecnicamente.
 ```text
 index.html
 assets/styles.css
-assets/app.js
+assets/js/phase1/main.js
 data/catalog.json
 data/data_quality_summary.json
 data/validation/path_resolution_report.json
-data/validation/final_v6_audit_summary.json
+data/validation/audit-summary.json
 data/validation/workbook_sheet_inventory.csv
 ```
 
@@ -25,7 +25,7 @@ Define a estrutura da página. Ele não deve conter lógica pesada. A página ch
 
 Define a identidade visual da Fase 1. Usa paleta inspirada no material institucional da Visagio, com fundo claro, verde escuro, verde médio, verde água e cards limpos.
 
-### `assets/app.js`
+### `assets/js/phase1/main.js`
 
 Contém a lógica da interface estática.
 
@@ -46,7 +46,7 @@ Phase1AutoChecks
 
 ```text
 1. Página abre.
-2. app.js chama DataLoader.
+2. O entrypoint da Fase 1 chama o DataLoader compartilhado.
 3. DataLoader busca catalog.json e relatórios de validação.
 4. Empresa 1 é selecionada por padrão.
 5. DatasetPanel renderiza os datasets da empresa selecionada.
@@ -63,7 +63,7 @@ O frontend lê principalmente:
 data/catalog.json
 data/data_quality_summary.json
 data/validation/path_resolution_report.json
-data/validation/final_v6_audit_summary.json
+data/validation/audit-summary.json
 data/validation/workbook_sheet_inventory.csv
 data/validation/phase_tests.json
 ```
@@ -116,7 +116,7 @@ Cada item em `core_files` pode ter:
 1. Salvar o CSV/JSON em `data/empresaX/core/`.
 2. Adicionar o dataset em `data/catalog.json`.
 3. Atualizar `data/validation/path_resolution_report.json` via script de auditoria.
-4. Rodar `python tests/test_phase1_static_site.py`.
+4. Rodar `python tests/02_fase1_frontend/test_phase1_static_site.py`.
 5. Abrir o site e conferir se o dataset aparece no painel.
 
 ## Observação sobre Playwright

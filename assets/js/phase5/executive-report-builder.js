@@ -2,7 +2,7 @@ import {
   buildScenarioSummary,
   formatInventoryDaysDisplay,
   formatMultiplierDisplay,
-} from '../shared/scenario-summary.js';
+} from '../core/scenario-summary.js';
 
 function esc(v) {
   return String(v ?? '')

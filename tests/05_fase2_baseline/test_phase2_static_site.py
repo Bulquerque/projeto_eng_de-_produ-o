@@ -38,11 +38,11 @@ def test_phase2_css_components_exist():
 
 def test_phase2_js_modules_exist_and_parse():
     files = [
-        'assets/js/shared/common.js',
-        'assets/js/shared/data-loader.js',
+        'assets/js/core/common.js',
+        'assets/js/core/data-loader.js',
         'assets/js/phase2/main.js',
         'assets/js/phase2/baseline-dashboard.js',
-        'assets/js/phase2/phase2-tests.js',
+        'assets/js/phase2/baseline-checks.js',
         'assets/js/phase2/cost-engine.js',
         'assets/js/phase2/base-fit-score.js',
     ]
@@ -58,7 +58,7 @@ def test_no_absolute_runtime_paths_in_phase2():
             'fase-2-baseline/index.html',
             'assets/js/phase2/main.js',
             'assets/js/phase2/baseline-dashboard.js',
-            'assets/js/shared/data-loader.js',
+            'assets/js/core/data-loader.js',
         ]
     )
     forbidden = ['/mnt/data', 'C:\\', 'A:/', 'file://']

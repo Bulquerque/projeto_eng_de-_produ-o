@@ -1,7 +1,7 @@
 import { setupPhase3 } from './scenario-arena-dashboard.js';
-import { loadCatalog, loadPhase3Report } from '../shared/data-loader.js';
-import { loadTaxReformConfiguration } from '../shared/tax-reform-config.js';
-import { $ } from '../shared/common.js';
+import { loadCatalog, loadPhase3Report } from '../core/data-loader.js';
+import { loadTaxReformConfiguration } from '../core/tax-reform-config.js';
+import { $ } from '../core/common.js';
 
 async function init() {
   setupPhase3();

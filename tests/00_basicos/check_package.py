@@ -11,21 +11,10 @@ def find_project_root() -> Path:
 
 
 ROOT = find_project_root()
-
-
-def find_project_root() -> Path:
-    here = Path(__file__).resolve()
-    for candidate in [here.parent, *here.parents]:
-        if (candidate / 'index.html').exists() and (candidate / 'data').exists():
-            return candidate
-    raise RuntimeError('Project root not found. Run tests from inside the extracted package.')
-
-
-ROOT = find_project_root()
 required = [
     'index.html',
     'assets/styles.css',
-    'assets/app.js',
+    'assets/js/phase1/main.js',
     'data/catalog.json',
     'data/encrypted_manifest.json',
     'data/validation/full_workbook_path_audit.json',

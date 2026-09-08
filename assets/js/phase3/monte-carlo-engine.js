@@ -1,12 +1,7 @@
 import { runScenario } from './scenario-simulator.js';
-
+import { safeNumber } from '../core/common.js';
 function clone(value) {
   return JSON.parse(JSON.stringify(value || {}));
-}
-
-function n(value, fallback = 0) {
-  const number = Number(value);
-  return Number.isFinite(number) ? number : fallback;
 }
 
 function clamp(value, min, max) {
@@ -198,7 +193,7 @@ function buildMonteCarloConfig({
   scatterDriver = 'freight_multiplier',
   histogramBins = 12,
 } = {}) {
-  const normalizedIterations = clamp(Math.round(n(iterations, 300)), 50, 5000);
+  const normalizedIterations = clamp(Math.round(safeNumber(iterations, 300)), 50, 5000);
   const normalizedProfile = normalizeProfile(profile);
   const normalizedDriver = normalizeDriver(scatterDriver);
   const preset = PROFILE_PRESETS[normalizedProfile];
@@ -208,7 +203,7 @@ function buildMonteCarloConfig({
     seed,
     profile: normalizedProfile,
     scatter_driver: normalizedDriver,
-    histogram_bins: clamp(Math.round(n(histogramBins, 12)), 6, 30),
+    histogram_bins: clamp(Math.round(safeNumber(histogramBins, 12)), 6, 30),
     spread: clone(preset.spread),
     shared_shock: preset.shared_shock,
     idiosyncratic_shock: preset.idiosyncratic_shock,
@@ -424,11 +419,11 @@ export function runMonteCarloSimulation({
   delete baseScenario.monte_carlo;
   delete baseScenario.analysis;
   const baseChanges = baseScenario.changes || {};
-  const baseFreight = Math.max(0.0001, n(baseChanges.freight_multiplier, 1));
-  const baseDemand = Math.max(0.0001, n(baseChanges.demand_multiplier, 1));
-  const baseInventory = Math.max(0, n(baseChanges.inventory_days, 45));
-  const baseWacc = Math.max(0, n(baseChanges.wacc, 0.15));
-  const baselineTotal = n(
+  const baseFreight = Math.max(0.0001, safeNumber(baseChanges.freight_multiplier, 1));
+  const baseDemand = Math.max(0.0001, safeNumber(baseChanges.demand_multiplier, 1));
+  const baseInventory = Math.max(0, safeNumber(baseChanges.inventory_days, 45));
+  const baseWacc = Math.max(0, safeNumber(baseChanges.wacc, 0.15));
+  const baselineTotal = safeNumber(
     deterministicResult?.total_with_tax ?? baselineBundle?.costs?.costs?.total_with_tax
   );
   const deterministic =
@@ -521,8 +516,8 @@ export function runMonteCarloSimulation({
       continue;
     }
 
-    const taxImpact = n(result.costs?.tax_impact);
-    const totalLogistics = n(result.costs?.total_logistics_cost);
+    const taxImpact = safeNumber(result.costs?.tax_impact);
+    const totalLogistics = safeNumber(result.costs?.total_logistics_cost);
     const adjustedTaxImpact = Math.max(0, taxImpact * sampled.tax_multiplier);
     const adjustedTotal = totalLogistics + adjustedTaxImpact;
     const savingAbs = baselineTotal - adjustedTotal;
@@ -559,9 +554,9 @@ export function runMonteCarloSimulation({
   const summary = summarizeSamples({
     samples,
     baselineTotal,
-    deterministicTotal: n(deterministic.total_with_tax),
+    deterministicTotal: safeNumber(deterministic.total_with_tax),
     deterministicSavingPct: baselineTotal
-      ? ((baselineTotal - n(deterministic.total_with_tax)) / baselineTotal) * 100
+      ? ((baselineTotal - safeNumber(deterministic.total_with_tax)) / baselineTotal) * 100
       : 0,
     config: normalizedConfig,
   });

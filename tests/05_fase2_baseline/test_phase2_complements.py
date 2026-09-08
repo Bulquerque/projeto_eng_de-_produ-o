@@ -17,8 +17,8 @@ code = (
     NODE_DECRYPT_HELPER
     + r"""
 import fs from 'fs';
-import { buildComplementPackage, pickPreferredSource } from './assets/js/shared/complements.js';
-import { runTaxCalculation } from './assets/js/shared/tax/tax-orchestrator.js';
+import { buildComplementPackage, pickPreferredSource } from './assets/js/core/complements.js';
+import { runTaxCalculation } from './assets/js/core/tax/tax-orchestrator.js';
 
 const loadJson = (relPath) => JSON.parse(fs.readFileSync(relPath, 'utf8'));
 

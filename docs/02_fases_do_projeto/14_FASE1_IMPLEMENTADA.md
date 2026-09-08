@@ -6,7 +6,7 @@ Esta versão implementa a Fase 1 do site estático do simulador de malha logíst
 
 - `index.html` refeito com página navegável da Fase 1.
 - `assets/styles.css` refeito com paleta visual inspirada no material institucional da Visagio.
-- `assets/app.js` refeito com módulos de carregamento, seleção de empresa, painel de datasets, qualidade, auditoria de caminhos, inventário de abas e checklist manual.
+- `assets/js/phase1/main.js` refeito com módulos de carregamento, seleção de empresa, painel de datasets, qualidade, auditoria de caminhos, inventário de abas e checklist manual.
 - Página `/fase-1-validacao/` criada como entrada direta para a validação da fase.
 - Testes novos para validar HTML/CSS/JS, separação de empresas, paths do catálogo e servidor estático.
 
@@ -42,13 +42,13 @@ http://localhost:8000/fase-1-validacao/
 ## Testes executados
 
 ```bash
-python tests/check_package.py
-python tests/test_full_workbook_paths.py
-python tests/test_paths_and_regeneration.py
-python tests/test_final_deep_audit.py
-python tests/test_phase1_static_site.py
-python tests/test_phase1_http_server.py
-python tests/test_phase1_playwright.py
+python tests/00_basicos/check_package.py
+python tests/01_paths_auditoria/test_full_workbook_paths.py
+python tests/01_paths_auditoria/test_paths_and_regeneration.py
+python tests/01_paths_auditoria/test_final_deep_audit.py
+python tests/02_fase1_frontend/test_phase1_static_site.py
+python tests/02_fase1_frontend/test_phase1_http_server.py
+python tests/04_e2e_visual_opcional/test_phase1_playwright.py
 ```
 
 Resultado observado no ambiente de geração:

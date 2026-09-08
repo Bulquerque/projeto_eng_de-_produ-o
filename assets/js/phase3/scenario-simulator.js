@@ -1,12 +1,8 @@
 import { validateScenario } from './scenario-validator.js';
 import { rebuildScenarioFlows } from './scenario-flow-rebuilder.js';
-import { calculateReformTax } from '../shared/tax-reform-engine.js';
+import { runTaxCalculation } from '../core/tax/tax-orchestrator.js';
 import { calculatePhysicalCosts } from './physical-cost-engine.js';
-
-function toNum(v, d = 0) {
-  const x = Number(v);
-  return Number.isFinite(x) ? x : d;
-}
+import { safeNumber } from '../core/common.js';
 
 // ── Tax ──────────────────────────────────────────────────────────────────────
 
@@ -26,29 +22,29 @@ function resolveTaxImpact({ scenario, baselineBundle, rebuilt, demandMultiplier 
   if (taxMode === 'disabled') {
     return {
       taxImpact: 0,
-      taxDetails: calculateReformTax({ ...sharedArgs, taxMode, taxRegime: 'disabled' }),
+      taxDetails: runTaxCalculation({ ...sharedArgs, taxMode, taxRegime: 'disabled' }),
     };
   }
 
   if (String(taxMode).startsWith('reform_') || c.tax_regime) {
-    const details = calculateReformTax({ ...sharedArgs, taxMode, taxRegime: c.tax_regime });
-    return { taxImpact: toNum(details.total_tax_impact), taxDetails: details };
+    const details = runTaxCalculation({ ...sharedArgs, taxMode, taxRegime: c.tax_regime });
+    return { taxImpact: safeNumber(details.total_tax_impact), taxDetails: details };
   }
 
-  // Default: legacy current regime
-  const details = calculateReformTax({
+  // Regime fiscal padrão do sistema atual.
+  const details = runTaxCalculation({
     ...sharedArgs,
     taxMode: 'current',
-    taxRegime: 'legacy_current',
+    taxRegime: 'current',
   });
-  const baseFallback = toNum(baseTax.total_tax_impact) * demandMultiplier;
-  return { taxImpact: toNum(details.total_tax_impact, baseFallback), taxDetails: details };
+  const baseFallback = safeNumber(baseTax.total_tax_impact) * demandMultiplier;
+  return { taxImpact: safeNumber(details.total_tax_impact, baseFallback), taxDetails: details };
 }
 
 // ── Costs ─────────────────────────────────────────────────────────────────────
 
 function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }) {
-  const dm = toNum(scenario.changes?.demand_multiplier, 1);
+  const dm = safeNumber(scenario.changes?.demand_multiplier, 1);
   const physical = calculatePhysicalCosts({ companyId, scenario, baselineBundle, rebuilt });
   const { taxImpact, taxDetails } = resolveTaxImpact({
     scenario,
@@ -58,10 +54,10 @@ function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }
   });
 
   const totalLogistics =
-    toNum(physical.transfer_cost) +
-    toNum(physical.distribution_cost) +
-    toNum(physical.storage_cost) +
-    toNum(physical.inventory_cost);
+    safeNumber(physical.transfer_cost) +
+    safeNumber(physical.distribution_cost) +
+    safeNumber(physical.storage_cost) +
+    safeNumber(physical.inventory_cost);
 
   return {
     ...physical,
@@ -104,7 +100,7 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
   const taxResults = {
     total_tax_impact: costs.tax_impact,
     tax_mode: td?.tax_mode || scenario.changes?.tax_mode || 'current',
-    tax_regime: td?.tax_regime || scenario.changes?.tax_regime || 'legacy_current',
+    tax_regime: td?.tax_regime || scenario.changes?.tax_regime || 'current',
     regime_label: td?.regime_label,
     calculation_mode: td?.calculation_mode,
     precision_mode: td?.precision_mode,

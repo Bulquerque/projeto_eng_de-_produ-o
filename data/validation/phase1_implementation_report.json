@@ -16,15 +16,15 @@
   "updated_files": [
     "index.html",
     "assets/styles.css",
-    "assets/app.js",
+    "assets/js/phase1/main.js",
     "fase-1-validacao/index.html",
     "README.md",
-    "docs/14_FASE1_IMPLEMENTADA.md"
+    "docs/02_fases_do_projeto/14_FASE1_IMPLEMENTADA.md"
   ],
   "new_tests": [
-    "tests/test_phase1_static_site.py",
-    "tests/test_phase1_http_server.py",
-    "tests/test_phase1_playwright.py"
+    "tests/02_fase1_frontend/test_phase1_static_site.py",
+    "tests/02_fase1_frontend/test_phase1_http_server.py",
+    "tests/04_e2e_visual_opcional/test_phase1_playwright.py"
   ],
   "expected_manual_checks": [
     "Empresa 1 mostra demanda/distância/premissas",

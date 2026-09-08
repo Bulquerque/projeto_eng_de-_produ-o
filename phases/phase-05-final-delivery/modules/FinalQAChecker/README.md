@@ -37,7 +37,6 @@ Executa checagens finais do simulador e isolamento de empresas.
 
 ## Módulos chamados
 - `DataLoader`
-- `Phase5TestPanel`
 
 ## Testes
 ```json

@@ -11,14 +11,103 @@ import {
   buildFailureResult,
   buildSearchLog,
   compareExactRanking,
-  n,
   uniqueByChanges,
 } from './optimizer-utils.js';
 import { buildRefinementVariants } from './optimizer-refinement.js';
 import {
   CANONICAL_OPTIMIZATION_POLICY,
   buildCanonicalOptimizationConfig,
-} from '../shared/optimization-policy.js';
+} from '../core/optimization-policy.js';
+import { safeNumber } from '../core/common.js';
+
+const REFINEMENT_CONFIG = Object.freeze({
+  allow_tax_toggle: false,
+  freight_steps: [],
+  demand_steps: [],
+  inventory_steps: [],
+  wacc_steps: [],
+});
+
+function evaluateCandidate({ companyId, scenario, baselineBundle, constraints }) {
+  const result = runScenario({ companyId, scenario, baselineBundle });
+  if (result.simulation_status !== 'success') {
+    return { reason: result.errors?.[0] || 'simulação inválida' };
+  }
+
+  const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle });
+  const constraint = evaluateConstraints({
+    scenarioResult: result,
+    quality,
+    scenario,
+    constraints,
+  });
+  if (!constraint.passes_constraints) {
+    return { reason: constraint.violations[0] || 'restrição violada' };
+  }
+
+  return { record: { scenario, result, quality, constraint } };
+}
+
+function evaluateCandidates(
+  candidates,
+  { companyId, baselineBundle, constraints, deduplicate = false, seenScenarioIds, seenScenarioKeys }
+) {
+  const records = [];
+  const invalidReasons = [];
+  let invalid = 0;
+  let simulated = 0;
+  const scenarios = deduplicate ? uniqueByChanges(candidates) : candidates;
+
+  for (const scenario of scenarios) {
+    const scenarioKey = JSON.stringify(scenario.changes || {});
+    if (seenScenarioKeys?.has(scenarioKey)) continue;
+    seenScenarioKeys?.add(scenarioKey);
+    if (seenScenarioIds?.has(scenario.scenario_id)) continue;
+    seenScenarioIds?.add(scenario.scenario_id);
+    simulated += 1;
+
+    const evaluation = evaluateCandidate({ companyId, scenario, baselineBundle, constraints });
+    if (!evaluation.record) {
+      invalid += 1;
+      invalidReasons.push(evaluation.reason);
+      continue;
+    }
+    records.push(evaluation.record);
+  }
+
+  return { records, invalid, invalidReasons, simulated };
+}
+
+function buildBaselineReferenceMetrics(baselineRecord) {
+  if (!baselineRecord.result?.scenario_id) return [];
+  return [
+    {
+      scenario_id: baselineRecord.result.scenario_id,
+      total_cost: baselineRecord.result.total_with_tax,
+      service_quality: baselineRecord.quality.quality_score,
+      operational_risk: baselineRecord.quality.risk_numeric ?? 50,
+      tax_impact: baselineRecord.result.costs?.tax_impact ?? 0,
+      inventory_efficiency: baselineRecord.quality.quality_metrics?.inventory_efficiency ?? 50,
+    },
+  ];
+}
+
+function buildRankedScenarios(scoring, records) {
+  const recordById = new Map(records.map((record) => [record.result.scenario_id, record]));
+  return scoring.scored_scenarios
+    .map((scored) => {
+      const record = recordById.get(scored.scenario_id);
+      return {
+        ...scored,
+        scenario: record?.scenario,
+        result: record?.result,
+        quality: record?.quality,
+        constraint: record?.constraint,
+      };
+    })
+    .sort(compareExactRanking)
+    .map((record, index) => ({ ...record, rank: index + 1 }));
+}
 
 export function runOptimization({
   companyId,
@@ -35,14 +124,6 @@ export function runOptimization({
     1,
     Math.floor(Number(optimizerConfig.refinement_seed_count ?? 5))
   );
-  const refinementConfig = {
-    allow_tax_toggle: false,
-    freight_steps: [],
-    demand_steps: [],
-    inventory_steps: [],
-    wacc_steps: [],
-  };
-
   const constraintValidation = validateConstraintConfig(constraints);
   if (!constraintValidation.valid) {
     return buildFailureResult({
@@ -111,33 +192,12 @@ export function runOptimization({
     });
   }
 
-  const scenarioRecords = [];
-  let invalid = 0;
-  const invalidReasons = [];
-
-  for (const scenario of generated.candidate_scenarios) {
-    const result = runScenario({ companyId, scenario, baselineBundle });
-    if (result.simulation_status !== 'success') {
-      invalid++;
-      invalidReasons.push(result.errors?.[0] || 'simulação inválida');
-      continue;
-    }
-
-    const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle });
-    const constraint = evaluateConstraints({
-      scenarioResult: result,
-      quality,
-      scenario,
-      constraints,
-    });
-    if (!constraint.passes_constraints) {
-      invalid++;
-      invalidReasons.push(constraint.violations[0] || 'restrição violada');
-      continue;
-    }
-
-    scenarioRecords.push({ scenario, result, quality, constraint });
-  }
+  const initialEvaluation = evaluateCandidates(generated.candidate_scenarios, {
+    companyId,
+    baselineBundle,
+    constraints,
+  });
+  const { records: scenarioRecords, invalid, invalidReasons } = initialEvaluation;
 
   const baselineScenario = buildBaselineScenario(companyId, baselineBundle);
   const baselineResult = runScenario({ companyId, scenario: baselineScenario, baselineBundle });
@@ -175,19 +235,7 @@ export function runOptimization({
   const preliminaryNormalized = normalizeMetrics({
     companyId,
     scenarioMetrics: preliminaryMetrics.scenario_metrics,
-    referenceMetrics: baselineRecord.result?.scenario_id
-      ? [
-          {
-            scenario_id: baselineRecord.result.scenario_id,
-            total_cost: baselineRecord.result.total_with_tax,
-            service_quality: baselineRecord.quality.quality_score,
-            operational_risk: baselineRecord.quality.risk_numeric ?? 50,
-            tax_impact: baselineRecord.result.costs?.tax_impact ?? 0,
-            inventory_efficiency:
-              baselineRecord.quality.quality_metrics?.inventory_efficiency ?? 50,
-          },
-        ]
-      : [],
+    referenceMetrics: buildBaselineReferenceMetrics(baselineRecord),
   });
   const preliminaryScoring = scoreScenarios({
     companyId,
@@ -212,7 +260,7 @@ export function runOptimization({
         baselineBundle,
         seedRecord: seed,
         roundIndex: round,
-        refinementConfig,
+        refinementConfig: REFINEMENT_CONFIG,
       });
       refinementGenerated += variants.length;
       refinedCandidates.push(...variants);
@@ -223,41 +271,24 @@ export function runOptimization({
     ...scenarioRecords.map((r) => r.result.scenario_id),
     baselineRecord.result.scenario_id,
   ]);
-  const refinedRecords = [];
-  let refinedInvalid = 0;
-  let refinedSimulated = 0;
-  const refinedInvalidReasons = [];
   const seenScenarioKeys = new Set([
     ...scenarioRecords.map((r) => JSON.stringify(r.scenario?.changes || {})),
     JSON.stringify(baselineRecord.scenario?.changes || {}),
   ]);
-  for (const scenario of uniqueByChanges(refinedCandidates)) {
-    const scenarioKey = JSON.stringify(scenario.changes || {});
-    if (seenScenarioKeys.has(scenarioKey)) continue;
-    seenScenarioKeys.add(scenarioKey);
-    if (seenScenarioIds.has(scenario.scenario_id)) continue;
-    seenScenarioIds.add(scenario.scenario_id);
-    refinedSimulated += 1;
-    const result = runScenario({ companyId, scenario, baselineBundle });
-    if (result.simulation_status !== 'success') {
-      refinedInvalid += 1;
-      refinedInvalidReasons.push(result.errors?.[0] || 'simulação inválida');
-      continue;
-    }
-    const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle });
-    const constraint = evaluateConstraints({
-      scenarioResult: result,
-      quality,
-      scenario,
-      constraints,
-    });
-    if (!constraint.passes_constraints) {
-      refinedInvalid += 1;
-      refinedInvalidReasons.push(constraint.violations[0] || 'restrição violada');
-      continue;
-    }
-    refinedRecords.push({ scenario, result, quality, constraint });
-  }
+  const refinedEvaluation = evaluateCandidates(refinedCandidates, {
+    companyId,
+    baselineBundle,
+    constraints,
+    deduplicate: true,
+    seenScenarioIds,
+    seenScenarioKeys,
+  });
+  const {
+    records: refinedRecords,
+    invalid: refinedInvalid,
+    invalidReasons: refinedInvalidReasons,
+    simulated: refinedSimulated,
+  } = refinedEvaluation;
 
   const allScenarioRecords = uniqueByChanges([...scenarioRecords, ...refinedRecords]);
   const candidateSpaceSize =
@@ -296,42 +327,20 @@ export function runOptimization({
   const normalized = normalizeMetrics({
     companyId,
     scenarioMetrics: metrics.scenario_metrics,
-    referenceMetrics: [
-      {
-        scenario_id: baselineRecord.result.scenario_id,
-        total_cost: baselineRecord.result.total_with_tax,
-        service_quality: baselineRecord.quality.quality_score,
-        operational_risk: baselineRecord.quality.risk_numeric ?? 50,
-        tax_impact: baselineRecord.result.costs?.tax_impact ?? 0,
-        inventory_efficiency: baselineRecord.quality.quality_metrics?.inventory_efficiency ?? 50,
-      },
-    ],
+    referenceMetrics: buildBaselineReferenceMetrics(baselineRecord),
   });
   const scoring = scoreScenarios({
     companyId,
     objective,
     normalizedMetrics: normalized.normalized_metrics,
   });
-  const resultById = new Map(allScenarioRecords.map((r) => [r.result.scenario_id, r]));
-  const enriched = scoring.scored_scenarios
-    .map((s) => {
-      const record = resultById.get(s.scenario_id);
-      return {
-        ...s,
-        scenario: record?.scenario,
-        result: record?.result,
-        quality: record?.quality,
-        constraint: record?.constraint,
-      };
-    })
-    .sort(compareExactRanking)
-    .map((r, i) => ({ ...r, rank: i + 1 }));
+  const enriched = buildRankedScenarios(scoring, allScenarioRecords);
   const best_scenarios = enriched.slice(0, 10);
   const best_by_total_cost =
     [...enriched].sort(
       (a, b) =>
-        n(a.result?.total_with_tax, Number.POSITIVE_INFINITY) -
-        n(b.result?.total_with_tax, Number.POSITIVE_INFINITY)
+        safeNumber(a.result?.total_with_tax, Number.POSITIVE_INFINITY) -
+        safeNumber(b.result?.total_with_tax, Number.POSITIVE_INFINITY)
     )[0] || null;
 
   return {

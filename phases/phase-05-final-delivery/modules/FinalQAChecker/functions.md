@@ -5,4 +5,3 @@
 # Dependências externas
 
 - `DataLoader`
-- `Phase5TestPanel`

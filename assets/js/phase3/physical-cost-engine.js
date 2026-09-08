@@ -303,222 +303,216 @@ function resolveStorageCostFromTable(storageCostMap, activeCds, dm) {
   return total > 0 ? total * 12 * dm : null; // annualise monthly figures
 }
 
-// ── Public API ───────────────────────────────────────────────────────────────
+const KILOMETRIC_RATE_BY_UF = Object.freeze({
+  SP: 0.0083,
+  MG: 0.0049,
+  ES: 0.0176,
+  RJ: 0.0133,
+});
+const KILOMETRIC_RATE_FALLBACK = 0.005;
 
-/**
- * Calculates physical logistics costs bottom-up for all rebuilt flows.
- *
- * @param {{ companyId: string, scenario: object, baselineBundle: object, rebuilt: object }} params
- * @returns {{ transfer_cost, distribution_cost, storage_cost, inventory_cost,
- *             calculation_method, flow_cost_detail, warnings }}
- */
-export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, rebuilt }) {
-  const c = scenario.changes || {};
-  const fm = toNum(c.freight_multiplier, 1);
-  const dm = toNum(c.demand_multiplier, 1);
-  const invDays = toNum(c.inventory_days, 45);
-  const wacc = toNum(c.wacc, 0.15);
-  const activeCds = c.active_cds || [];
+function buildCostContext({ scenario, baselineBundle }) {
+  const changes = scenario.changes || {};
   const base = baselineBundle?.costs?.costs || {};
-  const coreData = baselineBundle?.core_data || {};
-  const baselineCds = (baselineBundle?.model?.active_cds || []).length;
-  const inventory = toNum(base.inventory_cost) * dm * (invDays / 45) * (wacc / 0.15);
-  const warnings = [];
-
-  if (companyId === 'empresa1') {
-    const matrix = coreData.distance_matrix || [];
-    if (!matrix.length)
-      warnings.push('distance_matrix não disponível; usando fallback heurístico.');
-
-    const freightMaps = buildFreightMapE1(matrix);
-
-    // ── Kilometric transfer rates calibrated from Empresa 2 NF data ──────────
-    // Source: aux_custo_transferencia — weighted avg geodesic R$/kg-km per dest UF
-    // SP: 0.0083 | MG: 0.0049 | ES: 0.0176 | RJ: 0.0133
-    const KILOMETRIC_RATE_BY_UF = {
-      SP: 0.0083,
-      MG: 0.0049,
-      ES: 0.0176,
-      RJ: 0.0133,
-    };
-    // Conservative fallback: lowest observed cross-state rate
-    const KILOMETRIC_RATE_FALLBACK = 0.005;
-
-    let totalDist = 0;
-    let totalTransfer = 0;
-    let missingCount = 0;
-    let missingDistCount = 0;
-    const flowCostDetail = [];
-
-    for (const flow of rebuilt.flows) {
-      const { cost, method, rate } = calcFlowFreightE1(flow, freightMaps, fm);
-      const distCost = cost * dm;
-
-      const wKg = flowWeight(flow);
-      const destUf = up(flow.destination_uf || flow.cd_uf || flow.cd || '').slice(0, 2);
-      const ratePerKgKm = KILOMETRIC_RATE_BY_UF[destUf] || KILOMETRIC_RATE_FALLBACK;
-      const distKm = getTransferDistanceKmE1(flow, matrix);
-
-      let transferCost = 0;
-      if (wKg > 0 && distKm > 0) {
-        transferCost = wKg * ratePerKgKm * distKm * fm * dm;
-      } else if (wKg > 0 && distKm === 0) {
-        // Distance not found — estimate as 40% of distribution cost for this flow
-        transferCost = distCost * 0.4;
-        missingDistCount++;
-      }
-
-      totalDist += distCost;
-      totalTransfer += transferCost;
-      if (method === 'missing_rate') missingCount++;
-      flowCostDetail.push({
-        flow_id: flow.flow_id,
-        distribution_cost: distCost,
-        transfer_cost: transferCost,
-        transfer_dist_km: distKm,
-        transfer_rate_per_kg_km: ratePerKgKm,
-        dest_uf: destUf,
-        method,
-        rate,
-      });
-    }
-
-    if (missingCount > 0) {
-      warnings.push(
-        `${missingCount} fluxo(s) sem tarifa na distance_matrix; custo de distribuição zerado nesses fluxos.`
-      );
-    }
-    if (missingDistCount > 0) {
-      warnings.push(
-        `${missingDistCount} fluxo(s) sem distância exata na matriz; transferência desses fluxos estimada proporcionalmente à distribuição (40%).`
-      );
-    }
-
-    const anyPriced = flowCostDetail.some((r) => r.method === 'distance_matrix');
-    if (!anyPriced && toNum(base.distribution_cost) > 0) {
-      warnings.push(
-        'Nenhum fluxo precificado pela distance_matrix; aplicando fallback heurístico.'
-      );
-      ({ transfer_cost: totalTransfer, distribution_cost: totalDist } = heuristicFallback(
-        base,
-        fm,
-        dm,
-        companyId
-      ));
-    }
-
-    return {
-      transfer_cost: totalTransfer,
-      distribution_cost: totalDist,
-      storage_cost: storageRatioCost(base, activeCds, baselineCds, dm),
-      inventory_cost: inventory,
-      calculation_method: anyPriced ? 'physical_distance_matrix_kilometric' : 'heuristic_fallback',
-      flow_cost_detail: flowCostDetail,
-      warnings,
-    };
-  }
-
-  if (companyId === 'empresa2') {
-    const cifTable = coreData.tabelas_cif_dist || coreData.cif_table || [];
-    const transferTable = coreData.aux_custo_transferencia || [];
-    const storageTable = coreData.aux_custo_armazenagem || [];
-
-    if (!cifTable.length)
-      warnings.push('tabelas_cif_dist não disponível; usando % da receita como fallback.');
-    if (!transferTable.length)
-      warnings.push('aux_custo_transferencia não disponível; estimando transferência.');
-    if (!storageTable.length)
-      warnings.push('aux_custo_armazenagem não disponível; usando custo proporcional do baseline.');
-
-    const transferRateMap = buildTransferRateMapE2(transferTable);
-    const storageCostMap = buildStorageCostMapE2(storageTable);
-    const cifMaps = buildCifMapE2(cifTable);
-
-    let totalDist = 0;
-    let totalTransfer = 0;
-    let missingCount = 0;
-    const flowCostDetail = [];
-
-    for (const flow of rebuilt.flows) {
-      const {
-        cost: distCost,
-        method: distMethod,
-        rate: distRate,
-      } = calcFlowFreightE2(flow, cifMaps, fm);
-      const distributionCost = distCost * dm;
-
-      let transferCost = 0;
-      if (flow.reallocation_status === 'reallocated') {
-        const originUf = up(flow.cd_uf || flow.origin_uf || flow.cd).slice(0, 2);
-        const destUf = up(flow.destination_uf);
-        const key = `${originUf}→${destUf}`;
-        const ratePerKg = transferRateMap[key] || transferRateMap[`${originUf}→`] || 0;
-        const wKg = flowWeight(flow);
-        transferCost =
-          wKg > 0 && ratePerKg > 0
-            ? wKg * ratePerKg * fm * dm
-            : flowRevenue(flow) * 0.025 * fm * dm; // 2.5% revenue fallback
-      }
-
-      totalDist += distributionCost;
-      totalTransfer += transferCost;
-      if (distMethod === 'missing_cif_row') missingCount++;
-      flowCostDetail.push({
-        flow_id: flow.flow_id,
-        distribution_cost: distributionCost,
-        transfer_cost: transferCost,
-        dist_method: distMethod,
-        dist_rate: distRate,
-      });
-    }
-
-    if (missingCount > 0) {
-      warnings.push(
-        `${missingCount} fluxo(s) sem linha na tabela CIF; custo zerado nesses fluxos.`
-      );
-    }
-
-    const anyPriced = flowCostDetail.some(
-      (r) => r.dist_method === 'cif_bracket' || r.dist_method === 'cif_pct_revenue'
-    );
-    if (!anyPriced && toNum(base.distribution_cost) > 0) {
-      warnings.push('Nenhum fluxo precificado pela tabela CIF; aplicando fallback heurístico.');
-      ({ transfer_cost: totalTransfer, distribution_cost: totalDist } = heuristicFallback(
-        base,
-        fm,
-        dm,
-        companyId
-      ));
-    }
-
-    const realStorage = resolveStorageCostFromTable(storageCostMap, activeCds, dm);
-    if (realStorage === null) {
-      warnings.push(
-        'CDs do cenário sem correspondência na tabela de armazenagem; usando custo proporcional do baseline.'
-      );
-    }
-    const storage = realStorage ?? storageRatioCost(base, activeCds, baselineCds, dm);
-
-    return {
-      transfer_cost: totalTransfer,
-      distribution_cost: totalDist,
-      storage_cost: storage,
-      inventory_cost: inventory,
-      calculation_method: anyPriced ? 'physical_cif_table' : 'heuristic_fallback',
-      flow_cost_detail: flowCostDetail,
-      warnings,
-    };
-  }
-
-  // Unknown company — explicit safe fallback
-  warnings.push(`companyId desconhecido: "${companyId}"; usando heurística genérica.`);
+  const demandMultiplier = toNum(changes.demand_multiplier, 1);
   return {
-    transfer_cost: toNum(base.transfer_cost) * fm * dm,
-    distribution_cost: toNum(base.distribution_cost) * fm * dm,
-    storage_cost: storageRatioCost(base, activeCds, baselineCds, dm),
-    inventory_cost: inventory,
-    calculation_method: 'heuristic_fallback',
-    flow_cost_detail: [],
-    warnings,
+    freightMultiplier: toNum(changes.freight_multiplier, 1),
+    demandMultiplier,
+    activeCds: changes.active_cds || [],
+    base,
+    coreData: baselineBundle?.core_data || {},
+    baselineCds: (baselineBundle?.model?.active_cds || []).length,
+    inventoryCost:
+      toNum(base.inventory_cost) *
+      demandMultiplier *
+      (toNum(changes.inventory_days, 45) / 45) *
+      (toNum(changes.wacc, 0.15) / 0.15),
   };
+}
+
+function buildCostResult(context, values) {
+  return {
+    transfer_cost: values.transferCost,
+    distribution_cost: values.distributionCost,
+    storage_cost: values.storageCost,
+    inventory_cost: context.inventoryCost,
+    calculation_method: values.calculationMethod,
+    flow_cost_detail: values.flowCostDetail,
+    warnings: values.warnings,
+  };
+}
+
+function calculateCompany1Costs(context, flows) {
+  const { base, coreData, activeCds, baselineCds, freightMultiplier, demandMultiplier } = context;
+  const matrix = coreData.distance_matrix || [];
+  const warnings = matrix.length
+    ? []
+    : ['distance_matrix não disponível; usando fallback heurístico.'];
+  const freightMaps = buildFreightMapE1(matrix);
+  let distributionCost = 0;
+  let transferCost = 0;
+  let missingRateCount = 0;
+  let missingDistanceCount = 0;
+  const flowCostDetail = [];
+
+  for (const flow of flows) {
+    const { cost, method, rate } = calcFlowFreightE1(flow, freightMaps, freightMultiplier);
+    const flowDistributionCost = cost * demandMultiplier;
+    const weightKg = flowWeight(flow);
+    const destinationUf = up(flow.destination_uf || flow.cd_uf || flow.cd || '').slice(0, 2);
+    const distanceKm = getTransferDistanceKmE1(flow, matrix);
+    let flowTransferCost = 0;
+    if (weightKg > 0 && distanceKm > 0) {
+      flowTransferCost =
+        weightKg *
+        (KILOMETRIC_RATE_BY_UF[destinationUf] || KILOMETRIC_RATE_FALLBACK) *
+        distanceKm *
+        freightMultiplier *
+        demandMultiplier;
+    } else if (weightKg > 0) {
+      flowTransferCost = flowDistributionCost * 0.4;
+      missingDistanceCount += 1;
+    }
+
+    distributionCost += flowDistributionCost;
+    transferCost += flowTransferCost;
+    if (method === 'missing_rate') missingRateCount += 1;
+    flowCostDetail.push({
+      flow_id: flow.flow_id,
+      distribution_cost: flowDistributionCost,
+      transfer_cost: flowTransferCost,
+      transfer_dist_km: distanceKm,
+      transfer_rate_per_kg_km: KILOMETRIC_RATE_BY_UF[destinationUf] || KILOMETRIC_RATE_FALLBACK,
+      dest_uf: destinationUf,
+      method,
+      rate,
+    });
+  }
+
+  if (missingRateCount)
+    warnings.push(
+      `${missingRateCount} fluxo(s) sem tarifa na distance_matrix; custo de distribuição zerado nesses fluxos.`
+    );
+  if (missingDistanceCount)
+    warnings.push(
+      `${missingDistanceCount} fluxo(s) sem distância exata na matriz; transferência desses fluxos estimada proporcionalmente à distribuição (40%).`
+    );
+
+  const anyPriced = flowCostDetail.some((flow) => flow.method === 'distance_matrix');
+  if (!anyPriced && toNum(base.distribution_cost) > 0) {
+    warnings.push('Nenhum fluxo precificado pela distance_matrix; aplicando fallback heurístico.');
+    ({ transfer_cost: transferCost, distribution_cost: distributionCost } = heuristicFallback(
+      base,
+      freightMultiplier,
+      demandMultiplier,
+      'empresa1'
+    ));
+  }
+
+  return buildCostResult(context, {
+    transferCost,
+    distributionCost,
+    storageCost: storageRatioCost(base, activeCds, baselineCds, demandMultiplier),
+    calculationMethod: anyPriced ? 'physical_distance_matrix_kilometric' : 'heuristic_fallback',
+    flowCostDetail,
+    warnings,
+  });
+}
+
+function calculateCompany2Costs(context, flows) {
+  const { base, coreData, activeCds, baselineCds, freightMultiplier, demandMultiplier } = context;
+  const cifTable = coreData.tabelas_cif_dist || coreData.cif_table || [];
+  const transferTable = coreData.aux_custo_transferencia || [];
+  const storageTable = coreData.aux_custo_armazenagem || [];
+  const warnings = [];
+  if (!cifTable.length)
+    warnings.push('tabelas_cif_dist não disponível; usando % da receita como fallback.');
+  if (!transferTable.length)
+    warnings.push('aux_custo_transferencia não disponível; estimando transferência.');
+  if (!storageTable.length)
+    warnings.push('aux_custo_armazenagem não disponível; usando custo proporcional do baseline.');
+
+  const transferRateMap = buildTransferRateMapE2(transferTable);
+  const storageCostMap = buildStorageCostMapE2(storageTable);
+  const cifMaps = buildCifMapE2(cifTable);
+  let distributionCost = 0;
+  let transferCost = 0;
+  let missingCount = 0;
+  const flowCostDetail = [];
+
+  for (const flow of flows) {
+    const { cost, method, rate } = calcFlowFreightE2(flow, cifMaps, freightMultiplier);
+    const flowDistributionCost = cost * demandMultiplier;
+    let flowTransferCost = 0;
+    if (flow.reallocation_status === 'reallocated') {
+      const originUf = up(flow.cd_uf || flow.origin_uf || flow.cd).slice(0, 2);
+      const destinationUf = up(flow.destination_uf);
+      const transferRate =
+        transferRateMap[`${originUf}→${destinationUf}`] || transferRateMap[`${originUf}→`] || 0;
+      const weightKg = flowWeight(flow);
+      flowTransferCost =
+        weightKg > 0 && transferRate > 0
+          ? weightKg * transferRate * freightMultiplier * demandMultiplier
+          : flowRevenue(flow) * 0.025 * freightMultiplier * demandMultiplier;
+    }
+    distributionCost += flowDistributionCost;
+    transferCost += flowTransferCost;
+    if (method === 'missing_cif_row') missingCount += 1;
+    flowCostDetail.push({
+      flow_id: flow.flow_id,
+      distribution_cost: flowDistributionCost,
+      transfer_cost: flowTransferCost,
+      dist_method: method,
+      dist_rate: rate,
+    });
+  }
+
+  if (missingCount)
+    warnings.push(`${missingCount} fluxo(s) sem linha na tabela CIF; custo zerado nesses fluxos.`);
+  const anyPriced = flowCostDetail.some(
+    (flow) => flow.dist_method === 'cif_bracket' || flow.dist_method === 'cif_pct_revenue'
+  );
+  if (!anyPriced && toNum(base.distribution_cost) > 0) {
+    warnings.push('Nenhum fluxo precificado pela tabela CIF; aplicando fallback heurístico.');
+    ({ transfer_cost: transferCost, distribution_cost: distributionCost } = heuristicFallback(
+      base,
+      freightMultiplier,
+      demandMultiplier,
+      'empresa2'
+    ));
+  }
+
+  const realStorage = resolveStorageCostFromTable(storageCostMap, activeCds, demandMultiplier);
+  if (realStorage === null)
+    warnings.push(
+      'CDs do cenário sem correspondência na tabela de armazenagem; usando custo proporcional do baseline.'
+    );
+  return buildCostResult(context, {
+    transferCost,
+    distributionCost,
+    storageCost: realStorage ?? storageRatioCost(base, activeCds, baselineCds, demandMultiplier),
+    calculationMethod: anyPriced ? 'physical_cif_table' : 'heuristic_fallback',
+    flowCostDetail,
+    warnings,
+  });
+}
+
+function calculateUnknownCompanyCosts(companyId, context) {
+  const { base, activeCds, baselineCds, freightMultiplier, demandMultiplier } = context;
+  return buildCostResult(context, {
+    transferCost: toNum(base.transfer_cost) * freightMultiplier * demandMultiplier,
+    distributionCost: toNum(base.distribution_cost) * freightMultiplier * demandMultiplier,
+    storageCost: storageRatioCost(base, activeCds, baselineCds, demandMultiplier),
+    calculationMethod: 'heuristic_fallback',
+    flowCostDetail: [],
+    warnings: [`companyId desconhecido: "${companyId}"; usando heurística genérica.`],
+  });
+}
+
+/** Calculates physical logistics costs from the rebuilt flow model. */
+export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, rebuilt }) {
+  const context = buildCostContext({ scenario, baselineBundle });
+  if (companyId === 'empresa1') return calculateCompany1Costs(context, rebuilt.flows);
+  if (companyId === 'empresa2') return calculateCompany2Costs(context, rebuilt.flows);
+  return calculateUnknownCompanyCosts(companyId, context);
 }

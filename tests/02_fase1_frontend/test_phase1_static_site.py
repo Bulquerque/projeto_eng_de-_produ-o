@@ -13,17 +13,6 @@ def find_project_root() -> Path:
 ROOT = find_project_root()
 
 
-def find_project_root() -> Path:
-    here = Path(__file__).resolve()
-    for candidate in [here.parent, *here.parents]:
-        if (candidate / 'index.html').exists() and (candidate / 'data').exists():
-            return candidate
-    raise RuntimeError('Project root not found. Run tests from inside the extracted package.')
-
-
-ROOT = find_project_root()
-
-
 def read(path: str) -> str:
     return (ROOT / path).read_text(encoding='utf-8')
 
@@ -33,7 +22,7 @@ def test_phase1_frontend_files_exist():
         'index.html',
         'fase-1-validacao/index.html',
         'assets/styles.css',
-        'assets/app.js',
+        'assets/js/phase1/main.js',
         'data/catalog.json',
         'data/validation/path_resolution_report.json',
         'data/validation/workbook_sheet_inventory.csv',
@@ -55,7 +44,7 @@ def test_phase1_index_contains_required_sections():
     ]:
         assert f'id="{required_id}"' in html, required_id
     assert 'assets/styles.css' in html
-    assert 'assets/app.js' in html
+    assert 'assets/js/phase1/main.js' in html
 
 
 def test_phase1_css_has_visagio_palette_and_components():
@@ -67,9 +56,8 @@ def test_phase1_css_has_visagio_palette_and_components():
 
 
 def test_phase1_js_declares_modules_and_uses_relative_paths_only():
-    js = read('assets/app.js')
+    js = read('assets/js/phase1/main.js')
     required_functions = [
-        'fetchJson',
         'parseCsv',
         'renderCompanyPanel',
         'renderDataQualityPanel',
@@ -80,6 +68,8 @@ def test_phase1_js_declares_modules_and_uses_relative_paths_only():
     ]
     for fn in required_functions:
         assert f'function {fn}' in js or f'async function {fn}' in js, fn
+    assert "from '../core/data-loader.js'" in js
+    assert 'fetchJson,' in js
     forbidden = ['/mnt/data', 'C:\\\\', 'A:/', 'file://']
     assert not any(x in js for x in forbidden)
 

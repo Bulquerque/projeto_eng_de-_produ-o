@@ -82,11 +82,6 @@ phase,module,test_type,test
 2,CostEngine,integration,tests/05_fase2_baseline/test_phase2_http_server.py
 2,CostEngine,manual,checklist na página /fase-2-baseline/
 2,CostEngine,acceptance,python tests/run_all_tests.py
-2,DistanceResolver,unit,tests/05_fase2_baseline/test_phase2_static_site.py
-2,DistanceResolver,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
-2,DistanceResolver,integration,tests/05_fase2_baseline/test_phase2_http_server.py
-2,DistanceResolver,manual,checklist na página /fase-2-baseline/
-2,DistanceResolver,acceptance,python tests/run_all_tests.py
 2,FlowBuilder,unit,tests/05_fase2_baseline/test_phase2_static_site.py
 2,FlowBuilder,unit,tests/05_fase2_baseline/test_phase2_data_contracts.py
 2,FlowBuilder,integration,tests/05_fase2_baseline/test_phase2_http_server.py
@@ -107,10 +102,6 @@ phase,module,test_type,test
 2,TaxEngineBasic,integration,tests/05_fase2_baseline/test_phase2_http_server.py
 2,TaxEngineBasic,manual,checklist na página /fase-2-baseline/
 2,TaxEngineBasic,acceptance,python tests/run_all_tests.py
-3,Phase3TestPanel,unit,test_phase3_logic.py
-3,Phase3TestPanel,integration,test_phase3_http_server.py
-3,Phase3TestPanel,manual,checklist na página /fase-3-cenarios/
-3,Phase3TestPanel,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK
 3,ScenarioArenaDashboard,unit,test_phase3_logic.py
 3,ScenarioArenaDashboard,integration,test_phase3_http_server.py
 3,ScenarioArenaDashboard,manual,checklist na página /fase-3-cenarios/
@@ -195,11 +186,6 @@ phase,module,test_type,test
 4,Phase4Dashboard,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
 4,Phase4Dashboard,manual,checklist na página /fase-4-score-otimizador/
 4,Phase4Dashboard,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
-4,Phase4TestPanel,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
-4,Phase4TestPanel,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
-4,Phase4TestPanel,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
-4,Phase4TestPanel,manual,checklist na página /fase-4-score-otimizador/
-4,Phase4TestPanel,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK
 4,RankingExplainer,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
 4,RankingExplainer,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
 4,RankingExplainer,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py
@@ -292,13 +278,6 @@ phase,module,test_type,test
 5,Phase5Dashboard,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
 5,Phase5Dashboard,manual,checklist na página /fase-5-entrega-final/
 5,Phase5Dashboard,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
-5,Phase5TestPanel,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
-5,Phase5TestPanel,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
-5,Phase5TestPanel,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py
-5,Phase5TestPanel,unit,tests/08_fase5_entrega_final/test_phase5_final_qa.py
-5,Phase5TestPanel,integration,tests/08_fase5_entrega_final/test_phase5_http_server.py
-5,Phase5TestPanel,manual,checklist na página /fase-5-entrega-final/
-5,Phase5TestPanel,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK
 5,RecommendationEngine,unit,tests/08_fase5_entrega_final/test_phase5_stress_logic.py
 5,RecommendationEngine,unit,tests/08_fase5_entrega_final/test_phase5_recommendation_logic.py
 5,RecommendationEngine,unit,tests/08_fase5_entrega_final/test_phase5_audit_export.py

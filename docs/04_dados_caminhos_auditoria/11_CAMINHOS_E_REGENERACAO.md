@@ -4,7 +4,7 @@ Este pacote usa caminhos relativos a partir da raiz do site estático. Exemplo:
 
 ```text
 index.html
-assets/app.js
+assets/js/phase1/main.js
 data/catalog.json
 data/empresa1/core/demand_records.json
 data/empresa2/core/scenario_blocks.json
@@ -16,7 +16,7 @@ O arquivo `data/validation/path_resolution_report.json` foi gerado para conferir
 
 - caminhos declarados em `data/catalog.json`;
 - caminhos usados por `index.html`;
-- caminhos usados por `assets/app.js`;
+- caminhos usados por `assets/js/phase1/main.js`;
 - arquivos brutos declarados em `references/source_documents_manifest.csv`;
 - hashes SHA256 dos arquivos brutos contra os originais enviados.
 

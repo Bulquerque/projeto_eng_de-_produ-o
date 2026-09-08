@@ -16,7 +16,6 @@ required = [
     'assets/js/phase5/final-qa-checker.js',
     'assets/js/phase5/release-validator.js',
     'assets/js/phase5/phase5-dashboard.js',
-    'assets/js/phase5/phase5-tests.js',
     'data/empresa1/phase5/default_stress_cases.json.enc.json',
     'data/empresa2/phase5/default_stress_cases.json.enc.json',
 ]

@@ -1,12 +1,12 @@
-import { $, formatNumber, metric, renderTable, statusClass } from '../shared/common.js';
+import { $, formatNumber, metric, renderTable, statusClass } from '../core/common.js';
 import {
   createDebugSession,
   debugFetchJson,
   renderDebugEntries,
   summarizeDebugEntries,
-} from '../shared/debug-tools.js';
-import { requireHttpRuntime } from '../shared/runtime-env.js';
-import { resolveProjectUrl } from '../shared/project-paths.js';
+} from '../core/debug-tools.js';
+import { requireHttpRuntime } from '../core/runtime-env.js';
+import { resolveProjectUrl } from '../core/project-paths.js';
 const debug = createDebugSession({ phase: 'debug', module: 'DebugCenter', enabled: false });
 const criticalPaths = [
   'index.html',
@@ -16,14 +16,14 @@ const criticalPaths = [
   'fase-4-score-otimizador/index.html',
   'fase-5-entrega-final/index.html',
   'assets/styles.css',
-  'assets/js/shared/debug-tools.js',
-  'assets/js/shared/crypto-session.js',
-  'assets/js/shared/data-decryptor.js',
+  'assets/js/core/debug-tools.js',
+  'assets/js/core/crypto-session.js',
+  'assets/js/core/data-decryptor.js',
   'data/catalog.json',
   'data/encrypted_manifest.json',
-  'data/contracts/module_contracts_all_phases.json',
-  'data/validation/final_v6_audit_summary.json',
-  'data/validation/final_release_report.json',
+  'data/contracts/module-contracts.json',
+  'data/validation/audit-summary.json',
+  'data/validation/release-report.json',
   'data/empresa1/phase2/phase2_bundle.json.enc.json',
   'data/empresa2/phase2/phase2_bundle.json.enc.json',
 ];
@@ -48,12 +48,12 @@ function moduleRows(contracts) {
 async function init() {
   debug.info('debug:init:start');
   const [contractsRes, catalogRes, releaseRes] = await Promise.all([
-    debugFetchJson('data/contracts/module_contracts_all_phases.json', {
+    debugFetchJson('data/contracts/module-contracts.json', {
       phase: 'debug',
       module: 'contracts',
     }),
     debugFetchJson('data/catalog.json', { phase: 'debug', module: 'catalog' }),
-    debugFetchJson('data/validation/final_release_report.json', {
+    debugFetchJson('data/validation/release-report.json', {
       phase: 'debug',
       module: 'release',
     }),

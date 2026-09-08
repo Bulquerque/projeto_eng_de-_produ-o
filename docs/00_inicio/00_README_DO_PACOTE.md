@@ -31,7 +31,7 @@ Este índice organiza a documentação do pacote por ordem de uso. A ideia é fa
 | `docs/07_REGRAS_DE_SEPARACAO_EMPRESAS.md` | Regra de separação Empresa 1 vs Empresa 2 |
 | `docs/11_CAMINHOS_E_REGENERACAO.md` | Como os dados foram exportados e comparados |
 | `docs/12_AUDITORIA_COMPLETA_CAMINHOS_ABAS.md` | Auditoria de abas e caminhos |
-| `docs/14_FASE1_IMPLEMENTADA.md` | Registro original da implementação da Fase 1 |
+| `docs/02_fases_do_projeto/14_FASE1_IMPLEMENTADA.md` | Registro original da implementação da Fase 1 |
 
 ## Regra de ouro
 

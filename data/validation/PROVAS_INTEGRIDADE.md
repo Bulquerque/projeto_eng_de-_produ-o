@@ -17,7 +17,7 @@ Esta versão é a base limpa e auditada para reconstrução do simulador estáti
 
 - `data/validation/full_workbook_path_audit.json`
 - `data/validation/workbook_sheet_inventory.csv`
-- `data/validation/final_v6_audit_summary.json`
+- `data/validation/audit-summary.json`
 - `data/validation/path_resolution_report.json`
 - `data/validation/regeneration_compare_report.json`
 

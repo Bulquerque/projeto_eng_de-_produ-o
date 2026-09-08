@@ -1,4 +1,4 @@
-import { $, escapeHtml, formatBRL, formatNumber, formatPct, metric } from '../shared/common.js';
+import { $, escapeHtml, formatBRL, formatNumber, formatPct, metric } from '../core/common.js';
 import { loadScenarioLibrary } from './scenario-library.js';
 import { buildScenarioFromForm } from './scenario-builder.js';
 import { validateScenario } from './scenario-validator.js';
@@ -18,18 +18,18 @@ import {
   validateImportedScenario,
 } from './scenario-import-export.js';
 import { buildMonteCarloConfig, runMonteCarloSimulation } from './monte-carlo-engine.js';
-import { appendSharedDebugEntry } from '../shared/debug-tools.js';
+import { appendSharedDebugEntry } from '../core/debug-tools.js';
 import {
   buildScenarioSummary,
   formatInventoryDaysDisplay,
   formatMultiplierDisplay,
-} from '../shared/scenario-summary.js';
+} from '../core/scenario-summary.js';
 import {
   getTaxRegimeDefinition,
   resolveTaxRegime,
   resolveTaxModeForRegime,
   taxRegimeLabel,
-} from '../shared/tax-reform-config.js';
+} from '../core/tax-reform-config.js';
 import {
   renderScenarioComparisonChart,
   renderMonteCarloHistogram,
@@ -273,7 +273,7 @@ function renderTaxAssumptions() {
       <strong>${escapeHtml(regime.label || regime.regime_id)}</strong>
       <p class="small-note">Ano: ${escapeHtml(regime.year_label || regime.year || '—')} · Modo: ${escapeHtml(regime.calculation_mode || '—')}</p>
       <dl class="tax-assumption-grid">
-        <div><dt>Peso sistema atual</dt><dd>${formatPct(Number(regime.legacy_weight || 0) * 100, 1)}</dd></div>
+        <div><dt>Peso sistema atual</dt><dd>${formatPct(Number(regime.current_weight || 0) * 100, 1)}</dd></div>
         <div><dt>Peso IBS</dt><dd>${formatPct(Number(regime.ibs_weight || 0) * 100, 1)}</dd></div>
         <div><dt>CBS</dt><dd>${formatPct(Number(regime.cbs_rate || 0) * 100, 2)}</dd></div>
         <div><dt>IBS</dt><dd>${formatPct(Number(regime.ibs_rate || 0) * 100, 2)}</dd></div>

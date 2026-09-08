@@ -1,4 +1,4 @@
-import { escapeHtml, formatBRL, formatPct, renderTable, statusClass } from '../shared/common.js';
+import { escapeHtml, formatBRL, formatPct, renderTable, statusClass } from '../core/common.js';
 
 function n(value) {
   const parsed = Number(value);

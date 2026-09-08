@@ -1,11 +1,41 @@
-import { escapeHtml, formatBRL, formatNumber, formatPct, metric } from '../shared/common.js';
-import { resolveTaxRegime, taxRegimeLabel } from '../shared/tax-reform-config.js';
-import { CANONICAL_OPTIMIZATION_POLICY } from '../shared/optimization-policy.js';
+import { escapeHtml, formatBRL, formatNumber, formatPct, metric } from '../core/common.js';
+import { resolveTaxRegime, taxRegimeLabel } from '../core/tax-reform-config.js';
+import { CANONICAL_OPTIMIZATION_POLICY } from '../core/optimization-policy.js';
 import {
   buildScenarioSummary,
   formatInventoryDaysDisplay,
   formatMultiplierDisplay,
-} from '../shared/scenario-summary.js';
+} from '../core/scenario-summary.js';
+
+export function renderSearchLog(searchLog) {
+  if (!searchLog) return '<div class="empty-state">Otimizador ainda não rodou.</div>';
+  const method = searchLog.method_applied || searchLog.method_requested || searchLog.method || '—';
+  const coverage =
+    searchLog.coverage_ratio == null ? '—' : formatPct(Number(searchLog.coverage_ratio) * 100, 1);
+  const items = [
+    ['Estratégia', searchLog.search_strategy || '—'],
+    ['Método', method],
+    ['Espaço exato', searchLog.exact_search_space ? 'sim' : 'não'],
+    ['Cobertura', coverage],
+    ['Gerados', formatNumber(searchLog.generated_candidates)],
+    ['Simulados', formatNumber(searchLog.simulated_candidates)],
+    ['Válidos', formatNumber(searchLog.valid_candidates)],
+    ['Inválidos', formatNumber(searchLog.invalid_candidates)],
+    [
+      'Refino',
+      `${formatNumber(searchLog.refinement_rounds)} x ${formatNumber(searchLog.refinement_seed_count)}`,
+    ],
+    ['Melhor score', searchLog.best_score == null ? '—' : Number(searchLog.best_score).toFixed(1)],
+    ['Top cenário', searchLog.best_scenario_id || '—'],
+    ['Melhor custo', searchLog.best_by_total_cost_scenario_id || '—'],
+  ];
+  return `<div class="search-log-grid">${items
+    .map(
+      ([label, value]) =>
+        `<div><strong>${escapeHtml(label)}</strong><span>${escapeHtml(value)}</span></div>`
+    )
+    .join('')}</div>`;
+}
 
 function row(label, value) {
   return `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`;

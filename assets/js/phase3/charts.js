@@ -4,7 +4,7 @@ import {
   renderLineChart,
   renderScatterChart,
   destroyChart,
-} from '../shared/chart-renderer.js';
+} from '../core/chart-renderer.js';
 
 export function renderScenarioComparisonChart(baselineCosts, scenarioCosts) {
   if (!baselineCosts || !scenarioCosts) {

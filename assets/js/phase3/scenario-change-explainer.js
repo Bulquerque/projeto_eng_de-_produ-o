@@ -1,4 +1,4 @@
-import { resolveTaxRegime, taxRegimeLabel } from '../shared/tax-reform-config.js';
+import { resolveTaxRegime, taxRegimeLabel } from '../core/tax-reform-config.js';
 function pct(v) {
   return Number.isFinite(Number(v))
     ? `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`

@@ -12,18 +12,7 @@ def find_project_root() -> Path:
 
 ROOT = find_project_root()
 
-
-def find_project_root() -> Path:
-    here = Path(__file__).resolve()
-    for candidate in [here.parent, *here.parents]:
-        if (candidate / 'index.html').exists() and (candidate / 'data').exists():
-            return candidate
-    raise RuntimeError('Project root not found. Run tests from inside the extracted package.')
-
-
-ROOT = find_project_root()
-
-CONTRACT = ROOT / 'data' / 'contracts' / 'module_contracts_all_phases.json'
+CONTRACT = ROOT / 'data' / 'contracts' / 'module-contracts.json'
 DOCS = ROOT / 'docs' / '03_modulos_contratos_funcoes'
 
 required_module_fields = [

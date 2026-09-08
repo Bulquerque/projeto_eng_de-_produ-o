@@ -29,7 +29,7 @@ def load_runtime_bundle(company_id: str):
         NODE_DECRYPT_HELPER
         + r"""
 import fs from 'fs';
-import { recomputePhase2Baseline } from './assets/js/shared/phase2-baseline-deriver.js';
+import { recomputePhase2Baseline } from './assets/js/phase2/baseline-deriver.js';
 
 const companyId = __COMPANY_ID__;
 const bundle = decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);

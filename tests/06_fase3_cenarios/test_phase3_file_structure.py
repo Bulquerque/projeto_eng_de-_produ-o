@@ -19,7 +19,6 @@ required = [
     'assets/js/phase3/scenario-import-export.js',
     'assets/js/phase3/monte-carlo-engine.js',
     'assets/js/phase3/scenario-arena-dashboard.js',
-    'assets/js/phase3/phase3-tests.js',
 ]
 missing = [p for p in required if not (ROOT / p).exists()]
 assert not missing, f'Missing Phase 3 files: {missing}'

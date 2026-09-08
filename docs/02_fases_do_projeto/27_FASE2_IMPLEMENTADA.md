@@ -88,7 +88,7 @@ A página principal da Fase 2 é:
 Ela usa módulos JavaScript em:
 
 ```text
-assets/js/shared/
+assets/js/core/
 assets/js/phase2/
 ```
 

@@ -1,7 +1,5 @@
-function n(v, d = 0) {
-  const x = Number(v);
-  return Number.isFinite(x) ? x : d;
-}
+import { safeNumber } from '../core/common.js';
+
 export function calculateRobustness({
   companyId,
   scenarioId,
@@ -11,8 +9,10 @@ export function calculateRobustness({
   const total = stressResults.length || 0;
   const positives = stressResults.filter((r) => r.scenario_still_better_than_baseline).length;
   const positiveRatio = total ? positives / total : 0;
-  const worstCaseSavingPct = total ? Math.min(...stressResults.map((r) => n(r.saving_pct))) : 0;
-  const qualityScore = n(quality.quality_score, 70);
+  const worstCaseSavingPct = total
+    ? Math.min(...stressResults.map((r) => safeNumber(r.saving_pct)))
+    : 0;
+  const qualityScore = safeNumber(quality.quality_score, 70);
   const risk = String(quality.risk_level || 'medium').toLowerCase();
   const riskPenalty = risk === 'high' ? 18 : risk === 'medium' ? 8 : 0;
   const worstPenalty = worstCaseSavingPct < 0 ? Math.min(30, Math.abs(worstCaseSavingPct) * 2) : 0;

@@ -13,6 +13,5 @@
 | ScenarioPersistence | `assets/js/phase3/scenario-persistence.js` | salva/carrega cenários no localStorage |
 | ScenarioImportExport | `assets/js/phase3/scenario-import-export.js` | importa/exporta JSON |
 | ScenarioArenaDashboard | `assets/js/phase3/scenario-arena-dashboard.js` | renderiza a interface |
-| Phase3TestPanel | `assets/js/phase3/phase3-tests.js` | roda testes no navegador |
 
-Cada módulo também aparece em `data/contracts/module_contracts_all_phases.json`.
+Cada módulo também aparece em `data/contracts/module-contracts.json`.

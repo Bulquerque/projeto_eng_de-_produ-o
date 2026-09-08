@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 code = (
     NODE_DECRYPT_HELPER
     + r"""
-import {buildBundleReconciliation} from './assets/js/shared/reconciliation-engine.js';
+import {buildBundleReconciliation} from './assets/js/core/reconciliation-engine.js';
 for (const companyId of ['empresa1','empresa2']) {
   const bundle = decryptJson(`data/${companyId}/phase2/phase2_bundle.json`);
   const reconciliation = buildBundleReconciliation(bundle);
