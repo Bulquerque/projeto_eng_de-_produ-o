@@ -128,6 +128,11 @@ export function buildRankingTableHtml(bestScenarios = []) {
   return `<table><thead><tr><th>Cenário</th><th>Score</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Fonte tributária</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Risco</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
+export function buildBlockedRankingTableHtml(errors = []) {
+  const message = errors.join('; ') || 'A busca não produziu um ranking confiável.';
+  return `<table><thead><tr><th>Status</th><th>Motivo</th></tr></thead><tbody><tr><td>bloqueado</td><td>${escapeHtml(message)}</td></tr></tbody></table>`;
+}
+
 export function buildTradeoffTableHtml(frontier) {
   const points = frontier?.frontier_points || [];
   const rows = points

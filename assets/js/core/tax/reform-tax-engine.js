@@ -7,10 +7,22 @@ export function calculateReformTax({
   taxRegime = 'reform_full_2033',
   demandMultiplier = 1,
   parameters = null,
+  regimeDefinition = null,
 } = {}) {
-  const rates = getRegimeTaxRates(taxRegime, parameters || undefined);
+  const parameterRates = getRegimeTaxRates(taxRegime, parameters || undefined);
+  const rates = regimeDefinition
+    ? {
+        ...parameterRates,
+        cbs: regimeDefinition.cbs_rate ?? parameterRates.cbs,
+        ibs: regimeDefinition.ibs_rate ?? parameterRates.ibs,
+        selective: regimeDefinition.selective_rate ?? parameterRates.selective,
+      }
+    : parameterRates;
   const flowBreakdown = fiscalFlows.map((flow) => {
-    const rule = getFiscalCategoryRule(flow.fiscal_category);
+    const rule =
+      regimeDefinition?.category_rules?.[flow.fiscal_category] ||
+      regimeDefinition?.category_rules?.default_goods ||
+      getFiscalCategoryRule(flow.fiscal_category);
     const grossRevenue = safeNumber(flow.gross_revenue) * safeNumber(demandMultiplier, 1);
     const cbs = grossRevenue * safeNumber(rates.cbs) * safeNumber(rule.cbs_rate_multiplier, 1);
     const ibs = grossRevenue * safeNumber(rates.ibs) * safeNumber(rule.ibs_rate_multiplier, 1);
@@ -70,5 +82,11 @@ export function calculateReformTax({
       credits_total: totals.credits_total,
     },
     regime_rates: rates,
+    rate_provenance: {
+      source: regimeDefinition
+        ? 'tax_reform_config_model_parameter'
+        : 'tax_reform_parameters_default',
+      status: 'parametric_model_assumption_not_observed_rate',
+    },
   };
 }

@@ -9,11 +9,14 @@ function n(v) {
   const x = Number(v);
   return Number.isFinite(x) ? x : NaN;
 }
-export function validateObjective(objective) {
+export function validateObjective(objective, { expectedCompanyId = null } = {}) {
   const errors = [];
   const warnings = [];
   const weights = objective?.weights || {};
   if (!objective?.company_id) errors.push('objective sem company_id.');
+  if (expectedCompanyId && objective?.company_id && objective.company_id !== expectedCompanyId) {
+    errors.push('objective.company_id incompatível com a empresa da execução.');
+  }
   if (!weights || Object.keys(weights).length === 0) errors.push('objective sem pesos.');
   const missing = [];
   let positive = 0;
@@ -40,6 +43,19 @@ export function validateObjective(objective) {
     missing_metrics: missing,
     warnings,
     errors,
+  };
+}
+export function normalizeObjective(objective = {}) {
+  const sum = Object.values(objective.weights || {}).reduce((total, value) => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) && numeric > 0 ? total + numeric : total;
+  }, 0);
+  if (!(sum > 0)) return { ...objective, weights: {} };
+  return {
+    ...objective,
+    weights: Object.fromEntries(
+      Object.entries(objective.weights || {}).map(([key, value]) => [key, Number(value) / sum])
+    ),
   };
 }
 export function knownMetrics() {

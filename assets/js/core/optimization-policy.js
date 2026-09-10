@@ -14,10 +14,13 @@ export const CANONICAL_OPTIMIZATION_POLICY = {
 };
 
 export function buildCanonicalOptimizationConfig(optimizerConfig = {}) {
+  const requestedMax = Number(optimizerConfig.max_candidates ?? 2000);
+  const requestedSeed = Number(optimizerConfig.seed ?? 42);
   return {
     ...CANONICAL_OPTIMIZATION_POLICY,
     method: String(optimizerConfig.method || 'exact_discrete'),
-    max_candidates: Number(optimizerConfig.max_candidates ?? 2000),
-    seed: Number(optimizerConfig.seed ?? 42),
+    max_candidates: Number.isInteger(requestedMax) && requestedMax > 0 ? requestedMax : 2000,
+    seed: Number.isFinite(requestedSeed) ? Math.trunc(requestedSeed) : 42,
+    max_candidates_was_invalid: !(Number.isInteger(requestedMax) && requestedMax > 0),
   };
 }

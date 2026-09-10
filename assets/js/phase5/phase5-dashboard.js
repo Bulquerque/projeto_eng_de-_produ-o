@@ -200,7 +200,7 @@ function runDecisionPipeline() {
       seed: 42,
     }),
   });
-  if (state.optimizer.optimizer_status !== 'success') {
+  if (!String(state.optimizer.optimizer_status || '').startsWith('success')) {
     state.selection = null;
     blockedDecisionState(
       (state.optimizer.errors || ['Falha na busca discreta de cenários.']).join('; ')
@@ -269,6 +269,8 @@ function runDecisionPipeline() {
     scenarioId: scenario?.scenario_id,
     stressResults: state.stress.stress_results,
     quality,
+    monteCarlo: state.monteCarlo,
+    evidence: selected?.result?.evidence || null,
   });
   const comparison = scenarioComparison(selectedWithMonteCarlo);
   state.recommendation = buildRecommendation({
@@ -279,6 +281,7 @@ function runDecisionPipeline() {
     robustness: state.robustness,
     rankingSensitivity: state.optimizer?.ranking_sensitivity,
     objective: state.objective,
+    optimization: state.optimizer?.search_log,
   });
   state.audit = buildAuditTrail({
     companyId: state.companyId,
@@ -300,10 +303,21 @@ function runDecisionPipeline() {
     audit: state.audit,
     ranking_sensitivity: state.optimizer?.ranking_sensitivity,
     monte_carlo: state.monteCarlo,
+    optimizer_status: state.optimizer?.optimizer_status || null,
+    result_scope: state.optimizer?.result_scope || null,
   };
+  state.finalQA = runFinalQAChecks({
+    companyId: state.companyId,
+    bundle: state.bundle,
+    selectedScenario: selectedWithMonteCarlo,
+    stress: state.stress,
+    recommendation: state.recommendation,
+    audit: state.audit,
+  });
+  const decisionPackageWithQA = { ...decisionPackage, final_qa: state.finalQA };
   state.exportPackage = buildExportPackage({
     companyId: state.companyId,
-    decisionPackage,
+    decisionPackage: decisionPackageWithQA,
     stress: state.stress,
     sensitivity: state.sensitivity,
     sensitivityMatrix: state.sensitivityMatrix,
@@ -314,19 +328,34 @@ function runDecisionPipeline() {
     robustness: state.robustness,
     workbookParity: state.workbookParity,
     rankingSensitivity: state.optimizer?.ranking_sensitivity,
-  });
-  state.finalQA = runFinalQAChecks({
-    companyId: state.companyId,
-    bundle: state.bundle,
-    selectedScenario: selectedWithMonteCarlo,
-    stress: state.stress,
-    recommendation: state.recommendation,
-    audit: state.audit,
+    finalQA: state.finalQA,
   });
   state.release = validateRelease({
     finalQA: state.finalQA,
     exportPackage: state.exportPackage,
-    decisionPackage,
+    decisionPackage: decisionPackageWithQA,
+  });
+  const finalizedDecisionPackage = { ...decisionPackageWithQA, release: state.release };
+  state.exportPackage = buildExportPackage({
+    companyId: state.companyId,
+    decisionPackage: finalizedDecisionPackage,
+    stress: state.stress,
+    sensitivity: state.sensitivity,
+    sensitivityMatrix: state.sensitivityMatrix,
+    audit: state.audit,
+    recommendation: state.recommendation,
+    selectedScenario: selectedWithMonteCarlo,
+    comparison,
+    robustness: state.robustness,
+    workbookParity: state.workbookParity,
+    rankingSensitivity: state.optimizer?.ranking_sensitivity,
+    finalQA: state.finalQA,
+    release: state.release,
+  });
+  state.release = validateRelease({
+    finalQA: state.finalQA,
+    exportPackage: state.exportPackage,
+    decisionPackage: finalizedDecisionPackage,
   });
 }
 function sensitivityValues(variable, compact = false) {
@@ -418,18 +447,45 @@ function renderFinalSituationTable(selected, comp) {
     ['Regime tributário', summary.tax_regime_label],
     ['Transferência', formatBRL(summary.transfer_cost, true)],
     ['Tributo', formatBRL(summary.tax_impact, true)],
+    ['Status do cálculo tributário', selected?.result?.tax_results?.calculation_mode || '—'],
+    [
+      'Cobertura fiscal dos fluxos de entrada',
+      selected?.result?.tax_results?.tax_coverage?.input_coverage_ratio == null
+        ? '—'
+        : formatPct(selected.result.tax_results.tax_coverage.input_coverage_ratio * 100),
+    ],
     ['Total', formatBRL(summary.total_with_tax, true)],
     ['Total baseline', formatBRL(comp.baseline_total, true)],
     ['Total final', formatBRL(comp.scenario_total, true)],
     ['Saving absoluto', formatBRL(comp.saving_abs, true)],
     ['Saving percentual', formatPct(comp.saving_pct)],
     ['Robustez', `${formatNumber(state.robustness?.robustness_score, 0)}/100`],
+    [
+      'Suporte da evidência',
+      `${formatNumber(selected?.result?.evidence?.evidence_score, 0)}/100 · ${selected?.result?.evidence?.evidence_status || '—'}`,
+    ],
     ['Risco', quality.risk_level || '—'],
     ['Recomendação', recommendationLabel(state.recommendation?.recommendation_status)],
   ];
   const el = $('finalSituationTable');
   if (el)
     el.innerHTML = `<table><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td></tr>`).join('')}</tbody></table>`;
+}
+function renderTaxPeriods() {
+  const el = $('taxPeriodsPanel');
+  if (!el) return;
+  const tax = state.selection?.selected_scenario?.result?.tax_results || {};
+  const contract = tax.tax_period_contract || {};
+  const selected = contract.selected_period || {};
+  const dataPeriod = contract.current_reference_data_period || {};
+  const observed = contract.observed_data_coverage || {};
+  const rows = (contract.available_periods || [])
+    .map(
+      (period) =>
+        `<tr><td>${escapeHtml(String(period.year ?? '—'))}</td><td>${escapeHtml(period.phase || '—')}</td><td>${period.current_tax_weight == null ? '—' : formatPct(period.current_tax_weight * 100)}</td><td>${period.reform_tax_weight == null ? '—' : formatPct(period.reform_tax_weight * 100)}</td><td>${escapeHtml(period.source_confidence || '—')}</td><td>${escapeHtml(period.data_status || '—')}</td></tr>`
+    )
+    .join('');
+  el.innerHTML = `<p><strong>Selecionado:</strong> ${escapeHtml(String(selected.year || '—'))} · ${escapeHtml(selected.source_status || '—')} · ${escapeHtml(selected.source_ref || selected.bridge_source_ref || '—')}</p><p><strong>Matriz atual:</strong> ${escapeHtml(`${dataPeriod.period_start || '—'} a ${dataPeriod.period_end || 'aberto'} · ${dataPeriod.source_file || '—'}`)}</p><p><strong>Dados transacionais observados:</strong> ${escapeHtml(`${observed.status || '—'}; período não informado quando ausente na fonte.`)}</p><table><thead><tr><th>Ano</th><th>Fase</th><th>Atual</th><th>IBS</th><th>Fonte</th><th>Status</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Cronograma oficial não carregado.</td></tr>'}</tbody></table><p class="small-note">A tabela separa cronograma oficial, matriz de referência e histórico transacional. A ausência de período observado não é preenchida por hipótese.</p>`;
 }
 function renderStress() {
   const rows = (state.stress?.stress_results || [])
@@ -502,6 +558,7 @@ function renderReport() {
     audit: state.audit,
     comparison: scenarioComparison(state.selection?.selected_scenario),
     workbookParity: state.workbookParity,
+    rankingSensitivity: state.optimizer?.ranking_sensitivity,
   });
 }
 function renderWorkbookParity() {
@@ -523,6 +580,7 @@ function renderAll() {
   renderTabs();
   renderOverview();
   renderWorkbookParity();
+  renderTaxPeriods();
   renderStress();
   renderSensitivityPanel();
   renderRecommendation();

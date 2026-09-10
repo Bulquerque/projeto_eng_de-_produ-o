@@ -11,6 +11,7 @@ import {
   buildFailureResult,
   buildSearchLog,
   compareExactRanking,
+  scenarioChangesKey,
   uniqueByChanges,
 } from './optimizer-utils.js';
 import { buildRefinementVariants } from './optimizer-refinement.js';
@@ -19,7 +20,7 @@ import {
   buildCanonicalOptimizationConfig,
 } from '../core/optimization-policy.js';
 import { safeNumber } from '../core/common.js';
-import { validateObjective } from './objective-validator.js';
+import { normalizeObjective, validateObjective } from './objective-validator.js';
 import { assessObjectiveSensitivity } from './optimization-sensitivity.js';
 
 const REFINEMENT_CONFIG = Object.freeze({
@@ -34,6 +35,16 @@ function evaluateCandidate({ companyId, scenario, baselineBundle, constraints })
   const result = runScenario({ companyId, scenario, baselineBundle });
   if (result.simulation_status !== 'success') {
     return { reason: result.errors?.[0] || 'simulação inválida' };
+  }
+  const taxBlocked =
+    scenario?.changes?.tax_mode !== 'disabled' &&
+    (result.calculation_status === 'success_with_tax_limits' ||
+      result.tax_results?.tax_coverage?.blocked === true);
+  if (taxBlocked) {
+    return {
+      reason:
+        'cobertura tributária insuficiente: cenário excluído do ranking até que os fluxos fiscais sejam completados',
+    };
   }
 
   const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle });
@@ -61,7 +72,7 @@ function evaluateCandidates(
   const scenarios = deduplicate ? uniqueByChanges(candidates) : candidates;
 
   for (const scenario of scenarios) {
-    const scenarioKey = JSON.stringify(scenario.changes || {});
+    const scenarioKey = scenarioChangesKey(scenario.changes || {});
     if (seenScenarioKeys?.has(scenarioKey)) continue;
     seenScenarioKeys?.add(scenarioKey);
     if (seenScenarioIds?.has(scenario.scenario_id)) continue;
@@ -126,7 +137,7 @@ export function runOptimization({
     1,
     Math.floor(Number(optimizerConfig.refinement_seed_count ?? 5))
   );
-  const objectiveValidation = validateObjective(objective);
+  const objectiveValidation = validateObjective(objective, { expectedCompanyId: companyId });
   if (!objectiveValidation.valid) {
     return buildFailureResult({
       companyId,
@@ -135,12 +146,14 @@ export function runOptimization({
         methodApplied: null,
         refinementRounds,
         refinementSeedCount,
+        seed: canonicalConfig.seed,
         invalidReasons: objectiveValidation.errors,
       }),
       warnings: objectiveValidation.warnings,
       errors: objectiveValidation.errors,
     });
   }
+  const effectiveObjective = normalizeObjective(objective);
   const constraintValidation = validateConstraintConfig(constraints);
   if (!constraintValidation.valid) {
     return buildFailureResult({
@@ -150,6 +163,7 @@ export function runOptimization({
         methodApplied: SUPPORTED_METHOD,
         refinementRounds,
         refinementSeedCount,
+        seed: canonicalConfig.seed,
         invalidReasons: constraintValidation.errors,
       }),
       errors: constraintValidation.errors,
@@ -190,6 +204,7 @@ export function runOptimization({
         methodApplied: null,
         refinementRounds,
         refinementSeedCount,
+        seed: canonicalConfig.seed,
         exactSearchSpace: false,
         invalidReasons: [message],
       }),
@@ -208,8 +223,9 @@ export function runOptimization({
         candidateSpaceSize: generated.generation_summary?.candidate_space_size ?? generatedCount,
         refinementRounds,
         refinementSeedCount,
+        seed: canonicalConfig.seed,
         spaceLimited: true,
-        exactSearchSpace: Boolean(generated.generation_summary?.search_space_complete),
+        exactSearchSpace: false,
         invalidReasons: [message],
       }),
       warnings: searchWarnings,
@@ -234,11 +250,12 @@ export function runOptimization({
         methodRequested: requestedMethod,
         methodApplied: SUPPORTED_METHOD,
         generatedCandidates: generatedCount,
-        simulatedCandidates: scenarioRecords.length,
+        simulatedCandidates: initialEvaluation.simulated,
         validCandidates: scenarioRecords.length,
         invalidCandidates: invalid,
         refinementRounds,
         refinementSeedCount,
+        seed: canonicalConfig.seed,
         invalidReasons: [message],
       }),
       warnings: searchWarnings,
@@ -264,7 +281,7 @@ export function runOptimization({
   });
   const preliminaryScoring = scoreScenarios({
     companyId,
-    objective,
+    objective: effectiveObjective,
     normalizedMetrics: preliminaryNormalized.normalized_metrics,
   });
   const refinementSeeds = uniqueByChanges(
@@ -292,14 +309,17 @@ export function runOptimization({
     }
   }
 
+  const baseScenarioKeys = new Set([
+    ...generated.candidate_scenarios.map((candidate) =>
+      scenarioChangesKey(candidate?.changes || {})
+    ),
+    scenarioChangesKey(baselineRecord.scenario?.changes || {}),
+  ]);
   const seenScenarioIds = new Set([
-    ...scenarioRecords.map((r) => r.result.scenario_id),
+    ...generated.candidate_scenarios.map((candidate) => candidate.scenario_id),
     baselineRecord.result.scenario_id,
   ]);
-  const seenScenarioKeys = new Set([
-    ...scenarioRecords.map((r) => JSON.stringify(r.scenario?.changes || {})),
-    JSON.stringify(baselineRecord.scenario?.changes || {}),
-  ]);
+  const seenScenarioKeys = new Set(baseScenarioKeys);
   const refinedEvaluation = evaluateCandidates(refinedCandidates, {
     companyId,
     baselineBundle,
@@ -316,9 +336,15 @@ export function runOptimization({
   } = refinedEvaluation;
 
   const allScenarioRecords = uniqueByChanges([...scenarioRecords, ...refinedRecords]);
-  const candidateSpaceSize =
-    Number(generated.generation_summary?.candidate_space_size ?? generatedCount) +
-    Number(refinementGenerated || 0);
+  const baseCandidateSpaceSize = Number(
+    generated.generation_summary?.candidate_space_size ?? generatedCount
+  );
+  const uniqueRefinementCount = uniqueByChanges(refinedCandidates).filter((candidate) => {
+    const changes = candidate?.changes || {};
+    const key = scenarioChangesKey(changes);
+    return !baseScenarioKeys.has(key);
+  }).length;
+  const candidateSpaceSize = baseCandidateSpaceSize + uniqueRefinementCount;
   const totalSimulated = generatedCount + refinedSimulated;
   const totalValid = scenarioRecords.length + refinedRecords.length;
   const totalInvalid = invalid + refinedInvalid;
@@ -327,14 +353,17 @@ export function runOptimization({
   const exactSearchSpace =
     baseSpaceComplete &&
     !generated.generation_summary?.limited_by_max_candidates &&
-    refinementGenerated === 0;
+    uniqueRefinementCount === 0;
   const exactnessReason = exactSearchSpace
     ? 'Todas as combinações discretas declaradas foram enumeradas sem truncamento ou refino adicional.'
-    : baseSpaceComplete && refinementGenerated > 0
-      ? 'A enumeração-base é completa, mas o refino adicionou candidatos fora do espaço declarado.'
+    : baseSpaceComplete && uniqueRefinementCount > 0
+      ? 'A enumeração-base é completa, mas o refino adicionou combinações novas fora do espaço declarado.'
       : generated.generation_summary?.limited_by_max_candidates
         ? 'A enumeração foi truncada pelo limite máximo de candidatos.'
         : 'A estratégia de CDs é um catálogo limitado; não representa todas as combinações possíveis.';
+
+  const spaceLimited =
+    !baseSpaceComplete || Boolean(generated.generation_summary?.limited_by_max_candidates);
 
   if (!allScenarioRecords.length) {
     const message = 'Nenhum cenário viável encontrado no espaço discreto modelado.';
@@ -353,6 +382,8 @@ export function runOptimization({
         refinementSeedCount,
         refinementCandidatesGenerated: refinementGenerated,
         refinementCandidatesSimulated: refinedSimulated,
+        seed: canonicalConfig.seed,
+        spaceLimited,
         exactSearchSpace,
         exactnessReason,
         invalidReasons: [...invalidReasons, ...refinedInvalidReasons, message],
@@ -370,7 +401,7 @@ export function runOptimization({
   });
   const scoring = scoreScenarios({
     companyId,
-    objective,
+    objective: effectiveObjective,
     normalizedMetrics: normalized.normalized_metrics,
   });
   const rankingSensitivity = assessObjectiveSensitivity({
@@ -389,7 +420,8 @@ export function runOptimization({
 
   return {
     company_id: companyId,
-    optimizer_status: 'success',
+    optimizer_status: exactSearchSpace ? 'success' : 'success_with_limited_space',
+    result_scope: exactSearchSpace ? 'exact_declared_space' : 'conditional_declared_catalog',
     search_strategy: 'broad_then_refine',
     best_scenarios,
     best_by_total_cost,
@@ -413,6 +445,8 @@ export function runOptimization({
       refinementSeedCount,
       refinementCandidatesGenerated: refinementGenerated,
       refinementCandidatesSimulated: refinedSimulated,
+      seed: canonicalConfig.seed,
+      spaceLimited,
       bestScore: best_scenarios[0]?.final_score ?? null,
       bestScenarioId: best_scenarios[0]?.scenario_id ?? null,
       bestByTotalCostScenarioId: best_by_total_cost?.scenario_id ?? null,
@@ -421,6 +455,11 @@ export function runOptimization({
     }),
     warnings: [
       ...searchWarnings,
+      ...(exactSearchSpace
+        ? []
+        : [
+            'Ranking condicional: o espaço avaliado não é completo; não representa ótimo global fora do catálogo declarado.',
+          ]),
       ...(metrics.warnings || []),
       ...(normalized.warnings || []),
       ...(scoring.warnings || []),

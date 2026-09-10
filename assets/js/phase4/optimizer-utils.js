@@ -44,12 +44,37 @@ export function uniqueByChanges(list) {
   const seen = new Set();
   const out = [];
   for (const item of list) {
-    const key = JSON.stringify(item?.scenario?.changes || item?.changes || {});
+    const changes = item?.scenario?.changes || item?.changes || {};
+    const key = scenarioChangesKey(changes);
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(item);
   }
   return out;
+}
+
+function stableValue(value) {
+  if (Array.isArray(value)) return value.map(stableValue);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((key) => [key, stableValue(value[key])])
+  );
+}
+
+export function scenarioChangesKey(changes = {}) {
+  return JSON.stringify(
+    stableValue({
+      ...changes,
+      active_cds: Array.isArray(changes.active_cds)
+        ? [...new Set(changes.active_cds.map(String))].sort()
+        : changes.active_cds,
+      closed_cds: Array.isArray(changes.closed_cds)
+        ? [...new Set(changes.closed_cds.map(String))].sort()
+        : changes.closed_cds,
+    })
+  );
 }
 
 export function emptyCollections() {
@@ -121,11 +146,13 @@ export function buildSearchLog({
   exactnessReason = null,
   spaceLimited = false,
   invalidReasons = [],
+  seed = null,
 }) {
   return {
     search_strategy: searchStrategy,
     method_requested: methodRequested,
     method_applied: methodApplied,
+    seed,
     generated_candidates: generatedCandidates,
     simulated_candidates: simulatedCandidates,
     valid_candidates: validCandidates,

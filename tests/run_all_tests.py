@@ -13,6 +13,7 @@ TESTS = [
     'tests/02_fase1_frontend/test_phase1_http_server.py',
     'tests/03_contratos_modulos/test_module_contracts_documentation.py',
     'tests/05_fase2_baseline/test_phase2_data_contracts.py',
+    'tests/05_fase2_baseline/test_phase2_reconciliation_logic.py',
     'tests/05_fase2_baseline/test_phase2_complements.py',
     'tests/05_fase2_baseline/test_phase2_static_site.py',
     'tests/05_fase2_baseline/test_phase2_http_server.py',
@@ -38,6 +39,7 @@ TESTS = [
     'tests/09_quality_checks/test_phase_folders_and_module_docs.py',
     'tests/09_quality_checks/test_protected_data_integrity.py',
     'tests/09_quality_checks/test_model_invariants.py',
+    'tests/09_quality_checks/test_evidence_uncertainty_contracts.py',
     'tests/10_presentation_e2e/test_presentation_flow_playwright.py',
     'tests/11_regression_e2e/test_regression_e2e.py',
 ]

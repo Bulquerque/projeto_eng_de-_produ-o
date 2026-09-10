@@ -120,7 +120,10 @@ function applyMonteCarloConfig(config = {}) {
     $('phase3MonteCarloProfile').value = config.profile || 'balanced';
   if ($('phase3MonteCarloDriver'))
     $('phase3MonteCarloDriver').value = config.scatter_driver || 'freight_multiplier';
-  state.monteCarloConfig = buildMonteCarloConfig(config);
+  state.monteCarloConfig = buildMonteCarloConfig({
+    ...config,
+    historicalData: config.historicalData || config.historical_data || null,
+  });
 }
 
 const state = {
@@ -448,6 +451,11 @@ function renderResult() {
       `risco ${riskLabel(quality?.risk_level)}`
     ),
     metric(
+      'Nível de suporte da evidência',
+      result.evidence?.evidence_score ?? '—',
+      result.evidence?.evidence_status || 'não informado'
+    ),
+    metric(
       'Fluxos realocados',
       formatNumber(result.flow_summary?.reallocated_flows || 0),
       `de ${formatNumber(result.flow_summary?.total_flows || 0)} fluxos`
@@ -676,7 +684,11 @@ function renderQuality() {
 
   setHtml(
     'qualityPanel',
-    `<div class="fit-score-card ${qualityStatusClass(quality.quality_score)}"><span class="metric-label">Quality Score</span><strong class="fit-score-value">${quality.quality_score}</strong><p>Risco: <b>${escapeHtml(riskLabel(quality.risk_level))}</b></p></div><div class="alert-box neutral"><strong>Regime fiscal</strong><p>${escapeHtml(tax.regime_label || taxRegimeLabel(scenarioTaxRegime(state.currentResult?.scenario)))}</p><p class="small-note">Modo de cálculo: ${escapeHtml(tax.calculation_mode || '—')} · Precisão: ${escapeHtml(tax.precision_mode || '—')}</p></div>${alerts}${taxWarnings}`
+    `<div class="fit-score-card ${qualityStatusClass(quality.quality_score)}"><span class="metric-label">Quality Score</span><strong class="fit-score-value">${quality.quality_score}</strong><p>Risco: <b>${escapeHtml(riskLabel(quality.risk_level))}</b></p></div><div class="alert-box neutral"><strong>Regime fiscal</strong><p>${escapeHtml(tax.regime_label || taxRegimeLabel(scenarioTaxRegime(state.currentResult?.scenario)))}</p><p class="small-note">Modo de cálculo: ${escapeHtml(tax.calculation_mode || '—')} · Precisão: ${escapeHtml(tax.precision_mode || '—')}</p></div>${(() => {
+      const evidence = state.currentResult?.evidence || {};
+      const taxCoverage = tax.tax_coverage || {};
+      return `<div class="alert-box ${evidence.evidence_status === 'high' ? 'ok' : evidence.evidence_status === 'medium' ? 'warn' : 'error'}"><strong>Evidência: ${escapeHtml(evidence.evidence_score == null ? '—' : `${evidence.evidence_score}/100`)} · ${escapeHtml(evidence.evidence_status || 'não informado')}</strong><p>Classificação fiscal completa: ${escapeHtml(taxCoverage.fiscal_classification_coverage == null ? '—' : `${(taxCoverage.fiscal_classification_coverage * 100).toFixed(1)}%`)}</p><p>${escapeHtml((evidence.blockers || []).join(' · ') || 'Sem bloqueadores registrados.')}</p></div>`;
+    })()}${alerts}${taxWarnings}`
   );
 }
 
@@ -760,13 +772,18 @@ function renderMonteCarloSummaryCards() {
         <tbody>
           <tr><td>Perfil</td><td>${escapeHtml(monteCarloProfileLabel(summary.profile))}</td></tr>
           <tr><td>Seed / RNG</td><td>${escapeHtml(String(summary.seed_effective ?? summary.seed ?? '—'))} · ${escapeHtml(summary.rng_algorithm || '—')}</td></tr>
-          <tr><td>Modelo</td><td>Monte Carlo exploratório complementar, com premissas sintéticas; não é previsão histórica</td></tr>
+          <tr><td>Modelo</td><td>${escapeHtml(summary.analysis_type || 'exploratory_uncertainty_analysis')} · fonte: ${escapeHtml(summary.uncertainty_source || 'parametric_assumptions')} · histórico: ${summary.historical_distribution ? 'sim' : 'não'}</td></tr>
+          <tr><td>Observações históricas</td><td>${escapeHtml(JSON.stringify(summary.historical_observation_counts || {}))}${summary.historical_sample_warning ? ` · ${escapeHtml(summary.historical_sample_warning)}` : ''}</td></tr>
+          <tr><td>Suporte conjunto</td><td>${escapeHtml(`${summary.historical_unique_joint_support ?? 0} combinações únicas · ${summary.historical_complete_joint_observations ?? 0} casos completos`)}</td></tr>
+          <tr><td>Erro Monte Carlo</td><td>${escapeHtml(summary.monte_carlo_probability_positive_standard_error == null ? '—' : formatPct(summary.monte_carlo_probability_positive_standard_error * 100, 2))} · IC condicional: ${escapeHtml(summary.monte_carlo_probability_positive_lower_95 == null ? '—' : formatPct(summary.monte_carlo_probability_positive_lower_95 * 100, 1))}–${escapeHtml(summary.monte_carlo_probability_positive_upper_95 == null ? '—' : formatPct(summary.monte_carlo_probability_positive_upper_95 * 100, 1))}</td></tr>
           <tr><td>Leitura executiva</td><td>${escapeHtml(monteCarloInterpretation(summary))}</td></tr>
           <tr><td>Prob. saving positivo</td><td>${formatPct(summary.probability_saving_positive * 100, 1)}</td></tr>
           <tr><td>Prob. saving negativo</td><td>${formatPct(summary.probability_saving_loss * 100, 1)}</td></tr>
           <tr><td>Saving p10 / p50 / p90</td><td>${formatPct(summary.p10_saving_pct, 1)} · ${formatPct(summary.median_saving_pct, 1)} · ${formatPct(summary.p90_saving_pct, 1)}</td></tr>
           <tr><td>Total p10 / p50 / p90</td><td>${formatBRL(summary.p10_total_with_tax, true)} · ${formatBRL(summary.median_total_with_tax, true)} · ${formatBRL(summary.p90_total_with_tax, true)}</td></tr>
           <tr><td>Driver mais influente</td><td>${escapeHtml(driverLabel)} (${driverCorrelation >= 0 ? '+' : ''}${driverCorrelation.toFixed(2)})</td></tr>
+          <tr><td>Interpretação</td><td>${escapeHtml(summary.probability_interpretation || 'condicional às premissas informadas')}</td></tr>
+          <tr><td>Limitação</td><td>Probabilidades e percentis são condicionais ao histórico disponível e ao modelo; não são intervalo de confiança formal.</td></tr>
         </tbody>
       </table>
     `;

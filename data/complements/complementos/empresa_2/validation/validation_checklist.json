@@ -2,7 +2,7 @@
   {
     "test": "raw_is_read_only",
     "status": "pass",
-    "notes": "Arquivos brutos copiados para data/raw; não editar."
+    "notes": "Arquivos brutos preservados em references/raw_sources; não editar."
   },
   {
     "test": "tenant_manifest_valid",
@@ -17,7 +17,7 @@
   {
     "test": "canonical_schema_valid_initial",
     "status": "pass",
-    "notes": "Tabelas canônicas criadas no padrão inicial."
+    "notes": "Pacote canônico é parcial; tabelas protegidas permanecem no bundle criptografado."
   },
   {
     "test": "tax_scenario_bridge_valid",

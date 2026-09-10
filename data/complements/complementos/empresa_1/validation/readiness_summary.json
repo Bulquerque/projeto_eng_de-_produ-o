@@ -3,47 +3,52 @@
     "tenant_id": "empresa_1",
     "layer": "canonical",
     "table": "nodes",
-    "path": "data/tenants/empresa_1/canonical/nodes.csv",
+    "path": "data/empresa1/phase2/phase2_bundle.json.enc.json",
     "rows": 89,
-    "status": "ready_initial"
+    "status": "protected_runtime_bundle",
+    "notes": "Tabela canônica não está materializada no checkout; o runtime usa o bundle criptografado."
   },
   {
     "tenant_id": "empresa_1",
     "layer": "canonical",
     "table": "edges",
-    "path": "data/tenants/empresa_1/canonical/edges.csv",
+    "path": "data/empresa1/phase2/phase2_bundle.json.enc.json",
     "rows": 576,
-    "status": "ready_initial"
+    "status": "protected_runtime_bundle",
+    "notes": "Tabela canônica não está materializada no checkout; o runtime usa o bundle criptografado."
   },
   {
     "tenant_id": "empresa_1",
     "layer": "canonical",
     "table": "products",
-    "path": "data/tenants/empresa_1/canonical/products.csv",
+    "path": "data/empresa1/phase2/phase2_bundle.json.enc.json",
     "rows": 2983,
-    "status": "ready_initial"
+    "status": "protected_runtime_bundle",
+    "notes": "Tabela canônica não está materializada no checkout; o runtime usa o bundle criptografado."
   },
   {
     "tenant_id": "empresa_1",
     "layer": "canonical",
     "table": "demand",
-    "path": "data/tenants/empresa_1/canonical/demand.csv",
+    "path": "data/empresa1/phase2/phase2_bundle.json.enc.json",
     "rows": 60309,
-    "status": "ready_initial"
+    "status": "protected_runtime_bundle",
+    "notes": "Tabela canônica não está materializada no checkout; o runtime usa o bundle criptografado."
   },
   {
     "tenant_id": "empresa_1",
     "layer": "canonical",
     "table": "cost_inputs",
-    "path": "data/tenants/empresa_1/canonical/cost_inputs.csv",
+    "path": "data/empresa1/phase2/phase2_bundle.json.enc.json",
     "rows": 579,
-    "status": "ready_initial"
+    "status": "protected_runtime_bundle",
+    "notes": "Tabela canônica não está materializada no checkout; o runtime usa o bundle criptografado."
   },
   {
     "tenant_id": "empresa_1",
     "layer": "canonical",
     "table": "inventory",
-    "path": "data/tenants/empresa_1/canonical/inventory.csv",
+    "path": "data/complements/complementos/empresa_1/canonical/inventory.csv",
     "rows": 1,
     "status": "ready_initial"
   },
@@ -51,7 +56,7 @@
     "tenant_id": "empresa_1",
     "layer": "canonical",
     "table": "storage_inputs",
-    "path": "data/tenants/empresa_1/canonical/storage_inputs.csv",
+    "path": "data/complements/complementos/empresa_1/canonical/storage_inputs.csv",
     "rows": 1,
     "status": "ready_initial"
   },
@@ -59,7 +64,7 @@
     "tenant_id": "empresa_1",
     "layer": "tax",
     "table": "tax_inputs_current",
-    "path": "data/tenants/empresa_1/tax/tax_inputs_current.csv",
+    "path": "data/complements/complementos/empresa_1/tax/tax_inputs_current.csv",
     "rows": 729,
     "status": "ready_initial"
   },
@@ -67,7 +72,7 @@
     "tenant_id": "empresa_1",
     "layer": "tax",
     "table": "tax_inputs_reform",
-    "path": "data/tenants/empresa_1/tax/tax_inputs_reform.csv",
+    "path": "data/complements/complementos/empresa_1/tax/tax_inputs_reform.csv",
     "rows": 8,
     "status": "ready_initial"
   },
@@ -75,7 +80,7 @@
     "tenant_id": "empresa_1",
     "layer": "tax",
     "table": "tax_scenario_bridge",
-    "path": "data/tenants/empresa_1/tax/tax_scenario_bridge.csv",
+    "path": "data/complements/complementos/empresa_1/tax/tax_scenario_bridge.csv",
     "rows": 4,
     "status": "ready_initial"
   },
@@ -83,7 +88,7 @@
     "tenant_id": "empresa_1",
     "layer": "tax",
     "table": "tax_assumptions",
-    "path": "data/tenants/empresa_1/tax/tax_assumptions.csv",
+    "path": "data/complements/complementos/empresa_1/tax/tax_assumptions.csv",
     "rows": 3,
     "status": "ready_initial"
   }

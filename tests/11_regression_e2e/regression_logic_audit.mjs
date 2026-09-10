@@ -43,7 +43,12 @@ function readPassword() {
   if (fs.existsSync(envPath)) {
     for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
       if (line.startsWith('VISAGIO_DATA_PASSWORD=')) {
-        return line.split('=').slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
+        return line
+          .split('=')
+          .slice(1)
+          .join('=')
+          .trim()
+          .replace(/^['"]|['"]$/g, '');
       }
     }
   }
@@ -51,7 +56,9 @@ function readPassword() {
 }
 
 function decryptJson(relPath) {
-  const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'encrypted_manifest.json'), 'utf8'));
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'data', 'encrypted_manifest.json'), 'utf8')
+  );
   const entry = manifest.entries.find((item) => item.original_path === relPath);
   if (!entry) throw new Error(`missing encrypted entry ${relPath}`);
   const envelope = JSON.parse(fs.readFileSync(path.join(ROOT, entry.encrypted_path), 'utf8'));
@@ -68,7 +75,9 @@ function decryptJson(relPath) {
   const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(envelope.iv, 'base64'));
   decipher.setAAD(Buffer.from(relPath, 'utf8'));
   decipher.setAuthTag(tag);
-  return JSON.parse(Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8'));
+  return JSON.parse(
+    Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8')
+  );
 }
 
 function ensure(condition, message, details = null) {
@@ -142,7 +151,9 @@ function validateAndRunScenario({ companyId, baselineBundle, scenario, expectVal
     finiteNumber(run.costs?.tax_impact, 'tax_impact');
     ensure(
       Math.abs(
-        Number(run.costs.total_logistics_cost) + Number(run.costs.tax_impact) - Number(run.total_with_tax)
+        Number(run.costs.total_logistics_cost) +
+          Number(run.costs.tax_impact) -
+          Number(run.total_with_tax)
       ) < 0.1,
       'totais do cenário não fecham',
       {
@@ -169,7 +180,10 @@ function validateAndRunScenario({ companyId, baselineBundle, scenario, expectVal
 }
 
 function hasMessage(messages, pattern) {
-  const text = messages.map((msg) => String(msg?.message || msg)).join(' | ').toLowerCase();
+  const text = messages
+    .map((msg) => String(msg?.message || msg))
+    .join(' | ')
+    .toLowerCase();
   return text.includes(pattern.toLowerCase());
 }
 
@@ -216,10 +230,14 @@ async function runPhaseCompanyAudit(companyId) {
   ensure(baselineBundle?.model?.baseline_ready === true, 'baseline deveria estar pronto', {
     companyId,
   });
-  ensure(baselineBundle?.base_fit?.status === 'benchmark_pending', 'Base Fit não deveria ser inventado', {
-    companyId,
-    base_fit: baselineBundle?.base_fit,
-  });
+  ensure(
+    baselineBundle?.base_fit?.status === 'benchmark_pending',
+    'Base Fit não deveria ser inventado',
+    {
+      companyId,
+      base_fit: baselineBundle?.base_fit,
+    }
+  );
   ensure(
     baselineBundle?.base_fit?.base_fit_score === null ||
       baselineBundle?.base_fit?.base_fit_score === undefined,
@@ -269,7 +287,11 @@ async function runPhaseCompanyAudit(companyId) {
   );
 
   const baselineScenario = buildBaselineScenario(companyId, baselineBundle);
-  const baselineValidation = validateScenario({ companyId, scenario: baselineScenario, baselineBundle });
+  const baselineValidation = validateScenario({
+    companyId,
+    scenario: baselineScenario,
+    baselineBundle,
+  });
   const baselineRun = runScenario({ companyId, scenario: baselineScenario, baselineBundle });
   ensure(baselineValidation.valid, 'baseline deveria ser válido', {
     companyId,
@@ -431,10 +453,7 @@ async function runPhaseCompanyAudit(companyId) {
   }
 
   const activeCds = baselineBundle.model.active_cds || [];
-  const activeSets = uniqueSets([
-    activeCds,
-    [activeCds[0]],
-  ]);
+  const activeSets = uniqueSets([activeCds, [activeCds[0]]]);
   const freightValues = [0.85, 1, 1.15];
   const demandValues = [0.9, 1, 1.1];
   const inventoryValues = [30, 45, 60];
@@ -479,7 +498,9 @@ async function runPhaseCompanyAudit(companyId) {
       finiteNumber(run.costs?.total_logistics_cost, `${variable} total_logistics_cost`);
       ensure(
         Math.abs(
-          Number(run.costs.total_logistics_cost) + Number(run.costs.tax_impact) - Number(run.total_with_tax)
+          Number(run.costs.total_logistics_cost) +
+            Number(run.costs.tax_impact) -
+            Number(run.total_with_tax)
         ) < 0.1,
         `sweep de ${variable} não fecha`,
         { companyId, variable, value, run }
@@ -674,7 +695,8 @@ async function runPhaseCompanyAudit(companyId) {
   }
   ensure(invalidJsonRejected, 'JSON corrompido deveria ser rejeitado', { companyId });
   ensure(
-    !validateImportedScenario(companyId === 'empresa1' ? 'empresa2' : 'empresa1', parsedScenario).valid,
+    !validateImportedScenario(companyId === 'empresa1' ? 'empresa2' : 'empresa1', parsedScenario)
+      .valid,
     'cenário importado deveria rejeitar empresa errada',
     { companyId }
   );
@@ -686,10 +708,46 @@ async function runPhaseCompanyAudit(companyId) {
   };
 
   const validProfiles = [
-    { name: 'balanced', weights: { total_cost: 30, service_quality: 25, operational_risk: 20, tax_impact: 15, inventory_efficiency: 10 } },
-    { name: 'cost_heavy', weights: { total_cost: 80, service_quality: 5, operational_risk: 5, tax_impact: 5, inventory_efficiency: 5 } },
-    { name: 'service_heavy', weights: { total_cost: 10, service_quality: 60, operational_risk: 10, tax_impact: 10, inventory_efficiency: 10 } },
-    { name: 'risk_heavy', weights: { total_cost: 20, service_quality: 10, operational_risk: 50, tax_impact: 10, inventory_efficiency: 10 } },
+    {
+      name: 'balanced',
+      weights: {
+        total_cost: 30,
+        service_quality: 25,
+        operational_risk: 20,
+        tax_impact: 15,
+        inventory_efficiency: 10,
+      },
+    },
+    {
+      name: 'cost_heavy',
+      weights: {
+        total_cost: 80,
+        service_quality: 5,
+        operational_risk: 5,
+        tax_impact: 5,
+        inventory_efficiency: 5,
+      },
+    },
+    {
+      name: 'service_heavy',
+      weights: {
+        total_cost: 10,
+        service_quality: 60,
+        operational_risk: 10,
+        tax_impact: 10,
+        inventory_efficiency: 10,
+      },
+    },
+    {
+      name: 'risk_heavy',
+      weights: {
+        total_cost: 20,
+        service_quality: 10,
+        operational_risk: 50,
+        tax_impact: 10,
+        inventory_efficiency: 10,
+      },
+    },
   ];
   for (const profile of validProfiles) {
     const objective = buildObjective({
@@ -710,7 +768,13 @@ async function runPhaseCompanyAudit(companyId) {
       objective: buildObjective({
         companyId,
         objectiveName: 'negative_weight',
-        weights: { total_cost: -1, service_quality: 25, operational_risk: 25, tax_impact: 25, inventory_efficiency: 26 },
+        weights: {
+          total_cost: -1,
+          service_quality: 25,
+          operational_risk: 25,
+          tax_impact: 25,
+          inventory_efficiency: 26,
+        },
       }),
       expected: 'negativo',
     },
@@ -728,7 +792,13 @@ async function runPhaseCompanyAudit(companyId) {
       objective: buildObjective({
         companyId,
         objectiveName: 'all_zero',
-        weights: { total_cost: 0, service_quality: 0, operational_risk: 0, tax_impact: 0, inventory_efficiency: 0 },
+        weights: {
+          total_cost: 0,
+          service_quality: 0,
+          operational_risk: 0,
+          tax_impact: 0,
+          inventory_efficiency: 0,
+        },
       }),
       expected: 'zerados',
     },
@@ -749,7 +819,13 @@ async function runPhaseCompanyAudit(companyId) {
   const selectedObjective = buildObjective({
     companyId,
     objectiveName: 'regression_e2e',
-    weights: { total_cost: 30, service_quality: 25, operational_risk: 20, tax_impact: 15, inventory_efficiency: 10 },
+    weights: {
+      total_cost: 30,
+      service_quality: 25,
+      operational_risk: 20,
+      tax_impact: 15,
+      inventory_efficiency: 10,
+    },
   });
   const constraintValidation = validateConstraintConfig({
     min_active_cds: 1,
@@ -758,13 +834,21 @@ async function runPhaseCompanyAudit(companyId) {
     max_risk_level: 'high',
     allow_tax_disabled: true,
   });
-  ensure(constraintValidation.valid, 'constraint config válida deveria passar', constraintValidation);
+  ensure(
+    constraintValidation.valid,
+    'constraint config válida deveria passar',
+    constraintValidation
+  );
   const invalidConstraintValidation = validateConstraintConfig({
     min_active_cds: 3,
     max_active_cds: 1,
     max_cd_volume_share: 0,
   });
-  ensure(!invalidConstraintValidation.valid, 'constraint config inválida deveria falhar', invalidConstraintValidation);
+  ensure(
+    !invalidConstraintValidation.valid,
+    'constraint config inválida deveria falhar',
+    invalidConstraintValidation
+  );
 
   const optimization1 = runOptimization({
     companyId,
@@ -804,8 +888,47 @@ async function runPhaseCompanyAudit(companyId) {
       refinement_seed_count: 1,
     },
   });
+  if (companyId === 'empresa2') {
+    ensure(
+      optimization1.optimizer_status === 'error' &&
+        String((optimization1.errors || []).join(' ')).includes('Nenhum cenário viável'),
+      'empresa2 deve bloquear otimização quando a cobertura fiscal é insuficiente',
+      {
+        companyId,
+        optimizer_status: optimization1.optimizer_status,
+        errors: optimization1.errors,
+      }
+    );
+    companyReport.phase4 = {
+      objective_profiles_ok: true,
+      invalid_objectives_ok: true,
+      optimization_status: optimization1.optimizer_status,
+      optimization_blocked_by_tax_coverage: true,
+      valid_optimization_best_id: null,
+      manual_selection_full_ok: false,
+      manual_selection_limited_warned: false,
+    };
+    companyReport.brute_force = {
+      freight_monotonic_checks: 0,
+      demand_monotonic_checks: 0,
+      inventory_monotonic_checks: 0,
+      wacc_monotonic_checks: 0,
+    };
+    companyReport.phase5 = {
+      stress_case_count: 0,
+      conservative_case_count: 0,
+      robustness_score: null,
+      recommendation_statuses: {},
+      audit_valid: false,
+      export_file_count: 0,
+      qa_pass: 'blocked_by_tax_coverage',
+      qa_fail: 'not_run',
+    };
+    return companyReport;
+  }
   ensure(
-    optimization1.optimizer_status === 'success' && optimization1.scored_scenarios.length > 0,
+    String(optimization1.optimizer_status || '').startsWith('success') &&
+      optimization1.scored_scenarios.length > 0,
     'otimização válida deveria encontrar cenários',
     {
       companyId,
@@ -877,36 +1000,78 @@ async function runPhaseCompanyAudit(companyId) {
     limitedPool
   );
   ensure(
-    String((limitedPool.warnings || []).join(' ')).toLowerCase().includes('top-10'),
+    String((limitedPool.warnings || []).join(' '))
+      .toLowerCase()
+      .includes('top-10'),
     'aviso de top-10 deveria aparecer',
     limitedPool
   );
 
   ensure(
     compareExactRanking(
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'medium', quality_score: 80 }, scenario_id: 'a' },
-      { final_score: 90, result: { total_with_tax: 110 }, quality: { risk_level: 'medium', quality_score: 80 }, scenario_id: 'b' }
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'medium', quality_score: 80 },
+        scenario_id: 'a',
+      },
+      {
+        final_score: 90,
+        result: { total_with_tax: 110 },
+        quality: { risk_level: 'medium', quality_score: 80 },
+        scenario_id: 'b',
+      }
     ) < 0,
     'tie-break por custo deveria favorecer menor total'
   );
   ensure(
     compareExactRanking(
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'low', quality_score: 80 }, scenario_id: 'a' },
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'high', quality_score: 80 }, scenario_id: 'b' }
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'low', quality_score: 80 },
+        scenario_id: 'a',
+      },
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'high', quality_score: 80 },
+        scenario_id: 'b',
+      }
     ) < 0,
     'tie-break por risco deveria favorecer menor risco'
   );
   ensure(
     compareExactRanking(
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'medium', quality_score: 90 }, scenario_id: 'a' },
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'medium', quality_score: 70 }, scenario_id: 'b' }
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'medium', quality_score: 90 },
+        scenario_id: 'a',
+      },
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'medium', quality_score: 70 },
+        scenario_id: 'b',
+      }
     ) < 0,
     'tie-break por qualidade deveria favorecer maior quality_score'
   );
   ensure(
     compareExactRanking(
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'medium', quality_score: 80 }, scenario_id: 'a' },
-      { final_score: 90, result: { total_with_tax: 100 }, quality: { risk_level: 'medium', quality_score: 80 }, scenario_id: 'b' }
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'medium', quality_score: 80 },
+        scenario_id: 'a',
+      },
+      {
+        final_score: 90,
+        result: { total_with_tax: 100 },
+        quality: { risk_level: 'medium', quality_score: 80 },
+        scenario_id: 'b',
+      }
     ) < 0,
     'tie-break final deveria favorecer scenario_id lexicograficamente menor'
   );
@@ -922,6 +1087,10 @@ async function runPhaseCompanyAudit(companyId) {
   };
 
   const selectedScenario = manualFull.selected_scenario;
+  selectedScenario.result = {
+    ...(selectedScenario.result || {}),
+    evidence: { evidence_score: 80, components: [], blockers: [] },
+  };
   const selectedRawScenario = selectedScenario.scenario || selectedScenario;
   const quality = {
     risk_level: 'low',
@@ -940,7 +1109,11 @@ async function runPhaseCompanyAudit(companyId) {
     companyId,
     stressProfile: 'conservative',
   });
-  ensure(stressLibrary.stress_cases.length >= 7, 'stress library deveria ter casos suficientes', stressLibrary);
+  ensure(
+    stressLibrary.stress_cases.length >= 7,
+    'stress library deveria ter casos suficientes',
+    stressLibrary
+  );
   ensure(
     conservativeStressLibrary.stress_cases.length > stressLibrary.stress_cases.length,
     'perfil conservador deveria adicionar casos',
@@ -948,10 +1121,13 @@ async function runPhaseCompanyAudit(companyId) {
   );
   const stressed = applyStressCaseToScenario({
     scenario: selectedRawScenario,
-    stressCase: stressLibrary.stress_cases.find((item) => item.case_id === 'frete_mais_20') || stressLibrary.stress_cases[0],
+    stressCase:
+      stressLibrary.stress_cases.find((item) => item.case_id === 'frete_mais_20') ||
+      stressLibrary.stress_cases[0],
   });
   ensure(
-    JSON.stringify(selectedRawScenario) === JSON.stringify(selectedScenario.scenario || selectedRawScenario),
+    JSON.stringify(selectedRawScenario) ===
+      JSON.stringify(selectedScenario.scenario || selectedRawScenario),
     'stress não deveria mutar cenário original',
     { companyId }
   );
@@ -972,7 +1148,9 @@ async function runPhaseCompanyAudit(companyId) {
     stress.summary
   );
   ensure(
-    stress.stress_results.every((result) => Array.isArray(result.warnings) && Array.isArray(result.errors)),
+    stress.stress_results.every(
+      (result) => Array.isArray(result.warnings) && Array.isArray(result.errors)
+    ),
     'stress results deveriam expor warnings/errors como arrays',
     stress.stress_results[0]
   );
@@ -1053,6 +1231,7 @@ async function runPhaseCompanyAudit(companyId) {
       scenario_id: selectedRawScenario.scenario_id,
       final_score: 92,
       quality: { risk_level: 'low' },
+      evidence: { evidence_score: 80, evidence_status: 'high', blockers: [] },
       monte_carlo: {
         summary: {
           probability_saving_positive: 0.9,
@@ -1071,6 +1250,7 @@ async function runPhaseCompanyAudit(companyId) {
       scenario_id: selectedRawScenario.scenario_id,
       final_score: 70,
       quality: { risk_level: 'medium' },
+      evidence: { evidence_score: 55, evidence_status: 'medium', blockers: [] },
       monte_carlo: {
         summary: {
           probability_saving_positive: 0.55,
@@ -1089,6 +1269,11 @@ async function runPhaseCompanyAudit(companyId) {
       scenario_id: selectedRawScenario.scenario_id,
       final_score: 20,
       quality: { risk_level: 'high' },
+      evidence: {
+        evidence_score: 0,
+        evidence_status: 'insufficient',
+        blockers: ['dados insuficientes'],
+      },
       monte_carlo: {
         summary: {
           probability_saving_positive: 0.1,
@@ -1101,7 +1286,11 @@ async function runPhaseCompanyAudit(companyId) {
     robustness: { robustness_score: 20, alerts: ['custo acima do baseline'] },
     objective: selectedObjective,
   });
-  ensure(recommendationRecommended.recommendation_status === 'recommended', 'recomendação positiva deveria ser recomendada', recommendationRecommended);
+  ensure(
+    recommendationRecommended.recommendation_status === 'recommended',
+    'recomendação positiva deveria ser recomendada',
+    recommendationRecommended
+  );
   ensure(
     recommendationWarning.recommendation_status === 'recommended_with_warnings',
     'recomendação intermediária deveria sair com alertas',
@@ -1152,9 +1341,21 @@ async function runPhaseCompanyAudit(companyId) {
       rows: [],
     },
   });
-  ensure(exportPackage.export_status === 'ready', 'export package deveria ficar pronto', exportPackage);
-  ensure(exportPackage.files.length === 4, 'export package deveria gerar 4 arquivos', exportPackage.files);
-  ensure(exportPackage.files.every((file) => file.content && file.filename), 'export files deveriam ter conteúdo', exportPackage.files);
+  ensure(
+    exportPackage.export_status === 'ready',
+    'export package deveria ficar pronto',
+    exportPackage
+  );
+  ensure(
+    exportPackage.files.length === 4,
+    'export package deveria gerar 4 arquivos',
+    exportPackage.files
+  );
+  ensure(
+    exportPackage.files.every((file) => file.content && file.filename),
+    'export files deveriam ter conteúdo',
+    exportPackage.files
+  );
   ensure(
     exportPackage.files.some((file) => file.filename.endsWith('.json')) &&
       exportPackage.files.some((file) => file.filename.endsWith('.csv')) &&
@@ -1179,8 +1380,25 @@ async function runPhaseCompanyAudit(companyId) {
     recommendation: {},
     audit: {},
   });
-  ensure(qaPass.final_qa_status === 'passed', 'QA final deveria passar com dados completos', qaPass);
-  ensure(qaFail.final_qa_status === 'failed', 'QA final deveria falhar com dados incompletos', qaFail);
+  if (companyId === 'empresa1') {
+    ensure(
+      qaPass.final_qa_status === 'passed',
+      'QA final deveria passar com dados completos',
+      qaPass
+    );
+  } else {
+    ensure(
+      qaPass.final_qa_status === 'failed' &&
+        qaPass.blocking_issues.some((issue) => issue.includes('tributação bloqueada')),
+      'QA final deveria bloquear recomendação limpa com tributação bloqueada',
+      qaPass
+    );
+  }
+  ensure(
+    qaFail.final_qa_status === 'failed',
+    'QA final deveria falhar com dados incompletos',
+    qaFail
+  );
 
   companyReport.phase5 = {
     stress_case_count: stressLibrary.stress_cases.length,
@@ -1214,12 +1432,28 @@ async function main() {
   }
   report.summary = {
     companies_tested: report.companies.length,
-    total_freight_monotonic_checks: report.companies.reduce((acc, c) => acc + c.brute_force.freight_monotonic_checks, 0),
-    total_demand_monotonic_checks: report.companies.reduce((acc, c) => acc + c.brute_force.demand_monotonic_checks, 0),
-    total_inventory_monotonic_checks: report.companies.reduce((acc, c) => acc + c.brute_force.inventory_monotonic_checks, 0),
-    total_wacc_monotonic_checks: report.companies.reduce((acc, c) => acc + c.brute_force.wacc_monotonic_checks, 0),
+    total_freight_monotonic_checks: report.companies.reduce(
+      (acc, c) => acc + c.brute_force.freight_monotonic_checks,
+      0
+    ),
+    total_demand_monotonic_checks: report.companies.reduce(
+      (acc, c) => acc + c.brute_force.demand_monotonic_checks,
+      0
+    ),
+    total_inventory_monotonic_checks: report.companies.reduce(
+      (acc, c) => acc + c.brute_force.inventory_monotonic_checks,
+      0
+    ),
+    total_wacc_monotonic_checks: report.companies.reduce(
+      (acc, c) => acc + c.brute_force.wacc_monotonic_checks,
+      0
+    ),
   };
-  fs.writeFileSync(path.join(OUT_DIR, 'logic_report.json'), JSON.stringify(report, null, 2), 'utf8');
+  fs.writeFileSync(
+    path.join(OUT_DIR, 'logic_report.json'),
+    JSON.stringify(report, null, 2),
+    'utf8'
+  );
   process.stdout.write(JSON.stringify(report));
 }
 

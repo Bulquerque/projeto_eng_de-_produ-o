@@ -182,7 +182,19 @@ apresentação.
 ## 6. Monte Carlo
 
 Monte Carlo é complementar e nunca substitui o resultado determinístico, o
-ranking ou os componentes oficiais.
+ranking ou os componentes oficiais. O motor distingue a origem da incerteza:
+
+- `empirical_historical`: somente para variáveis com pelo menos duas
+  observações históricas fornecidas em `config.history`;
+- `hybrid_empirical_parametric`: mistura histórico disponível e premissas nas
+  variáveis restantes;
+- `parametric_assumptions`: usa os spreads documentados quando não há histórico
+  suficiente.
+
+A existência de observações não garante representatividade, sazonalidade ou
+independência. O resultado registra variáveis históricas, quantidade de
+observações e interpretação condicional da probabilidade. Sem histórico, a
+probabilidade é condicional às premissas, não uma frequência histórica.
 
 Características:
 
@@ -227,6 +239,12 @@ maiores, a geração usa um catálogo limitado de subconjuntos e informa:
 Portanto, “melhor cenário” significa melhor entre os candidatos avaliados, não
 ótimo global, salvo quando \`search_space_complete\` for verdadeiro.
 
+\`search_space_complete\` só pode ser verdadeiro quando todas as dimensões
+declaradas foram enumeradas, o limite de candidatos não truncou a busca e a
+quantidade gerada coincide com o espaço total calculado. A cobertura dos
+candidatos é registrada separadamente; catálogo parcial ou busca truncada não
+é promovido a ótimo global.
+
 O seed do otimizador ordena deterministicamente o catálogo de candidatos. A
 sensibilidade dos pesos avalia os seis perfis padrão (balanceado, CFO, Supply,
 fiscal, conservador e crescimento) sem alterar o cenário oficial. O resultado
@@ -268,6 +286,13 @@ Uma recomendação limpa exige saving estritamente positivo, risco operacional c
 robustez mínima, probabilidade Monte Carlo favorável quando disponível e
 estabilidade mínima entre perfis de pesos. Se os perfis mudarem o vencedor, o
 resultado deve ser apresentado com alerta e não como decisão universal.
+
+Além dessas condições, a recomendação considera o relatório de evidência do
+cenário. Esse relatório separa dados observados, parcialmente observados,
+proxies, fallbacks, parâmetros, projeções e reconciliações. Evidência baixa ou
+bloqueadores relevantes impedem uma recomendação limpa, mesmo quando o saving
+determinístico é positivo. Evidência é medida de suporte, não estimativa de
+precisão estatística.
 
 ## 9. Limitações que devem acompanhar a apresentação
 

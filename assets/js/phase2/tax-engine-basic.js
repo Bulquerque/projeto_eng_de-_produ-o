@@ -7,6 +7,10 @@ export function summarizeTaxResults(taxBlock = {}) {
     difal_estimated: Number(tax.difal_estimated || 0),
     total_tax_impact: Number(tax.total_tax_impact || 0),
     coverage_pct: Number(coverage.coverage_pct || 0),
+    eligible_flow_coverage_pct: Number(
+      coverage.eligible_flow_coverage_pct ?? coverage.coverage_pct ?? 0
+    ),
+    complete_fiscal_coverage_pct: Number(coverage.complete_fiscal_coverage_pct || 0),
     flows_with_tax_data: Number(coverage.flows_with_tax_data || 0),
     flows_without_tax_data: Number(coverage.flows_without_tax_data || 0),
     tax_reconciliation: recon,

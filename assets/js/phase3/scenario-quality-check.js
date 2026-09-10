@@ -66,6 +66,9 @@ export function evaluateScenarioQuality({ scenarioResult, baselineBundle, qualit
       uncovered_flow_share: missing,
       cost_increase_pct: delta,
     },
+    evidence_score: scenarioResult?.evidence?.evidence_score ?? null,
+    evidence_status: scenarioResult?.evidence?.evidence_status ?? 'unknown',
+    evidence_blockers: scenarioResult?.evidence?.blockers || [],
     alerts,
   };
 }

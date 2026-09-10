@@ -4,7 +4,7 @@
   "files": [
     {
       "file_id": "dados_de_demanda_xlsx",
-      "path": "data/raw/empresa_1/Dados de Demanda.xlsx",
+      "path": "references/raw_sources/Dados de Demanda(3).xlsx",
       "file_type": "xlsx",
       "content_hash_sha256": "df6c3c49f83f54366f9b6148218d402d91ea6658e99d268b9b973b38e31e71f4",
       "role": "raw_company_data",
@@ -13,7 +13,7 @@
     },
     {
       "file_id": "dados_de_dista_ncia_xlsx",
-      "path": "data/raw/empresa_1/Dados de Distância.xlsx",
+      "path": "references/raw_sources/Dados de Distância(3).xlsx",
       "file_type": "xlsx",
       "content_hash_sha256": "dbc50759ff41970f042a4d30c7889399c230606fa6c43b1b569e8f20a2438ad8",
       "role": "raw_company_data",
@@ -22,7 +22,7 @@
     },
     {
       "file_id": "premissas_gerais_xlsx",
-      "path": "data/raw/empresa_1/Premissas Gerais.xlsx",
+      "path": "references/raw_sources/Premissas Gerais(4).xlsx",
       "file_type": "xlsx",
       "content_hash_sha256": "5123df4cb2886d718c4e05b2a30183177ca6c24edd7c642a5472db4b6b7a74a7",
       "role": "raw_company_data",

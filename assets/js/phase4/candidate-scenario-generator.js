@@ -52,8 +52,9 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
   const exhaustiveSubsets = generationConfig.exhaustive_subsets === true || baseCds.length <= 4;
   const cdSets = [];
   if (exhaustiveSubsets) {
+    const subsetLimit = Number.isFinite(maxCandidates) ? Math.max(1, maxCandidates) : 80;
     for (let k = 1; k <= baseCds.length; k += 1)
-      for (const c of combinations(baseCds, k, Number.POSITIVE_INFINITY)) cdSets.push(c);
+      for (const c of combinations(baseCds, k, subsetLimit)) cdSets.push(c);
   } else {
     if (baseCds.length) cdSets.push(baseCds);
     for (const cd of baseCds.slice(0, Math.min(baseCds.length, 10))) cdSets.push([cd]);
@@ -103,10 +104,20 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
   const fullCandidateSpaceSize = fullCdSetCount
     ? fullCdSetCount * freight.length * inv.length * tax.length * demand.length
     : null;
-  const coveredCandidateSpaceSize =
+  const catalogCandidateSpaceSize =
     cdSetsUnique.length * freight.length * inv.length * tax.length * demand.length;
+  const generatedCandidateCount = candidate_scenarios.length;
   const limited_by_max_candidates =
-    Number.isFinite(maxCandidates) && candidates.length >= maxCandidates;
+    Number.isFinite(maxCandidates) &&
+    generatedCandidateCount < (fullCandidateSpaceSize ?? catalogCandidateSpaceSize) &&
+    candidates.length >= maxCandidates;
+  const coveredCandidateSpaceSize = Math.min(
+    generatedCandidateCount,
+    fullCandidateSpaceSize ?? catalogCandidateSpaceSize
+  );
+  const allDimensionsExhaustive =
+    Boolean(fullCdSetCount && cdSetsUnique.length === fullCdSetCount) &&
+    generatedCandidateCount === (fullCandidateSpaceSize ?? generatedCandidateCount);
   return {
     company_id: companyId,
     candidate_scenarios: Number.isFinite(maxCandidates)
@@ -118,10 +129,14 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
       covered_candidate_space_size: coveredCandidateSpaceSize,
       cd_set_count: cdSetsUnique.length,
       full_cd_set_count: fullCdSetCount,
-      search_space_complete: Boolean(fullCdSetCount && cdSetsUnique.length === fullCdSetCount),
+      search_space_complete: allDimensionsExhaustive && !limited_by_max_candidates,
       search_space_strategy: exhaustiveSubsets ? 'exhaustive_subsets' : 'bounded_subset_catalog',
       limited_by_max_candidates,
       max_candidates: maxCandidates,
+      space_coverage_ratio:
+        fullCandidateSpaceSize && fullCandidateSpaceSize > 0
+          ? generatedCandidateCount / fullCandidateSpaceSize
+          : null,
     },
     warnings: [],
     errors: [],

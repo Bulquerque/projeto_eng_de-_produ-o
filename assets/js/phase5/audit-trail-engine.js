@@ -13,6 +13,7 @@ export function buildAuditTrail({
     selectedScenario?.scenario?.scenario_id ||
     selectedScenario?.result?.scenario_id;
   const searchLog = optimizerResult?.search_log || null;
+  const evidence = selectedScenario?.result?.evidence || selectedScenario?.evidence || null;
   const monteCarlo =
     selectedScenario?.monte_carlo?.summary ||
     selectedScenario?.scenario?.monte_carlo?.summary ||
@@ -44,6 +45,14 @@ export function buildAuditTrail({
           baseline_scenario_id: monteCarlo.baseline_scenario_id || null,
           deterministic_scenario_id: monteCarlo.deterministic_scenario_id || null,
           profile: monteCarlo.profile || null,
+          analysis_type: monteCarlo.analysis_type || null,
+          uncertainty_source: monteCarlo.uncertainty_source || null,
+          historical_distribution: Boolean(monteCarlo.historical_distribution),
+          historical_drivers: monteCarlo.historical_drivers || [],
+          historical_observation_counts: monteCarlo.historical_observation_counts || {},
+          historical_min_observations: monteCarlo.historical_min_observations ?? null,
+          historical_sample_warning: monteCarlo.historical_sample_warning || null,
+          probability_interpretation: monteCarlo.probability_interpretation || null,
           probability_saving_positive: monteCarlo.probability_saving_positive ?? null,
           p10_saving_pct: monteCarlo.p10_saving_pct ?? null,
           median_saving_pct: monteCarlo.median_saving_pct ?? null,
@@ -56,12 +65,27 @@ export function buildAuditTrail({
       ? {
           method_requested: searchLog.method_requested || null,
           method_applied: searchLog.method_applied || null,
+          seed: searchLog.seed ?? null,
           exact_search_space: Boolean(searchLog.exact_search_space),
           generated_candidates: searchLog.generated_candidates ?? null,
+          simulated_candidates: searchLog.simulated_candidates ?? null,
           valid_candidates: searchLog.valid_candidates ?? null,
+          invalid_candidates: searchLog.invalid_candidates ?? null,
+          candidate_space_size: searchLog.candidate_space_size ?? null,
+          coverage_ratio: searchLog.coverage_ratio ?? null,
+          space_limited: Boolean(searchLog.space_limited),
+          exactness_reason: searchLog.exactness_reason || null,
+          refinement_rounds: searchLog.refinement_rounds ?? null,
+          refinement_seed_count: searchLog.refinement_seed_count ?? null,
+          refinement_candidates_generated: searchLog.refinement_candidates_generated ?? null,
+          refinement_candidates_simulated: searchLog.refinement_candidates_simulated ?? null,
+          best_score: searchLog.best_score ?? null,
           best_scenario_id: searchLog.best_scenario_id || null,
+          best_by_total_cost_scenario_id: searchLog.best_by_total_cost_scenario_id || null,
+          best_by_total_cost_value: searchLog.best_by_total_cost_value ?? null,
         }
       : null,
+    evidence,
     ranking_sensitivity: rankingSensitivity || optimizerResult?.ranking_sensitivity || null,
     model_versions: {
       phase1: 'implemented',

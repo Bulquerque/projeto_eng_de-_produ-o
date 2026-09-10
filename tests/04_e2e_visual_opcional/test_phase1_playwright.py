@@ -1,4 +1,5 @@
 import http.server
+import os
 import socketserver
 import threading
 import time
@@ -16,6 +17,17 @@ def find_project_root() -> Path:
 ROOT = find_project_root()
 
 
+def read_password():
+    value = os.environ.get('VISAGIO_DATA_PASSWORD')
+    env_path = ROOT / '.env.local'
+    if not value and env_path.exists():
+        for line in env_path.read_text(encoding='utf-8').splitlines():
+            if line.startswith('VISAGIO_DATA_PASSWORD='):
+                value = line.split('=', 1)[1].strip().strip('"').strip("'")
+                break
+    return value
+
+
 def run_server(port: int):
     handler = http.server.SimpleHTTPRequestHandler
     socketserver.TCPServer.allow_reuse_address = True
@@ -25,6 +37,7 @@ def run_server(port: int):
 
 def main():
     try:
+        from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
         from playwright.sync_api import expect, sync_playwright
     except Exception as exc:
         print(f'PHASE1_PLAYWRIGHT_SKIPPED: playwright not available: {exc}')
@@ -75,7 +88,16 @@ def main():
             expect(page.locator('#companyTitle')).to_contain_text('Empresa 1')
             expect(page.locator('body')).to_contain_text('demand_records')
             expect(page.locator('body')).to_contain_text('distance_matrix')
-            page.locator('[data-company="empresa2"]').click()
+            page.locator('#selectEmpresa2').click()
+            password = read_password()
+            if password:
+                prompt = page.locator('#cryptoPasswordInput')
+                try:
+                    prompt.wait_for(state='visible', timeout=6000)
+                    prompt.fill(password)
+                    prompt.press('Enter')
+                except PlaywrightTimeoutError:
+                    pass
             expect(page.locator('#companyTitle')).to_contain_text('Empresa 2')
             expect(page.locator('body')).to_contain_text('dados_tributario')
             expect(page.locator('body')).to_contain_text('scenario_blocks')

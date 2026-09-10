@@ -1,6 +1,16 @@
-import { flowMeasure } from '../../phase3/scenario-flow-rebuilder.js';
 import { getFiscalCategoryRule, normalizeFiscalCategory } from './fiscal-category-rules.js';
 import { safeNumber } from '../common.js';
+
+function flowMeasure(flow) {
+  return safeNumber(
+    flow?.annual_revenue ??
+      flow?.revenue ??
+      flow?.annual_weight_kg ??
+      flow?.volume ??
+      flow?.batch ??
+      0
+  );
+}
 
 function getFlowRevenue(flow) {
   return safeNumber(
@@ -31,12 +41,16 @@ export function buildFiscalFlows({
   const fiscalFlows = [];
   const warnings = [];
   const errors = [];
+  let excludedMissingDestination = 0;
+  let excludedMissingRevenue = 0;
+  let missingOrigin = 0;
 
   for (const [index, flow] of flows.entries()) {
     const destinationUf = String(flow?.destination_uf || '')
       .trim()
       .toUpperCase();
     if (!destinationUf) {
+      excludedMissingDestination += 1;
       errors.push({
         code: 'MISSING_DESTINATION_UF',
         severity: 'error',
@@ -46,12 +60,25 @@ export function buildFiscalFlows({
     }
     const grossRevenue = getFlowRevenue(flow);
     if (!(grossRevenue > 0)) {
+      excludedMissingRevenue += 1;
       warnings.push({
         code: 'MISSING_REVENUE',
         severity: 'warning',
         message: `Fluxo ${flow?.flow_id || index + 1} sem receita válida; cálculo ignorado.`,
       });
       continue;
+    }
+
+    const originUf = String(flow?.origin_uf || '')
+      .trim()
+      .toUpperCase();
+    if (!originUf) {
+      missingOrigin += 1;
+      warnings.push({
+        code: 'MISSING_ORIGIN_UF',
+        severity: 'warning',
+        message: `Fluxo ${flow?.flow_id || index + 1} sem UF origem; associação fiscal fica bloqueada ou proxy.`,
+      });
     }
 
     const rawCategory =
@@ -113,8 +140,15 @@ export function buildFiscalFlows({
     warnings,
     errors,
     quality_report: {
+      input_flow_count: flows.length,
       flow_count: fiscalFlows.length,
+      eligible_flow_count: fiscalFlows.length,
+      missing_origin_uf_count: missingOrigin,
+      excluded_missing_destination_count: excludedMissingDestination,
+      excluded_missing_revenue_count: excludedMissingRevenue,
+      uncovered_flow_count: Math.max(0, flows.length - fiscalFlows.length),
       coverage_destination_uf: flows.length ? fiscalFlows.length / flows.length : 0,
+      input_coverage_ratio: flows.length ? fiscalFlows.length / flows.length : 0,
       precision_mode,
       calculation_mode,
       warnings,

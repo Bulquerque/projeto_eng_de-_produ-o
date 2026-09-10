@@ -22,6 +22,10 @@ for (const companyId of ['empresa1','empresa2']) {
  const objective=buildObjective({companyId,objectiveName:'Teste',weights:{total_cost:30,service_quality:25,operational_risk:20,tax_impact:15,inventory_efficiency:10}});
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:11}});
  const sel=selectFinalScenario({companyId,optimizerResult:opt,selectionMode:'best_by_score'});
+ if(companyId==='empresa2') {
+   if(sel.selected_scenario) throw new Error('empresa2 should not be recommended with blocked fiscal coverage');
+   continue;
+ }
  const selected=sel.selected_scenario;
  if(Number(selected.scenario?.changes?.freight_multiplier ?? 1)!==1) throw new Error('selected scenario changed freight');
  if(Number(selected.scenario?.changes?.demand_multiplier ?? 1)!==1) throw new Error('selected scenario changed demand');

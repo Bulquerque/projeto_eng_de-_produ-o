@@ -25,9 +25,19 @@ for (const companyId of ['empresa1','empresa2']) {
  if(gen.candidate_scenarios.some(s=>(s.changes.active_cds||[]).length===0)) throw new Error('candidate without CD');
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}});
  const opt2=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}});
- if(opt.optimizer_status!=='success') throw new Error('optimizer failed');
+ if(companyId==='empresa2') {
+   if(opt.optimizer_status!=='error') throw new Error('empresa2 optimizer should block incomplete fiscal coverage');
+   if(!opt.errors.some((message)=>String(message).includes('Nenhum cenário viável'))) throw new Error('empresa2 fiscal block reason missing');
+   continue;
+ }
+ if(!String(opt.optimizer_status || '').startsWith('success')) throw new Error('optimizer failed');
+ if(companyId==='empresa1' && opt.optimizer_status!=='success_with_limited_space') throw new Error('empresa1 limited search scope was not surfaced');
+ if(companyId==='empresa1' && opt.result_scope!=='conditional_declared_catalog') throw new Error('empresa1 result scope is not conditional');
  if(opt.search_log.valid_candidates+opt.search_log.invalid_candidates!==opt.search_log.simulated_candidates) throw new Error('search log inconsistent');
- if(opt.search_log.method_applied!=='exact_discrete' || opt.search_log.space_limited) throw new Error('optimizer not exact');
+ if(opt.search_log.method_applied!=='exact_discrete') throw new Error('optimizer method mismatch');
+ if(opt.search_log.exact_search_space && opt.search_log.space_limited) throw new Error('exact search marked limited');
+ if(opt.search_log.coverage_ratio > 1) throw new Error('optimizer coverage exceeded 100%');
+ if(opt.search_log.seed !== 77) throw new Error('optimizer seed not persisted');
  if(opt.scored_scenarios.some(s=>Number(s.scenario?.changes?.freight_multiplier ?? 1)!==1)) throw new Error('optimizer changed freight');
  if(opt.scored_scenarios.some(s=>Number(s.scenario?.changes?.demand_multiplier ?? 1)!==1)) throw new Error('optimizer changed demand');
  if(opt.scored_scenarios.some(s=>Number(s.scenario?.changes?.inventory_days ?? 45)!==45)) throw new Error('optimizer changed inventory');

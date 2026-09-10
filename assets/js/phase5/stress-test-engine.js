@@ -52,6 +52,31 @@ export function runStressTests({
   for (const stressCase of cases) {
     const stressedScenario = applyStressCaseToScenario({ scenario: selectedScenario, stressCase });
     const result = runScenario({ companyId, scenario: stressedScenario, baselineBundle });
+    const validResult =
+      result.simulation_status === 'success' && Number.isFinite(Number(result.total_with_tax));
+    if (!validResult) {
+      const caseWarnings = [
+        ...(result.warnings || []),
+        'Caso de stress bloqueado: o cenário não produziu um resultado determinístico válido.',
+      ];
+      warnings.push(`${stressCase.case_id}: resultado inválido ou bloqueado.`);
+      stress_results.push({
+        case_id: stressCase.case_id,
+        case_name: stressCase.name,
+        scenario_id: selectedScenario?.scenario_id,
+        stressed_scenario_id: stressedScenario.scenario_id,
+        status: 'blocked',
+        total_with_tax: null,
+        total_logistics_cost: null,
+        tax_impact: null,
+        saving_vs_baseline: null,
+        saving_pct: null,
+        scenario_still_better_than_baseline: null,
+        warnings: caseWarnings,
+        errors: result.errors || ['resultado de stress inválido'],
+      });
+      continue;
+    }
     const stillBetter = safeNumber(result.total_with_tax) <= baseTotal;
     const saving = calculateSaving({
       baselineTotal: baseTotal,
@@ -64,6 +89,7 @@ export function runStressTests({
       case_name: stressCase.name,
       scenario_id: selectedScenario?.scenario_id,
       stressed_scenario_id: stressedScenario.scenario_id,
+      status: 'success',
       total_with_tax: safeNumber(result.total_with_tax),
       total_logistics_cost: safeNumber(result.costs?.total_logistics_cost),
       tax_impact: safeNumber(result.tax_results?.total_tax_impact),
@@ -74,13 +100,22 @@ export function runStressTests({
       errors: result.errors || [],
     });
   }
-  const cases_positive = stress_results.filter((r) => r.scenario_still_better_than_baseline).length;
-  const cases_negative = stress_results.length - cases_positive;
+  const validResults = stress_results.filter((r) => r.status === 'success');
+  const cases_positive = validResults.filter((r) => r.scenario_still_better_than_baseline).length;
+  const cases_negative = validResults.length - cases_positive;
+  const cases_blocked = stress_results.length - validResults.length;
   return {
     company_id: companyId,
     scenario_id: selectedScenario?.scenario_id,
     stress_results,
-    summary: { cases_run: stress_results.length, cases_positive, cases_negative },
+    summary: {
+      cases_run: stress_results.length,
+      cases_evaluated: validResults.length,
+      cases_positive,
+      cases_negative,
+      cases_blocked,
+      status: cases_blocked ? 'inconclusive' : 'complete',
+    },
     warnings,
     errors: [],
   };

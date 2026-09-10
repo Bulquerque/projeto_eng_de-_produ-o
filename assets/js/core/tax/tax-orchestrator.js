@@ -10,6 +10,8 @@ import { calculateCurrentTax } from './current-tax-engine.js';
 import { calculateReformTax } from './reform-tax-engine.js';
 import { combineTaxResults } from './transition-tax-engine.js';
 import { safeNumber } from '../common.js';
+import { isCanonicalBaselineScenario } from '../baseline-contract.js';
+import { buildTaxPeriodMetadata } from './tax-period-contract.js';
 
 function normalizeInput(arg1, arg2, arg3) {
   if (
@@ -51,6 +53,7 @@ function buildAuditTrace({
   qualityReport,
   regimeId,
   sourceVersion = 'official_reform_sources',
+  periodMetadata = null,
 }) {
   return {
     parameter_version: parameterVersion,
@@ -60,11 +63,12 @@ function buildAuditTrace({
     precision_mode: qualityReport?.precision_mode || 'top_down_fallback',
     validation_scope: 'parametric_model_reconciliation',
     official_fiscal_validation: false,
+    tax_period_contract: periodMetadata,
     limitation: 'Resultado parametrizado e reconciliado; não constitui validação fiscal oficial.',
   };
 }
 
-function buildTaxScopeMetadata({ calculationMode, precisionMode, sourceContext }) {
+function buildTaxScopeMetadata({ calculationMode, precisionMode, sourceContext, periodMetadata }) {
   return {
     calculation_mode: calculationMode,
     precision_mode: precisionMode,
@@ -73,9 +77,18 @@ function buildTaxScopeMetadata({ calculationMode, precisionMode, sourceContext }
     source_classification: sourceContext?.package_name
       ? 'official_reference_parameters'
       : 'internal_reference_or_fallback',
+    tax_period_contract: periodMetadata,
     scope_note:
       'Aplica parâmetros disponíveis e reconcilia o resultado; não substitui validação fiscal oficial.',
   };
+}
+
+function isCanonicalBaselineInput(input) {
+  return isCanonicalBaselineScenario({
+    companyId: input.scenario?.company_id || input.baselineBundle?.model?.company_id,
+    scenario: input.scenario,
+    baselineBundle: input.baselineBundle,
+  });
 }
 
 export function runTaxCalculation(arg1, arg2, arg3) {
@@ -94,12 +107,34 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     scenario: input.scenario,
     rebuiltFlows: input.rebuiltFlows,
   });
-  const quality = auditTaxFlowCoverage(fiscal.fiscal_flows);
+  const quality = auditTaxFlowCoverage(fiscal.fiscal_flows, fiscal.quality_report);
   const precisionMode = quality.precision_mode;
-  const calculationMode = quality.blocked ? 'top_down_fallback' : precisionMode;
+  const calculationMode = quality.blocked
+    ? precisionMode === 'top_down_fallback'
+      ? 'top_down_fallback_blocked'
+      : 'realistic_proxy_blocked'
+    : precisionMode;
   const baseTax = input.baseTaxBlock || {};
   const disabled = regimeId === 'disabled' || input.taxMode === 'disabled';
   const sourceContext = input.baselineBundle?.complements || null;
+  const periodMetadata = buildTaxPeriodMetadata({
+    regimeId,
+    regime: config.regimes?.[regimeId] || {},
+    scenario: input.scenario,
+    sourceContext,
+  });
+  const periodWarnings = [
+    periodMetadata.selected_period?.source_status === 'timeline_row_unavailable'
+      ? 'Período tributário selecionado não foi localizado no cronograma oficial carregado.'
+      : null,
+    periodMetadata.model_weights?.status === 'model_parameter_differs_from_timeline'
+      ? 'Os pesos do cálculo diferem dos pesos do cronograma oficial porque representam mistura de resultados do modelo, não a participação legal ICMS/ISS versus IBS.'
+      : null,
+    regimeId !== 'current' &&
+    periodMetadata.reform_rate_provenance?.status === 'source_rate_not_defined_model_parameter'
+      ? 'As taxas numéricas da reforma são parâmetros do modelo; o pacote oficial carregado fornece cronograma, não uma tabela completa de alíquotas efetivas por operação.'
+      : null,
+  ].filter(Boolean);
 
   if (disabled) {
     return {
@@ -116,6 +151,15 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       ibs_total: 0,
       selective_tax_total: 0,
       credits_total: 0,
+      tax_coverage: {
+        ...quality,
+        coverage_pct: quality.coverage_pct ?? quality.coverage_destination_uf * 100,
+      },
+      tax_reconciliation: isCanonicalBaselineInput(input)
+        ? baseTax.tax_reconciliation ||
+          input.baselineBundle?.tax_results?.tax_reconciliation ||
+          null
+        : null,
       tax_delta_vs_baseline: -safeNumber(baseTax.total_tax_impact, 0),
       tax_breakdown_by_component: {
         current_tax: 0,
@@ -127,13 +171,14 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       tax_breakdown_by_destination_uf: {},
       tax_breakdown_by_fiscal_category: {},
       flow_breakdown: [],
-      warnings: [...quality.warnings, ...(fiscal.warnings || [])],
+      warnings: [...quality.warnings, ...(fiscal.warnings || []), ...periodWarnings],
       explanation: { summary: 'Camada tributária desligada.' },
       audit_trace: buildAuditTrace({
         parameterVersion: '2026-05',
         qualityReport: quality,
         regimeId,
         sourceVersion: sourceContext?.package_name || 'official_reform_sources',
+        periodMetadata,
       }),
       metadata: {
         regime_id: regimeId,
@@ -142,10 +187,12 @@ export function runTaxCalculation(arg1, arg2, arg3) {
         calculation_mode: 'top_down_fallback',
         precision_mode: precisionMode,
         source_context: sourceContext,
+        tax_period_contract: periodMetadata,
         ...buildTaxScopeMetadata({
           calculationMode: 'top_down_fallback',
           precisionMode,
           sourceContext,
+          periodMetadata,
         }),
       },
       source_context: sourceContext,
@@ -163,6 +210,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     taxRegime: regimeId,
     demandMultiplier: input.demandMultiplier,
     parameters: input.parameters,
+    regimeDefinition: config.regimes?.[regimeId] || null,
   });
   const combined =
     regimeId === 'current'
@@ -188,6 +236,15 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     ibs_total: safeNumber(combined.ibs_total, reformResult.ibs_total),
     selective_tax_total: safeNumber(combined.selective_tax_total, reformResult.selective_tax_total),
     credits_total: safeNumber(combined.credits_total, reformResult.credits_total),
+    tax_coverage: {
+      ...quality,
+      coverage_pct: quality.coverage_pct ?? quality.coverage_destination_uf * 100,
+    },
+    tax_reconciliation: isCanonicalBaselineInput(input)
+      ? baseTax.tax_reconciliation || input.baselineBundle?.tax_results?.tax_reconciliation || null
+      : null,
+    tax_input_match_summary:
+      combined.tax_input_match_summary || currentResult.tax_input_match_summary,
     tax_delta_vs_baseline: totalTax - safeNumber(baseTax.total_tax_impact, 0),
     tax_breakdown_by_component: combined.tax_breakdown_by_component || {
       current_tax: currentResult.total_current_tax,
@@ -199,7 +256,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     tax_breakdown_by_destination_uf: combined.tax_breakdown_by_destination_uf || {},
     tax_breakdown_by_fiscal_category: combined.tax_breakdown_by_fiscal_category || {},
     flow_breakdown: combined.flow_breakdown || [],
-    warnings: [...(fiscal.warnings || []), ...(quality.warnings || [])],
+    warnings: [...(fiscal.warnings || []), ...(quality.warnings || []), ...periodWarnings],
     explanation: {
       summary: `Regime ${regimeLabel} calculado em modo ${calculationMode}.`,
       calculation_mode: calculationMode,
@@ -210,6 +267,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       qualityReport: quality,
       regimeId,
       sourceVersion: sourceContext?.package_name || 'official_reform_sources',
+      periodMetadata,
     }),
     metadata: {
       regime_id: regimeId,
@@ -219,10 +277,12 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       precision_mode: precisionMode,
       source: 'tax-orchestrator',
       source_context: sourceContext,
+      tax_period_contract: periodMetadata,
       ...buildTaxScopeMetadata({
         calculationMode,
         precisionMode,
         sourceContext,
+        periodMetadata,
       }),
     },
     mode: taxMode,

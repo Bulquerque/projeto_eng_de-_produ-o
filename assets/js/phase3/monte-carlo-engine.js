@@ -151,6 +151,107 @@ function normalizeDriver(driver) {
   return allowed.has(driver) ? driver : 'freight_multiplier';
 }
 
+const HISTORICAL_DOMAINS = Object.freeze({
+  freight_multiplier: { min: Number.EPSILON, max: 3 },
+  demand_multiplier: { min: Number.EPSILON, max: 3 },
+  inventory_days: { min: 0, max: 365 },
+  wacc: { min: 0, max: 1 },
+  tax_multiplier: { min: Number.EPSILON, max: 3 },
+});
+
+function isValidHistoricalValue(driver, value) {
+  const numeric = Number(value);
+  const domain = HISTORICAL_DOMAINS[driver];
+  return Boolean(
+    domain &&
+    Number.isFinite(numeric) &&
+    numeric >= domain.min &&
+    (domain.max == null || numeric <= domain.max)
+  );
+}
+
+function normalizeHistoricalData(history = {}) {
+  const allowed = [
+    'freight_multiplier',
+    'demand_multiplier',
+    'inventory_days',
+    'wacc',
+    'tax_multiplier',
+  ];
+  const rejected = {};
+  const normalized = Object.fromEntries(
+    allowed
+      .map((driver) => {
+        const rawValues = Array.isArray(history?.[driver]) ? history[driver].map(Number) : [];
+        const values = rawValues.filter((value) => isValidHistoricalValue(driver, value));
+        rejected[driver] = rawValues.length - values.length;
+        return [driver, values.length >= 2 ? values : []];
+      })
+      .filter(([, values]) => values.length)
+  );
+  const provenance = history?.provenance || history?.metadata || null;
+  const provenanceValid = Boolean(
+    provenance &&
+    provenance.source &&
+    provenance.period_start &&
+    provenance.period_end &&
+    provenance.company_id &&
+    provenance.unit
+  );
+  const observations = Array.isArray(history?.observations)
+    ? history.observations
+        .filter((observation) => observation && typeof observation === 'object')
+        .map((observation) =>
+          Object.fromEntries(
+            allowed
+              .filter((driver) => isValidHistoricalValue(driver, observation[driver]))
+              .map((driver) => [driver, Number(observation[driver])])
+          )
+        )
+        .filter((observation) => Object.keys(observation).length > 0)
+    : [];
+  if (observations.length >= 2) {
+    normalized.observations = observations;
+    for (const driver of allowed) {
+      if (normalized[driver]) continue;
+      const values = observations
+        .map((observation) => observation[driver])
+        .filter((value) => isValidHistoricalValue(driver, value));
+      if (values.length >= 2) normalized[driver] = values;
+    }
+  }
+  normalized.validation = {
+    rejected_values_by_driver: rejected,
+    rejected_value_count: Object.values(rejected).reduce((sum, value) => sum + value, 0),
+    complete_joint_observations: observations.filter((observation) =>
+      allowed.every((driver) => Number.isFinite(Number(observation[driver])))
+    ).length,
+    provenance_status: provenanceValid ? 'declared' : 'missing_or_incomplete',
+    provenance: provenance || null,
+  };
+  normalized.provenance = provenance || null;
+  return normalized;
+}
+
+function hasHistoricalContent(history) {
+  return Boolean(
+    history &&
+    typeof history === 'object' &&
+    (Object.values(history).some((value) => Array.isArray(value) && value.length > 0) ||
+      (Array.isArray(history.observations) && history.observations.length > 0))
+  );
+}
+
+function sampleHistorical(values, rng) {
+  if (!Array.isArray(values) || values.length < 2) return null;
+  return values[Math.floor(rng() * values.length)];
+}
+
+function sampleHistoricalObservation(observations, rng) {
+  if (!Array.isArray(observations) || observations.length < 2) return null;
+  return observations[Math.floor(rng() * observations.length)];
+}
+
 const PROFILE_PRESETS = {
   conservative: {
     spread: {
@@ -193,11 +294,23 @@ function buildMonteCarloConfig({
   profile = 'balanced',
   scatterDriver = 'freight_multiplier',
   histogramBins = 12,
+  historicalData = null,
+  historical_data = null,
 } = {}) {
   const normalizedIterations = clamp(Math.round(safeNumber(iterations, 300)), 50, 5000);
   const normalizedProfile = normalizeProfile(profile);
   const normalizedDriver = normalizeDriver(scatterDriver);
   const preset = PROFILE_PRESETS[normalizedProfile];
+  const historical = normalizeHistoricalData(historicalData || historical_data);
+  const historicalProvenanceValid = historical.validation?.provenance_status === 'declared';
+  const historicalDrivers = Object.keys(historical)
+    .filter((key) => key !== 'observations' && key !== 'validation' && key !== 'provenance')
+    .filter(() => historicalProvenanceValid);
+  const uncertaintySource = historicalDrivers.length
+    ? historicalDrivers.length === 5
+      ? 'empirical_historical'
+      : 'hybrid_empirical_parametric'
+    : 'parametric_assumptions';
 
   return {
     iterations: normalizedIterations,
@@ -205,9 +318,45 @@ function buildMonteCarloConfig({
     seed_effective: hashSeed(seed),
     rng_algorithm: 'mulberry32-v1',
     model: 'monte_carlo_complementary_v2',
-    analysis_type: 'exploratory_uncertainty_analysis',
+    analysis_type:
+      uncertaintySource === 'empirical_historical'
+        ? 'empirical_uncertainty_analysis'
+        : 'exploratory_uncertainty_analysis',
     forecast: false,
-    historical_distribution: false,
+    historical_distribution: historicalDrivers.length > 0,
+    uncertainty_source: uncertaintySource,
+    historical_drivers: historicalDrivers,
+    historical_observation_counts: Object.fromEntries(
+      historicalDrivers.map((driver) => [driver, historical[driver].length])
+    ),
+    historical_min_observations: historicalDrivers.length
+      ? Math.min(...historicalDrivers.map((driver) => historical[driver].length))
+      : 0,
+    historical_sample_warning:
+      historicalDrivers.length &&
+      Math.min(...historicalDrivers.map((driver) => historical[driver].length)) < 5
+        ? 'Série histórica curta: os percentis representam as premissas observadas disponíveis, não uma estimativa estatística estável.'
+        : null,
+    historical_joint_observations: historical.observations?.length || 0,
+    historical_complete_joint_observations: historical.validation?.complete_joint_observations || 0,
+    historical_unique_joint_support: historical.observations
+      ? new Set(historical.observations.map((observation) => JSON.stringify(observation))).size
+      : 0,
+    historical_rejected_value_count: historical.validation?.rejected_value_count || 0,
+    historical_validation: historical.validation || null,
+    historical_provenance: historical.provenance || null,
+    historical_provenance_status: historicalProvenanceValid ? 'declared' : 'missing_or_incomplete',
+    historical_provenance_warning:
+      historicalDrivers.length || !hasHistoricalContent(historicalData)
+        ? null
+        : 'Histórico fornecido sem fonte, período, empresa e unidade completos; tratado como premissa paramétrica, não como histórico validado.',
+    historical_sampling: historical.observations?.length
+      ? historical.validation?.complete_joint_observations === historical.observations.length
+        ? 'joint_empirical_bootstrap'
+        : 'partial_joint_hybrid'
+      : historicalDrivers.length
+        ? 'marginal_empirical_bootstrap'
+        : 'parametric_draws',
     deterministic_method: 'scenario_simulation',
     profile: normalizedProfile,
     scatter_driver: normalizedDriver,
@@ -215,6 +364,7 @@ function buildMonteCarloConfig({
     spread: clone(preset.spread),
     shared_shock: preset.shared_shock,
     idiosyncratic_shock: preset.idiosyncratic_shock,
+    historical_data: historical,
   };
 }
 
@@ -303,6 +453,21 @@ function summarizeSamples({
     ? savingValues.filter((value) => value >= 5).length / savingValues.length
     : 0;
   const deterministicPercentile = percentileRank(sortedSaving, deterministicSavingPct);
+  const monteCarloPrecision = (() => {
+    const n = savingValues.length;
+    if (!n) return { standard_error: null, lower_95: null, upper_95: null };
+    const z = 1.96;
+    const denominator = 1 + (z * z) / n;
+    const center = (probabilityPositive + (z * z) / (2 * n)) / denominator;
+    const radius =
+      (z / denominator) *
+      Math.sqrt((probabilityPositive * (1 - probabilityPositive)) / n + (z * z) / (4 * n * n));
+    return {
+      standard_error: Math.sqrt((probabilityPositive * (1 - probabilityPositive)) / n),
+      lower_95: Math.max(0, center - radius),
+      upper_95: Math.min(1, center + radius),
+    };
+  })();
   const correlationMap = {};
 
   const driverKeys = [
@@ -357,6 +522,28 @@ function summarizeSamples({
     seed_effective: config.seed_effective,
     rng_algorithm: config.rng_algorithm,
     profile: config.profile,
+    analysis_type: config.analysis_type,
+    uncertainty_source: config.uncertainty_source,
+    historical_distribution: config.historical_distribution,
+    historical_drivers: config.historical_drivers,
+    historical_observation_counts: config.historical_observation_counts,
+    historical_min_observations: config.historical_min_observations,
+    historical_sample_warning: config.historical_sample_warning,
+    historical_sampling: config.historical_sampling,
+    historical_joint_observations: config.historical_joint_observations,
+    historical_complete_joint_observations: config.historical_complete_joint_observations,
+    historical_unique_joint_support: config.historical_unique_joint_support,
+    historical_rejected_value_count: config.historical_rejected_value_count,
+    effective_historical_sample_size:
+      config.historical_joint_observations || config.historical_min_observations || 0,
+    monte_carlo_probability_positive_standard_error: monteCarloPrecision.standard_error,
+    monte_carlo_probability_positive_lower_95: monteCarloPrecision.lower_95,
+    monte_carlo_probability_positive_upper_95: monteCarloPrecision.upper_95,
+    simulation_precision_note:
+      'A margem acima mede apenas erro de simulação condicional às premissas; não mede representatividade do histórico nem incerteza estrutural do modelo.',
+    probability_interpretation: config.historical_distribution
+      ? 'condicional_ao_historico_disponivel_e_ao_modelo'
+      : 'condicional_as_premissas_parametricas',
     scatter_driver: config.scatter_driver,
     baseline_total_with_tax: baselineTotal,
     deterministic_total_with_tax: deterministicTotal,
@@ -406,14 +593,16 @@ export function runMonteCarloSimulation({
   if (!selectedScenario) errors.push('cenário selecionado ausente.');
   if (!baselineBundle) errors.push('baseline_bundle ausente.');
   if (errors.length) {
+    const invalidConfig = buildMonteCarloConfig({ iterations, seed, ...config });
     return {
       company_id: companyId,
       scenario_id: selectedScenario?.scenario_id || null,
       monte_carlo_status: 'error',
-      analysis_type: 'exploratory_uncertainty_analysis',
+      analysis_type: invalidConfig.analysis_type,
       forecast: false,
-      historical_distribution: false,
-      config: buildMonteCarloConfig({ iterations, seed, ...config }),
+      historical_distribution: invalidConfig.historical_distribution,
+      uncertainty_source: invalidConfig.uncertainty_source,
+      config: invalidConfig,
       samples: [],
       summary: null,
       warnings,
@@ -421,14 +610,23 @@ export function runMonteCarloSimulation({
     };
   }
 
+  const suppliedHistoricalData = [
+    config.history,
+    config.historical_data,
+    baselineBundle?.core_data?.historical_series,
+    baselineBundle?.core_data?.time_series,
+  ].find(hasHistoricalContent);
   const normalizedConfig = buildMonteCarloConfig({
     iterations,
     seed,
     profile: config.profile || config.uncertainty_profile || 'balanced',
     scatterDriver: config.scatter_driver || config.scatterDriver || 'freight_multiplier',
     histogramBins: config.histogram_bins || 12,
+    historicalData: suppliedHistoricalData || null,
   });
   const preset = PROFILE_PRESETS[normalizedConfig.profile];
+  const historicalData = normalizedConfig.historical_data || {};
+  const historicalDrivers = new Set(normalizedConfig.historical_drivers || []);
   const rng = createRng(normalizedConfig.seed_effective);
   const baseScenario = clone(selectedScenario);
   delete baseScenario.monte_carlo;
@@ -451,9 +649,10 @@ export function runMonteCarloSimulation({
       company_id: companyId,
       scenario_id: selectedScenario?.scenario_id || null,
       monte_carlo_status: 'blocked',
-      analysis_type: 'exploratory_uncertainty_analysis',
+      analysis_type: normalizedConfig.analysis_type,
       forecast: false,
-      historical_distribution: false,
+      historical_distribution: normalizedConfig.historical_distribution,
+      uncertainty_source: normalizedConfig.uncertainty_source,
       config: normalizedConfig,
       samples: [],
       summary: null,
@@ -462,63 +661,104 @@ export function runMonteCarloSimulation({
     };
   }
 
+  const taxQualityBlocked =
+    deterministic?.tax_results?.tax_mode !== 'disabled' &&
+    selectedScenario?.changes?.tax_mode !== 'disabled' &&
+    (deterministic?.calculation_status === 'success_with_tax_limits' ||
+      deterministic?.tax_results?.tax_coverage?.blocked === true);
+  if (taxQualityBlocked) {
+    const warning =
+      'Monte Carlo bloqueado: a tributação do cenário determinístico não tem cobertura suficiente para sustentar uma distribuição de custo total.';
+    return {
+      company_id: companyId,
+      scenario_id: selectedScenario?.scenario_id || null,
+      monte_carlo_status: 'blocked_by_data_quality',
+      analysis_type: normalizedConfig.analysis_type,
+      forecast: false,
+      historical_distribution: normalizedConfig.historical_distribution,
+      uncertainty_source: normalizedConfig.uncertainty_source,
+      config: normalizedConfig,
+      samples: [],
+      summary: null,
+      warnings: [...(deterministic.warnings || []), warning],
+      errors: [warning],
+    };
+  }
+
   const samples = [];
   for (let index = 0; index < normalizedConfig.iterations; index += 1) {
     const sharedShock = gaussian(rng);
+    const historicalObservation = sampleHistoricalObservation(historicalData.observations, rng);
+    const historicalValue = (driver) => {
+      const value = historicalObservation?.[driver];
+      return Number.isFinite(Number(value))
+        ? Number(value)
+        : sampleHistorical(historicalData[driver], rng);
+    };
 
     const sampled = {
-      freight_multiplier: sampleMultiplicative(
-        baseFreight,
-        preset.spread.freight_multiplier,
-        rng,
-        sharedShock,
-        1,
-        preset.idiosyncratic_shock,
-        0.6,
-        1.8
-      ),
-      demand_multiplier: sampleMultiplicative(
-        baseDemand,
-        preset.spread.demand_multiplier,
-        rng,
-        sharedShock,
-        0.9,
-        preset.idiosyncratic_shock,
-        0.6,
-        1.6
-      ),
-      inventory_days: Math.round(
-        sampleAdditive(
-          baseInventory,
-          preset.spread.inventory_days,
-          rng,
-          sharedShock,
-          1,
-          preset.idiosyncratic_shock,
-          0,
-          120
-        )
-      ),
-      wacc: sampleAdditive(
-        baseWacc,
-        preset.spread.wacc,
-        rng,
-        sharedShock,
-        0.7,
-        preset.idiosyncratic_shock,
-        0,
-        0.5
-      ),
-      tax_multiplier: sampleMultiplicative(
-        1,
-        preset.spread.tax_multiplier,
-        rng,
-        sharedShock,
-        0.5,
-        preset.idiosyncratic_shock,
-        0.7,
-        1.35
-      ),
+      freight_multiplier: historicalDrivers.has('freight_multiplier')
+        ? historicalValue('freight_multiplier')
+        : sampleMultiplicative(
+            baseFreight,
+            preset.spread.freight_multiplier,
+            rng,
+            sharedShock,
+            1,
+            preset.idiosyncratic_shock,
+            0.6,
+            1.8
+          ),
+      demand_multiplier: historicalDrivers.has('demand_multiplier')
+        ? historicalValue('demand_multiplier')
+        : sampleMultiplicative(
+            baseDemand,
+            preset.spread.demand_multiplier,
+            rng,
+            sharedShock,
+            0.9,
+            preset.idiosyncratic_shock,
+            0.6,
+            1.6
+          ),
+      inventory_days: historicalDrivers.has('inventory_days')
+        ? Math.max(0, Math.round(historicalValue('inventory_days')))
+        : Math.round(
+            sampleAdditive(
+              baseInventory,
+              preset.spread.inventory_days,
+              rng,
+              sharedShock,
+              1,
+              preset.idiosyncratic_shock,
+              0,
+              120
+            )
+          ),
+      wacc: historicalDrivers.has('wacc')
+        ? Math.max(0, historicalValue('wacc'))
+        : sampleAdditive(
+            baseWacc,
+            preset.spread.wacc,
+            rng,
+            sharedShock,
+            0.7,
+            preset.idiosyncratic_shock,
+            0,
+            0.5
+          ),
+      tax_multiplier: historicalDrivers.has('tax_multiplier')
+        ? Math.max(0, historicalValue('tax_multiplier'))
+        : sampleMultiplicative(
+            1,
+            preset.spread.tax_multiplier,
+            rng,
+            sharedShock,
+            0.5,
+            preset.idiosyncratic_shock,
+            0.7,
+            1.35
+          ),
       common_shock: sharedShock,
     };
 
@@ -564,9 +804,10 @@ export function runMonteCarloSimulation({
       company_id: companyId,
       scenario_id: selectedScenario?.scenario_id || null,
       monte_carlo_status: 'error',
-      analysis_type: 'exploratory_uncertainty_analysis',
+      analysis_type: normalizedConfig.analysis_type,
       forecast: false,
-      historical_distribution: false,
+      historical_distribution: normalizedConfig.historical_distribution,
+      uncertainty_source: normalizedConfig.uncertainty_source,
       config: normalizedConfig,
       samples: [],
       summary: null,
@@ -593,9 +834,11 @@ export function runMonteCarloSimulation({
     baseline_scenario_id: baselineScenarioId,
     deterministic_scenario_id: deterministic?.scenario_id || selectedScenario?.scenario_id || null,
     monte_carlo_status: 'success',
-    analysis_type: 'exploratory_uncertainty_analysis',
+    analysis_type: normalizedConfig.analysis_type,
     forecast: false,
-    historical_distribution: false,
+    historical_distribution: normalizedConfig.historical_distribution,
+    uncertainty_source: normalizedConfig.uncertainty_source,
+    historical_drivers: normalizedConfig.historical_drivers,
     deterministic_reference: {
       scenario_id: deterministic?.scenario_id || selectedScenario?.scenario_id || null,
       total_with_tax: safeNumber(deterministic?.total_with_tax),

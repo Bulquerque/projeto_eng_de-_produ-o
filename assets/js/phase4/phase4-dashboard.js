@@ -11,6 +11,7 @@ import {
   buildBaselineCardsHtml,
   buildOptimizerInputTableHtml,
   buildRankingTableHtml,
+  buildBlockedRankingTableHtml,
   renderSearchLog,
   buildTradeoffTableHtml,
 } from './phase4-dashboard-templates.js';
@@ -131,10 +132,10 @@ function renderOptimizer() {
   }
   renderOptimizerInputTable();
   const opt = state.optimizer;
-  if (opt.optimizer_status !== 'success') {
+  if (!String(opt.optimizer_status || '').startsWith('success')) {
     $('searchLogPanel').innerHTML =
-      `<div class="alert-box error"><strong>Busca não concluída</strong><p>${escapeHtml((opt.errors || []).join('; ') || 'Falha na busca discreta.')}</p></div>${renderSearchLog(opt.search_log)}`;
-    $('rankingPanel').innerHTML = '<div class="empty-state">Sem ranking disponível.</div>';
+      `<div class="alert-box warn"><strong>Busca bloqueada por qualidade de dados</strong><p>${escapeHtml((opt.errors || []).join('; ') || 'Falha na busca discreta.')}</p></div>${renderSearchLog(opt.search_log)}`;
+    $('rankingPanel').innerHTML = buildBlockedRankingTableHtml(opt.errors || []);
     $('rankingExplanation').innerHTML = '<div class="empty-state">Sem explicação disponível.</div>';
     $('tradeoffPanel').innerHTML = '<div class="empty-state">Sem fronteira disponível.</div>';
     renderRankingChart([]);
@@ -210,7 +211,7 @@ function runOpt() {
         optimizerConfig: optimizerConfig(),
       });
       renderOptimizer();
-      if (state.optimizer.optimizer_status !== 'success') {
+      if (!String(state.optimizer.optimizer_status || '').startsWith('success')) {
         log('Otimizador bloqueado', state.optimizer.errors || []);
         alert((state.optimizer.errors || ['Falha na otimização']).join('; '));
         return;

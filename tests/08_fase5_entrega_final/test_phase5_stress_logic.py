@@ -22,6 +22,11 @@ for (const companyId of ['empresa1','empresa2']) {
  const objective=buildObjective({companyId,objectiveName:'Teste',weights:{total_cost:30,service_quality:25,operational_risk:20,tax_impact:15,inventory_efficiency:10}});
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:42}});
  const sel=selectFinalScenario({companyId,optimizerResult:opt,selectionMode:'best_by_score'});
+ if(companyId==='empresa2') {
+   if(sel.selected_scenario) throw new Error('empresa2 should not select scenario with blocked fiscal coverage');
+   if(!opt.errors.some((message)=>String(message).includes('Nenhum cenário viável'))) throw new Error('empresa2 optimizer block not surfaced');
+   continue;
+ }
  if(!sel.selected_scenario) throw new Error('no selected scenario');
  const scenario=sel.selected_scenario.scenario;
  if(Number(scenario.changes?.freight_multiplier ?? 1)!==1) throw new Error('selected scenario changed freight');
@@ -40,6 +45,11 @@ for (const companyId of ['empresa1','empresa2']) {
  const sens=runSensitivity({companyId,selectedScenario:scenario,baselineBundle:bundle,sensitivityConfig:{variable:'freight_multiplier',values:[0.9,1,1.2]}});
  if(sens.sensitivity_results.length!==3) throw new Error('sensitivity count mismatch');
  if(sens.sensitivity_results[2].total_with_tax < sens.sensitivity_results[0].total_with_tax) throw new Error('freight sensitivity not monotonic enough');
+ const invalidScenario={...scenario,changes:{...scenario.changes,active_cds:[]}};
+ const invalidStress=runStressTests({companyId,selectedScenario:invalidScenario,baselineBundle:bundle,stressCases:[{case_id:'invalid_case',name:'Caso inválido',changes:{}}]});
+ const invalidRow=invalidStress.stress_results[0];
+ if(invalidRow.status!=='blocked' || invalidRow.saving_pct!==null || invalidRow.scenario_still_better_than_baseline!==null) throw new Error('invalid stress case produced a recommendation-like result');
+ if(invalidStress.summary.status!=='inconclusive' || invalidStress.summary.cases_blocked!==1) throw new Error('invalid stress coverage was not surfaced');
 }
 console.log('PHASE5_NODE_STRESS_OK');
 """

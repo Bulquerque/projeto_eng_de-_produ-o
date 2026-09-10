@@ -4,7 +4,7 @@
   "files": [
     {
       "file_id": "analise_malha_empresa2_xlsx",
-      "path": "data/raw/empresa_2/Analise_Malha_Empresa2.xlsx",
+      "path": "references/raw_sources/Analise_Malha_Empresa2(1).xlsx",
       "file_type": "xlsx",
       "content_hash_sha256": "95ecd04ed818ae0e25ea99ad28785c3f033ba1678d00cc55c1ff12e221b1709f",
       "role": "raw_company_data",

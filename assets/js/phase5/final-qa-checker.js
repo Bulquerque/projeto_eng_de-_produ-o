@@ -39,6 +39,33 @@ export function runFinalQAChecks({
     [audit?.company_id, bundle?.model?.company_id, companyId].every((x) => x === companyId),
     'Empresa isolada corretamente.'
   );
+  const taxCoverage = selectedScenario?.result?.tax_results?.tax_coverage;
+  if (taxCoverage) {
+    const taxBlocked = Boolean(taxCoverage.blocked);
+    add(
+      'tax_quality_gate',
+      !taxBlocked || recommendation?.recommendation_status !== 'recommended',
+      'Recomendação limpa não pode depender de tributação bloqueada.',
+      recommendation?.recommendation_status === 'recommended' ? 'critical' : 'warning'
+    );
+  }
+  const evidence = selectedScenario?.result?.evidence || selectedScenario?.evidence || null;
+  const evidenceAvailable =
+    Number.isFinite(Number(evidence?.evidence_score)) && Array.isArray(evidence?.components);
+  add(
+    'evidence_report_available',
+    evidenceAvailable,
+    'Relatório de evidência disponível e estruturado.'
+  );
+  const cleanRecommendation =
+    recommendation?.recommendation_status !== 'recommended' ||
+    (evidenceAvailable && Number(evidence.evidence_score) >= 70 && evidence.blockers?.length === 0);
+  add(
+    'clean_recommendation_evidence_gate',
+    cleanRecommendation,
+    'Recomendação limpa exige evidência mínima e nenhum bloqueador.',
+    recommendation?.recommendation_status === 'recommended' ? 'critical' : 'warning'
+  );
   const blocking_issues = checks
     .filter((c) => !c.pass && c.severity === 'critical')
     .map((c) => c.message);

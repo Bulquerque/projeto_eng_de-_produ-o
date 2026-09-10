@@ -26,6 +26,10 @@ for (const companyId of ['empresa1','empresa2']) {
  const objective=buildObjective({companyId,objectiveName:'Teste',weights:{total_cost:30,service_quality:25,operational_risk:20,tax_impact:15,inventory_efficiency:10}});
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:11}});
  const selected=selectFinalScenario({companyId,optimizerResult:opt,selectionMode:'best_by_score'}).selected_scenario;
+ if(companyId==='empresa2') {
+   if(selected) throw new Error('empresa2 should not export a selected scenario with blocked fiscal coverage');
+   continue;
+ }
  if(Number(selected.scenario?.changes?.freight_multiplier ?? 1)!==1) throw new Error('selected scenario changed freight');
  if(Number(selected.scenario?.changes?.demand_multiplier ?? 1)!==1) throw new Error('selected scenario changed demand');
  if(Number(selected.scenario?.changes?.inventory_days ?? 45)!==45) throw new Error('selected scenario changed inventory');
@@ -46,6 +50,9 @@ for (const companyId of ['empresa1','empresa2']) {
  if(!pkg.files.find(f=>f.filename.endsWith('stress_results.csv')).content.includes('case_id')) throw new Error('stress csv missing header');
  if(!pkg.files.find(f=>f.filename.endsWith('sensitivity_results.csv'))) throw new Error('sensitivity csv missing');
  if(!pkg.files.find(f=>f.filename.endsWith('.html')).content.includes('Relatório executivo')) throw new Error('html missing report');
+ const escapedPkg=buildExportPackage({companyId,decisionPackage:{company_id:companyId},stress:{stress_results:[{case_id:'a,b',warnings:['x','y'],errors:['quote"']} ]},audit,recommendation:rec,selectedScenario:selected,robustness,comparison:{saving_abs:1},workbookParity});
+ const escapedCsv=escapedPkg.files.find(f=>f.filename.endsWith('stress_results.csv')).content;
+ if(!escapedCsv.includes('"a,b"') || !escapedCsv.includes('"[""x"",""y""]"') || !escapedCsv.includes('[""quote')) throw new Error('stress csv escaping is invalid');
 }
 console.log('PHASE5_NODE_AUDIT_EXPORT_OK');
 """

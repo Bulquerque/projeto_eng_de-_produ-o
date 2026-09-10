@@ -3,6 +3,11 @@ import { rebuildScenarioFlows } from './scenario-flow-rebuilder.js';
 import { runTaxCalculation } from '../core/tax/tax-orchestrator.js';
 import { calculatePhysicalCosts } from './physical-cost-engine.js';
 import { safeNumber } from '../core/common.js';
+import { buildEvidenceReport } from '../core/evidence-quality-engine.js';
+import {
+  isCanonicalBaselineNetwork,
+  isCanonicalBaselineScenario,
+} from '../core/baseline-contract.js';
 import {
   calculateLogisticsTotal,
   calculateTotalWithTax,
@@ -46,35 +51,6 @@ function resolveTaxImpact({ scenario, baselineBundle, rebuilt, demandMultiplier 
   return { taxImpact: safeNumber(details.total_tax_impact, baseFallback), taxDetails: details };
 }
 
-function sameSet(left = [], right = []) {
-  const a = [...new Set((left || []).map(String))].sort();
-  const b = [...new Set((right || []).map(String))].sort();
-  return a.length === b.length && a.every((value, index) => value === b[index]);
-}
-
-function isCanonicalBaselineNetwork({ companyId, scenario, baselineBundle }) {
-  const changes = scenario?.changes || {};
-  const model = baselineBundle?.model || {};
-  return (
-    scenario?.company_id === companyId &&
-    sameSet(changes.active_cds, model.active_cds) &&
-    sameSet(changes.closed_cds, []) &&
-    (changes.tax_mode || 'current') === 'current' &&
-    (changes.tax_regime || 'current') === 'current'
-  );
-}
-
-function isCanonicalBaselineScenario(scenario) {
-  const changes = scenario?.changes || {};
-  return (
-    safeNumber(changes.freight_multiplier, 1) === 1 &&
-    safeNumber(changes.demand_multiplier, 1) === 1 &&
-    safeNumber(changes.inventory_days, MODEL_DEFAULTS.inventory_days) ===
-      MODEL_DEFAULTS.inventory_days &&
-    safeNumber(changes.wacc, MODEL_DEFAULTS.reference_wacc) === MODEL_DEFAULTS.reference_wacc
-  );
-}
-
 function sumLogisticsCosts(costs = {}) {
   return calculateLogisticsTotal({
     transferCost: costs.transfer_cost,
@@ -84,10 +60,64 @@ function sumLogisticsCosts(costs = {}) {
   });
 }
 
+function alignTaxDetailsToTotal(taxDetails = {}, targetTotal = 0) {
+  const target = safeNumber(targetTotal);
+  const source = safeNumber(taxDetails.total_tax_impact, target);
+  const factor = source > 0 ? target / source : 0;
+  const scale = (value) => safeNumber(value) * factor;
+  const aligned = {
+    ...taxDetails,
+    total_tax: target,
+    total_tax_impact: target,
+    total_current_tax: scale(taxDetails.total_current_tax),
+    total_reform_tax: scale(taxDetails.total_reform_tax),
+    cbs_total: scale(taxDetails.cbs_total),
+    ibs_total: scale(taxDetails.ibs_total),
+    selective_tax_total: scale(taxDetails.selective_tax_total),
+    credits_total: scale(taxDetails.credits_total),
+  };
+  if (!source) {
+    aligned.total_current_tax = target;
+    aligned.tax_breakdown_by_component = {
+      ...(taxDetails.tax_breakdown_by_component || {}),
+      current_tax: target,
+    };
+    aligned.breakdown = { ...(taxDetails.breakdown || {}), current_component: target };
+  }
+  if (Array.isArray(taxDetails.flow_breakdown)) {
+    aligned.flow_breakdown = taxDetails.flow_breakdown.map((row) => ({
+      ...row,
+      current_tax: scale(row.current_tax),
+      total_tax: scale(row.total_tax),
+    }));
+  }
+  if (taxDetails.tax_breakdown_by_component) {
+    aligned.tax_breakdown_by_component = Object.fromEntries(
+      Object.entries(taxDetails.tax_breakdown_by_component).map(([key, value]) => [
+        key,
+        scale(value),
+      ])
+    );
+  }
+  if (taxDetails.breakdown) {
+    aligned.breakdown = Object.fromEntries(
+      Object.entries(taxDetails.breakdown).map(([key, value]) => [key, scale(value)])
+    );
+  }
+  for (const key of ['tax_breakdown_by_destination_uf', 'tax_breakdown_by_fiscal_category']) {
+    if (taxDetails[key]) {
+      aligned[key] = Object.fromEntries(
+        Object.entries(taxDetails[key]).map(([group, value]) => [group, scale(value)])
+      );
+    }
+  }
+  return aligned;
+}
+
 function applyCanonicalBaselineReference({ companyId, scenario, baselineBundle, costs }) {
   const baselineNetwork = isCanonicalBaselineNetwork({ companyId, scenario, baselineBundle });
   if (!baselineNetwork) return costs;
-  const exactBaseline = isCanonicalBaselineScenario(scenario);
+  const exactBaseline = isCanonicalBaselineScenario({ companyId, scenario, baselineBundle });
 
   const official = baselineBundle?.costs?.costs || {};
   const numericOr = (value, fallback) => safeNumber(value, safeNumber(fallback));
@@ -179,7 +209,7 @@ function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }
     inventoryCost: physical.inventory_cost,
   });
 
-  return applyCanonicalBaselineReference({
+  const anchored = applyCanonicalBaselineReference({
     companyId,
     scenario,
     baselineBundle,
@@ -193,6 +223,10 @@ function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }
       diagnostics: physical.diagnostics,
     },
   });
+  return {
+    ...anchored,
+    tax_details: alignTaxDetailsToTotal(anchored.tax_details, anchored.tax_impact),
+  };
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -223,6 +257,8 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
   const costs = calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt });
 
   const td = costs.tax_details;
+  const taxUsesProxy = Number(td?.tax_coverage?.proxy_flow_count || 0) > 0;
+  const taxUsesFlowFallback = Number(td?.tax_input_match_summary?.fallback_flow_count || 0) > 0;
   const taxResults = {
     total_tax_impact: costs.tax_impact,
     tax_mode: td?.tax_mode || scenario.changes?.tax_mode || 'current',
@@ -233,23 +269,53 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
     explanation: td?.explanation,
     breakdown: td?.breakdown,
     flow_breakdown: td?.flow_breakdown,
+    tax_coverage: td?.tax_coverage,
+    tax_reconciliation: td?.tax_reconciliation,
+    tax_input_match_summary: td?.tax_input_match_summary,
+    audit_trace: td?.audit_trace,
     metadata: td?.metadata,
     warnings: td?.warnings || [],
     tax_source_classification:
       companyId === 'empresa1'
         ? 'official_shared_tax_reference_proxy'
-        : 'observed_tax_inputs_reconciled',
+        : taxUsesProxy
+          ? 'observed_tax_inputs_with_fiscal_proxy'
+          : taxUsesFlowFallback
+            ? 'observed_tax_inputs_with_flow_fallback'
+            : 'observed_tax_inputs_reconciled',
     tax_source_label:
       companyId === 'empresa1'
         ? 'Proxy tributário — referência compartilhada'
-        : 'Dados tributários observados — reconciliados',
+        : taxUsesProxy
+          ? 'Dados tributários observados — com proxy fiscal'
+          : taxUsesFlowFallback
+            ? 'Dados tributários observados — com fallback de associação'
+            : 'Dados tributários observados — reconciliados',
   };
+  const isCanonicalBaseline = isCanonicalBaselineScenario({
+    companyId,
+    scenario,
+    baselineBundle,
+  });
+  const reconciliation = isCanonicalBaseline
+    ? baselineBundle?.reconciliation || null
+    : {
+        overall: {
+          status: 'pending',
+          label: 'reconciliação específica do cenário pendente',
+        },
+      };
 
-  return {
+  const result = {
     scenario_id: scenario.scenario_id,
     scenario_name: scenario.scenario_name,
     company_id: companyId,
     simulation_status: rebuilt.errors?.length ? 'error' : 'success',
+    calculation_status: rebuilt.errors?.length
+      ? 'error'
+      : td?.tax_coverage?.blocked
+        ? 'success_with_tax_limits'
+        : 'success',
     flows: rebuilt.flows,
     flow_summary: rebuilt.flow_summary,
     costs,
@@ -257,6 +323,7 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
     total_with_tax: costs.total_with_tax,
     calculation_method: costs.calculation_method,
     diagnostics: costs.diagnostics,
+    reconciliation,
     validation,
     warnings: [
       ...(validation.warnings || []),
@@ -266,4 +333,12 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
     errors: [...(rebuilt.errors || [])],
     scenario,
   };
+
+  result.evidence = buildEvidenceReport({
+    companyId,
+    baselineBundle,
+    scenarioResult: result,
+    taxResults,
+  });
+  return result;
 }

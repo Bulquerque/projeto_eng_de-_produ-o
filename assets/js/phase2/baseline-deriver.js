@@ -2,7 +2,11 @@ import { calculatePhysicalCosts } from '../phase3/physical-cost-engine.js';
 import { buildBundleReconciliation } from '../core/reconciliation-engine.js';
 import { runTaxCalculation } from '../core/tax/tax-orchestrator.js';
 import { safeNumber } from '../core/common.js';
-import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+import {
+  calculateLogisticsTotal,
+  calculateTotalWithTax,
+  MODEL_DEFAULTS,
+} from '../core/model-configuration.js';
 
 function cloneValue(value) {
   if (value == null) return value;
@@ -72,6 +76,7 @@ function buildCostBreakdown(physicalCosts, taxImpact) {
 }
 
 function buildTaxCoverage(bundle, taxResult) {
+  const detailedCoverage = taxResult?.tax_coverage || {};
   const totalFlows = Array.isArray(bundle?.flows) ? bundle.flows.length : 0;
   const flowsWithTaxData = Array.isArray(taxResult?.flow_breakdown)
     ? taxResult.flow_breakdown.length
@@ -79,9 +84,12 @@ function buildTaxCoverage(bundle, taxResult) {
   const flowsWithoutTaxData = Math.max(0, totalFlows - flowsWithTaxData);
   const coveragePct = totalFlows > 0 ? (flowsWithTaxData / totalFlows) * 100 : 0;
   return {
+    ...detailedCoverage,
     flows_with_tax_data: flowsWithTaxData,
     flows_without_tax_data: flowsWithoutTaxData,
-    coverage_pct: coveragePct,
+    coverage_pct: detailedCoverage.coverage_pct ?? coveragePct,
+    eligible_flow_coverage_pct: detailedCoverage.eligible_flow_coverage_pct ?? coveragePct,
+    complete_fiscal_coverage_pct: detailedCoverage.complete_fiscal_coverage_pct ?? 0,
   };
 }
 
@@ -103,6 +111,12 @@ function buildDerivedTaxResults(taxResult, companyId) {
       companyId === 'empresa1'
         ? 'Proxy tributário — referência compartilhada'
         : 'Dados tributários observados — reconciliados',
+    calculation_mode: taxResult?.calculation_mode || null,
+    precision_mode: taxResult?.precision_mode || null,
+    tax_period_contract: taxResult?.metadata?.tax_period_contract || null,
+    audit_trace: taxResult?.audit_trace || null,
+    tax_input_match_summary: taxResult?.tax_input_match_summary || null,
+    warnings: taxResult?.warnings || [],
   };
 }
 
@@ -148,10 +162,12 @@ function refreshEmpresa1ModelMetadata(bundle) {
 export function recomputePhase2Baseline(bundle, companyId = bundle?.model?.company_id) {
   if (!bundle || companyId !== 'empresa1') return bundle;
 
-  const rawSnapshot = {
-    costs: cloneValue(bundle.costs || {}),
-    tax_results: cloneValue(bundle.tax_results || {}),
-  };
+  const rawSnapshot = cloneValue(
+    bundle.phase2_raw || {
+      costs: bundle.costs || {},
+      tax_results: bundle.tax_results || {},
+    }
+  );
 
   bundle.phase2_raw = rawSnapshot;
   refreshEmpresa1ModelMetadata(bundle);
@@ -187,12 +203,16 @@ export function recomputePhase2Baseline(bundle, companyId = bundle?.model?.compa
     inventory_cost: safeNumber(physicalCosts.inventory_cost),
     tax_impact: safeNumber(taxResult.total_tax_impact),
   };
-  derivedCosts.total_logistics_cost =
-    derivedCosts.transfer_cost +
-    derivedCosts.distribution_cost +
-    derivedCosts.storage_cost +
-    derivedCosts.inventory_cost;
-  derivedCosts.total_with_tax = derivedCosts.total_logistics_cost + derivedCosts.tax_impact;
+  derivedCosts.total_logistics_cost = calculateLogisticsTotal({
+    transferCost: derivedCosts.transfer_cost,
+    distributionCost: derivedCosts.distribution_cost,
+    storageCost: derivedCosts.storage_cost,
+    inventoryCost: derivedCosts.inventory_cost,
+  });
+  derivedCosts.total_with_tax = calculateTotalWithTax({
+    logisticsCost: derivedCosts.total_logistics_cost,
+    taxImpact: derivedCosts.tax_impact,
+  });
 
   bundle.costs = {
     ...rawSnapshot.costs,

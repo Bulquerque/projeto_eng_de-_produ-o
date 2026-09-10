@@ -42,8 +42,12 @@ if (companyId === 'empresa1') {
   };
 }
 
-const derived = recomputePhase2Baseline(bundle, companyId);
-console.log(JSON.stringify(derived));
+const first = recomputePhase2Baseline(bundle, companyId);
+const firstTax = Number(first.tax_results?.tax_results?.total_tax_impact || 0);
+const second = recomputePhase2Baseline(first, companyId);
+const secondTax = Number(second.tax_results?.tax_results?.total_tax_impact || 0);
+if (Math.abs(firstTax - secondTax) > 1e-9) throw new Error(`${companyId}: baseline tax recomputation is not idempotent`);
+console.log(JSON.stringify(second));
 """.replace('__COMPANY_ID__', json.dumps(company_id))
     )
     res = subprocess.run(
