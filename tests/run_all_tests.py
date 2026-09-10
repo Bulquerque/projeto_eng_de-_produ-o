@@ -1,5 +1,7 @@
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,7 +48,12 @@ TESTS = [
 
 for rel in TESTS:
     print(f'\n>>> {rel}', flush=True)
-    res = subprocess.run([sys.executable, str(ROOT / rel)], cwd=ROOT, text=True, capture_output=True, timeout=300)
+    env = os.environ.copy()
+    if rel.startswith(('tests/10_', 'tests/11_')):
+        env['VISAGIO_E2E_OUTPUT_DIR'] = tempfile.mkdtemp(prefix='visagio-e2e-')
+    res = subprocess.run(
+        [sys.executable, str(ROOT / rel)], cwd=ROOT, env=env, text=True, capture_output=True, timeout=300
+    )
     if res.stdout:
         print(res.stdout, end='')
     if res.stderr:

@@ -23,6 +23,8 @@ def test_phase_folders_exist_with_module_docs():
         mod = ROOT / 'phases' / PHASES[int(m['phase']) - 1] / 'modules' / m['id']
         assert (mod / 'README.md').exists(), m['id']
         assert (mod / 'contract.json').exists(), m['id']
+    for contract in (ROOT / 'phases').glob('**/contract.json'):
+        json.loads(contract.read_text(encoding='utf-8'))
 
 
 if __name__ == '__main__':

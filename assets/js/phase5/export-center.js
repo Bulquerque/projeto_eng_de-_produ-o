@@ -1,4 +1,4 @@
-import { buildExecutiveReportHtml } from './executive-report-builder.js';
+import { buildExecutiveReportHtml } from './executive-report-builder.js?v=final-release-2';
 function toCsv(rows) {
   if (!rows?.length) return 'empty\n';
   const cols = [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
@@ -52,6 +52,7 @@ function buildExportContext({ selectedScenario, audit, robustness } = {}) {
     tax_observed_data_period_status:
       tax.tax_period_contract?.observed_data_coverage?.status || null,
     uncertainty_source: monteCarlo.uncertainty_source || null,
+    monte_carlo_decision_use: monteCarlo.decision_use || null,
     historical_distribution: monteCarlo.historical_distribution ?? null,
     monte_carlo_probability_positive: monteCarlo.probability_saving_positive ?? null,
     robustness_score: robustness?.robustness_score ?? null,

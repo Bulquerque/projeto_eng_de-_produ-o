@@ -4,6 +4,7 @@ import json
 import os
 import socketserver
 import subprocess
+import tempfile
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
@@ -12,7 +13,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_DIR = ROOT / 'data' / 'validation' / 'regression_evidence'
+EVIDENCE_DIR = Path(os.environ.get('VISAGIO_E2E_OUTPUT_DIR', tempfile.mkdtemp(prefix='visagio-regression-e2e-')))
 LOGIC_REPORT_PATH = EVIDENCE_DIR / 'logic_report.json'
 UI_REPORT_PATH = EVIDENCE_DIR / 'ui_report.json'
 FINAL_REPORT_PATH = EVIDENCE_DIR / 'regression_report.json'
@@ -106,9 +107,12 @@ def save_screenshot(page, name: str):
 
 
 def run_logic_audit() -> dict:
+    env = os.environ.copy()
+    env['VISAGIO_E2E_OUTPUT_DIR'] = str(EVIDENCE_DIR)
     result = subprocess.run(
         ['node', str(ROOT / 'tests' / '11_regression_e2e' / 'regression_logic_audit.mjs')],
         cwd=ROOT,
+        env=env,
         text=True,
         capture_output=True,
         timeout=300,
@@ -192,11 +196,15 @@ def main():
     password = read_password()
     logic_report = run_logic_audit()
     ui_report = run_ui_audit(password)
+
+    def report_path(path: Path) -> str:
+        return str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+
     final_report = {
         'generated_at': datetime.now(timezone.utc).isoformat(),
         'status': 'ok',
-        'logic_report_path': str(LOGIC_REPORT_PATH.relative_to(ROOT)),
-        'ui_report_path': str(UI_REPORT_PATH.relative_to(ROOT)),
+        'logic_report_path': report_path(LOGIC_REPORT_PATH),
+        'ui_report_path': report_path(UI_REPORT_PATH),
         'logic': logic_report,
         'ui': ui_report,
     }

@@ -52,11 +52,19 @@ export function runStressTests({
   for (const stressCase of cases) {
     const stressedScenario = applyStressCaseToScenario({ scenario: selectedScenario, stressCase });
     const result = runScenario({ companyId, scenario: stressedScenario, baselineBundle });
+    const taxLimited =
+      result.calculation_status === 'success_with_tax_limits' ||
+      result.tax_results?.tax_coverage?.blocked === true;
     const validResult =
-      result.simulation_status === 'success' && Number.isFinite(Number(result.total_with_tax));
+      result.simulation_status === 'success' &&
+      Number.isFinite(Number(result.total_with_tax)) &&
+      !taxLimited;
     if (!validResult) {
       const caseWarnings = [
         ...(result.warnings || []),
+        ...(taxLimited
+          ? ['Caso de stress bloqueado: cobertura tributária insuficiente para comparação.']
+          : []),
         'Caso de stress bloqueado: o cenário não produziu um resultado determinístico válido.',
       ];
       warnings.push(`${stressCase.case_id}: resultado inválido ou bloqueado.`);

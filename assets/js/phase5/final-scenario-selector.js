@@ -12,15 +12,14 @@ export function selectFinalScenario({
       warnings: [],
     };
 
-  // Módos automáticos operam sobre o top-10 já ranqueado.
-  // Modo manual precisa do conjunto completo para não descartar IDs fora do top-10.
-  const autoPool = optimizerResult?.best_scenarios || optimizerResult?.scored_scenarios || [];
+  // Toda seleção automática deve considerar o conjunto pontuado completo.
+  // O top-10 é uma visualização resumida, não um limite metodológico de seleção.
   const fullPool = optimizerResult?.scored_scenarios?.length
     ? optimizerResult.scored_scenarios
     : optimizerResult?.best_scenarios || [];
 
-  const pool = selectionMode === 'manual' ? fullPool : autoPool;
-  const usingLimitedPool = selectionMode === 'manual' && !optimizerResult?.scored_scenarios?.length;
+  const pool = fullPool;
+  const usingLimitedPool = !optimizerResult?.scored_scenarios?.length;
 
   if (!pool.length)
     return {

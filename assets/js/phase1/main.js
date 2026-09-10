@@ -261,9 +261,11 @@ function renderTable(rows, columns, options = {}) {
       (row) =>
         `<tr>${columns
           .map((col) => {
-            const raw = typeof col.value === 'function' ? col.value(row) : row[col.key];
+            const raw =
+              typeof col.value === 'function' ? col.value(row) : row[col.key ?? col.value];
+            const value = typeof raw === 'number' ? formatNumber(raw) : (raw ?? '—');
             const cls = col.isPath ? ' class="path-cell"' : '';
-            return `<td${cls}>${escapeHtml(formatNumber(raw))}</td>`;
+            return `<td${cls}>${escapeHtml(String(value))}</td>`;
           })
           .join('')}</tr>`
     )
@@ -352,7 +354,7 @@ function renderCompanySelector() {
   document.querySelectorAll('[data-company]').forEach((button) => {
     const isActive = button.dataset.company === state.selectedCompany;
     button.classList.toggle('active', isActive);
-    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
   });
 }
 

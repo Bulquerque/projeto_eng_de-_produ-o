@@ -43,9 +43,9 @@
 
     <div class="global-company-switcher" id="global-company-switcher" aria-label="Empresa ativa">
       <span class="eyebrow">Empresa ativa</span>
-      <div class="company-toggle" role="tablist" aria-label="Selecionar empresa em todas as fases">
-        <button type="button" class="company-tab active" data-company="empresa1" role="tab" aria-selected="true">Empresa 1</button>
-        <button type="button" class="company-tab" data-company="empresa2" role="tab" aria-selected="false">Empresa 2</button>
+      <div class="company-toggle" role="group" aria-label="Selecionar empresa em todas as fases">
+        <button type="button" class="company-tab active" data-company="empresa1" aria-pressed="true">Empresa 1</button>
+        <button type="button" class="company-tab" data-company="empresa2" aria-pressed="false">Empresa 2</button>
       </div>
     </div>
 
@@ -93,9 +93,9 @@
             <h2 id="dados-title">Dados carregados por empresa</h2>
             <p>O painel troca a empresa sem misturar bases. Empresa 1 e Empresa 2 ficam isoladas desde o diagnóstico.</p>
           </div>
-          <div class="company-toggle" role="tablist" aria-label="Selecionar empresa">
-            <button type="button" class="company-tab active" data-company="empresa1" role="tab" aria-selected="true">Empresa 1</button>
-            <button type="button" class="company-tab" data-company="empresa2" role="tab" aria-selected="false">Empresa 2</button>
+          <div class="company-toggle" role="group" aria-label="Selecionar empresa">
+            <button type="button" class="company-tab active" data-company="empresa1" aria-pressed="true">Empresa 1</button>
+            <button type="button" class="company-tab" data-company="empresa2" aria-pressed="false">Empresa 2</button>
           </div>
         </div>
 
@@ -216,7 +216,7 @@
         <div class="two-column-grid phase2-grid-spaced">
           <article class="card chart-card">
             <h3>Custos por componente</h3>
-            <canvas id="costBreakdownChart" class="chart-canvas"></canvas>
+            <canvas id="costBreakdownChart" class="chart-canvas" role="img" aria-label="Gráfico de composição dos custos"></canvas>
           </article>
           <article class="card">
             <h3>Decomposição de custo</h3>
@@ -235,11 +235,11 @@
         <div class="two-column-grid phase2-grid-spaced" style="margin-bottom:18px;">
           <article class="card chart-card">
             <h3>CDs por volume</h3>
-            <canvas id="cdVolumeChart" class="chart-canvas"></canvas>
+            <canvas id="cdVolumeChart" class="chart-canvas" role="img" aria-label="Gráfico de volume por centro de distribuição"></canvas>
           </article>
           <article class="card chart-card">
             <h3>Distâncias dos fluxos</h3>
-            <canvas id="distanceHistogramChart" class="chart-canvas"></canvas>
+            <canvas id="distanceHistogramChart" class="chart-canvas" role="img" aria-label="Histograma das distâncias logísticas"></canvas>
           </article>
         </div>
         <article class="card">
@@ -442,7 +442,7 @@
         </div>
         <article class="card phase2-grid-spaced">
           <h3>Visão Geral de Custos (Cenário vs Baseline)</h3>
-          <canvas id="scenarioComparisonChart" class="chart-canvas"></canvas>
+          <canvas id="scenarioComparisonChart" class="chart-canvas" role="img" aria-label="Gráfico de comparação entre cenários"></canvas>
         </article>
         <div class="two-column-grid phase2-grid-spaced">
           <article class="card" id="qualityPanel"></article>
@@ -464,31 +464,31 @@
           </article>
           <article class="card">
             <h3>Probabilidade de saving</h3>
-            <canvas id="monteCarloRiskChart" class="chart-canvas"></canvas>
+            <canvas id="monteCarloRiskChart" class="chart-canvas" role="img" aria-label="Gráfico de risco do Monte Carlo"></canvas>
           </article>
         </div>
         <div class="three-column-grid phase2-grid-spaced">
           <article class="card">
             <h3>Distribuição de saving</h3>
-            <canvas id="monteCarloHistogramChart" class="chart-canvas"></canvas>
+            <canvas id="monteCarloHistogramChart" class="chart-canvas" role="img" aria-label="Histograma dos resultados do Monte Carlo"></canvas>
           </article>
           <article class="card">
             <h3>Curva percentílica do saving</h3>
-            <canvas id="monteCarloCdfChart" class="chart-canvas"></canvas>
+            <canvas id="monteCarloCdfChart" class="chart-canvas" role="img" aria-label="Curva acumulada do Monte Carlo"></canvas>
           </article>
           <article class="card">
             <h3>Curva percentílica do custo total</h3>
-            <canvas id="monteCarloTotalChart" class="chart-canvas"></canvas>
+            <canvas id="monteCarloTotalChart" class="chart-canvas" role="img" aria-label="Distribuição do custo total no Monte Carlo"></canvas>
           </article>
         </div>
         <div class="two-column-grid phase2-grid-spaced">
           <article class="card">
             <h3>Drivers mais influentes</h3>
-            <canvas id="monteCarloDriversChart" class="chart-canvas"></canvas>
+            <canvas id="monteCarloDriversChart" class="chart-canvas" role="img" aria-label="Importância dos fatores no Monte Carlo"></canvas>
           </article>
           <article class="card">
             <h3>Driver x saving</h3>
-            <canvas id="monteCarloScatterChart" class="chart-canvas"></canvas>
+            <canvas id="monteCarloScatterChart" class="chart-canvas" role="img" aria-label="Relação entre fator e custo no Monte Carlo"></canvas>
           </article>
         </div>
       </section>
@@ -600,7 +600,7 @@
         </div>
         <article class="card phase2-grid-spaced">
           <h3>Top cenários por score</h3>
-          <canvas id="rankingChart" class="chart-canvas"></canvas>
+          <canvas id="rankingChart" class="chart-canvas" role="img" aria-label="Gráfico de ranking dos cenários"></canvas>
           <div class="table-wrap" id="rankingPanel"></div>
         </article>
       </section>
@@ -612,7 +612,7 @@
           <p>Mostra quais cenários não são claramente dominados por outros em custo e qualidade.</p>
         </div>
         <article class="card">
-          <canvas id="tradeoffChart" class="chart-canvas"></canvas>
+          <canvas id="tradeoffChart" class="chart-canvas" role="img" aria-label="Fronteira de trade-off dos cenários"></canvas>
           <div class="table-wrap" id="tradeoffPanel"></div>
         </article>
       </section>
@@ -671,11 +671,12 @@
               </select>
             </label>
             <label>Limite de segurança da enumeração<input id="phase5MaxCandidates" type="number" min="100" max="10000" step="100" value="5000"></label>
+            <p class="small-note" id="phase5OptimizationConfigNote" aria-live="polite"></p>
             <button type="button" class="primary-button" id="rerunPhase5">Reexecutar análise final</button>
           </article>
           <article class="card">
             <h3>Resumo final</h3>
-            <canvas id="robustnessChart" class="chart-canvas" style="height:180px; margin-bottom:12px;"></canvas>
+            <canvas id="robustnessChart" class="chart-canvas" role="img" aria-label="Gráfico de robustez do cenário selecionado" style="height:180px; margin-bottom:12px;"></canvas>
             <div class="metric-grid compact-grid" id="phase5OverviewCards"></div>
           </article>
         </div>
@@ -702,12 +703,12 @@
         <div class="two-column-grid">
           <article class="card">
             <h3>Stress test</h3>
-            <canvas id="stressChart" class="chart-canvas"></canvas>
+            <canvas id="stressChart" class="chart-canvas" role="img" aria-label="Gráfico dos testes de stress"></canvas>
             <div class="table-wrap" id="stressPanel"></div>
           </article>
           <article class="card">
             <h3>Sensibilidade</h3>
-            <canvas id="sensitivityChart" class="chart-canvas"></canvas>
+            <canvas id="sensitivityChart" class="chart-canvas" role="img" aria-label="Gráfico de sensibilidade do cenário"></canvas>
             <div class="table-wrap" id="sensitivityPanel"></div>
           </article>
         </div>
@@ -770,11 +771,11 @@
   </footer>
 
   <!-- Entry points por fase -->
-  <script type="module" src="assets/js/phase1/main.js"></script>
+  <script type="module" src="assets/js/phase1/main.js?v=table-fix-2"></script>
   <script type="module" src="assets/js/phase2/main.js"></script>
-  <script type="module" src="assets/js/phase3/main.js"></script>
-  <script type="module" src="assets/js/phase4/main.js"></script>
-  <script type="module" src="assets/js/phase5/main.js"></script>
+  <script type="module" src="assets/js/phase3/main.js?v=final-release-1"></script>
+  <script type="module" src="assets/js/phase4/main.js?v=final-release-1"></script>
+  <script type="module" src="assets/js/phase5/main.js?v=final-release-2"></script>
   <script type="module" src="assets/js/core/router.js"></script>
 </body>
 </html>

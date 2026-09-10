@@ -13,13 +13,14 @@ CODE = (
     NODE_DECRYPT_HELPER
     + r"""
 import { loadRuntimeBundle } from './tests/runtime_bundle_support.mjs';
+import { readFileSync } from 'node:fs';
 import { buildScenarioFromForm } from './assets/js/phase3/scenario-builder.js';
 import { runScenario } from './assets/js/phase3/scenario-simulator.js';
 import { runMonteCarloSimulation } from './assets/js/phase3/monte-carlo-engine.js';
 import { generateCandidateScenarios } from './assets/js/phase4/candidate-scenario-generator.js';
 import { scenarioChangesKey } from './assets/js/phase4/optimizer-utils.js';
 import { runTaxCalculation } from './assets/js/core/tax/tax-orchestrator.js';
-import { getTaxReformConfig } from './assets/js/core/tax-reform-config.js';
+import { getTaxReformConfig, normalizeTaxReformConfig } from './assets/js/core/tax-reform-config.js';
 
 for (const companyId of ['empresa1', 'empresa2']) {
   const bundle = loadRuntimeBundle({ companyId, decryptJson });
@@ -169,6 +170,13 @@ for (const companyId of ['empresa1', 'empresa2']) {
 }
 
 const customConfig = getTaxReformConfig();
+const loadedConfig = JSON.parse(readFileSync('data/tax/tax_reform_config.json', 'utf8'));
+const normalizedLoadedConfig = normalizeTaxReformConfig(loadedConfig);
+if (
+  normalizedLoadedConfig.regimes.reform_full_2033.category_rules.essential_goods
+    .cbs_rate_multiplier !== 0.65
+)
+  throw new Error('loaded tax configuration lost regime-specific category rules');
 customConfig.regimes = {
   ...customConfig.regimes,
   custom_test: {
@@ -215,6 +223,19 @@ if (customTax.metadata?.tax_period_contract?.reform_rate_provenance?.status !== 
   throw new Error('reform rate provenance is not explicit');
 if (customTax.metadata?.tax_period_contract?.available_periods?.length !== 1)
   throw new Error('tax period contract did not expose all loaded periods');
+
+const parameterOverrideTax = runTaxCalculation({
+  baselineBundle: syntheticBundle,
+  rebuiltFlows: [{ flow_id: 'f1', origin_uf: 'SP', destination_uf: 'RJ', gross_revenue: 100 }],
+  baseTaxBlock: { total_tax_impact: 10 },
+  taxRegime: 'custom_test',
+  config: customConfig,
+  parameters: { parameter_version: 'test-override', rates: { cbs: 0.25, ibs: 0, selective: 0 } },
+});
+if (parameterOverrideTax.tax_breakdown_by_component.cbs_total !== 25)
+  throw new Error('explicit tax parameters did not take precedence');
+if (parameterOverrideTax.audit_trace.parameter_version !== 'test-override')
+  throw new Error('tax parameter version was not preserved in audit trace');
 
 const transitionTax = runTaxCalculation({
   baselineBundle: syntheticBundle,

@@ -72,6 +72,11 @@ function fallbackProfile(diagnostics = {}) {
 }
 
 function buildDistributionEvidence(diagnostics, maxFallbackRate) {
+  const eligibleCount = Number(
+    diagnostics.distribution_eligible_flow_count || diagnostics.flow_count || 0
+  );
+  const observedCount = Number(diagnostics.distribution_observed_flow_count || 0);
+  const observedCoverage = eligibleCount ? observedCount / eligibleCount : 0;
   return item({
     id: 'distribution',
     label: 'Distribuição',
@@ -81,7 +86,12 @@ function buildDistributionEvidence(diagnostics, maxFallbackRate) {
         : diagnostics.source_classification?.includes('observed')
           ? EVIDENCE_CLASSES.PARTIALLY_OBSERVED
           : EVIDENCE_CLASSES.UNKNOWN,
-    coverage: diagnostics.flow_count ? Math.max(0, 1 - maxFallbackRate) : 0,
+    coverage:
+      diagnostics.distribution_eligible_flow_count != null
+        ? observedCoverage
+        : diagnostics.flow_count
+          ? Math.max(0, 1 - maxFallbackRate)
+          : 0,
     source: diagnostics.proxy_sources || null,
     notes: diagnostics.fallback_rates ? ['Cobertura física registrada por fluxo.'] : [],
   });

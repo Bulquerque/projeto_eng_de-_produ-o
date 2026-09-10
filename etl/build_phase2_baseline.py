@@ -130,30 +130,34 @@ def reconcile_tax(canonical_total, raw_matrix_total, tolerance_pct=1.0, adjustme
     if adjustment_factor is not None:
         adjusted_matrix_total = raw_matrix_total * ((1 + adjustment_factor) * (1 + adjustment_factor))
         notes.append(
-            f'A matriz tributária foi conciliada com Δ Faturamento={adjustment_factor:.12f} conforme a fórmula da aba Cenários.'
+            f'O ajuste de sensibilidade Δ Faturamento={adjustment_factor:.12f} foi preservado separadamente; o status usa a diferença bruta e não mascara a reconciliação observada.'
         )
-    diff = adjusted_matrix_total - canonical_total
-    pct = None if canonical_total == 0 else (diff / canonical_total * 100)
-    within_tolerance = pct is None or abs(pct) <= tolerance_pct
+    raw_diff = raw_matrix_total - canonical_total
+    raw_pct = None if canonical_total == 0 else (raw_diff / canonical_total * 100)
+    adjusted_diff = adjusted_matrix_total - canonical_total
+    adjusted_pct = None if canonical_total == 0 else (adjusted_diff / canonical_total * 100)
+    within_tolerance = raw_pct is None or abs(raw_pct) <= tolerance_pct
     warning = (
         None
         if within_tolerance
-        else f'Reconciliação tributária divergente: scenario_totals={canonical_total:.2f}, matriz={adjusted_matrix_total:.2f}, delta={diff:.2f} ({pct:.2f}%).'
+        else f'Reconciliação tributária divergente: scenario_totals={canonical_total:.2f}, matriz_bruta={raw_matrix_total:.2f}, delta={raw_diff:.2f} ({raw_pct:.2f}%).'
     )
     return {
         'canonical_total': canonical_total,
         'raw_matrix_total': raw_matrix_total,
-        'matrix_total': adjusted_matrix_total,
-        'raw_difference': raw_matrix_total - canonical_total,
-        'raw_difference_pct': None
-        if canonical_total == 0
-        else ((raw_matrix_total - canonical_total) / canonical_total * 100),
-        'difference': diff,
-        'difference_pct': pct,
+        'matrix_total': raw_matrix_total,
+        'adjusted_matrix_total': adjusted_matrix_total,
+        'raw_difference': raw_diff,
+        'raw_difference_pct': raw_pct,
+        'difference': raw_diff,
+        'difference_pct': raw_pct,
+        'adjusted_difference': adjusted_diff,
+        'adjusted_difference_pct': adjusted_pct,
         'tolerance_pct': tolerance_pct,
         'status': 'within_tolerance' if within_tolerance else 'divergent',
         'warning': warning,
         'adjustment_factor': adjustment_factor,
+        'adjustment_applied': adjustment_factor is not None,
         'notes': notes,
     }
 
@@ -616,7 +620,7 @@ def build_empresa2():
             'inventory_cost_using_inferred_wacc': invval * inferred if inferred else 0,
             'inferred_wacc_from_workbook_inventory_cost': inferred,
             'tax_effect_from_tax_matrix_raw': taxmatrix_raw,
-            'tax_effect_from_tax_matrix_reconciled': tax_reconciliation['matrix_total'],
+            'tax_effect_from_tax_matrix_reconciled': tax_reconciliation['adjusted_matrix_total'],
             'workbook_adjustment_factor': delta_fat,
         },
         'cost_breakdown': [
@@ -630,7 +634,7 @@ def build_empresa2():
         'errors': [],
     }
     tax_warnings = [
-        'TaxEngineBasic usa Efeitos Tributários do Cenário 1 como valor canônico e reconcilia a matriz tributária pela fórmula da aba Cenários.'
+        'TaxEngineBasic usa Efeitos Tributários do Cenário 1 como valor canônico; a matriz tributária é registrada como evidência bruta e o ajuste da aba Cenários fica separado como sensibilidade.'
     ]
     tax_warnings.extend(tax_reconciliation.get('notes') or [])
     if tax_reconciliation['warning']:

@@ -11,13 +11,22 @@ function esc(v) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+function warningText(warning) {
+  if (typeof warning === 'string') return warning;
+  if (warning && typeof warning === 'object') {
+    return warning.message || warning.detail || warning.code || JSON.stringify(warning);
+  }
+  return String(warning ?? '');
+}
 function brl(v) {
+  if (v === null || v === undefined || v === '') return '—';
   const n = Number(v);
   return Number.isFinite(n)
     ? n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
     : '—';
 }
 function pct(v) {
+  if (v === null || v === undefined || v === '') return '—';
   const n = Number(v);
   return Number.isFinite(n) ? `${n.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%` : '—';
 }
@@ -111,6 +120,7 @@ function monteCarloSection(selectedScenario = {}) {
       <tr><td>Driver mais influente</td><td>${esc(monteCarlo.most_sensitive_driver || '—')}</td></tr>
       <tr><td>Faixa de risco</td><td>${esc(monteCarlo.risk_band || '—')}</td></tr>
       <tr><td>Fonte da incerteza</td><td>${esc(monteCarlo.uncertainty_source || '—')}</td></tr>
+      <tr><td>Uso permitido</td><td>${esc(monteCarlo.decision_use || 'decision_support')}</td></tr>
       <tr><td>Distribuição histórica</td><td>${esc(monteCarlo.historical_distribution ? 'sim' : 'não')}</td></tr>
       <tr><td>Observações históricas</td><td>${esc(JSON.stringify(monteCarlo.historical_observation_counts || {}))}</td></tr>
       <tr><td>Suporte conjunto histórico</td><td>${esc(`${monteCarlo.historical_unique_joint_support ?? 0} combinações únicas · ${monteCarlo.historical_complete_joint_observations ?? 0} casos completos`)}</td></tr>
@@ -169,7 +179,11 @@ function methodologySection(selectedScenario = {}, audit = {}, robustness = {}) 
   const diagnostics = costs.diagnostics || {};
   const changes = selectedScenario?.scenario?.changes || selectedScenario?.changes || {};
   const evidence = result?.evidence || {};
-  const warnings = [...new Set([...(costs.warnings || []), ...(result?.warnings || [])])];
+  const warnings = [
+    ...new Set(
+      [...(costs.warnings || []), ...(result?.warnings || [])].map(warningText).filter(Boolean)
+    ),
+  ];
   const tax = result?.tax_results || {};
   return `
     <h3>Metodologia e rastreabilidade</h3>

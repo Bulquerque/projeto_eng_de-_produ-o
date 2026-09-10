@@ -216,10 +216,12 @@ export async function loadComplementPackage(companyId) {
   const tenantId = toTenantId(companyId);
   if (complementCache[tenantId]) return complementCache[tenantId];
 
+  const loadErrors = [];
   const load = async (path) => {
     try {
       return await fetchComplementJson(path);
     } catch (error) {
+      loadErrors.push({ path, message: error.message });
       console.warn(`[complements] Could not load ${path}:`, error.message);
       return null;
     }
@@ -283,7 +285,9 @@ export async function loadComplementPackage(companyId) {
 
   const packageData = {
     ...packageContext,
-    available: true,
+    available: loadErrors.length === 0,
+    completeness: loadErrors.length === 0 ? 'complete' : 'incomplete',
+    load_errors: loadErrors,
     company_profiles: Array.isArray(companyProfiles) ? companyProfiles : [],
     source_confidence_legend_full: Array.isArray(sourceLegend) ? sourceLegend : [],
     complement_manifest: manifest,

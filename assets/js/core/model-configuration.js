@@ -25,9 +25,14 @@ export const MODEL_DEFAULTS = Object.freeze({
     source_dataset: 'aux_custo_transferencia',
     rationale: 'Empresa 1 não possui custo de transferência observado por km no pacote.',
     interpretation: 'proxy de engenharia; não é tarifa histórica da Empresa 1.',
+    calibration_method: 'weighted_freight_per_kg_by_destination_uf',
+    reproducibility_status: 'limited_runtime_snapshot',
+    reproducibility_note:
+      'As taxas publicadas são um snapshot; a memória de linhas, período e validação deve acompanhar o dataset de calibração.',
   }),
   storage_active_cd_floor_ratio: 0.65,
   storage_active_cd_slope: 0.35,
+  storage_active_cd_provenance: 'engineering_hypothesis_not_observed_per_cd',
 });
 
 export const RECONCILIATION_THRESHOLDS = Object.freeze({

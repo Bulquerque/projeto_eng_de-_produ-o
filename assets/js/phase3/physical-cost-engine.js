@@ -389,7 +389,9 @@ function buildCostContext({ scenario, baselineBundle }) {
 }
 
 function buildCostResult(context, values) {
-  const flowCount = Array.isArray(values.flowCostDetail) ? values.flowCostDetail.length : 0;
+  const flowCount = Array.isArray(values.flowCostDetail)
+    ? values.flowCostDetail.filter((flow) => flow?.method !== 'heuristic_fallback').length
+    : 0;
   const fallbackCounts = values.diagnostics?.fallback_counts || {};
   return {
     transfer_cost: values.transferCost,
@@ -408,11 +410,18 @@ function buildCostResult(context, values) {
           flowCount ? Number(value || 0) / flowCount : 0,
         ])
       ),
+      fallback_cost_share: values.diagnostics?.fallback_cost_share || {},
       inventory: {
         method: context.inventoryMethod,
         active_cd_count_not_used: true,
         reference_days: MODEL_DEFAULTS.inventory_days,
         reference_wacc: MODEL_DEFAULTS.reference_wacc,
+      },
+      storage: {
+        active_cd_count: context.activeCds.length,
+        baseline_cd_count: context.baselineCds,
+        method: 'active_cd_ratio_hypothesis_when_no_cd_tariff_match',
+        provenance: MODEL_DEFAULTS.storage_active_cd_provenance,
       },
     },
   };
@@ -505,6 +514,13 @@ function calculateCompany1Costs(context, flows) {
       demandMultiplier,
       'empresa1'
     ));
+    flowCostDetail.push({
+      flow_id: 'aggregate_heuristic_fallback',
+      distribution_cost: distributionCost,
+      transfer_cost: transferCost,
+      method: 'heuristic_fallback',
+      transfer_method: 'heuristic_fallback',
+    });
   }
 
   return buildCostResult(context, {
@@ -528,7 +544,20 @@ function calculateCompany1Costs(context, flows) {
         revenue_fallback: revenueFallbackCount,
         missing_transfer_distance: missingDistanceCount,
         transfer_fallback: transferFallbackCount,
+        heuristic_fallback: anyPriced ? 0 : 1,
       },
+      fallback_cost_share: anyPriced
+        ? {}
+        : {
+            heuristic_fallback:
+              base.distribution_cost || base.transfer_cost
+                ? (distributionCost + transferCost) /
+                  (distributionCost +
+                    transferCost +
+                    (base.storage_cost || 0) +
+                    (base.inventory_cost || 0))
+                : 0,
+          },
       proxy_sources: [
         'distance_matrix',
         'calibrated_uf_kilometric_transfer_rate',
@@ -563,6 +592,8 @@ function calculateCompany2Costs(context, flows) {
   let revenueFallbackCount = 0;
   let transferFallbackCount = 0;
   let factoryFlowNotDistributionCount = 0;
+  let distributionEligibleCount = 0;
+  let distributionObservedCount = 0;
   const flowCostDetail = [];
 
   for (const flow of flows) {
@@ -572,6 +603,10 @@ function calculateCompany2Costs(context, flows) {
     if (method === 'revenue_pct_fallback' || method === 'revenue_pct_fallback_missing_weight')
       revenueFallbackCount += 1;
     if (method === 'factory_to_cd_not_distribution') factoryFlowNotDistributionCount += 1;
+    else {
+      distributionEligibleCount += 1;
+      if (method === 'cif_bracket' || method === 'cif_pct_revenue') distributionObservedCount += 1;
+    }
     let flowTransferCost = 0;
     let transferMethod = 'not_required';
     let transferSource = 'aux_custo_transferencia';
@@ -669,7 +704,25 @@ function calculateCompany2Costs(context, flows) {
         missing_weight: missingWeightCount,
         revenue_fallback: revenueFallbackCount,
         transfer_fallback: transferFallbackCount,
+        heuristic_fallback: anyPriced ? 0 : 1,
       },
+      distribution_eligible_flow_count: distributionEligibleCount,
+      distribution_observed_flow_count: distributionObservedCount,
+      distribution_observed_coverage: distributionEligibleCount
+        ? distributionObservedCount / distributionEligibleCount
+        : 0,
+      fallback_cost_share: anyPriced
+        ? {}
+        : {
+            heuristic_fallback:
+              base.distribution_cost || base.transfer_cost
+                ? (distributionCost + transferCost) /
+                  (distributionCost +
+                    transferCost +
+                    (base.storage_cost || 0) +
+                    (base.inventory_cost || 0))
+                : 0,
+          },
       proxy_sources: ['tabelas_cif_dist', 'aux_custo_transferencia'],
       source_classification: 'observed_tables_plus_explicit_fallbacks',
     },

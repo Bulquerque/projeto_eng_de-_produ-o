@@ -16,6 +16,7 @@ import {
   buildTradeoffTableHtml,
 } from './phase4-dashboard-templates.js';
 import { appendSharedDebugEntry } from '../core/debug-tools.js';
+import { saveOptimizationConfig } from '../core/optimization-config-store.js';
 import {
   CANONICAL_OPTIMIZATION_POLICY,
   buildCanonicalOptimizationConfig,
@@ -60,7 +61,7 @@ function renderTabs() {
   document.querySelectorAll('[data-company]').forEach((btn) => {
     const active = btn.dataset.company === state.companyId;
     btn.classList.toggle('active', active);
-    btn.setAttribute('aria-selected', String(active));
+    btn.setAttribute('aria-pressed', String(active));
   });
   $('phase4CompanyLabel').textContent = label(state.companyId);
 }
@@ -210,6 +211,14 @@ function runOpt() {
         constraints: constraints(),
         optimizerConfig: optimizerConfig(),
       });
+      if (String(state.optimizer.optimizer_status || '').startsWith('success')) {
+        saveOptimizationConfig({
+          company_id: state.companyId,
+          objective: state.objective,
+          constraints: constraints(),
+          optimizer_config: optimizerConfig(),
+        });
+      }
       renderOptimizer();
       if (!String(state.optimizer.optimizer_status || '').startsWith('success')) {
         log('Otimizador bloqueado', state.optimizer.errors || []);
@@ -297,4 +306,16 @@ export function setupPhase4() {
     $(id)?.setAttribute('disabled', 'true')
   );
   $('runOptimizer')?.addEventListener('click', runOpt);
+
+  const loadCurrentCompanyOnRoute = () => {
+    if (window.location.hash === '#/simulacao-otimizacao') {
+      void loadPhase4Company(state.companyId);
+    }
+  };
+  window.addEventListener('hashchange', loadCurrentCompanyOnRoute);
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', loadCurrentCompanyOnRoute, { once: true });
+  } else {
+    loadCurrentCompanyOnRoute();
+  }
 }

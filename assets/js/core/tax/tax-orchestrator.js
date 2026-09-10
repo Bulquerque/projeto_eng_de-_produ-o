@@ -91,6 +91,18 @@ function isCanonicalBaselineInput(input) {
   });
 }
 
+function resolveFiscalCategoryRules(config, regimeId) {
+  const regimeRules = config.regimes?.[regimeId]?.category_rules;
+  const raw =
+    regimeRules && Object.keys(regimeRules).length ? regimeRules : config.category_rules || null;
+  if (!raw) return null;
+  if (raw.categories) return raw;
+  return {
+    default_category: config.default_category || 'default_goods',
+    categories: raw,
+  };
+}
+
 export function runTaxCalculation(arg1, arg2, arg3) {
   const input = normalizeInput(arg1, arg2, arg3);
   const config = input.config || getTaxReformConfig();
@@ -106,6 +118,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     baselineBundle: input.baselineBundle,
     scenario: input.scenario,
     rebuiltFlows: input.rebuiltFlows,
+    fiscalCategoryRules: resolveFiscalCategoryRules(config, regimeId),
   });
   const quality = auditTaxFlowCoverage(fiscal.fiscal_flows, fiscal.quality_report);
   const precisionMode = quality.precision_mode;
@@ -174,7 +187,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       warnings: [...quality.warnings, ...(fiscal.warnings || []), ...periodWarnings],
       explanation: { summary: 'Camada tributária desligada.' },
       audit_trace: buildAuditTrace({
-        parameterVersion: '2026-05',
+        parameterVersion: input.parameters?.parameter_version || '2026-05',
         qualityReport: quality,
         regimeId,
         sourceVersion: sourceContext?.package_name || 'official_reform_sources',
@@ -263,7 +276,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       precision_mode: precisionMode,
     },
     audit_trace: buildAuditTrace({
-      parameterVersion: '2026-05',
+      parameterVersion: input.parameters?.parameter_version || '2026-05',
       qualityReport: quality,
       regimeId,
       sourceVersion: sourceContext?.package_name || 'official_reform_sources',

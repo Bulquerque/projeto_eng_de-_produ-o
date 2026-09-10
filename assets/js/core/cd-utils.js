@@ -9,6 +9,8 @@ function normalizeText(value) {
 
 export function canonicalCdLabel(value) {
   const normalized = normalizeText(value);
+  const redMatch = normalized.match(/^RED\s*[/\-|]\s*([A-Z]{2})(?:\s*[/\-|].*)?$/);
+  if (redMatch) return redMatch[1];
   const match = normalized.match(/^([A-Z]{2})\s*[/\-|]\s*(.+)$/);
   return match ? match[2].trim() : normalized;
 }

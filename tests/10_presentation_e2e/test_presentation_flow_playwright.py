@@ -3,6 +3,7 @@ import http.server
 import json
 import os
 import socketserver
+import tempfile
 import threading
 from pathlib import Path
 
@@ -10,7 +11,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'data' / 'validation' / 'presentation_e2e'
+OUT = Path(os.environ.get('VISAGIO_E2E_OUTPUT_DIR', tempfile.mkdtemp(prefix='visagio-presentation-e2e-')))
 
 
 def read_password() -> str:

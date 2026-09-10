@@ -152,8 +152,14 @@ function refreshEmpresa1ModelMetadata(bundle) {
       derived_baseline: {
         active: true,
         preserves_raw_snapshot: true,
+        comparability_status: 'not_comparable_to_raw_snapshot',
+        decision_use: 'exploratory_only',
         transfer_source: 'distance_matrix_kilometric_transfer_proxy',
         tax_source: 'official_tax_reference_recomputed',
+        raw_snapshot_total_with_tax: safeNumber(
+          bundle.phase2_raw?.costs?.costs?.total_with_tax,
+          null
+        ),
       },
     },
   };
@@ -213,6 +219,12 @@ export function recomputePhase2Baseline(bundle, companyId = bundle?.model?.compa
     logisticsCost: derivedCosts.total_logistics_cost,
     taxImpact: derivedCosts.tax_impact,
   });
+  derivedCosts.baseline_comparability = 'proxy_derived_not_comparable_to_raw_snapshot';
+  derivedCosts.raw_snapshot_total_with_tax = safeNumber(
+    rawSnapshot.costs?.costs?.total_with_tax,
+    null
+  );
+  derivedCosts.derived_total_with_tax = derivedCosts.total_with_tax;
 
   bundle.costs = {
     ...rawSnapshot.costs,

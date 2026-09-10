@@ -124,7 +124,7 @@ function updateTabs() {
   document.querySelectorAll('[data-company]').forEach((btn) => {
     const active = btn.dataset.company === state.selectedCompany;
     btn.classList.toggle('active', active);
-    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
   });
 }
 function companyContextCard(companyId) {

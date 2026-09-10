@@ -426,10 +426,29 @@ export function normalizeTaxReformConfig(input = {}) {
     ...DEFAULT_TAX_REFORM_CONFIG.tax_mode_aliases,
     ...(input.tax_mode_aliases || {}),
   });
-  merged.regimes = normalizeRegimes({
-    ...DEFAULT_TAX_REFORM_CONFIG.regimes,
-    ...(input.regimes || {}),
-  });
+  const inputRegimes = input.regimes || {};
+  const regimeIds = new Set([
+    ...Object.keys(DEFAULT_TAX_REFORM_CONFIG.regimes),
+    ...Object.keys(inputRegimes),
+  ]);
+  const regimes = Object.fromEntries(
+    [...regimeIds].map((regimeId) => {
+      const defaults = DEFAULT_TAX_REFORM_CONFIG.regimes[regimeId] || {};
+      const loaded = inputRegimes[regimeId] || {};
+      return [
+        regimeId,
+        {
+          ...clone(defaults),
+          ...clone(loaded),
+          category_rules: {
+            ...(clone(defaults.category_rules) || {}),
+            ...(clone(loaded.category_rules) || {}),
+          },
+        },
+      ];
+    })
+  );
+  merged.regimes = normalizeRegimes(regimes);
   merged.category_rules = {
     ...clone(DEFAULT_TAX_REFORM_CONFIG.category_rules),
     ...(input.category_rules || {}),

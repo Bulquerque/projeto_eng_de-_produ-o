@@ -34,7 +34,7 @@
     "ExecutiveReportBuilder",
     "ExportCenter",
     "FinalQAChecker",
-    "ReleaseValidator",
+    "ReleaseValidator"
   ],
   "tests": {
     "unit": [

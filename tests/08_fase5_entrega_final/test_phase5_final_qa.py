@@ -19,7 +19,11 @@ for (const companyId of ['empresa1','empresa2']) {
  const stress={stress_results:[{case_id:'a'}]}; const recommendation={recommendation_status:'recommended'}; const audit={company_id:companyId,selected_scenario_id:selectedScenario.scenario_id,baseline_scenario_id:bundle.model.scenario_id};
  const qa=runFinalQAChecks({companyId,bundle,selectedScenario,stress,recommendation,audit});
  if(qa.final_qa_status!=='passed') throw new Error('qa should pass');
- const incomplete=validateRelease({finalQA:qa}); if(incomplete.release_status!=='blocked') throw new Error('incomplete release should block');
+ const incomplete=runFinalQAChecks({companyId,bundle:{},selectedScenario:null,stress:{stress_results:[]},recommendation:{},audit:{}});
+ if(incomplete.final_qa_status!=='failed') throw new Error('incomplete qa should fail');
+ if(!incomplete.blocking_issues.includes('Nenhum cenário final foi selecionado.')) throw new Error('missing scenario should have an explicit failure message');
+ if(incomplete.blocking_issues.includes('Cenário final selecionado.')) throw new Error('failed QA must not expose a success message as a blocker');
+ const incompleteRelease=validateRelease({finalQA:incomplete}); if(incompleteRelease.release_status!=='blocked') throw new Error('incomplete release should block');
  const release=validateRelease({finalQA:qa,exportPackage:{files:[{type:'application/json',content:JSON.stringify({company_id:companyId,decision_package:{selected_scenario_id:selectedScenario.scenario_id},final_qa:qa})}]},decisionPackage:{company_id:companyId,selected_scenario_id:selectedScenario.scenario_id}}); if(release.release_status!=='ready' || !release.ready_to_deliver) throw new Error('release should be ready');
  const bad=validateRelease({finalQA:{final_qa_status:'failed',blocking_issues:['x']}}); if(bad.release_status!=='blocked') throw new Error('bad release should block');
 }

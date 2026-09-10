@@ -542,7 +542,7 @@
   "phase2": {
     "status": "implemented",
     "page": "fase-2-baseline/index.html",
-    "generated_at_utc": "2026-05-12T15:31:34.224493+00:00",
+    "generated_at_utc": "2026-09-10T01:53:31.802519+00:00",
     "companies": {
       "empresa1": {
         "phase2_bundle": "data/empresa1/phase2/phase2_bundle.json",

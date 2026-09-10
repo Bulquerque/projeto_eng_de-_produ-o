@@ -1,24 +1,9 @@
 import { getFiscalCategoryRule, normalizeFiscalCategory } from './fiscal-category-rules.js';
 import { safeNumber } from '../common.js';
 
-function flowMeasure(flow) {
-  return safeNumber(
-    flow?.annual_revenue ??
-      flow?.revenue ??
-      flow?.annual_weight_kg ??
-      flow?.volume ??
-      flow?.batch ??
-      0
-  );
-}
-
 function getFlowRevenue(flow) {
   return safeNumber(
-    flow?.annual_revenue ??
-      flow?.revenue ??
-      flow?.monthly_revenue ??
-      flow?.gross_revenue ??
-      flowMeasure(flow)
+    flow?.annual_revenue ?? flow?.revenue ?? flow?.monthly_revenue ?? flow?.gross_revenue ?? 0
   );
 }
 

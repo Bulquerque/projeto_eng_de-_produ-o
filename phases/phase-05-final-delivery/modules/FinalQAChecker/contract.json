@@ -24,7 +24,7 @@
     "runFinalQAChecks"
   ],
   "external_calls": [
-    "DataLoader",
+    "DataLoader"
   ],
   "tests": {
     "unit": [

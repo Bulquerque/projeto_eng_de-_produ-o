@@ -216,8 +216,9 @@ body{background:linear-gradient(180deg,#F7F3F5 0%,#ffffff 38%,#F7F3F5 100%)}.bra
   .export-buttons{display:grid;grid-template-columns:1fr}
   .export-button{width:100%;justify-content:center;overflow-wrap:anywhere}
   .crypto-lock-button{right:16px!important;bottom:16px!important;max-width:calc(100vw - 32px)}
-  .table-wrap table{table-layout:fixed}
-  .table-wrap th,.table-wrap td{font-size:11px;overflow-wrap:anywhere;word-break:break-word}
-  .executive-report-content table{table-layout:fixed;max-width:100%}
+  .table-wrap table{table-layout:auto;min-width:640px}
+  .table-wrap th,.table-wrap td{font-size:11px;overflow-wrap:anywhere;word-break:normal}
+  #executiveReportPanel{overflow-x:auto}
+  .executive-report-content table{table-layout:auto;min-width:640px;max-width:none}
   .executive-report-content th,.executive-report-content td{font-size:11px;overflow-wrap:anywhere;word-break:break-word}
 }

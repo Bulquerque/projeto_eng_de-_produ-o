@@ -49,8 +49,11 @@ export function runBaselineChecks(bundle, companyId) {
     );
     add(
       'Reconciliação tributária explícita',
-      bundle.tax_results?.tax_reconciliation?.status === 'within_tolerance',
-      bundle.tax_results?.tax_reconciliation?.warning || 'matriz conciliada pela fórmula'
+      ['within_tolerance', 'divergent'].includes(bundle.tax_results?.tax_reconciliation?.status),
+      bundle.tax_results?.tax_reconciliation?.warning ||
+        (bundle.tax_results?.tax_reconciliation?.status === 'divergent'
+          ? 'divergência bruta preservada; ajuste de sensibilidade separado'
+          : 'matriz alinhada dentro da tolerância')
     );
   }
   add('Base Fit válido', bf.pass, bf.message);

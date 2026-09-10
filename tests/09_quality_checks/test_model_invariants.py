@@ -19,6 +19,7 @@ import {
   calculateInventoryCost,
   calculateSaving,
 } from './assets/js/core/model-configuration.js';
+import { formatBRL, formatPct } from './assets/js/core/common.js';
 
 const sameDrivers = {
   demandMultiplier: 1,
@@ -109,6 +110,8 @@ for (const companyId of ['empresa1', 'empresa2']) {
 
 const saving = calculateSaving({ baselineTotal: 100, scenarioTotal: 75 });
 if (saving.saving_abs !== 25 || saving.saving_pct !== 25) throw new Error('saving invariant failed');
+if (formatBRL(null) !== '—' || formatPct(null) !== '—')
+  throw new Error('null financial values must remain visibly uncalculated');
 console.log('MODEL_INVARIANTS_OK');
 """
 )

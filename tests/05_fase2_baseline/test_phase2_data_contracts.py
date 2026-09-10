@@ -118,11 +118,14 @@ def test_empresa2_baseline_contract():
     assert costs['tax_impact'] > 0
     assert costs['total_with_tax'] > costs['total_logistics_cost']
     tax = b['tax_results']
-    assert tax['tax_reconciliation']['status'] == 'within_tolerance'
-    assert abs(tax['tax_reconciliation']['difference_pct']) < 0.001
+    assert tax['tax_reconciliation']['status'] == 'divergent'
+    assert abs(tax['tax_reconciliation']['difference_pct']) > 1
     assert abs(tax['tax_reconciliation']['raw_difference_pct']) > 1
+    assert abs(tax['tax_reconciliation']['adjusted_difference_pct']) < 0.001
     assert tax['tax_reconciliation']['adjustment_factor'] is not None
-    assert any('conciliada' in w.lower() for w in tax['warnings'])
+    assert tax['tax_reconciliation']['adjustment_applied'] is True
+    assert any('divergente' in w.lower() for w in tax['warnings'])
+    assert any('sensibilidade' in w.lower() for w in tax['warnings'])
 
 
 def test_cost_totals_close():

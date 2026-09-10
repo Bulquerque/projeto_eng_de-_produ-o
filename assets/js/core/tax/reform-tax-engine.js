@@ -10,14 +10,17 @@ export function calculateReformTax({
   regimeDefinition = null,
 } = {}) {
   const parameterRates = getRegimeTaxRates(taxRegime, parameters || undefined);
-  const rates = regimeDefinition
-    ? {
-        ...parameterRates,
-        cbs: regimeDefinition.cbs_rate ?? parameterRates.cbs,
-        ibs: regimeDefinition.ibs_rate ?? parameterRates.ibs,
-        selective: regimeDefinition.selective_rate ?? parameterRates.selective,
-      }
-    : parameterRates;
+  const rates = {
+    ...parameterRates,
+    ...(regimeDefinition
+      ? {
+          cbs: regimeDefinition.cbs_rate ?? parameterRates.cbs,
+          ibs: regimeDefinition.ibs_rate ?? parameterRates.ibs,
+          selective: regimeDefinition.selective_rate ?? parameterRates.selective,
+        }
+      : {}),
+    ...(parameters?.rates || parameters || {}),
+  };
   const flowBreakdown = fiscalFlows.map((flow) => {
     const rule =
       regimeDefinition?.category_rules?.[flow.fiscal_category] ||

@@ -35,7 +35,7 @@ import { loadRuntimeBundle } from '../runtime_bundle_support.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
-const OUT_DIR = path.join(ROOT, 'data', 'validation', 'regression_evidence');
+const OUT_DIR = process.env.VISAGIO_E2E_OUTPUT_DIR || path.join(ROOT, 'data', 'validation', 'regression_evidence');
 
 function readPassword() {
   if (process.env.VISAGIO_DATA_PASSWORD) return process.env.VISAGIO_DATA_PASSWORD;

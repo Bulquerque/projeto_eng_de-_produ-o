@@ -16,19 +16,24 @@ function isAssignableCdFlow(flow) {
   );
 }
 function getFlowMeasure(flow) {
+  if (flow?.flow_type === 'factory_to_cd') {
+    return Number(flow.annual_weight_kg ?? flow.weight_kg ?? 0) || 0;
+  }
   return (
-    Number(
-      flow.annual_revenue ?? flow.revenue ?? flow.annual_weight_kg ?? flow.volume ?? flow.batch ?? 0
-    ) || 0
+    Number(flow.annual_revenue ?? flow.revenue ?? flow.annual_weight_kg ?? flow.weight_kg ?? 0) || 0
   );
 }
 function getCdUf(cd) {
-  const match = String(cd || '')
+  const normalized = String(cd || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim()
-    .toUpperCase()
-    .match(/^([A-Z]{2})\s*[/\-|]\s*(.+)$/);
+    .toUpperCase();
+  const redMatch = normalized.match(/^RED\s*[/\-|]\s*([A-Z]{2})(?:\s*[/\-|].*)?$/);
+  if (redMatch) return redMatch[1];
+  const ufOnly = normalized.match(/^([A-Z]{2})$/);
+  if (ufOnly) return ufOnly[1];
+  const match = normalized.match(/^([A-Z]{2})\s*[/\-|]\s*(.+)$/);
   return match ? match[1].trim() : '';
 }
 
@@ -148,6 +153,8 @@ export function rebuildScenarioFlows({ scenario, baselineFlows = [], distanceMat
       uncovered_flows: uncovered,
       total_measure: totalMeasure,
       measure_by_cd: byCd,
+      measure_basis:
+        'annual_revenue_for_destination_flows; annual_weight_kg_only_for_factory_flows; undocumented_volume_excluded',
     },
     warnings,
     errors,

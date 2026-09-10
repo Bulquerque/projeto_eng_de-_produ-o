@@ -1,6 +1,7 @@
 {
   "name": "visagio-static-simulator",
   "version": "1.0.0",
+  "type": "module",
   "description": "Visagio Static Simulator",
   "scripts": {
     "lint": "npm run lint:js -- --max-warnings=0",
@@ -14,6 +15,10 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.2.5"
+  },
+  "overrides": {
+    "brace-expansion": "^1.1.18",
+    "js-yaml": "^4.3.2"
   },
   "private": true
 }

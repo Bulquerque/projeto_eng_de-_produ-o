@@ -125,8 +125,8 @@
       "original_path": "data/empresa1/phase2/baseline_model.json",
       "encrypted_path": "data/empresa1/phase2/baseline_model.json.enc.json",
       "original_type": "json",
-      "sha256": "b26cebab8bc9616226437b569aa5ea8ada111e05828111a45eb11f1a8fed3e1a",
-      "size_bytes": 2621
+      "sha256": "762e8e4b3840214a45384cdefb46a68e18633de919934304c7b66bbfadef9dae",
+      "size_bytes": 2858
     },
     {
       "id": "data.empresa1.phase2.phase2_bundle.json",
@@ -134,8 +134,8 @@
       "original_path": "data/empresa1/phase2/phase2_bundle.json",
       "encrypted_path": "data/empresa1/phase2/phase2_bundle.json.enc.json",
       "original_type": "json",
-      "sha256": "658f4469002543cd857792f2607237327d8c6339ed80f5796d81bc0999ac27a9",
-      "size_bytes": 31832
+      "sha256": "c0cd12cedfe39bfd52ca0ecd32511998afc84a422bb93332a0e7903283ba3e32",
+      "size_bytes": 32081
     },
     {
       "id": "data.empresa1.phase2.tax_results.json",
@@ -584,7 +584,7 @@
       "original_path": "data/empresa2/phase2/baseline_model.json",
       "encrypted_path": "data/empresa2/phase2/baseline_model.json.enc.json",
       "original_type": "json",
-      "sha256": "d9c8c0d74613efdf5bc50d3ce9161bc2924a71b6a93288a54292a835ef89d6dd",
+      "sha256": "6af9475ad991265d4217d8eb532f8bd701f0a417b66ac8b63f8895cd7f44d668",
       "size_bytes": 1343
     },
     {
@@ -593,8 +593,8 @@
       "original_path": "data/empresa2/phase2/phase2_bundle.json",
       "encrypted_path": "data/empresa2/phase2/phase2_bundle.json.enc.json",
       "original_type": "json",
-      "sha256": "ac690847d4ce03b99c8c762fd3955b39e1d14fdcb8f7ef750c5b8d55067fe5a8",
-      "size_bytes": 39879
+      "sha256": "a67d9cace45c1088f4d8e145243ac18c78f5b1bd2680bd40f3ac27ea3452f1e7",
+      "size_bytes": 41603
     },
     {
       "id": "data.empresa2.phase2.tax_results.json",
@@ -602,8 +602,8 @@
       "original_path": "data/empresa2/phase2/tax_results.json",
       "encrypted_path": "data/empresa2/phase2/tax_results.json.enc.json",
       "original_type": "json",
-      "sha256": "b4d2867746ccd71a3bfc3079e9da227f03ca8d5940ddab2e83c30c380f2c4687",
-      "size_bytes": 2123
+      "sha256": "dad70d850fc81fdd1ec5f15b03461b10d98756d7e8b0a23c2ce0a17e213541bb",
+      "size_bytes": 3052
     },
     {
       "id": "data.empresa2.phase3.sample_scenarios.json",

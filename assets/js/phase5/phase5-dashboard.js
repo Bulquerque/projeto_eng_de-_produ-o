@@ -9,7 +9,7 @@ import { runSensitivity, runSensitivityMatrix } from './sensitivity-engine.js';
 import { calculateRobustness } from './robustness-scorer.js';
 import { buildRecommendation } from './recommendation-engine.js';
 import { buildAuditTrail } from './audit-trail-engine.js';
-import { buildExecutiveReportHtml } from './executive-report-builder.js';
+import { buildExecutiveReportHtml } from './executive-report-builder.js?v=final-release-2';
 import { buildExportPackage, triggerBrowserDownload } from './export-center.js';
 import { runFinalQAChecks } from './final-qa-checker.js';
 import { validateRelease } from './release-validator.js';
@@ -18,6 +18,7 @@ import { renderSensitivityChart, renderStressChart, renderRobustnessChart } from
 import { buildWorkbookParitySummary, renderWorkbookParityPanel } from './workbook-parity.js';
 import { appendSharedDebugEntry } from '../core/debug-tools.js';
 import { buildCanonicalOptimizationConfig } from '../core/optimization-policy.js';
+import { loadOptimizationConfig } from '../core/optimization-config-store.js';
 import {
   buildScenarioSummary,
   formatInventoryDaysDisplay,
@@ -42,10 +43,17 @@ const state = {
   release: null,
   monteCarlo: null,
   workbookParity: null,
+  optimizationConfig: null,
   isLoading: false,
 };
 function label(cid) {
   return cid === 'empresa2' ? 'Empresa 2' : 'Empresa 1';
+}
+function formatOptionalBRL(value, compact = false) {
+  return value === null || value === undefined || value === '' ? '—' : formatBRL(value, compact);
+}
+function formatOptionalPct(value, digits = 1) {
+  return value === null || value === undefined || value === '' ? '—' : formatPct(value, digits);
 }
 function log(label, obj) {
   appendSharedDebugEntry({
@@ -73,6 +81,14 @@ function logError(label, obj) {
     el.textContent = `${new Date().toLocaleTimeString()} · ${label}\n${typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2)}`;
 }
 function defaultObjective() {
+  const inherited = state.optimizationConfig?.objective;
+  if (inherited?.weights) {
+    return buildObjective({
+      companyId: state.companyId,
+      objectiveName: inherited.objective_name || 'Objetivo herdado da Fase 4',
+      weights: inherited.weights,
+    });
+  }
   return buildObjective({
     companyId: state.companyId,
     objectiveName: 'Perfil Final Balanceado',
@@ -91,14 +107,38 @@ function constraints() {
     max_active_cds: 999,
     max_cd_volume_share: 0.75,
     max_risk_level: 'high',
+    ...(state.optimizationConfig?.constraints || {}),
     allow_tax_disabled: false,
   };
+}
+function optimizerConfig() {
+  return buildCanonicalOptimizationConfig({
+    ...(state.optimizationConfig?.optimizer_config || {}),
+    method: state.optimizationConfig?.optimizer_config?.method || 'exact_discrete',
+    max_candidates: Number($('phase5MaxCandidates')?.value || 2000),
+    seed: Number(state.optimizationConfig?.optimizer_config?.seed ?? 42),
+  });
+}
+function applyInheritedOptimizationConfig() {
+  const note = $('phase5OptimizationConfigNote');
+  if (!state.optimizationConfig) {
+    if (note)
+      note.textContent =
+        'Configuração canônica da Fase 5; rode a Fase 4 para herdar um perfil customizado.';
+    return;
+  }
+  const maxCandidates = Number(state.optimizationConfig.optimizer_config?.max_candidates);
+  if (Number.isFinite(maxCandidates) && maxCandidates >= 100) {
+    $('phase5MaxCandidates').value = String(Math.min(10000, Math.max(100, maxCandidates)));
+  }
+  if (note)
+    note.textContent = `Configuração herdada da Fase 4: ${state.optimizationConfig.objective?.objective_name || 'objetivo customizado'} · seed ${state.optimizationConfig.optimizer_config?.seed ?? 42}.`;
 }
 function renderTabs() {
   document.querySelectorAll('[data-company]').forEach((btn) => {
     const active = btn.dataset.company === state.companyId;
     btn.classList.toggle('active', active);
-    btn.setAttribute('aria-selected', String(active));
+    btn.setAttribute('aria-pressed', String(active));
   });
   $('phase5CompanyLabel').textContent = label(state.companyId);
 }
@@ -110,10 +150,19 @@ function baselineResult() {
     tax_results: state.bundle?.tax_results?.tax_results || {},
   };
 }
-function scenarioComparison(selected) {
+export function scenarioComparison(selected) {
+  const scenarioTotal = selected?.result?.total_with_tax ?? selected?.total_with_tax;
+  if (scenarioTotal == null || !Number.isFinite(Number(scenarioTotal))) {
+    return {
+      baseline_total: Number(state.bundle?.costs?.costs?.total_with_tax) || 0,
+      scenario_total: null,
+      saving_abs: null,
+      saving_pct: null,
+    };
+  }
   return calculateSaving({
     baselineTotal: state.bundle?.costs?.costs?.total_with_tax,
-    scenarioTotal: selected?.result?.total_with_tax || selected?.total_with_tax,
+    scenarioTotal,
   });
 }
 function blockedDecisionState(message) {
@@ -194,11 +243,7 @@ function runDecisionPipeline() {
     baselineBundle: state.bundle,
     objective: state.objective,
     constraints: constraints(),
-    optimizerConfig: buildCanonicalOptimizationConfig({
-      method: 'exact_discrete',
-      max_candidates: Number($('phase5MaxCandidates')?.value || 2000),
-      seed: 42,
-    }),
+    optimizerConfig: optimizerConfig(),
   });
   if (!String(state.optimizer.optimizer_status || '').startsWith('success')) {
     state.selection = null;
@@ -397,6 +442,9 @@ function releaseLabel(status) {
 function renderOverview() {
   const selected = state.selection?.selected_scenario;
   const comp = scenarioComparison(selected);
+  const robustnessValue = selected
+    ? `${formatNumber(state.robustness?.robustness_score, 0)}/100`
+    : '—';
   $('phase5OverviewCards').innerHTML = [
     metric(
       'Cenário selecionado',
@@ -408,11 +456,15 @@ function renderOverview() {
       formatBRL(selected?.result?.total_with_tax, true),
       'estimado pelo simulador'
     ),
-    metric('Saving vs baseline', formatBRL(comp.saving_abs, true), formatPct(comp.saving_pct)),
+    metric(
+      'Saving vs baseline',
+      formatOptionalBRL(comp.saving_abs, true),
+      formatOptionalPct(comp.saving_pct)
+    ),
     metric(
       'Robustez',
-      `${formatNumber(state.robustness?.robustness_score, 0)}/100`,
-      state.robustness?.robustness_status || '—'
+      robustnessValue,
+      selected ? state.robustness?.robustness_status || '—' : 'não calculada'
     ),
     metric(
       'Recomendação',
@@ -429,6 +481,28 @@ function renderOverview() {
   renderFinalSituationTable(selected, comp);
 }
 function renderFinalSituationTable(selected, comp) {
+  if (!selected) {
+    const rows = [
+      ['Empresa', label(state.companyId)],
+      ['Baseline', state.bundle?.model?.scenario_id || '—'],
+      ['Cenário selecionado', '— (nenhum cenário elegível)'],
+      ['Status do cálculo tributário', 'bloqueado'],
+      ['Cobertura fiscal dos fluxos de entrada', '—'],
+      ['Total', '—'],
+      ['Total baseline', formatOptionalBRL(comp.baseline_total, true)],
+      ['Total final', '—'],
+      ['Saving absoluto', '—'],
+      ['Saving percentual', '—'],
+      ['Robustez', '—'],
+      ['Suporte da evidência', '—'],
+      ['Risco', '—'],
+      ['Recomendação', recommendationLabel(state.recommendation?.recommendation_status)],
+    ];
+    const el = $('finalSituationTable');
+    if (el)
+      el.innerHTML = `<table><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td></tr>`).join('')}</tbody></table>`;
+    return;
+  }
   const quality = selected?.quality || {};
   const summary = buildScenarioSummary({
     scenario: selected?.scenario,
@@ -455,10 +529,10 @@ function renderFinalSituationTable(selected, comp) {
         : formatPct(selected.result.tax_results.tax_coverage.input_coverage_ratio * 100),
     ],
     ['Total', formatBRL(summary.total_with_tax, true)],
-    ['Total baseline', formatBRL(comp.baseline_total, true)],
-    ['Total final', formatBRL(comp.scenario_total, true)],
-    ['Saving absoluto', formatBRL(comp.saving_abs, true)],
-    ['Saving percentual', formatPct(comp.saving_pct)],
+    ['Total baseline', formatOptionalBRL(comp.baseline_total, true)],
+    ['Total final', formatOptionalBRL(comp.scenario_total, true)],
+    ['Saving absoluto', formatOptionalBRL(comp.saving_abs, true)],
+    ['Saving percentual', formatOptionalPct(comp.saving_pct)],
     ['Robustez', `${formatNumber(state.robustness?.robustness_score, 0)}/100`],
     [
       'Suporte da evidência',
@@ -611,6 +685,8 @@ export async function loadPhase5Company(companyId) {
   $('phase5Loading').classList.remove('hidden');
   try {
     state.bundle = await loadPhase2Bundle(companyId);
+    state.optimizationConfig = loadOptimizationConfig(companyId);
+    applyInheritedOptimizationConfig();
     runDecisionPipeline();
     $('phase5Loading').classList.add('hidden');
     renderAll();
@@ -656,4 +732,16 @@ export function setupPhase5() {
     const f = state.exportPackage.files[Number(btn.dataset.exportIndex)];
     triggerBrowserDownload(f.filename, f.content, f.type);
   });
+
+  const loadCurrentCompanyOnRoute = () => {
+    if (window.location.hash === '#/homologacao-relatorio') {
+      void loadPhase5Company(state.companyId);
+    }
+  };
+  window.addEventListener('hashchange', loadCurrentCompanyOnRoute);
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', loadCurrentCompanyOnRoute, { once: true });
+  } else {
+    loadCurrentCompanyOnRoute();
+  }
 }

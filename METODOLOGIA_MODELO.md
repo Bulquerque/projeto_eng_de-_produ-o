@@ -224,6 +224,11 @@ amostra em custo oficial. O denominador de todo saving probabilístico é o
 `baselineBundle.costs.costs.total_with_tax`, enquanto
 `deterministic_total_with_tax` identifica apenas o cenário selecionado.
 
+Quando a classificação fiscal completa fica abaixo de 100%, o bloco registra
+`decision_use = exploratory_only` e emite alerta. A simulação pode continuar
+útil para exploração sob premissas, mas não deve ser apresentada como evidência
+de decisão fiscal ou como previsão.
+
 ## 7. Otimizador e estabilidade
 
 O otimizador trabalha em uma grade discreta de cenários. Para Empresas com até
@@ -282,6 +287,11 @@ Reconciliação tributária ajustada pelo fator documentado do workbook não apa
 a divergência bruta. “Reconstruído conforme workbook” é diferente de
 “validado contra fonte independente”.
 
+Na Empresa 2, o `difference_pct` e o status da reconciliação usam a matriz
+bruta; `adjusted_matrix_total` e `adjusted_difference_pct` preservam, em
+separado, a ponte de sensibilidade definida na aba Cenários. O ajuste não pode
+transformar uma divergência observada em alinhamento.
+
 Uma recomendação limpa exige saving estritamente positivo, risco operacional controlado,
 robustez mínima, probabilidade Monte Carlo favorável quando disponível e
 estabilidade mínima entre perfis de pesos. Se os perfis mudarem o vencedor, o
@@ -310,6 +320,12 @@ precisão estatística.
    declaradas.
 6. Um resultado robusto na grade avaliada não prova capacidade, SLA, throughput
    ou viabilidade operacional sem dados adicionais.
+7. O baseline recalculado da Empresa 1 é um pacote derivado com proxy de
+   transferência e não é comparável, sem ressalva, ao snapshot bruto original;
+   ambos permanecem disponíveis para auditoria.
+8. Na Empresa 2, linhas de fábrica sem receita explícita não são promovidas a
+   faturamento fiscal a partir de volume físico; elas ficam excluídas do fluxo
+   fiscal bottom-up e entram na cobertura declarada como limitação.
 
 ## 10. Evidência técnica
 

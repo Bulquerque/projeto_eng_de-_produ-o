@@ -292,7 +292,7 @@ function renderCompanyTabs() {
   document.querySelectorAll('[data-company]').forEach((btn) => {
     const active = btn.dataset.company === state.companyId;
     btn.classList.toggle('active', active);
-    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
   });
 }
 
@@ -1112,4 +1112,16 @@ export function setupPhase3() {
     renderSaved();
   });
   document.body.addEventListener('click', onBodyClick);
+
+  const loadCurrentCompanyOnRoute = () => {
+    if (window.location.hash === '#/simulacao-otimizacao') {
+      void loadCompany(state.companyId);
+    }
+  };
+  window.addEventListener('hashchange', loadCurrentCompanyOnRoute);
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', loadCurrentCompanyOnRoute, { once: true });
+  } else {
+    loadCurrentCompanyOnRoute();
+  }
 }

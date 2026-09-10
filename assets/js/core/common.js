@@ -28,6 +28,7 @@ export function formatNumber(v, d = 0) {
     : '—';
 }
 export function formatBRL(v, compact = false) {
+  if (v === null || v === undefined || v === '') return '—';
   const n = Number(v);
   if (!Number.isFinite(n)) return '—';
   if (compact && Math.abs(n) >= 1_000_000)
@@ -39,6 +40,7 @@ export function formatBRL(v, compact = false) {
   });
 }
 export function formatPct(v, d = 1) {
+  if (v === null || v === undefined || v === '') return '—';
   const n = Number(v);
   return Number.isFinite(n)
     ? `${n.toLocaleString('pt-BR', { maximumFractionDigits: d, minimumFractionDigits: d })}%`

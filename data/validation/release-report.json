@@ -1,6 +1,7 @@
 {
   "release_name": "visagio_static_simulator_1.0",
-  "status": "ready",
+  "status": "ready_with_documented_limitations",
+  "release_qualification": "pacote tecnicamente entregável; recomendações permanecem condicionadas à qualidade dos dados e aos gates registrados",
   "scope": "Fases 1 a 5 implementadas como site estatico",
   "pages": [
     "/",
@@ -29,6 +30,13 @@
     "phase3": "passed",
     "phase4": "passed",
     "phase5": "passed"
+  },
+  "evidence_contract": {
+    "checklist": "CHECKLIST_ENTREGA_EMPRESAS.md",
+    "final_report": "RELATORIO_FINAL_ACADEMICO.md",
+    "browser_evidence": "Playwright desktop/mobile e fluxo manual no navegador embutido local",
+    "chrome_connector": "unavailable_in_execution_environment",
+    "known_limitations_are_blocking_decisions": true
   },
   "notes": [
     "Todos os testes foram executados em grupos no pacote final extraido para evitar timeout de processo unico.",

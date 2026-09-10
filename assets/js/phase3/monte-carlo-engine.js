@@ -430,6 +430,7 @@ function summarizeSamples({
   deterministicTotal,
   deterministicSavingPct,
   config,
+  decisionUse = 'decision_support',
 }) {
   const totalValues = samples.map((sample) => sample.total_with_tax);
   const savingValues = samples.map((sample) => sample.saving_pct);
@@ -524,6 +525,7 @@ function summarizeSamples({
     profile: config.profile,
     analysis_type: config.analysis_type,
     uncertainty_source: config.uncertainty_source,
+    decision_use: decisionUse,
     historical_distribution: config.historical_distribution,
     historical_drivers: config.historical_drivers,
     historical_observation_counts: config.historical_observation_counts,
@@ -685,6 +687,20 @@ export function runMonteCarloSimulation({
     };
   }
 
+  const completeFiscalCoverageRatio = Number(
+    deterministic?.tax_results?.tax_coverage?.complete_fiscal_coverage_ratio
+  );
+  const classificationLimited =
+    deterministic?.tax_results?.tax_mode !== 'disabled' &&
+    selectedScenario?.changes?.tax_mode !== 'disabled' &&
+    Number.isFinite(completeFiscalCoverageRatio) &&
+    completeFiscalCoverageRatio < 1;
+  if (classificationLimited) {
+    warnings.push(
+      'Monte Carlo permanece exploratório: a classificação fiscal completa não cobre 100% dos fluxos.'
+    );
+  }
+
   const samples = [];
   for (let index = 0; index < normalizedConfig.iterations; index += 1) {
     const sharedShock = gaussian(rng);
@@ -826,6 +842,7 @@ export function runMonteCarloSimulation({
     deterministicTotal: safeNumber(deterministic.total_with_tax),
     deterministicSavingPct: deterministicSaving.saving_pct,
     config: normalizedConfig,
+    decisionUse: classificationLimited ? 'exploratory_only' : 'decision_support',
   });
 
   return {
@@ -839,6 +856,7 @@ export function runMonteCarloSimulation({
     historical_distribution: normalizedConfig.historical_distribution,
     uncertainty_source: normalizedConfig.uncertainty_source,
     historical_drivers: normalizedConfig.historical_drivers,
+    decision_use: classificationLimited ? 'exploratory_only' : 'decision_support',
     deterministic_reference: {
       scenario_id: deterministic?.scenario_id || selectedScenario?.scenario_id || null,
       total_with_tax: safeNumber(deterministic?.total_with_tax),

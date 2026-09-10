@@ -34,11 +34,11 @@ function logCrypto(level, event, detail = {}, error = null) {
 }
 
 function readSessionPassword() {
-  return readStorageValue('local', PASSWORD_KEY, null);
+  return readStorageValue('session', PASSWORD_KEY, null);
 }
 
 function writeSessionPassword(password) {
-  writeStorageValue('local', PASSWORD_KEY, password || null);
+  writeStorageValue('session', PASSWORD_KEY, password || null);
 }
 
 function ensureStyles() {
