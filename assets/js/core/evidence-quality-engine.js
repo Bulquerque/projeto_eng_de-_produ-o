@@ -186,8 +186,8 @@ function buildEvidenceBlockers({
   const blockers = [];
   if (transferProxy) blockers.push('transferência depende de proxy');
   if (taxProxyFlows > 0) blockers.push('classificação fiscal incompleta em parte dos fluxos');
-  if (taxCoverage.blocked)
-    blockers.push('cobertura fiscal bloqueada por campos obrigatórios ausentes');
+  if (taxCoverage.coverage_limited || taxCoverage.blocked)
+    blockers.push('cobertura fiscal parcial por campos obrigatórios ausentes');
   if (maxFallbackRate >= 0.25) blockers.push('dependência material de fallback físico');
   if (!hasHistoricalBenchmark) blockers.push('benchmark histórico independente ausente');
   if (!reconciliation.overall || reconciliation.overall.status === 'pending') {
@@ -298,8 +298,6 @@ export function buildEvidenceReport({
 
 export function isEvidenceSufficientForRecommendation(report, { minimumScore = 55 } = {}) {
   return Boolean(
-    report &&
-    Number(report.evidence_score) >= minimumScore &&
-    !report.blockers?.includes('reconciliação independente pendente')
+    report && Number(report.evidence_score) >= minimumScore && !report.blockers?.length
   );
 }

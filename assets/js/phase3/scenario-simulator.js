@@ -13,6 +13,7 @@ import {
   calculateTotalWithTax,
   MODEL_DEFAULTS,
 } from '../core/model-configuration.js';
+import { buildDataQualityAssessment } from '../core/analysis-quality.js';
 
 // ── Tax ──────────────────────────────────────────────────────────────────────
 
@@ -275,6 +276,8 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
     audit_trace: td?.audit_trace,
     metadata: td?.metadata,
     warnings: td?.warnings || [],
+    decision_use: td?.decision_use || 'decision_support',
+    tax_study: td?.tax_study || td?.metadata?.tax_study || null,
     tax_source_classification:
       companyId === 'empresa1'
         ? 'official_shared_tax_reference_proxy'
@@ -313,9 +316,10 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
     simulation_status: rebuilt.errors?.length ? 'error' : 'success',
     calculation_status: rebuilt.errors?.length
       ? 'error'
-      : td?.tax_coverage?.blocked
+      : td?.tax_coverage?.coverage_limited
         ? 'success_with_tax_limits'
         : 'success',
+    data_quality: buildDataQualityAssessment({ taxResults, scenario }),
     flows: rebuilt.flows,
     flow_summary: rebuilt.flow_summary,
     costs,
@@ -329,6 +333,7 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
       ...(validation.warnings || []),
       ...(rebuilt.warnings || []),
       ...(costs.physical_warnings || []),
+      ...(td?.warnings || []),
     ],
     errors: [...(rebuilt.errors || [])],
     scenario,

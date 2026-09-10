@@ -28,6 +28,13 @@ export function renderSearchLog(searchLog) {
     ['Simulados', formatNumber(searchLog.simulated_candidates)],
     ['Válidos', formatNumber(searchLog.valid_candidates)],
     ['Inválidos', formatNumber(searchLog.invalid_candidates)],
+    ['Qualidade fiscal', searchLog.data_quality_status || '—'],
+    [
+      'Cenários com cobertura limitada',
+      searchLog.limited_fiscal_candidates == null
+        ? '—'
+        : formatNumber(searchLog.limited_fiscal_candidates),
+    ],
     [
       'Refino',
       `${formatNumber(searchLog.refinement_rounds)} x ${formatNumber(searchLog.refinement_seed_count)}`,
@@ -122,10 +129,10 @@ export function buildRankingTableHtml(bestScenarios = []) {
         quality: s.quality,
         baselineTotal: Number(s.result?.baseline_total ?? 0),
       });
-      return `<tr><td>${escapeHtml(summary.scenario_name || s.scenario_id)}</td><td>${Number(s.final_score).toFixed(1)}</td><td>${formatNumber(summary.active_cds_count)}</td><td>${escapeHtml(formatMultiplierDisplay(summary.freight_multiplier))}</td><td>${escapeHtml(formatMultiplierDisplay(summary.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(summary.inventory_days))}</td><td>${escapeHtml(summary.tax_regime_label)}</td><td>${escapeHtml(summary.tax_source_label || '—')}</td><td>${formatBRL(summary.transfer_cost, true)}</td><td>${formatBRL(summary.tax_impact, true)}</td><td>${formatBRL(summary.total_with_tax, true)}</td><td>${escapeHtml(summary.risk_level || '—')}</td></tr>`;
+      return `<tr><td>${escapeHtml(summary.scenario_name || s.scenario_id)}</td><td>${Number(s.final_score).toFixed(1)}</td><td>${formatNumber(summary.active_cds_count)}</td><td>${escapeHtml(formatMultiplierDisplay(summary.freight_multiplier))}</td><td>${escapeHtml(formatMultiplierDisplay(summary.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(summary.inventory_days))}</td><td>${escapeHtml(summary.tax_regime_label)}</td><td>${escapeHtml(summary.tax_source_label || '—')}</td><td>${escapeHtml(s.data_quality?.status || 'complete')}</td><td>${formatBRL(summary.transfer_cost, true)}</td><td>${formatBRL(summary.tax_impact, true)}</td><td>${formatBRL(summary.total_with_tax, true)}</td><td>${escapeHtml(summary.risk_level || '—')}</td></tr>`;
     })
     .join('');
-  return `<table><thead><tr><th>Cenário</th><th>Score</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Fonte tributária</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Risco</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return `<table><thead><tr><th>Cenário</th><th>Score</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Fonte tributária</th><th>Qualidade dos dados</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Risco</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 export function buildBlockedRankingTableHtml(errors = []) {

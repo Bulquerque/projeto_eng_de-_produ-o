@@ -63,13 +63,14 @@ export function validateRelease({
     }
   }
 
-  const release_status = blocking.length ? 'blocked' : 'ready';
+  const warnings = [...(finalQA?.warnings || [])];
+  const release_status = blocking.length ? 'blocked' : warnings.length ? 'warning' : 'ready';
   return {
     release_status,
     release_name: 'visagio_static_simulator_FINAL_v1',
     blocking_issues: blocking,
-    warnings: [],
-    ready_to_deliver: release_status === 'ready',
+    warnings,
+    ready_to_deliver: blocking.length === 0,
     zip_metadata: zipMetadata,
     test_results: testResults,
   };

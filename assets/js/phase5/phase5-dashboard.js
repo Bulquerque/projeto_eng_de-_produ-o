@@ -9,7 +9,7 @@ import { runSensitivity, runSensitivityMatrix } from './sensitivity-engine.js';
 import { calculateRobustness } from './robustness-scorer.js';
 import { buildRecommendation } from './recommendation-engine.js';
 import { buildAuditTrail } from './audit-trail-engine.js';
-import { buildExecutiveReportHtml } from './executive-report-builder.js?v=final-release-2';
+import { buildExecutiveReportHtml } from './executive-report-builder.js?v=final-release-3';
 import { buildExportPackage, triggerBrowserDownload } from './export-center.js';
 import { runFinalQAChecks } from './final-qa-checker.js';
 import { validateRelease } from './release-validator.js';
@@ -442,6 +442,7 @@ function releaseLabel(status) {
 function renderOverview() {
   const selected = state.selection?.selected_scenario;
   const comp = scenarioComparison(selected);
+  const robustnessIsCertified = state.robustness?.certified_robustness_score != null;
   const robustnessValue = selected
     ? `${formatNumber(state.robustness?.robustness_score, 0)}/100`
     : '—';
@@ -462,9 +463,13 @@ function renderOverview() {
       formatOptionalPct(comp.saving_pct)
     ),
     metric(
-      'Robustez',
+      robustnessIsCertified ? 'Robustez' : 'Robustez condicional',
       robustnessValue,
-      selected ? state.robustness?.robustness_status || '—' : 'não calculada'
+      selected
+        ? robustnessIsCertified
+          ? state.robustness?.robustness_status || '—'
+          : 'exploratória — não certificada'
+        : 'não calculada'
     ),
     metric(
       'Recomendação',
@@ -474,7 +479,11 @@ function renderOverview() {
     metric(
       'Release',
       releaseLabel(state.release?.release_status),
-      state.release?.ready_to_deliver ? 'pronto' : 'com bloqueios'
+      state.release?.release_status === 'warning'
+        ? 'pronto com limitações documentadas'
+        : state.release?.ready_to_deliver
+          ? 'pronto'
+          : 'com bloqueios técnicos'
     ),
   ].join('');
   renderRobustnessChart(state.robustness?.robustness_score);
@@ -522,6 +531,9 @@ function renderFinalSituationTable(selected, comp) {
     ['Transferência', formatBRL(summary.transfer_cost, true)],
     ['Tributo', formatBRL(summary.tax_impact, true)],
     ['Status do cálculo tributário', selected?.result?.tax_results?.calculation_mode || '—'],
+    ['Qualidade dos dados', selected?.result?.data_quality?.status || '—'],
+    ['Uso permitido', selected?.result?.data_quality?.decision_use || 'decision_support'],
+    ['Estudo próprio tributário', selected?.result?.tax_results?.tax_study?.study_id || '—'],
     [
       'Cobertura fiscal dos fluxos de entrada',
       selected?.result?.tax_results?.tax_coverage?.input_coverage_ratio == null
@@ -533,7 +545,16 @@ function renderFinalSituationTable(selected, comp) {
     ['Total final', formatOptionalBRL(comp.scenario_total, true)],
     ['Saving absoluto', formatOptionalBRL(comp.saving_abs, true)],
     ['Saving percentual', formatOptionalPct(comp.saving_pct)],
-    ['Robustez', `${formatNumber(state.robustness?.robustness_score, 0)}/100`],
+    [
+      state.robustness?.certified_robustness_score != null ? 'Robustez' : 'Robustez condicional',
+      `${formatNumber(state.robustness?.robustness_score, 0)}/100`,
+    ],
+    [
+      'Certificação da robustez',
+      state.robustness?.certified_robustness_score != null
+        ? 'disponível no escopo modelado'
+        : 'não certificada — interpretação exploratória',
+    ],
     [
       'Suporte da evidência',
       `${formatNumber(selected?.result?.evidence?.evidence_score, 0)}/100 · ${selected?.result?.evidence?.evidence_status || '—'}`,
@@ -549,7 +570,7 @@ function renderTaxPeriods() {
   const el = $('taxPeriodsPanel');
   if (!el) return;
   const tax = state.selection?.selected_scenario?.result?.tax_results || {};
-  const contract = tax.tax_period_contract || {};
+  const contract = tax.tax_period_contract || tax.metadata?.tax_period_contract || {};
   const selected = contract.selected_period || {};
   const dataPeriod = contract.current_reference_data_period || {};
   const observed = contract.observed_data_coverage || {};
@@ -565,11 +586,11 @@ function renderStress() {
   const rows = (state.stress?.stress_results || [])
     .map(
       (r) =>
-        `<tr><td>${escapeHtml(r.case_name)}</td><td>${formatBRL(r.total_with_tax, true)}</td><td>${formatBRL(r.saving_vs_baseline, true)}</td><td>${formatPct(r.saving_pct)}</td><td>${r.scenario_still_better_than_baseline ? 'sim' : 'não'}</td></tr>`
+        `<tr><td>${escapeHtml(r.case_name)}</td><td>${formatBRL(r.total_with_tax, true)}</td><td>${formatBRL(r.saving_vs_baseline, true)}</td><td>${formatPct(r.saving_pct)}</td><td>${r.scenario_still_better_than_baseline ? 'sim' : 'não'}</td><td>${escapeHtml(r.data_quality_status || 'complete')}</td></tr>`
     )
     .join('');
   $('stressPanel').innerHTML =
-    `<table><thead><tr><th>Caso</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Melhor que base?</th></tr></thead><tbody>${rows}</tbody></table>`;
+    `<table><thead><tr><th>Caso</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Melhor que base?</th><th>Qualidade dos dados</th></tr></thead><tbody>${rows}</tbody></table><p class="small-note">Casos com cobertura fiscal parcial permanecem disponíveis para leitura exploratória.</p>`;
   renderStressChart(state.stress?.stress_results);
 }
 function renderSensitivityPanel() {

@@ -30,3 +30,7 @@ funcionalidades, fases, evidências e ressalvas, está em
 O parecer técnico da release, com o mapeamento das críticas do plano de
 trabalho, limitações assumidas e evidências de validação, está em
 [`RELATORIO_FINAL_ACADEMICO.md`](RELATORIO_FINAL_ACADEMICO.md).
+
+O estudo técnico próprio que complementa a camada tributária, com fontes,
+parâmetros, cobertura, proxies e requisitos de validação, está em
+[`ESTUDO_PROPRIO_TRIBUTACAO.md`](ESTUDO_PROPRIO_TRIBUTACAO.md).

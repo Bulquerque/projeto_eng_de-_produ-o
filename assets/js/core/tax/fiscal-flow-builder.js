@@ -62,7 +62,7 @@ export function buildFiscalFlows({
       warnings.push({
         code: 'MISSING_ORIGIN_UF',
         severity: 'warning',
-        message: `Fluxo ${flow?.flow_id || index + 1} sem UF origem; associação fiscal fica bloqueada ou proxy.`,
+        message: `Fluxo ${flow?.flow_id || index + 1} sem UF origem; associação fiscal fica parcial e é reportada como proxy.`,
       });
     }
 

@@ -34,9 +34,16 @@
   "evidence_contract": {
     "checklist": "CHECKLIST_ENTREGA_EMPRESAS.md",
     "final_report": "RELATORIO_FINAL_ACADEMICO.md",
-    "browser_evidence": "Playwright desktop/mobile e fluxo manual no navegador embutido local",
-    "chrome_connector": "unavailable_in_execution_environment",
-    "known_limitations_are_blocking_decisions": true
+    "browser_evidence": "Playwright desktop/mobile e fluxo manual no Google Chrome local via automação CUA",
+    "chrome_connector": "manual_chrome_validated_via_cua_named_connector_unavailable",
+    "known_limitations_are_blocking_decisions": false,
+    "known_limitations_are_visible_and_non_fabricated": true,
+    "tax_study": {
+      "study_id": "estudo_proprio_tributacao_visagio_v1",
+      "status": "registered_validation_pending",
+      "decision_use_when_coverage_is_partial": "exploratory_only",
+      "official_fiscal_validation": false
+    }
   },
   "notes": [
     "Todos os testes foram executados em grupos no pacote final extraido para evitar timeout de processo unico.",

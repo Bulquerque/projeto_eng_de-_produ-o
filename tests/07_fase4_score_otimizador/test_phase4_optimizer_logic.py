@@ -26,8 +26,11 @@ for (const companyId of ['empresa1','empresa2']) {
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}});
  const opt2=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}});
  if(companyId==='empresa2') {
-   if(opt.optimizer_status!=='error') throw new Error('empresa2 optimizer should block incomplete fiscal coverage');
-   if(!opt.errors.some((message)=>String(message).includes('Nenhum cenário viável'))) throw new Error('empresa2 fiscal block reason missing');
+   if(!String(opt.optimizer_status || '').startsWith('success')) throw new Error('empresa2 optimizer should deliver exploratory results');
+   if(opt.decision_use!=='exploratory_only' || opt.data_quality_status!=='limited_fiscal_coverage') throw new Error('empresa2 fiscal limitation status missing');
+   if(!opt.scored_scenarios.length || !opt.best_scenarios[0]?.result) throw new Error('empresa2 exploratory ranking missing');
+   if(!opt.scored_scenarios.every((item)=>item.data_quality?.coverage_limited)) throw new Error('empresa2 candidates should expose fiscal coverage limitation');
+   if(!opt.search_log.limited_fiscal_candidates) throw new Error('empresa2 fiscal limitation count missing');
    continue;
  }
  if(!String(opt.optimizer_status || '').startsWith('success')) throw new Error('optimizer failed');

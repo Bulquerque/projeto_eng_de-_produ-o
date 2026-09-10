@@ -22,6 +22,7 @@ import {
 import { safeNumber } from '../core/common.js';
 import { normalizeObjective, validateObjective } from './objective-validator.js';
 import { assessObjectiveSensitivity } from './optimization-sensitivity.js';
+import { buildDataQualityAssessment } from '../core/analysis-quality.js';
 
 const REFINEMENT_CONFIG = Object.freeze({
   allow_tax_toggle: false,
@@ -36,17 +37,6 @@ function evaluateCandidate({ companyId, scenario, baselineBundle, constraints })
   if (result.simulation_status !== 'success') {
     return { reason: result.errors?.[0] || 'simulação inválida' };
   }
-  const taxBlocked =
-    scenario?.changes?.tax_mode !== 'disabled' &&
-    (result.calculation_status === 'success_with_tax_limits' ||
-      result.tax_results?.tax_coverage?.blocked === true);
-  if (taxBlocked) {
-    return {
-      reason:
-        'cobertura tributária insuficiente: cenário excluído do ranking até que os fluxos fiscais sejam completados',
-    };
-  }
-
   const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle });
   const constraint = evaluateConstraints({
     scenarioResult: result,
@@ -58,7 +48,18 @@ function evaluateCandidate({ companyId, scenario, baselineBundle, constraints })
     return { reason: constraint.violations[0] || 'restrição violada' };
   }
 
-  return { record: { scenario, result, quality, constraint } };
+  return {
+    record: {
+      scenario,
+      result,
+      quality,
+      constraint,
+      data_quality: buildDataQualityAssessment({
+        taxResults: result.tax_results,
+        scenario,
+      }),
+    },
+  };
 }
 
 function evaluateCandidates(
@@ -116,6 +117,7 @@ function buildRankedScenarios(scoring, records) {
         result: record?.result,
         quality: record?.quality,
         constraint: record?.constraint,
+        data_quality: record?.data_quality,
       };
     })
     .sort(compareExactRanking)
@@ -348,6 +350,9 @@ export function runOptimization({
   const totalSimulated = generatedCount + refinedSimulated;
   const totalValid = scenarioRecords.length + refinedRecords.length;
   const totalInvalid = invalid + refinedInvalid;
+  const limitedFiscalRecords = allScenarioRecords.filter(
+    (record) => record.data_quality?.coverage_limited
+  );
   const coverageRatio = candidateSpaceSize > 0 ? totalSimulated / candidateSpaceSize : 0;
   const baseSpaceComplete = Boolean(generated.generation_summary?.search_space_complete);
   const exactSearchSpace =
@@ -422,6 +427,13 @@ export function runOptimization({
     company_id: companyId,
     optimizer_status: exactSearchSpace ? 'success' : 'success_with_limited_space',
     result_scope: exactSearchSpace ? 'exact_declared_space' : 'conditional_declared_catalog',
+    data_quality_status: limitedFiscalRecords.length ? 'limited_fiscal_coverage' : 'complete',
+    decision_use: limitedFiscalRecords.length ? 'exploratory_only' : 'decision_support',
+    data_quality_summary: {
+      candidates_with_limited_fiscal_coverage: limitedFiscalRecords.length,
+      candidates_with_complete_fiscal_coverage:
+        allScenarioRecords.length - limitedFiscalRecords.length,
+    },
     search_strategy: 'broad_then_refine',
     best_scenarios,
     best_by_total_cost,
@@ -430,29 +442,33 @@ export function runOptimization({
     metrics,
     normalized,
     ranking_sensitivity: rankingSensitivity,
-    search_log: buildSearchLog({
-      methodRequested: requestedMethod,
-      methodApplied: SUPPORTED_METHOD,
-      generatedCandidates: generatedCount + refinementGenerated,
-      simulatedCandidates: totalSimulated,
-      validCandidates: totalValid,
-      invalidCandidates: totalInvalid,
-      candidateSpaceSize,
-      coverageRatio,
-      exactSearchSpace,
-      exactnessReason,
-      refinementRounds,
-      refinementSeedCount,
-      refinementCandidatesGenerated: refinementGenerated,
-      refinementCandidatesSimulated: refinedSimulated,
-      seed: canonicalConfig.seed,
-      spaceLimited,
-      bestScore: best_scenarios[0]?.final_score ?? null,
-      bestScenarioId: best_scenarios[0]?.scenario_id ?? null,
-      bestByTotalCostScenarioId: best_by_total_cost?.scenario_id ?? null,
-      bestByTotalCostValue: best_by_total_cost?.result?.total_with_tax ?? null,
-      invalidReasons: [...invalidReasons, ...refinedInvalidReasons],
-    }),
+    search_log: {
+      ...buildSearchLog({
+        methodRequested: requestedMethod,
+        methodApplied: SUPPORTED_METHOD,
+        generatedCandidates: generatedCount + refinementGenerated,
+        simulatedCandidates: totalSimulated,
+        validCandidates: totalValid,
+        invalidCandidates: totalInvalid,
+        candidateSpaceSize,
+        coverageRatio,
+        exactSearchSpace,
+        exactnessReason,
+        refinementRounds,
+        refinementSeedCount,
+        refinementCandidatesGenerated: refinementGenerated,
+        refinementCandidatesSimulated: refinedSimulated,
+        seed: canonicalConfig.seed,
+        spaceLimited,
+        bestScore: best_scenarios[0]?.final_score ?? null,
+        bestScenarioId: best_scenarios[0]?.scenario_id ?? null,
+        bestByTotalCostScenarioId: best_by_total_cost?.scenario_id ?? null,
+        bestByTotalCostValue: best_by_total_cost?.result?.total_with_tax ?? null,
+        invalidReasons: [...invalidReasons, ...refinedInvalidReasons],
+      }),
+      data_quality_status: limitedFiscalRecords.length ? 'limited_fiscal_coverage' : 'complete',
+      limited_fiscal_candidates: limitedFiscalRecords.length,
+    },
     warnings: [
       ...searchWarnings,
       ...(exactSearchSpace
@@ -464,6 +480,11 @@ export function runOptimization({
       ...(normalized.warnings || []),
       ...(scoring.warnings || []),
       ...(rankingSensitivity.warnings || []),
+      ...(limitedFiscalRecords.length
+        ? [
+            `A otimização entregou ${limitedFiscalRecords.length} cenário(s) com cobertura fiscal parcial; o ranking é exploratório e os campos ausentes não foram inventados.`,
+          ]
+        : []),
     ],
     errors: [],
   };

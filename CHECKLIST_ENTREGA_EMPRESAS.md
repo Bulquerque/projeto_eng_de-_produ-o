@@ -6,9 +6,9 @@ houver dados, telas ou comportamento específico da empresa. Marque também a
 evidência produzida: captura de tela, JSON exportado, CSV, log do navegador ou
 resultado do teste automatizado.
 
-Legenda: `[ ]` pendente, `[x]` aprovado, `[!]` bloqueado ou com ressalva.
+Legenda: `[ ]` pendente, `[x]` aprovado, `[!]` indisponível ou com ressalva.
 
-## Registro de execução da release final — 2026-09-09
+## Registro de execução da release final — 2026-09-10
 
 Esta lista mantém os casos individuais para homologação por empresa. O status
 consolidado abaixo é a evidência produzida nesta release; uma linha individual
@@ -18,11 +18,12 @@ aquele caso específico.
 - `[x]` Código: lint, formatação, auditoria de dependências e `git diff --check` aprovados.
 - `[x]` Dados: build criptografado verificado com 144 arquivos; segredo não encontrado no repositório.
 - `[x]` Cálculos: suíte completa, invariantes, regressão, contratos de dados, reconciliação, otimização e Monte Carlo aprovados.
-- `[x]` Navegador: fluxo de apresentação desktop/mobile e regressão E2E aprovados; Fase 5 exercitada no navegador embutido.
+- `[x]` Navegador: fluxo de apresentação desktop/mobile e regressão E2E aprovados; Fase 5 exercitada no Google Chrome local via automação CUA.
 - `[x]` Rotas diretas: Fase 3/4/5 carregam a empresa ativa ao entrar pelo hash, sem depender de clique prévio no seletor.
-- `[x]` Bloqueio honesto: Empresa 2 exibe `—` para saving, custo final e robustez quando nenhum cenário é elegível.
+- `[x]` Entrega sem bloqueio por cobertura: Empresa 2 recebe saving, custo final, robustez, ranking, stress e Monte Carlo com status `exploratory_only` e limitações visíveis.
+- `[x]` Estudo próprio tributário: o identificador, versão, fontes, cobertura, proxies e próximos requisitos aparecem no runtime, relatório e export.
 - `[x]` Consistência: relatório executivo, auditoria, JSON/CSV e estado de release recebem a mesma seleção e os mesmos gates.
-- `[!]` Navegador: o conector `@Chrome` não estava disponível nesta execução; a evidência equivalente local está registrada no relatório final.
+- `[!]` Navegador: o conector nominal `@Chrome` não estava disponível; a execução manual equivalente no Google Chrome local e a evidência automatizada estão registradas no relatório final.
 - `[!]` Evidência manual: não marcar individualmente todos os casos apenas por herança de um teste agregado; usar as linhas abaixo para a homologação final por empresa.
 
 ## 0 Preparação geral
@@ -204,9 +205,9 @@ entrega.
 - [ ] Empresa 1 — clicar em `#runMonteCarloScenario`.
 - [ ] Empresa 2 — clicar em `#runMonteCarloScenario`.
 - [ ] Empresa 1 — confirmar seed efetiva, algoritmo RNG e reprodutibilidade.
-- [ ] Empresa 2 — confirmar bloqueio quando a cobertura fiscal não sustentar a distribuição.
+- [ ] Empresa 2 — confirmar execução com cobertura fiscal limitada, `exploratory_only` e parâmetros reproduzíveis.
 - [ ] Empresa 1 — conferir p10, p50, p90, média, desvio, histograma e CDF.
-- [ ] Empresa 2 — conferir mensagem de bloqueio e motivo da insuficiência de dados.
+- [ ] Empresa 2 — conferir resumo probabilístico, aviso causal da insuficiência e preservação dos números disponíveis.
 - [ ] Empresa 1 — conferir correlação e driver mais sensível.
 - [ ] Empresa 2 — conferir que nenhum resultado bloqueado é tratado como número oficial.
 - [ ] Empresa 1 — confirmar `forecast: false`.
@@ -275,7 +276,7 @@ entrega.
 - [ ] Empresa 2 — confirmar alerta se o vencedor mudar entre perfis.
 - [ ] Empresa 1 — não chamar o resultado de ótimo global quando a busca for parcial.
 - [ ] Empresa 2 — não chamar o resultado de ótimo global quando a busca for parcial.
-- [ ] Empresa 2 — confirmar bloqueio quando a cobertura fiscal não sustentar a otimização.
+- [ ] Empresa 2 — confirmar ranking entregue com cobertura fiscal limitada, `exploratory_only` e sem declaração indevida de ótimo global.
 
 ## 7 Fase 5 Decisão e entrega
 
@@ -384,7 +385,7 @@ entrega.
 - [ ] Empresa 2 — registrar que fluxos fábrica → CD e distribuição CD → destino têm tratamentos diferentes.
 - [ ] Empresa 2 — registrar que os cenários 2 e N exigem adaptador de participação para reprodução like-for-like.
 - [ ] Empresa 1 — registrar que Monte Carlo é exploratório e condicional às premissas/proxies.
-- [ ] Empresa 2 — registrar que Monte Carlo/otimização podem ser bloqueados por qualidade fiscal.
+- [ ] Empresa 2 — registrar que Monte Carlo/otimização são entregues em modo exploratório quando o resultado numérico é utilizável.
 - [ ] Global — registrar que reconciliação não equivale a validação fiscal oficial.
 - [ ] Global — registrar commit e relatório de validação junto à versão entregue.
 

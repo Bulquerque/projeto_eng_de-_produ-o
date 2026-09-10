@@ -2,6 +2,7 @@ import { runScenario } from '../phase3/scenario-simulator.js';
 import { buildStressCaseLibrary } from './stress-case-library.js';
 import { safeNumber } from '../core/common.js';
 import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { isNumericallyUsableScenarioResult } from '../core/analysis-quality.js';
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj || {}));
 }
@@ -54,17 +55,12 @@ export function runStressTests({
     const result = runScenario({ companyId, scenario: stressedScenario, baselineBundle });
     const taxLimited =
       result.calculation_status === 'success_with_tax_limits' ||
+      result.tax_results?.tax_coverage?.coverage_limited === true ||
       result.tax_results?.tax_coverage?.blocked === true;
-    const validResult =
-      result.simulation_status === 'success' &&
-      Number.isFinite(Number(result.total_with_tax)) &&
-      !taxLimited;
+    const validResult = isNumericallyUsableScenarioResult(result);
     if (!validResult) {
       const caseWarnings = [
         ...(result.warnings || []),
-        ...(taxLimited
-          ? ['Caso de stress bloqueado: cobertura tributária insuficiente para comparação.']
-          : []),
         'Caso de stress bloqueado: o cenário não produziu um resultado determinístico válido.',
       ];
       warnings.push(`${stressCase.case_id}: resultado inválido ou bloqueado.`);
@@ -91,6 +87,10 @@ export function runStressTests({
       scenarioTotal: result.total_with_tax,
     });
     const caseWarnings = [...(result.warnings || [])];
+    if (taxLimited)
+      caseWarnings.push(
+        'Caso calculado com cobertura fiscal parcial; comparação entregue para uso exploratório.'
+      );
     if (!stillBetter) caseWarnings.push('Saving ficou negativo neste caso de stress.');
     stress_results.push({
       case_id: stressCase.case_id,
@@ -98,6 +98,8 @@ export function runStressTests({
       scenario_id: selectedScenario?.scenario_id,
       stressed_scenario_id: stressedScenario.scenario_id,
       status: 'success',
+      data_quality_status: taxLimited ? 'limited_fiscal_coverage' : 'complete',
+      decision_use: taxLimited ? 'exploratory_only' : 'decision_support',
       total_with_tax: safeNumber(result.total_with_tax),
       total_logistics_cost: safeNumber(result.costs?.total_logistics_cost),
       tax_impact: safeNumber(result.tax_results?.total_tax_impact),
@@ -112,6 +114,9 @@ export function runStressTests({
   const cases_positive = validResults.filter((r) => r.scenario_still_better_than_baseline).length;
   const cases_negative = validResults.length - cases_positive;
   const cases_blocked = stress_results.length - validResults.length;
+  const cases_limited = validResults.filter(
+    (result) => result.data_quality_status === 'limited_fiscal_coverage'
+  ).length;
   return {
     company_id: companyId,
     scenario_id: selectedScenario?.scenario_id,
@@ -122,7 +127,12 @@ export function runStressTests({
       cases_positive,
       cases_negative,
       cases_blocked,
-      status: cases_blocked ? 'inconclusive' : 'complete',
+      cases_limited,
+      status: cases_blocked
+        ? 'inconclusive'
+        : cases_limited
+          ? 'complete_with_warnings'
+          : 'complete',
     },
     warnings,
     errors: [],

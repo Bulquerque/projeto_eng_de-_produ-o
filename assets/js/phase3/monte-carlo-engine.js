@@ -663,29 +663,11 @@ export function runMonteCarloSimulation({
     };
   }
 
-  const taxQualityBlocked =
-    deterministic?.tax_results?.tax_mode !== 'disabled' &&
-    selectedScenario?.changes?.tax_mode !== 'disabled' &&
-    (deterministic?.calculation_status === 'success_with_tax_limits' ||
-      deterministic?.tax_results?.tax_coverage?.blocked === true);
-  if (taxQualityBlocked) {
-    const warning =
-      'Monte Carlo bloqueado: a tributação do cenário determinístico não tem cobertura suficiente para sustentar uma distribuição de custo total.';
-    return {
-      company_id: companyId,
-      scenario_id: selectedScenario?.scenario_id || null,
-      monte_carlo_status: 'blocked_by_data_quality',
-      analysis_type: normalizedConfig.analysis_type,
-      forecast: false,
-      historical_distribution: normalizedConfig.historical_distribution,
-      uncertainty_source: normalizedConfig.uncertainty_source,
-      config: normalizedConfig,
-      samples: [],
-      summary: null,
-      warnings: [...(deterministic.warnings || []), warning],
-      errors: [warning],
-    };
-  }
+  const taxQualityLimited = Boolean(
+    deterministic?.tax_results?.tax_coverage?.coverage_limited ||
+    deterministic?.calculation_status === 'success_with_tax_limits' ||
+    deterministic?.tax_results?.tax_coverage?.blocked === true
+  );
 
   const completeFiscalCoverageRatio = Number(
     deterministic?.tax_results?.tax_coverage?.complete_fiscal_coverage_ratio
@@ -693,11 +675,11 @@ export function runMonteCarloSimulation({
   const classificationLimited =
     deterministic?.tax_results?.tax_mode !== 'disabled' &&
     selectedScenario?.changes?.tax_mode !== 'disabled' &&
-    Number.isFinite(completeFiscalCoverageRatio) &&
-    completeFiscalCoverageRatio < 1;
+    (taxQualityLimited ||
+      (Number.isFinite(completeFiscalCoverageRatio) && completeFiscalCoverageRatio < 1));
   if (classificationLimited) {
     warnings.push(
-      'Monte Carlo permanece exploratório: a classificação fiscal completa não cobre 100% dos fluxos.'
+      'Monte Carlo executado como análise exploratória: a classificação fiscal completa não cobre 100% dos fluxos.'
     );
   }
 
@@ -857,6 +839,7 @@ export function runMonteCarloSimulation({
     uncertainty_source: normalizedConfig.uncertainty_source,
     historical_drivers: normalizedConfig.historical_drivers,
     decision_use: classificationLimited ? 'exploratory_only' : 'decision_support',
+    data_quality_status: classificationLimited ? 'limited_fiscal_coverage' : 'complete',
     deterministic_reference: {
       scenario_id: deterministic?.scenario_id || selectedScenario?.scenario_id || null,
       total_with_tax: safeNumber(deterministic?.total_with_tax),

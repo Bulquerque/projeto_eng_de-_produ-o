@@ -1,6 +1,6 @@
 # Relatório técnico final — Visagio Static Simulator
 
-Data da auditoria: 2026-09-09
+Data da auditoria: 2026-09-10
 Escopo: código, dados protegidos, cálculos, arquitetura, otimização, Monte
 Carlo, tributação, interface, documentação, testes e pacote de entrega.
 
@@ -17,8 +17,20 @@ de validade fiscal ou previsão operacional. Para a Empresa 1, o baseline de
 decisão é derivado por proxy e permanece exploratório. Para a Empresa 2, a
 divergência tributária bruta permanece visível; fluxos sem receita explícita não
 são tratados como faturamento por inferência física. Quando a cobertura fiscal
-é insuficiente, otimização/Monte Carlo/stress são bloqueados ou marcados como
-exploratórios conforme o módulo.
+é insuficiente, otimização/Monte Carlo/stress continuam sendo executados sempre
+que o resultado determinístico é numericamente utilizável, com
+`decision_use: exploratory_only`, alertas e proveniência explícita. Somente
+erros técnicos reais bloqueiam a execução.
+
+Quando há cobertura fiscal parcial, o score de robustez permanece numérico,
+mas é apresentado como robustez condicional e exploratória, sem certificação
+fiscal.
+
+A camada tributária é complementada pelo estudo técnico próprio
+[`ESTUDO_PROPRIO_TRIBUTACAO.md`](ESTUDO_PROPRIO_TRIBUTACAO.md), registrado em
+cada resultado como `estudo_proprio_tributacao_visagio_v1`. Ele organiza as
+fontes, parâmetros, proxies, cobertura e requisitos de validação específica
+sem inventar campos fiscais ausentes.
 
 ## Críticas do plano de trabalho incorporadas
 
@@ -35,7 +47,7 @@ exploratórios conforme o módulo.
 | Seleção final enviesada pelo top-10 | Seleção automática usa `scored_scenarios` completo quando disponível; `best_scenarios` é apenas resumo. |
 | Configuração divergente entre Fase 4 e Fase 5 | Objetivo, restrições, método, seed e limite são herdados via store de sessão e exibidos na Fase 5. |
 | Código morto, warnings e segurança | Imports/formatação/lint revisados, vulnerabilidades de dependências corrigidas, senha restrita à `sessionStorage`, dados continuam criptografados e o segredo não entra no Git. |
-| Interface e acessibilidade | Gráficos receberam rótulos, seleção de empresa usa `aria-pressed`, tabelas têm rolagem horizontal controlada em mobile e mensagens de bloqueio distinguem sucesso de falha. |
+| Interface e acessibilidade | Gráficos receberam rótulos, seleção de empresa usa `aria-pressed`, tabelas têm rolagem horizontal controlada em mobile e mensagens de limitação distinguem resultado entregue de erro técnico. |
 | Entradas diretas e resultados ausentes | Fases 3/4/5 inicializam a empresa ao entrar pela rota; estados sem cenário não exibem saving, custo ou robustez fictícios. |
 
 ## Evidências executadas
@@ -54,8 +66,9 @@ artefatos protegidos:
 - `python tests/08_fase5_entrega_final/test_phase5_final_qa.py` — `PHASE5_NODE_FINAL_QA_OK` e `PHASE5_FINAL_QA_OK`.
 - `python tests/10_presentation_e2e/test_presentation_flow_playwright.py` — `PRESENTATION_E2E_OK`.
 - `python tests/11_regression_e2e/test_regression_e2e.py` — `REGRESSION_E2E_OK`.
-- Inspeção de runtime com ambos os bundles: baseline completo sem realocações artificiais; cobertura e bloqueios fiscais coerentes com os dados.
+- Inspeção de runtime com ambos os bundles: baseline completo sem realocações artificiais; cobertura, limitações fiscais e resultados exploratórios coerentes com os dados.
 - Fluxo da Fase 5 no navegador embutido: seleção, ranking, Monte Carlo, stress, sensibilidade, recomendação, auditoria e exports renderizados; mensagens sem `[object Object]`.
+- Estudo tributário próprio: fontes, parâmetros, cobertura, proxies, uso exploratório e requisitos de complementação registrados em `ESTUDO_PROPRIO_TRIBUTACAO.md` e no export.
 
 ## Checklist de entrega
 
@@ -77,7 +90,9 @@ de evidência de navegador registrada no `release-report.json`.
 2. A Empresa 1 usa proxy de transferência e referência tributária compartilhada
    quando a fonte própria não existe.
 3. A Empresa 2 possui fluxos com cobertura fiscal incompleta; a ausência de
-   receita explícita não é preenchida a partir de volume físico.
+   receita explícita não é preenchida a partir de volume físico. Mesmo assim,
+   o sistema entrega o resultado parcial, ranking, stress e Monte Carlo com
+   `exploratory_only` e alerta visível.
 4. A reconciliação do workbook registra uma ponte de sensibilidade, não uma
    validação independente.
 5. A busca discreta só sustenta ótimo global quando o espaço declarado é

@@ -48,6 +48,20 @@ for (const companyId of ['empresa1', 'empresa2']) {
     throw new Error(`${companyId}: material evidence blockers received high score`);
   if (companyId === 'empresa2' && !(result.tax_results.tax_input_match_summary?.observed_flow_count > 0))
     throw new Error(`${companyId}: observed tax rows were not associated to flows`);
+  if (result.tax_results.tax_coverage.blocked)
+    throw new Error(`${companyId}: fiscal data limitation must not block the numeric result`);
+  if (!result.tax_results.tax_coverage.coverage_limited)
+    throw new Error(`${companyId}: fiscal coverage limitation was not classified`);
+  if (result.tax_results.decision_use !== 'exploratory_only')
+    throw new Error(`${companyId}: fiscal limitation should force exploratory use`);
+  if (result.tax_results.tax_study?.study_id !== 'estudo_proprio_tributacao_visagio_v1')
+    throw new Error(`${companyId}: tax study metadata missing`);
+  if (result.tax_results.tax_study?.status !== 'registered_validation_pending')
+    throw new Error(`${companyId}: own tax study validation status missing`);
+  if (!result.tax_results.tax_study?.sources?.length || !result.tax_results.tax_study?.assumptions?.length)
+    throw new Error(`${companyId}: own tax study sources or assumptions missing`);
+  if (result.tax_results.tax_study?.validation?.legal_tax_review !== 'pending')
+    throw new Error(`${companyId}: own tax study legal review status missing`);
   if (companyId === 'empresa1' && !(result.tax_results.tax_input_match_summary?.observed_flow_count > 0))
     throw new Error(`${companyId}: shared observed tax rows were not associated to flows`);
 
@@ -68,9 +82,10 @@ for (const companyId of ['empresa1', 'empresa2']) {
     seed: 7,
   });
   if (companyId === 'empresa2') {
-    if (first.monte_carlo_status !== 'blocked_by_data_quality' || first.summary !== null)
-      throw new Error(`${companyId}: Monte Carlo should block on incomplete fiscal coverage`);
-    continue;
+    if (first.monte_carlo_status !== 'success' || !first.summary)
+      throw new Error(`${companyId}: Monte Carlo should deliver a limited exploratory summary`);
+    if (first.decision_use !== 'exploratory_only' || first.data_quality_status !== 'limited_fiscal_coverage')
+      throw new Error(`${companyId}: Monte Carlo fiscal limitation status missing`);
   }
   if (first.config.uncertainty_source !== 'parametric_assumptions')
     throw new Error(`${companyId}: default MC is not explicitly parametric`);

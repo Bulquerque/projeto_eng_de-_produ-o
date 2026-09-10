@@ -890,41 +890,19 @@ async function runPhaseCompanyAudit(companyId) {
   });
   if (companyId === 'empresa2') {
     ensure(
-      optimization1.optimizer_status === 'error' &&
-        String((optimization1.errors || []).join(' ')).includes('Nenhum cenário viável'),
-      'empresa2 deve bloquear otimização quando a cobertura fiscal é insuficiente',
+      String(optimization1.optimizer_status || '').startsWith('success') &&
+        optimization1.scored_scenarios.length > 0 &&
+        optimization1.decision_use === 'exploratory_only' &&
+        optimization1.data_quality_status === 'limited_fiscal_coverage',
+      'empresa2 deve entregar otimização exploratória quando a cobertura fiscal é insuficiente',
       {
         companyId,
         optimizer_status: optimization1.optimizer_status,
-        errors: optimization1.errors,
+        decision_use: optimization1.decision_use,
+        data_quality_status: optimization1.data_quality_status,
+        scored_scenarios: optimization1.scored_scenarios.length,
       }
     );
-    companyReport.phase4 = {
-      objective_profiles_ok: true,
-      invalid_objectives_ok: true,
-      optimization_status: optimization1.optimizer_status,
-      optimization_blocked_by_tax_coverage: true,
-      valid_optimization_best_id: null,
-      manual_selection_full_ok: false,
-      manual_selection_limited_warned: false,
-    };
-    companyReport.brute_force = {
-      freight_monotonic_checks: 0,
-      demand_monotonic_checks: 0,
-      inventory_monotonic_checks: 0,
-      wacc_monotonic_checks: 0,
-    };
-    companyReport.phase5 = {
-      stress_case_count: 0,
-      conservative_case_count: 0,
-      robustness_score: null,
-      recommendation_statuses: {},
-      audit_valid: false,
-      export_file_count: 0,
-      qa_pass: 'blocked_by_tax_coverage',
-      qa_fail: 'not_run',
-    };
-    return companyReport;
   }
   ensure(
     String(optimization1.optimizer_status || '').startsWith('success') &&
@@ -1388,9 +1366,8 @@ async function runPhaseCompanyAudit(companyId) {
     );
   } else {
     ensure(
-      qaPass.final_qa_status === 'failed' &&
-        qaPass.blocking_issues.some((issue) => issue.includes('tributação bloqueada')),
-      'QA final deveria bloquear recomendação limpa com tributação bloqueada',
+      qaPass.final_qa_status === 'passed' && qaPass.warnings.length > 0,
+      'QA final deveria entregar com alerta quando a cobertura fiscal é limitada',
       qaPass
     );
   }

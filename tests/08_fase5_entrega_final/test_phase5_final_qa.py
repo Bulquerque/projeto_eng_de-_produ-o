@@ -19,6 +19,11 @@ for (const companyId of ['empresa1','empresa2']) {
  const stress={stress_results:[{case_id:'a'}]}; const recommendation={recommendation_status:'recommended'}; const audit={company_id:companyId,selected_scenario_id:selectedScenario.scenario_id,baseline_scenario_id:bundle.model.scenario_id};
  const qa=runFinalQAChecks({companyId,bundle,selectedScenario,stress,recommendation,audit});
  if(qa.final_qa_status!=='passed') throw new Error('qa should pass');
+ const limitedSelected={...selectedScenario,result:{...selectedScenario.result,tax_results:{tax_coverage:{coverage_limited:true},decision_use:'exploratory_only'}}};
+ const limitedQa=runFinalQAChecks({companyId,bundle,selectedScenario:limitedSelected,stress,recommendation:{recommendation_status:'not_recommended'},audit});
+ if(limitedQa.final_qa_status!=='passed' || !limitedQa.warnings.length) throw new Error('fiscal limitation should pass QA with warning');
+ const limitedRelease=validateRelease({finalQA:limitedQa,exportPackage:{files:[{type:'application/json',content:JSON.stringify({company_id:companyId,decision_package:{selected_scenario_id:selectedScenario.scenario_id},final_qa:limitedQa})}]},decisionPackage:{company_id:companyId,selected_scenario_id:selectedScenario.scenario_id}});
+ if(limitedRelease.release_status!=='warning' || !limitedRelease.ready_to_deliver) throw new Error('fiscal limitation should be deliverable with warning');
  const incomplete=runFinalQAChecks({companyId,bundle:{},selectedScenario:null,stress:{stress_results:[]},recommendation:{},audit:{}});
  if(incomplete.final_qa_status!=='failed') throw new Error('incomplete qa should fail');
  if(!incomplete.blocking_issues.includes('Nenhum cenário final foi selecionado.')) throw new Error('missing scenario should have an explicit failure message');

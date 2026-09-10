@@ -185,26 +185,43 @@ function methodologySection(selectedScenario = {}, audit = {}, robustness = {}) 
     ),
   ];
   const tax = result?.tax_results || {};
+  const taxCoverage = tax.tax_coverage || {};
+  const taxStudy = tax.tax_study || {};
+  const taxPeriodContract = tax.tax_period_contract || tax.metadata?.tax_period_contract || {};
   return `
     <h3>Metodologia e rastreabilidade</h3>
     <table class="executive-table-premium"><thead><tr><th>Item</th><th>Registro</th></tr></thead><tbody>
       <tr><td>Método de custo</td><td>${esc(costs.calculation_method || '—')}</td></tr>
       <tr><td>Classificação da fonte</td><td>${esc(diagnostics.source_classification || '—')}</td></tr>
       <tr><td>Fonte tributária</td><td>${esc(result?.tax_results?.tax_source_label || '—')}</td></tr>
-      <tr><td>Cobertura dos fluxos de entrada</td><td>${esc(ratioPct(result?.tax_results?.tax_coverage?.input_coverage_ratio))}</td></tr>
-      <tr><td>Cobertura de UF destino entre elegíveis</td><td>${esc(ratioPct(result?.tax_results?.tax_coverage?.eligible_coverage_ratio ?? result?.tax_results?.tax_coverage?.coverage_destination_uf))}</td></tr>
-      <tr><td>Classificação fiscal completa (NCM/CFOP/CST)</td><td>${esc(ratioPct(result?.tax_results?.tax_coverage?.complete_fiscal_coverage_ratio ?? result?.tax_results?.tax_coverage?.fiscal_classification_coverage))}</td></tr>
-      <tr><td>Fluxos elegíveis / excluídos</td><td>${esc(`${result?.tax_results?.tax_coverage?.eligible_flow_count ?? '—'} / ${result?.tax_results?.tax_coverage?.uncovered_flow_count ?? '—'}`)}</td></tr>
-      <tr><td>Fluxos sem UF origem</td><td>${esc(result?.tax_results?.tax_coverage?.missing_origin_uf_count ?? '—')}</td></tr>
+      <tr><td>Estudo próprio tributário</td><td>${esc(taxStudy.study_id || '—')} · ${esc(taxStudy.status || '—')}</td></tr>
+      <tr><td>Fontes registradas no estudo</td><td>${esc(
+        (taxStudy.sources || [])
+          .map((source) => source.source_ref)
+          .filter(Boolean)
+          .join(' · ') || 'não disponível no runtime'
+      )}</td></tr>
+      <tr><td>Revisão tributária/legal</td><td>${esc(taxStudy.validation?.legal_tax_review || 'não disponível')}</td></tr>
+      <tr><td>Pendências de validação</td><td>${esc((taxStudy.validation?.pending_items || []).join(' · ') || 'nenhuma registrada')}</td></tr>
+      <tr><td>Uso permitido do resultado tributário</td><td>${esc(result?.tax_results?.decision_use || 'decision_support')}</td></tr>
+      <tr><td>Status da cobertura fiscal</td><td>${esc(taxCoverage.coverage_status || '—')}</td></tr>
+      <tr><td>Cobertura dos fluxos de entrada</td><td>${esc(ratioPct(taxCoverage.input_coverage_ratio))}</td></tr>
+      <tr><td>Cobertura de receita explícita</td><td>${esc(ratioPct(taxCoverage.revenue_coverage_ratio))}</td></tr>
+      <tr><td>Cobertura de UF destino entre fluxos elegíveis</td><td>${esc(ratioPct(taxCoverage.destination_coverage_ratio ?? taxCoverage.coverage_destination_uf))}</td></tr>
+      <tr><td>Cobertura de UF origem entre fluxos elegíveis</td><td>${esc(ratioPct(taxCoverage.origin_coverage_ratio))}</td></tr>
+      <tr><td>Classificação fiscal completa (NCM/CFOP/CST)</td><td>${esc(ratioPct(taxCoverage.complete_fiscal_coverage_ratio ?? taxCoverage.fiscal_classification_coverage))}</td></tr>
+      <tr><td>Fluxos elegíveis / excluídos</td><td>${esc(`${taxCoverage.eligible_flow_count ?? '—'} / ${taxCoverage.uncovered_flow_count ?? '—'}`)}</td></tr>
+      <tr><td>Fluxos sem UF origem</td><td>${esc(taxCoverage.missing_origin_uf_count ?? '—')}</td></tr>
       <tr><td>Associação com dados fiscais observados</td><td>${esc(JSON.stringify(result?.tax_results?.tax_input_match_summary || {}))}</td></tr>
       <tr><td>Regime tributário do cenário</td><td>${esc(result?.tax_results?.tax_regime || changes.tax_regime || changes.tax_mode || '—')}</td></tr>
-      <tr><td>Período tributário selecionado</td><td>${esc(tax.tax_period_contract?.selected_period?.year || '—')} · ${esc(tax.tax_period_contract?.selected_period?.source_status || '—')}</td></tr>
+      <tr><td>Período tributário selecionado</td><td>${esc(taxPeriodContract.selected_period?.year || '—')} · ${esc(taxPeriodContract.selected_period?.source_status || '—')}</td></tr>
       <tr><td>Estoque</td><td>Escolha B — independente da quantidade de CDs ativos</td></tr>
       <tr><td>Fallbacks físicos</td><td>${esc(JSON.stringify({ counts: diagnostics.fallback_counts || {}, rates: diagnostics.fallback_rates || {}, flow_count: diagnostics.flow_count ?? null }))}</td></tr>
       <tr><td>Proveniência do proxy de transferência</td><td>${esc(JSON.stringify(diagnostics.transfer_proxy_provenance || '—'))}</td></tr>
       <tr><td>Audit ID</td><td>${esc(audit?.audit_id || '—')}</td></tr>
       <tr><td>Nível de suporte da evidência</td><td>${esc(evidence.evidence_score == null ? '—' : `${evidence.evidence_score}/100 · ${evidence.evidence_status || '—'}`)}</td></tr>
       <tr><td>Bloqueadores de evidência</td><td>${esc((evidence.blockers || []).join(' · ') || 'nenhum registrado')}</td></tr>
+      <tr><td>Interpretação da robustez</td><td>${esc(robustness.robustness_interpretation || '—')}</td></tr>
       <tr><td>Composição da robustez</td><td>${esc(JSON.stringify({ stress_score: robustness.stress_score ?? null, probabilistic_score: robustness.probabilistic_score ?? null, evidence_penalty: robustness.evidence_penalty ?? null }))}</td></tr>
     </tbody></table>
     ${taxPeriodSection(tax)}
@@ -256,6 +273,7 @@ export function buildExecutiveReportHtml({
   const total = selectedScenario?.result?.total_with_tax ?? selectedScenario?.total_with_tax;
   const saving = comparison?.saving_abs ?? comparison?.comparison?.[0]?.saving_abs;
   const savingPct = comparison?.saving_pct;
+  const robustnessIsCertified = robustness?.certified_robustness_score != null;
   return `<article class="executive-report-content">
     <h2>Relatório executivo — ${esc(companyId)}</h2>
     <h3>Cenário e parecer</h3>
@@ -266,7 +284,8 @@ export function buildExecutiveReportHtml({
       <tr><td>Custo Total Estimado</td><td>${esc(brl(total))}</td></tr>
       <tr><td>Saving vs Cenário Base</td><td>${esc(brl(saving))}</td></tr>
       <tr><td>Eficiência (%)</td><td>${esc(pct(savingPct))}</td></tr>
-      <tr><td>Score de Robustez</td><td>${esc(robustness?.robustness_score == null ? 'não calculado' : `${Math.round(Number(robustness.robustness_score))}/100`)}</td></tr>
+      <tr><td>${robustnessIsCertified ? 'Score de Robustez' : 'Score de Robustez condicional'}</td><td>${esc(robustness?.robustness_score == null ? 'não calculado' : `${Math.round(Number(robustness.robustness_score))}/100`)}</td></tr>
+      <tr><td>Certificação da robustez</td><td>${esc(robustnessIsCertified ? 'disponível no escopo modelado' : 'não certificada — interpretação exploratória')}</td></tr>
       <tr><td>Parecer Final</td><td>${esc(status(recommendation?.recommendation_status))}</td></tr>
     </tbody></table>
     ${scenarioConfigurationSection(selectedScenario)}

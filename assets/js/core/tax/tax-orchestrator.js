@@ -54,6 +54,8 @@ function buildAuditTrace({
   regimeId,
   sourceVersion = 'official_reform_sources',
   periodMetadata = null,
+  taxStudy = null,
+  decisionUse = null,
 }) {
   return {
     parameter_version: parameterVersion,
@@ -64,6 +66,8 @@ function buildAuditTrace({
     validation_scope: 'parametric_model_reconciliation',
     official_fiscal_validation: false,
     tax_period_contract: periodMetadata,
+    decision_use: decisionUse,
+    tax_study: taxStudy,
     limitation: 'Resultado parametrizado e reconciliado; não constitui validação fiscal oficial.',
   };
 }
@@ -78,8 +82,99 @@ function buildTaxScopeMetadata({ calculationMode, precisionMode, sourceContext, 
       ? 'official_reference_parameters'
       : 'internal_reference_or_fallback',
     tax_period_contract: periodMetadata,
+    coverage_status: null,
+    decision_use: null,
     scope_note:
       'Aplica parâmetros disponíveis e reconcilia o resultado; não substitui validação fiscal oficial.',
+  };
+}
+
+function buildTaxStudyMetadata({
+  regimeId,
+  parameterVersion,
+  sourceContext,
+  qualityReport = null,
+  taxInputMatchSummary = null,
+}) {
+  const complementAvailable = sourceContext?.available !== false && Boolean(sourceContext);
+  const validationChecklist = Array.isArray(sourceContext?.validation_checklist)
+    ? sourceContext.validation_checklist
+    : [];
+  const legalReview = validationChecklist.find((item) => item?.test === 'legal_tax_review');
+  const pendingItems = validationChecklist
+    .filter((item) => item?.status && item.status !== 'pass')
+    .map((item) => item.test || item.name)
+    .filter(Boolean);
+  const sources = Array.isArray(sourceContext?.source_summary)
+    ? sourceContext.source_summary.map((source) => ({
+        source_ref: source.source_file || source.key || null,
+        source_type: source.source_type || null,
+        source_confidence: source.source_confidence || null,
+        role: source.label || null,
+        notes: source.notes || null,
+      }))
+    : [];
+  const assumptions = Array.isArray(sourceContext?.tax_assumptions)
+    ? sourceContext.tax_assumptions.map((assumption) => ({
+        assumption_id: assumption.assumption_id || null,
+        description: assumption.description || null,
+        source_ref: assumption.source_ref || null,
+        confidence: assumption.source_confidence || null,
+      }))
+    : [];
+  const validationStatus = complementAvailable
+    ? legalReview?.status === 'pending' || pendingItems.length
+      ? 'registered_validation_pending'
+      : 'registered'
+    : 'not_available';
+  return {
+    study_id: 'estudo_proprio_tributacao_visagio_v1',
+    study_type: 'parametric_internal_tax_study',
+    status: validationStatus,
+    scope: {
+      tax_scope: sourceContext?.tax_manifest?.tax_scope || 'logistics_network_simulation',
+      regimes: sourceContext?.tax_manifest?.main_scenarios || [regimeId],
+      flow_grain: 'fluxo com UF destino válida e receita explícita',
+      included_flow_count: qualityReport?.eligible_flow_count ?? null,
+      excluded_flow_count: qualityReport?.uncovered_flow_count ?? null,
+    },
+    regime_id: regimeId,
+    parameter_version: parameterVersion,
+    source_context: sourceContext?.package_name || null,
+    sources,
+    assumptions,
+    coverage: {
+      input_flow_count: qualityReport?.input_flow_count ?? null,
+      eligible_flow_count: qualityReport?.eligible_flow_count ?? null,
+      input_coverage_ratio: qualityReport?.input_coverage_ratio ?? null,
+      destination_coverage_ratio: qualityReport?.destination_coverage_ratio ?? null,
+      origin_coverage_ratio: qualityReport?.origin_coverage_ratio ?? null,
+      revenue_coverage_ratio: qualityReport?.revenue_coverage_ratio ?? null,
+      excluded_missing_revenue_count: qualityReport?.excluded_missing_revenue_count ?? null,
+      missing_origin_uf_count: qualityReport?.missing_origin_uf_count ?? null,
+      complete_fiscal_flow_count: qualityReport?.flows_with_complete_fiscal_data ?? null,
+      complete_fiscal_coverage_ratio: qualityReport?.complete_fiscal_coverage_ratio ?? null,
+      proxy_flow_count: qualityReport?.proxy_flow_count ?? null,
+      observed_flow_count: taxInputMatchSummary?.observed_flow_count ?? null,
+      destination_proxy_flow_count: taxInputMatchSummary?.destination_proxy ?? null,
+      fallback_flow_count: taxInputMatchSummary?.fallback_flow_count ?? null,
+    },
+    version: {
+      parameter_version: parameterVersion,
+      source_version: sourceContext?.package_name || null,
+      tax_parameter_hash: `${regimeId}:${parameterVersion}`,
+    },
+    validation: {
+      status: validationStatus,
+      legal_tax_review: legalReview?.status || 'not_available',
+      official_fiscal_validation: false,
+      pending_items: pendingItems,
+    },
+    official_fiscal_validation: false,
+    limitation:
+      'O estudo próprio complementa a leitura do modelo, mas não substitui a validação tributária da empresa por documentos, NCM, CFOP, CST, origem, destino e período.',
+    next_validation:
+      'Revisar os fluxos sem origem ou classificação completa com a documentação fiscal própria antes de decisão executiva.',
   };
 }
 
@@ -122,11 +217,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
   });
   const quality = auditTaxFlowCoverage(fiscal.fiscal_flows, fiscal.quality_report);
   const precisionMode = quality.precision_mode;
-  const calculationMode = quality.blocked
-    ? precisionMode === 'top_down_fallback'
-      ? 'top_down_fallback_blocked'
-      : 'realistic_proxy_blocked'
-    : precisionMode;
+  const calculationMode = precisionMode;
   const baseTax = input.baseTaxBlock || {};
   const disabled = regimeId === 'disabled' || input.taxMode === 'disabled';
   const sourceContext = input.baselineBundle?.complements || null;
@@ -148,6 +239,25 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       ? 'As taxas numéricas da reforma são parâmetros do modelo; o pacote oficial carregado fornece cronograma, não uma tabela completa de alíquotas efetivas por operação.'
       : null,
   ].filter(Boolean);
+  const parameterVersion = input.parameters?.parameter_version || '2026-05';
+  const taxStudy = buildTaxStudyMetadata({
+    regimeId,
+    parameterVersion,
+    sourceContext,
+    qualityReport: quality,
+  });
+  const decisionUse = quality.coverage_limited ? 'exploratory_only' : 'decision_support';
+  const scopeMetadata = {
+    ...buildTaxScopeMetadata({
+      calculationMode,
+      precisionMode,
+      sourceContext,
+      periodMetadata,
+    }),
+    coverage_status: quality.coverage_status,
+    decision_use: decisionUse,
+    tax_study: taxStudy,
+  };
 
   if (disabled) {
     return {
@@ -168,6 +278,8 @@ export function runTaxCalculation(arg1, arg2, arg3) {
         ...quality,
         coverage_pct: quality.coverage_pct ?? quality.coverage_destination_uf * 100,
       },
+      decision_use: decisionUse,
+      tax_study: taxStudy,
       tax_reconciliation: isCanonicalBaselineInput(input)
         ? baseTax.tax_reconciliation ||
           input.baselineBundle?.tax_results?.tax_reconciliation ||
@@ -187,11 +299,13 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       warnings: [...quality.warnings, ...(fiscal.warnings || []), ...periodWarnings],
       explanation: { summary: 'Camada tributária desligada.' },
       audit_trace: buildAuditTrace({
-        parameterVersion: input.parameters?.parameter_version || '2026-05',
+        parameterVersion,
         qualityReport: quality,
         regimeId,
         sourceVersion: sourceContext?.package_name || 'official_reform_sources',
         periodMetadata,
+        taxStudy,
+        decisionUse,
       }),
       metadata: {
         regime_id: regimeId,
@@ -201,12 +315,7 @@ export function runTaxCalculation(arg1, arg2, arg3) {
         precision_mode: precisionMode,
         source_context: sourceContext,
         tax_period_contract: periodMetadata,
-        ...buildTaxScopeMetadata({
-          calculationMode: 'top_down_fallback',
-          precisionMode,
-          sourceContext,
-          periodMetadata,
-        }),
+        ...scopeMetadata,
       },
       source_context: sourceContext,
     };
@@ -235,6 +344,13 @@ export function runTaxCalculation(arg1, arg2, arg3) {
         });
 
   const totalTax = safeNumber(combined.total_tax, safeNumber(baseTax.total_tax_impact, 0));
+  const finalTaxStudy = buildTaxStudyMetadata({
+    regimeId,
+    parameterVersion,
+    sourceContext,
+    qualityReport: quality,
+    taxInputMatchSummary: combined.tax_input_match_summary || currentResult.tax_input_match_summary,
+  });
   return {
     tax_regime: regimeId,
     regime_label: regimeLabel,
@@ -253,6 +369,8 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       ...quality,
       coverage_pct: quality.coverage_pct ?? quality.coverage_destination_uf * 100,
     },
+    decision_use: decisionUse,
+    tax_study: finalTaxStudy,
     tax_reconciliation: isCanonicalBaselineInput(input)
       ? baseTax.tax_reconciliation || input.baselineBundle?.tax_results?.tax_reconciliation || null
       : null,
@@ -276,11 +394,13 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       precision_mode: precisionMode,
     },
     audit_trace: buildAuditTrace({
-      parameterVersion: input.parameters?.parameter_version || '2026-05',
+      parameterVersion,
       qualityReport: quality,
       regimeId,
       sourceVersion: sourceContext?.package_name || 'official_reform_sources',
       periodMetadata,
+      taxStudy: finalTaxStudy,
+      decisionUse,
     }),
     metadata: {
       regime_id: regimeId,
@@ -291,12 +411,8 @@ export function runTaxCalculation(arg1, arg2, arg3) {
       source: 'tax-orchestrator',
       source_context: sourceContext,
       tax_period_contract: periodMetadata,
-      ...buildTaxScopeMetadata({
-        calculationMode,
-        precisionMode,
-        sourceContext,
-        periodMetadata,
-      }),
+      ...scopeMetadata,
+      tax_study: finalTaxStudy,
     },
     mode: taxMode,
     breakdown: {

@@ -12,6 +12,9 @@ export function calculateRobustness({
     (result) => result?.status !== 'blocked' && Number.isFinite(Number(result?.saving_pct))
   );
   const blockedStressCases = stressResults.length - validStressResults.length;
+  const limitedStressCases = validStressResults.filter(
+    (result) => result.data_quality_status === 'limited_fiscal_coverage'
+  ).length;
   const total = validStressResults.length || 0;
   const positives = validStressResults.filter((r) => r.scenario_still_better_than_baseline).length;
   const positiveRatio = total ? positives / total : 0;
@@ -45,9 +48,17 @@ export function calculateRobustness({
     )
   );
   const status = robustness_score >= 80 ? 'high' : robustness_score >= 55 ? 'medium' : 'low';
+  const fiscalCoverageLimited = limitedStressCases > 0;
+  const robustnessInterpretation = fiscalCoverageLimited
+    ? 'robustez_condicional_exploratoria'
+    : 'robustez_condicional_modelada';
   const alerts = [];
   if (blockedStressCases > 0)
     alerts.push(`${blockedStressCases} caso(s) de stress foram bloqueados por resultado inválido.`);
+  if (limitedStressCases > 0)
+    alerts.push(
+      `${limitedStressCases} caso(s) de stress foram calculados com cobertura fiscal parcial; a robustez é exploratória.`
+    );
   if (worstCaseSavingPct < 0)
     alerts.push('O cenário perde saving em pelo menos um caso de stress.');
   if (risk === 'high') alerts.push('O risco operacional alto reduz a robustez da recomendação.');
@@ -59,11 +70,19 @@ export function calculateRobustness({
     company_id: companyId,
     scenario_id: scenarioId,
     robustness_score,
+    conditional_robustness_score: robustness_score,
+    certified_robustness_score: fiscalCoverageLimited ? null : robustness_score,
+    robustness_interpretation: robustnessInterpretation,
     robustness_status: status,
     cases_positive: positives,
     cases_total: total,
     cases_blocked: blockedStressCases,
-    stress_status: blockedStressCases ? 'inconclusive' : 'complete',
+    stress_status: blockedStressCases
+      ? 'inconclusive'
+      : limitedStressCases
+        ? 'complete_with_warnings'
+        : 'complete',
+    cases_limited: limitedStressCases,
     worst_case_saving_pct: worstCaseSavingPct,
     stress_score: stressScore,
     probabilistic_score: probabilisticScore,

@@ -14,6 +14,8 @@ export function buildAuditTrail({
     selectedScenario?.result?.scenario_id;
   const searchLog = optimizerResult?.search_log || null;
   const evidence = selectedScenario?.result?.evidence || selectedScenario?.evidence || null;
+  const taxResults = selectedScenario?.result?.tax_results || {};
+  const dataQuality = selectedScenario?.result?.data_quality || {};
   const monteCarlo =
     selectedScenario?.monte_carlo?.summary ||
     selectedScenario?.scenario?.monte_carlo?.summary ||
@@ -86,6 +88,9 @@ export function buildAuditTrail({
         }
       : null,
     evidence,
+    data_quality_status: dataQuality.status || null,
+    decision_use: dataQuality.decision_use || taxResults.decision_use || null,
+    tax_study: taxResults.tax_study || taxResults.metadata?.tax_study || null,
     ranking_sensitivity: rankingSensitivity || optimizerResult?.ranking_sensitivity || null,
     model_versions: {
       phase1: 'implemented',

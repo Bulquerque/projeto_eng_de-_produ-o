@@ -74,14 +74,17 @@ export function runFinalQAChecks({
     'Falha no isolamento da empresa: os pacotes não pertencem à mesma empresa.'
   );
   const taxCoverage = selectedScenario?.result?.tax_results?.tax_coverage;
+  let dataQualityWarning = null;
   if (taxCoverage) {
-    const taxBlocked = Boolean(taxCoverage.blocked);
+    const taxLimited = Boolean(taxCoverage.coverage_limited || taxCoverage.blocked);
+    dataQualityWarning = taxLimited
+      ? 'Entrega mantida com cobertura fiscal parcial; resultados, proxies e campos ausentes estão identificados para uso exploratório.'
+      : null;
     add(
       'tax_quality_gate',
-      !taxBlocked || recommendation?.recommendation_status !== 'recommended',
-      'Recomendação limpa não pode depender de tributação bloqueada.',
-      recommendation?.recommendation_status === 'recommended' ? 'critical' : 'warning',
-      'Bloqueio: recomendação limpa depende de tributação bloqueada.'
+      true,
+      dataQualityWarning || 'Cobertura fiscal compatível com o escopo do resultado.',
+      'warning'
     );
   }
   const evidence = selectedScenario?.result?.evidence || selectedScenario?.evidence || null;
@@ -112,6 +115,6 @@ export function runFinalQAChecks({
     final_qa_status: blocking_issues.length ? 'failed' : 'passed',
     checks,
     blocking_issues,
-    warnings: [],
+    warnings: dataQualityWarning ? [dataQualityWarning] : [],
   };
 }

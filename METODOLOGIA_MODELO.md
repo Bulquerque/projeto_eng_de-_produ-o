@@ -126,6 +126,22 @@ com \`active_cds\`. A independência da Escolha B vale para o componente finance
 - Tributação: referência tributária compartilhada, identificada como fonte
   externa/proxy quando não houver matriz específica da Empresa 1.
 
+## Estudo técnico próprio de tributação
+
+A camada tributária é complementada pelo estudo próprio versionado em
+[`ESTUDO_PROPRIO_TRIBUTACAO.md`](ESTUDO_PROPRIO_TRIBUTACAO.md). O runtime
+registra o identificador `estudo_proprio_tributacao_visagio_v1`, a versão dos
+parâmetros, o regime, o período, as fontes, a cobertura e o uso permitido do
+resultado.
+
+Esse estudo organiza uma reconciliação paramétrica dos dados disponíveis: usa
+receita explícita, associa taxas observadas por chave disponível, mantém
+proxies de destino e classificação identificados e não promove volume físico a
+faturamento. Ele complementa a ausência de uma matriz fiscal completa, mas não
+é validação fiscal oficial. Por isso, quando há campos fiscais ausentes, o
+cálculo continua disponível para comparação exploratória e recebe
+`decision_use: exploratory_only`; apenas erro técnico impede a entrega.
+
 ### Empresa 2
 
 - Distribuição: tabela CIF somente para fluxos CD → destino quando origem,
@@ -325,7 +341,10 @@ precisão estatística.
    ambos permanecem disponíveis para auditoria.
 8. Na Empresa 2, linhas de fábrica sem receita explícita não são promovidas a
    faturamento fiscal a partir de volume físico; elas ficam excluídas do fluxo
-   fiscal bottom-up e entram na cobertura declarada como limitação.
+   fiscal bottom-up e entram na cobertura declarada como limitação. Os demais
+   resultados numericamente calculáveis continuam sendo entregues em modo
+   exploratório, com o estudo próprio tributário e seus requisitos de
+   complementação.
 
 ## 10. Evidência técnica
 

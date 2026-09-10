@@ -15,6 +15,7 @@ function toCsv(rows) {
 function buildExportContext({ selectedScenario, audit, robustness } = {}) {
   const result = selectedScenario?.result || selectedScenario || {};
   const tax = result.tax_results || {};
+  const taxPeriodContract = tax.tax_period_contract || tax.metadata?.tax_period_contract || {};
   const evidence = result.evidence || selectedScenario?.evidence || {};
   const monteCarlo =
     selectedScenario?.monte_carlo?.summary ||
@@ -32,6 +33,9 @@ function buildExportContext({ selectedScenario, audit, robustness } = {}) {
     tax_eligible_flow_coverage_pct: tax.tax_coverage?.eligible_flow_coverage_pct ?? null,
     tax_input_coverage_ratio: tax.tax_coverage?.input_coverage_ratio ?? null,
     tax_eligible_coverage_ratio: tax.tax_coverage?.eligible_coverage_ratio ?? null,
+    tax_destination_coverage_ratio: tax.tax_coverage?.destination_coverage_ratio ?? null,
+    tax_origin_coverage_ratio: tax.tax_coverage?.origin_coverage_ratio ?? null,
+    tax_revenue_coverage_ratio: tax.tax_coverage?.revenue_coverage_ratio ?? null,
     tax_complete_fiscal_coverage_ratio: tax.tax_coverage?.complete_fiscal_coverage_ratio ?? null,
     tax_eligible_flow_count: tax.tax_coverage?.eligible_flow_count ?? null,
     tax_uncovered_flow_count: tax.tax_coverage?.uncovered_flow_count ?? null,
@@ -40,22 +44,25 @@ function buildExportContext({ selectedScenario, audit, robustness } = {}) {
     tax_observed_flow_count: tax.tax_input_match_summary?.observed_flow_count ?? null,
     tax_calculation_mode: tax.calculation_mode || null,
     tax_precision_mode: tax.precision_mode || null,
+    tax_coverage_status: tax.tax_coverage?.coverage_status || null,
+    tax_decision_use: tax.decision_use || null,
+    tax_study_id: tax.tax_study?.study_id || null,
     tax_warning_count: Array.isArray(tax.warnings) ? tax.warnings.length : null,
-    tax_selected_period_year: tax.tax_period_contract?.selected_period?.year ?? null,
-    tax_selected_period_source_status:
-      tax.tax_period_contract?.selected_period?.source_status || null,
-    tax_available_period_count: tax.tax_period_contract?.available_periods?.length ?? null,
+    tax_selected_period_year: taxPeriodContract.selected_period?.year ?? null,
+    tax_selected_period_source_status: taxPeriodContract.selected_period?.source_status || null,
+    tax_available_period_count: taxPeriodContract.available_periods?.length ?? null,
     tax_reference_period_start:
-      tax.tax_period_contract?.current_reference_data_period?.period_start || null,
-    tax_reference_period_end:
-      tax.tax_period_contract?.current_reference_data_period?.period_end || null,
-    tax_observed_data_period_status:
-      tax.tax_period_contract?.observed_data_coverage?.status || null,
+      taxPeriodContract.current_reference_data_period?.period_start || null,
+    tax_reference_period_end: taxPeriodContract.current_reference_data_period?.period_end || null,
+    tax_observed_data_period_status: taxPeriodContract.observed_data_coverage?.status || null,
     uncertainty_source: monteCarlo.uncertainty_source || null,
     monte_carlo_decision_use: monteCarlo.decision_use || null,
     historical_distribution: monteCarlo.historical_distribution ?? null,
     monte_carlo_probability_positive: monteCarlo.probability_saving_positive ?? null,
     robustness_score: robustness?.robustness_score ?? null,
+    conditional_robustness_score: robustness?.conditional_robustness_score ?? null,
+    certified_robustness_score: robustness?.certified_robustness_score ?? null,
+    robustness_interpretation: robustness?.robustness_interpretation || null,
     optimizer_coverage_ratio: optimization.coverage_ratio ?? null,
     optimizer_exact_search_space: optimization.exact_search_space ?? null,
   };

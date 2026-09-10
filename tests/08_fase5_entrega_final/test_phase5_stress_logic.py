@@ -23,9 +23,8 @@ for (const companyId of ['empresa1','empresa2']) {
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:42}});
  const sel=selectFinalScenario({companyId,optimizerResult:opt,selectionMode:'best_by_score'});
  if(companyId==='empresa2') {
-   if(sel.selected_scenario) throw new Error('empresa2 should not select scenario with blocked fiscal coverage');
-   if(!opt.errors.some((message)=>String(message).includes('Nenhum cenário viável'))) throw new Error('empresa2 optimizer block not surfaced');
-   continue;
+   if(!sel.selected_scenario) throw new Error('empresa2 should select an exploratory scenario');
+   if(opt.decision_use!=='exploratory_only') throw new Error('empresa2 exploratory optimizer status missing');
  }
  if(!sel.selected_scenario) throw new Error('no selected scenario');
  const scenario=sel.selected_scenario.scenario;
@@ -42,6 +41,7 @@ for (const companyId of ['empresa1','empresa2']) {
  const stress=runStressTests({companyId,selectedScenario:scenario,baselineBundle:bundle,stressCases:cases});
  if(stress.stress_results.length!==cases.length) throw new Error('stress count mismatch');
  if(!stress.stress_results.some(r=>r.case_id==='frete_mais_20')) throw new Error('missing freight case');
+ if(companyId==='empresa2' && (stress.summary.status!=='complete_with_warnings' || stress.summary.cases_limited!==cases.length)) throw new Error('empresa2 stress should be delivered with fiscal warnings');
  const sens=runSensitivity({companyId,selectedScenario:scenario,baselineBundle:bundle,sensitivityConfig:{variable:'freight_multiplier',values:[0.9,1,1.2]}});
  if(sens.sensitivity_results.length!==3) throw new Error('sensitivity count mismatch');
  if(sens.sensitivity_results[2].total_with_tax < sens.sensitivity_results[0].total_with_tax) throw new Error('freight sensitivity not monotonic enough');

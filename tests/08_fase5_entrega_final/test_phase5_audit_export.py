@@ -27,8 +27,10 @@ for (const companyId of ['empresa1','empresa2']) {
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:11}});
  const selected=selectFinalScenario({companyId,optimizerResult:opt,selectionMode:'best_by_score'}).selected_scenario;
  if(companyId==='empresa2') {
-   if(selected) throw new Error('empresa2 should not export a selected scenario with blocked fiscal coverage');
-   continue;
+   if(!selected) throw new Error('empresa2 should export an exploratory selected scenario');
+   if(selected.result?.data_quality?.status!=='limited_fiscal_coverage') throw new Error('empresa2 data quality status missing from selected result');
+   if(selected.result?.tax_results?.tax_study?.study_id!=='estudo_proprio_tributacao_visagio_v1') throw new Error('tax study metadata missing');
+   if(selected.result?.tax_results?.tax_study?.status!=='registered_validation_pending') throw new Error('tax study validation status missing');
  }
  if(Number(selected.scenario?.changes?.freight_multiplier ?? 1)!==1) throw new Error('selected scenario changed freight');
  if(Number(selected.scenario?.changes?.demand_multiplier ?? 1)!==1) throw new Error('selected scenario changed demand');
@@ -42,12 +44,14 @@ for (const companyId of ['empresa1','empresa2']) {
  const workbookParity=buildWorkbookParitySummary(bundle.base_fit);
  const html=buildExecutiveReportHtml({companyId,selectedScenario:selected,recommendation:rec,stress,robustness,audit,comparison:{saving_abs:1},workbookParity});
  if(!html.includes('Relatório executivo') || !html.includes(companyId)) throw new Error('bad report html');
+ if(!html.includes('2026 · ano-teste')) throw new Error('tax period missing from report');
  if(!html.includes('Paridade com workbook')) throw new Error('workbook parity missing');
  const pkg=buildExportPackage({companyId,decisionPackage:{company_id:companyId},stress,audit,recommendation:rec,selectedScenario:selected,robustness,comparison:{saving_abs:1},workbookParity});
  if(pkg.files.length<4) throw new Error('bad export count');
  JSON.parse(pkg.files.find(f=>f.filename.endsWith('.json')).content);
  if(!JSON.parse(pkg.files.find(f=>f.filename.endsWith('.json')).content).workbook_parity) throw new Error('workbook parity missing from json');
  if(!pkg.files.find(f=>f.filename.endsWith('stress_results.csv')).content.includes('case_id')) throw new Error('stress csv missing header');
+ if(!pkg.files.find(f=>f.filename.endsWith('stress_results.csv')).content.includes('tax_selected_period_year')) throw new Error('tax period missing from csv');
  if(!pkg.files.find(f=>f.filename.endsWith('sensitivity_results.csv'))) throw new Error('sensitivity csv missing');
  if(!pkg.files.find(f=>f.filename.endsWith('.html')).content.includes('Relatório executivo')) throw new Error('html missing report');
  const escapedPkg=buildExportPackage({companyId,decisionPackage:{company_id:companyId},stress:{stress_results:[{case_id:'a,b',warnings:['x','y'],errors:['quote"']} ]},audit,recommendation:rec,selectedScenario:selected,robustness,comparison:{saving_abs:1},workbookParity});
