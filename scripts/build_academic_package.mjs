@@ -1,33 +1,127 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Workbook, SpreadsheetFile } from '/home/bulquerque/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/@oai/artifact-tool/dist/artifact_tool.mjs';
+import {
+  Workbook,
+  SpreadsheetFile,
+} from '/home/bulquerque/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/@oai/artifact-tool/dist/artifact_tool.mjs';
 
 const root = process.cwd();
 const outDir = path.join(root, 'entregaveis', 'pacote_relatorio_visagio_2026-09-10');
 await fs.mkdir(outDir, { recursive: true });
-const evidence = JSON.parse(await fs.readFile(path.join(root, 'entregaveis/evidence.json'), 'utf8'));
-const p = (v) => Number.isFinite(Number(v)) ? Number(v) : null;
-const brl = (v) => p(v) == null ? 'n.a.' : `R$ ${p(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-const pct = (v) => p(v) == null ? 'n.a.' : `${p(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-const e1 = evidence.companies.empresa1, e2 = evidence.companies.empresa2;
+const evidence = JSON.parse(
+  await fs.readFile(path.join(root, 'entregaveis/evidence.json'), 'utf8')
+);
+const p = (v) => (Number.isFinite(Number(v)) ? Number(v) : null);
+const brl = (v) =>
+  p(v) == null
+    ? 'n.a.'
+    : `R$ ${p(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const e1 = evidence.companies.empresa1,
+  e2 = evidence.companies.empresa2;
 
 const statusRows = [
-  ['1', 'Reconciliar Tabela 7 e savings', 'Corrigido nos dados deste pacote; a fonte anterior tinha números incompatíveis.', 'Alta', 'Usar published_scenarios e fórmula saving = (baseline - cenário) / baseline.'],
-  ['2', 'Definir papel do Monte Carlo', 'Corrigido no pacote: módulo funcional, exploratório e reprodutível por seed.', 'Alta', 'Documentar iterações, seed, perfil e não misturar com números determinísticos.'],
-  ['3', 'Dependência do estoque de CDs', 'Confirmado: custo idêntico com 1 e todos os CDs sob os mesmos drivers.', 'Alta', 'Manter Escolha B e retirar alegação de pooling de risco.'],
-  ['4', 'Calibração cruzada de transferência E1', 'Confirmada e explicitamente marcada como proxy de engenharia da E2.', 'Alta', 'Não chamar de tarifa observada da Empresa 1.'],
-  ['5', 'Desvio de baseline', 'Verificado: E2 operacional alinhada; diferença tributária de fonte de 1,97%; E1 não tem benchmark externo no conjunto fornecido.', 'Alta', 'Incluir tabela de paridade e declarar a diferença de fonte como dado, não como erro de software.'],
-  ['6', 'Pesos w1-w5', 'Executado em quatro perfis; E1 mantém o mesmo candidato; E2 muda entre perfil custo e demais.', 'Média', 'Reportar sensibilidade da recomendação, não só um ranking.'],
-  ['7', 'Fallbacks', 'Parâmetros centralizados no model-configuration.js; frequência por cenário foi exportada.', 'Média', 'Descrever 2,5%, 40% e 0,005 R$/kg-km.'],
-  ['8', 'Fixo/variável de armazenagem', 'Dado de decomposição fixa/variável não está presente na base; o fallback proporcional está identificado.', 'Média', 'Marcar como hipótese de engenharia baseada na ausência do dado.'],
-  ['9', 'Duplicidade core/tax', 'Verificado: os arquivos atuais são usados pelo orquestrador; não há código morto comprovado neste item.', 'Média', 'Não remover. A crítica do plano está desatualizada em relação ao checkout atual.'],
-  ['10', 'Justificar não uso de MILP', 'A justificativa está no referencial; deve ser antecipada e alinhada à enumeração discreta.', 'Baixa', 'Usar “melhor cenário na busca avaliada”, salvo espaço exato.'],
-  ['11', 'Proxy tributário E1', 'Já sinalizado na camada de dados/runtime; precisa aparecer nas tabelas do relatório.', 'Baixa', 'Adicionar coluna Fonte/status tributário.'],
-  ['12', 'Revisão final do relatório', 'Necessária após incorporar os números deste pacote.', 'Alta', 'Revisar texto, tabelas, figuras, equações e sumário.'],
+  [
+    '1',
+    'Reconciliar Tabela 7 e savings',
+    'Corrigido nos dados deste pacote; a fonte anterior tinha números incompatíveis.',
+    'Alta',
+    'Usar published_scenarios e fórmula saving = (baseline - cenário) / baseline.',
+  ],
+  [
+    '2',
+    'Definir papel do Monte Carlo',
+    'Corrigido no pacote: módulo funcional, exploratório e reprodutível por seed.',
+    'Alta',
+    'Documentar iterações, seed, perfil e não misturar com números determinísticos.',
+  ],
+  [
+    '3',
+    'Dependência do estoque de CDs',
+    'Confirmado: custo idêntico com 1 e todos os CDs sob os mesmos drivers.',
+    'Alta',
+    'Manter Escolha B e retirar alegação de pooling de risco.',
+  ],
+  [
+    '4',
+    'Calibração cruzada de transferência E1',
+    'Confirmada e explicitamente marcada como proxy de engenharia da E2.',
+    'Alta',
+    'Não chamar de tarifa observada da Empresa 1.',
+  ],
+  [
+    '5',
+    'Desvio de baseline',
+    'Verificado: E2 operacional alinhada; diferença tributária de fonte de 1,97%; E1 não tem benchmark externo no conjunto fornecido.',
+    'Alta',
+    'Incluir tabela de paridade e declarar a diferença de fonte como dado, não como erro de software.',
+  ],
+  [
+    '6',
+    'Pesos w1-w5',
+    'Executado em quatro perfis; E1 mantém o mesmo candidato; E2 muda entre perfil custo e demais.',
+    'Média',
+    'Reportar sensibilidade da recomendação, não só um ranking.',
+  ],
+  [
+    '7',
+    'Fallbacks',
+    'Parâmetros centralizados no model-configuration.js; frequência por cenário foi exportada.',
+    'Média',
+    'Descrever 2,5%, 40% e 0,005 R$/kg-km.',
+  ],
+  [
+    '8',
+    'Fixo/variável de armazenagem',
+    'Dado de decomposição fixa/variável não está presente na base; o fallback proporcional está identificado.',
+    'Média',
+    'Marcar como hipótese de engenharia baseada na ausência do dado.',
+  ],
+  [
+    '9',
+    'Duplicidade core/tax',
+    'Verificado: os arquivos atuais são usados pelo orquestrador; não há código morto comprovado neste item.',
+    'Média',
+    'Não remover. A crítica do plano está desatualizada em relação ao checkout atual.',
+  ],
+  [
+    '10',
+    'Justificar não uso de MILP',
+    'A justificativa está no referencial; deve ser antecipada e alinhada à enumeração discreta.',
+    'Baixa',
+    'Usar “melhor cenário na busca avaliada”, salvo espaço exato.',
+  ],
+  [
+    '11',
+    'Proxy tributário E1',
+    'Já sinalizado na camada de dados/runtime; precisa aparecer nas tabelas do relatório.',
+    'Baixa',
+    'Adicionar coluna Fonte/status tributário.',
+  ],
+  [
+    '12',
+    'Revisão final do relatório',
+    'Necessária após incorporar os números deste pacote.',
+    'Alta',
+    'Revisar texto, tabelas, figuras, equações e sumário.',
+  ],
 ];
 
-const csv = (rows) => rows.map(row => row.map(x => { const s = String(x ?? ''); return /[;,\n"]/.test(s) ? `"${s.replaceAll('"','""')}"` : s; }).join(';')).join('\n') + '\n';
-await fs.writeFile(path.join(outDir, 'matriz_plano_trabalho.csv'), csv([['id','item','status_atual','prioridade','acao_para_relatorio'], ...statusRows]), 'utf8');
+const csv = (rows) =>
+  rows
+    .map((row) =>
+      row
+        .map((x) => {
+          const s = String(x ?? '');
+          return /[;,\n"]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
+        })
+        .join(';')
+    )
+    .join('\n') + '\n';
+await fs.writeFile(
+  path.join(outDir, 'matriz_plano_trabalho.csv'),
+  csv([['id', 'item', 'status_atual', 'prioridade', 'acao_para_relatorio'], ...statusRows]),
+  'utf8'
+);
 
 const taxAudit = `# Auditoria tributária profissional do simulador
 
@@ -103,7 +197,9 @@ O ZIP contém somente agregados derivados, CSVs de auditoria, o workbook e docum
 `;
 await fs.writeFile(path.join(outDir, 'LEIA_ME_PRIMEIRO.md'), report, 'utf8');
 await fs.writeFile(path.join(outDir, 'AUDITORIA_TRIBUTARIA_PROFISSIONAL.md'), taxAudit, 'utf8');
-await fs.writeFile(path.join(outDir, 'VALIDACAO_FINAL.md'), `# Validação final do pacote
+await fs.writeFile(
+  path.join(outDir, 'VALIDACAO_FINAL.md'),
+  `# Validação final do pacote
 
 ## Software
 
@@ -120,31 +216,307 @@ Suíte automatizada do projeto: aprovada. Foram aprovados os contratos de dados,
 ## Regra para a defesa
 
 Não apresentar proxy como observação, não apresentar Monte Carlo como previsão histórica, não apresentar o melhor cenário avaliado como ótimo global quando o espaço não é exato e não apresentar a simulação tributária como validação fiscal oficial. Essas são qualificações de dados e escopo, não pendências de implementação.
-`, 'utf8');
-for (const file of ['METODOLOGIA_MODELO.md', 'RELATORIO_FINAL_ACADEMICO.md', 'CHECKLIST_ENTREGA_EMPRESAS.md', 'PROJECT_STRUCTURE.md']) {
+`,
+  'utf8'
+);
+for (const file of [
+  'METODOLOGIA_MODELO.md',
+  'RELATORIO_FINAL_ACADEMICO.md',
+  'CHECKLIST_ENTREGA_EMPRESAS.md',
+  'PROJECT_STRUCTURE.md',
+]) {
   await fs.copyFile(path.join(root, file), path.join(outDir, file));
 }
-for (const file of ['data/validation/release-report.json', 'data/validation/phase_tests.json', 'data/validation/presentation_e2e/presentation_e2e_report.json']) {
+for (const file of [
+  'data/validation/release-report.json',
+  'data/validation/phase_tests.json',
+  'data/validation/presentation_e2e/presentation_e2e_report.json',
+]) {
   await fs.copyFile(path.join(root, file), path.join(outDir, path.basename(file)));
 }
 await fs.writeFile(path.join(outDir, 'evidence.json'), JSON.stringify(evidence, null, 2), 'utf8');
-await fs.writeFile(path.join(outDir, 'relatorio_recebido_extraido.txt'), await fs.readFile('/tmp/visagio_doc_extract/R_SPRINT3_Grupo2_Visagio(1).txt', 'utf8'), 'utf8');
-await fs.writeFile(path.join(outDir, 'plano_trabalho_recebido_extraido.txt'), await fs.readFile('/tmp/visagio_doc_extract/Plano de trabalho(1).txt', 'utf8'), 'utf8');
+await fs.writeFile(
+  path.join(outDir, 'relatorio_recebido_extraido.txt'),
+  await fs.readFile('/tmp/visagio_doc_extract/R_SPRINT3_Grupo2_Visagio(1).txt', 'utf8'),
+  'utf8'
+);
+await fs.writeFile(
+  path.join(outDir, 'plano_trabalho_recebido_extraido.txt'),
+  await fs.readFile('/tmp/visagio_doc_extract/Plano de trabalho(1).txt', 'utf8'),
+  'utf8'
+);
 
 const wb = Workbook.create();
 const sheets = {};
-for (const name of ['Resumo', 'Baseline', 'Reconciliação', 'Estoque teste', 'Monte Carlo', 'Otimizador', 'Plano', 'Fontes']) sheets[name] = wb.worksheets.add(name);
-const colName = (index) => { let n = index + 1, name = ''; while (n > 0) { const r = (n - 1) % 26; name = String.fromCharCode(65 + r) + name; n = Math.floor((n - 1) / 26); } return name; };
-const header = (sheet, title, rows, widths = []) => { sheet.getRange('A1').values = [[title]]; sheet.getRange('A1').format.font = { bold: true, size: 14, color: '#000000' }; sheet.getRange('A3').write(rows); const lastCol = colName(rows[0].length - 1); sheet.getRange(`A3:${lastCol}${2+rows.length}`).format.borders = { preset: 'all', style: 'thin', color: '#D9D9D9' }; sheet.getRange(`A3:${lastCol}3`).format = { fill: '#1F4E78', font: { bold: true, color: '#FFFFFF' }, wrapText: true }; sheet.showGridLines = false; sheet.getUsedRange()?.format.autofitColumns(); widths.forEach((width, index) => { sheet.getRange(`${colName(index)}:${colName(index)}`).format.columnWidth = width; }); };
-header(sheets.Resumo, 'Resumo executivo da revisão', [['Cadeia','Baseline com tributo','CDs','Fluxos','Paridade','Uso recomendado'], ['Empresa 1', e1.baseline.total_with_tax, e1.source_counts.active_cds, e1.source_counts.flows, 'Sem benchmark fornecido', 'Exploratório condicionado'], ['Empresa 2', e2.baseline.total_with_tax, e2.source_counts.active_cds, e2.source_counts.flows, 'Operacional alinhada / tributária divergente', 'Exploratório; não validação fiscal oficial']], [22, 18, 8, 10, 32, 44]);
-header(sheets.Baseline, 'Componentes do baseline', [['Cadeia','Transferência','Distribuição','Armazenagem','Estoque','Tributo','Logística total','Total com tributo'], ...[['Empresa 1',e1.baseline.costs.transfer_cost,e1.baseline.costs.distribution_cost,e1.baseline.costs.storage_cost,e1.baseline.costs.inventory_cost,e1.baseline.costs.tax_impact,e1.baseline.costs.total_logistics_cost,e1.baseline.total_with_tax],['Empresa 2',e2.baseline.costs.transfer_cost,e2.baseline.costs.distribution_cost,e2.baseline.costs.storage_cost,e2.baseline.costs.inventory_cost,e2.baseline.costs.tax_impact,e2.baseline.costs.total_logistics_cost,e2.baseline.total_with_tax]]], [22, 18, 18, 18, 18, 18, 18, 18]);
-const recRows = [['Cadeia','Métrica','Referência','Simulado','Erro %','Status']]; for (const [cid,c] of [['Empresa 1',e1],['Empresa 2',e2]]) for (const r of (c.reconciliation.operational.rows||[])) recRows.push([cid,r.metric,r.reference,r.simulated,r.percentage_error,r.status]); recRows.push(['Empresa 2','tributário bruto',e2.reconciliation.tax.summary?.canonical_total,e2.reconciliation.tax.summary?.raw_matrix_total,e2.reconciliation.tax.summary?.raw_difference_pct,e2.reconciliation.tax.status]); header(sheets['Reconciliação'], 'Reconciliação contra referências', recRows, [20, 26, 18, 18, 16, 18]);
-header(sheets['Estoque teste'], 'Teste controlado de independência do estoque', [['Cadeia','Cenário','CDs','Demanda','Dias','WACC','Custo estoque','Igual ao outro caso'], ...[['Empresa 1','1 CD',e1.inventory_independence_test.one_cd.active_cds_count,1,45,0.15,e1.inventory_independence_test.one_cd.costs.inventory_cost,e1.inventory_independence_test.equal_inventory_cost],['Empresa 1','Todos os CDs',e1.inventory_independence_test.all_cds.active_cds_count,1,45,0.15,e1.inventory_independence_test.all_cds.costs.inventory_cost,e1.inventory_independence_test.equal_inventory_cost],['Empresa 2','1 CD',e2.inventory_independence_test.one_cd.active_cds_count,1,45,0.15,e2.inventory_independence_test.one_cd.costs.inventory_cost,e2.inventory_independence_test.equal_inventory_cost],['Empresa 2','Todos os CDs',e2.inventory_independence_test.all_cds.active_cds_count,1,45,0.15,e2.inventory_independence_test.all_cds.costs.inventory_cost,e2.inventory_independence_test.equal_inventory_cost]]], [22, 18, 8, 12, 8, 8, 18, 20]);
-const mcRows=[['Cadeia','Iterações','Seed','Perfil','Driver','Média saving %','P10','P50','P90']]; for (const [cid,c] of [['Empresa 1',e1],['Empresa 2',e2]]) { const s=c.monte_carlo.summary||{}; mcRows.push([cid,s.iterations,s.seed,s.profile,s.scatter_driver,s.mean_saving_pct,s.p10_saving_pct,s.median_saving_pct,s.p90_saving_pct]); } header(sheets['Monte Carlo'],'Monte Carlo exploratório',mcRows, [20, 12, 8, 14, 22, 16, 16, 16, 16]);
-const optRows=[['Cadeia','Perfil de pesos','Status','Escopo','Melhor cenário','Score','Total com tributo','Saving %','Risco']]; for(const [cid,c] of [['Empresa 1',e1],['Empresa 2',e2]]) for(const [profile,o] of Object.entries(c.optimization)) { const b=o.best?.[0]||{}; optRows.push([cid,profile,o.optimizer_status,o.result_scope,b.scenario_id,b.score,b.total_with_tax,b.saving_pct,b.risk_level]); } header(sheets.Otimizador,'Sensibilidade da recomendação aos pesos',optRows, [20, 18, 24, 26, 30, 14, 18, 14, 12]);
-header(sheets.Plano,'Matriz de execução do plano de trabalho',[['ID','Item','Status atual','Prioridade','Ação para o relatório'],...statusRows], [8, 32, 76, 12, 72]);
-header(sheets.Fontes,'Fontes normativas e dados usados',[['Fonte','Título','Uso'],['Receita Federal','Entenda a Reforma Tributária do Consumo','Cronograma, tributos e transição'],['Receita Federal','Legislação da Reforma Tributária do Consumo','Marcos regulatórios'],['Planalto','Lei Complementar nº 214/2025','IBS, CBS, IS e créditos'],['Projeto Visagio','Bundles e tabelas protegidas','Baseline, fluxos e custos observados']], [22, 48, 42]);
-for (const s of Object.values(sheets)) { const used=s.getUsedRange(); if (used) { used.format.font = { name: 'Arial', size: 10, color: '#000000' }; used.format.verticalAlignment='center'; used.format.wrapText=true; } }
+for (const name of [
+  'Resumo',
+  'Baseline',
+  'Reconciliação',
+  'Estoque teste',
+  'Monte Carlo',
+  'Otimizador',
+  'Plano',
+  'Fontes',
+])
+  sheets[name] = wb.worksheets.add(name);
+const colName = (index) => {
+  let n = index + 1,
+    name = '';
+  while (n > 0) {
+    const r = (n - 1) % 26;
+    name = String.fromCharCode(65 + r) + name;
+    n = Math.floor((n - 1) / 26);
+  }
+  return name;
+};
+const header = (sheet, title, rows, widths = []) => {
+  sheet.getRange('A1').values = [[title]];
+  sheet.getRange('A1').format.font = { bold: true, size: 14, color: '#000000' };
+  sheet.getRange('A3').write(rows);
+  const lastCol = colName(rows[0].length - 1);
+  sheet.getRange(`A3:${lastCol}${2 + rows.length}`).format.borders = {
+    preset: 'all',
+    style: 'thin',
+    color: '#D9D9D9',
+  };
+  sheet.getRange(`A3:${lastCol}3`).format = {
+    fill: '#1F4E78',
+    font: { bold: true, color: '#FFFFFF' },
+    wrapText: true,
+  };
+  sheet.showGridLines = false;
+  sheet.getUsedRange()?.format.autofitColumns();
+  widths.forEach((width, index) => {
+    sheet.getRange(`${colName(index)}:${colName(index)}`).format.columnWidth = width;
+  });
+};
+header(
+  sheets.Resumo,
+  'Resumo executivo da revisão',
+  [
+    ['Cadeia', 'Baseline com tributo', 'CDs', 'Fluxos', 'Paridade', 'Uso recomendado'],
+    [
+      'Empresa 1',
+      e1.baseline.total_with_tax,
+      e1.source_counts.active_cds,
+      e1.source_counts.flows,
+      'Sem benchmark fornecido',
+      'Exploratório condicionado',
+    ],
+    [
+      'Empresa 2',
+      e2.baseline.total_with_tax,
+      e2.source_counts.active_cds,
+      e2.source_counts.flows,
+      'Operacional alinhada / tributária divergente',
+      'Exploratório; não validação fiscal oficial',
+    ],
+  ],
+  [22, 18, 8, 10, 32, 44]
+);
+header(
+  sheets.Baseline,
+  'Componentes do baseline',
+  [
+    [
+      'Cadeia',
+      'Transferência',
+      'Distribuição',
+      'Armazenagem',
+      'Estoque',
+      'Tributo',
+      'Logística total',
+      'Total com tributo',
+    ],
+    ...[
+      [
+        'Empresa 1',
+        e1.baseline.costs.transfer_cost,
+        e1.baseline.costs.distribution_cost,
+        e1.baseline.costs.storage_cost,
+        e1.baseline.costs.inventory_cost,
+        e1.baseline.costs.tax_impact,
+        e1.baseline.costs.total_logistics_cost,
+        e1.baseline.total_with_tax,
+      ],
+      [
+        'Empresa 2',
+        e2.baseline.costs.transfer_cost,
+        e2.baseline.costs.distribution_cost,
+        e2.baseline.costs.storage_cost,
+        e2.baseline.costs.inventory_cost,
+        e2.baseline.costs.tax_impact,
+        e2.baseline.costs.total_logistics_cost,
+        e2.baseline.total_with_tax,
+      ],
+    ],
+  ],
+  [22, 18, 18, 18, 18, 18, 18, 18]
+);
+const recRows = [['Cadeia', 'Métrica', 'Referência', 'Simulado', 'Erro %', 'Status']];
+for (const [cid, c] of [
+  ['Empresa 1', e1],
+  ['Empresa 2', e2],
+])
+  for (const r of c.reconciliation.operational.rows || [])
+    recRows.push([cid, r.metric, r.reference, r.simulated, r.percentage_error, r.status]);
+recRows.push([
+  'Empresa 2',
+  'tributário bruto',
+  e2.reconciliation.tax.summary?.canonical_total,
+  e2.reconciliation.tax.summary?.raw_matrix_total,
+  e2.reconciliation.tax.summary?.raw_difference_pct,
+  e2.reconciliation.tax.status,
+]);
+header(
+  sheets['Reconciliação'],
+  'Reconciliação contra referências',
+  recRows,
+  [20, 26, 18, 18, 16, 18]
+);
+header(
+  sheets['Estoque teste'],
+  'Teste controlado de independência do estoque',
+  [
+    ['Cadeia', 'Cenário', 'CDs', 'Demanda', 'Dias', 'WACC', 'Custo estoque', 'Igual ao outro caso'],
+    ...[
+      [
+        'Empresa 1',
+        '1 CD',
+        e1.inventory_independence_test.one_cd.active_cds_count,
+        1,
+        45,
+        0.15,
+        e1.inventory_independence_test.one_cd.costs.inventory_cost,
+        e1.inventory_independence_test.equal_inventory_cost,
+      ],
+      [
+        'Empresa 1',
+        'Todos os CDs',
+        e1.inventory_independence_test.all_cds.active_cds_count,
+        1,
+        45,
+        0.15,
+        e1.inventory_independence_test.all_cds.costs.inventory_cost,
+        e1.inventory_independence_test.equal_inventory_cost,
+      ],
+      [
+        'Empresa 2',
+        '1 CD',
+        e2.inventory_independence_test.one_cd.active_cds_count,
+        1,
+        45,
+        0.15,
+        e2.inventory_independence_test.one_cd.costs.inventory_cost,
+        e2.inventory_independence_test.equal_inventory_cost,
+      ],
+      [
+        'Empresa 2',
+        'Todos os CDs',
+        e2.inventory_independence_test.all_cds.active_cds_count,
+        1,
+        45,
+        0.15,
+        e2.inventory_independence_test.all_cds.costs.inventory_cost,
+        e2.inventory_independence_test.equal_inventory_cost,
+      ],
+    ],
+  ],
+  [22, 18, 8, 12, 8, 8, 18, 20]
+);
+const mcRows = [
+  ['Cadeia', 'Iterações', 'Seed', 'Perfil', 'Driver', 'Média saving %', 'P10', 'P50', 'P90'],
+];
+for (const [cid, c] of [
+  ['Empresa 1', e1],
+  ['Empresa 2', e2],
+]) {
+  const s = c.monte_carlo.summary || {};
+  mcRows.push([
+    cid,
+    s.iterations,
+    s.seed,
+    s.profile,
+    s.scatter_driver,
+    s.mean_saving_pct,
+    s.p10_saving_pct,
+    s.median_saving_pct,
+    s.p90_saving_pct,
+  ]);
+}
+header(
+  sheets['Monte Carlo'],
+  'Monte Carlo exploratório',
+  mcRows,
+  [20, 12, 8, 14, 22, 16, 16, 16, 16]
+);
+const optRows = [
+  [
+    'Cadeia',
+    'Perfil de pesos',
+    'Status',
+    'Escopo',
+    'Melhor cenário',
+    'Score',
+    'Total com tributo',
+    'Saving %',
+    'Risco',
+  ],
+];
+for (const [cid, c] of [
+  ['Empresa 1', e1],
+  ['Empresa 2', e2],
+])
+  for (const [profile, o] of Object.entries(c.optimization)) {
+    const b = o.best?.[0] || {};
+    optRows.push([
+      cid,
+      profile,
+      o.optimizer_status,
+      o.result_scope,
+      b.scenario_id,
+      b.score,
+      b.total_with_tax,
+      b.saving_pct,
+      b.risk_level,
+    ]);
+  }
+header(
+  sheets.Otimizador,
+  'Sensibilidade da recomendação aos pesos',
+  optRows,
+  [20, 18, 24, 26, 30, 14, 18, 14, 12]
+);
+header(
+  sheets.Plano,
+  'Matriz de execução do plano de trabalho',
+  [['ID', 'Item', 'Status atual', 'Prioridade', 'Ação para o relatório'], ...statusRows],
+  [8, 32, 76, 12, 72]
+);
+header(
+  sheets.Fontes,
+  'Fontes normativas e dados usados',
+  [
+    ['Fonte', 'Título', 'Uso'],
+    [
+      'Receita Federal',
+      'Entenda a Reforma Tributária do Consumo',
+      'Cronograma, tributos e transição',
+    ],
+    ['Receita Federal', 'Legislação da Reforma Tributária do Consumo', 'Marcos regulatórios'],
+    ['Planalto', 'Lei Complementar nº 214/2025', 'IBS, CBS, IS e créditos'],
+    ['Projeto Visagio', 'Bundles e tabelas protegidas', 'Baseline, fluxos e custos observados'],
+  ],
+  [22, 48, 42]
+);
+for (const s of Object.values(sheets)) {
+  const used = s.getUsedRange();
+  if (used) {
+    used.format.font = { name: 'Arial', size: 10, color: '#000000' };
+    used.format.verticalAlignment = 'center';
+    used.format.wrapText = true;
+  }
+}
 sheets.Resumo.getRange('B4:B5').format.numberFormat = '"R$" #,##0.00';
 sheets.Baseline.getRange('B4:H5').format.numberFormat = '"R$" #,##0.00';
 sheets['Reconciliação'].getRange('C4:D12').format.numberFormat = '"R$" #,##0.00';
@@ -155,5 +527,6 @@ sheets['Monte Carlo'].getRange('F4:I5').format.numberFormat = '0.00"%"';
 sheets.Otimizador.getRange('F4:F11').format.numberFormat = '0.00';
 sheets.Otimizador.getRange('G4:G11').format.numberFormat = '"R$" #,##0.00';
 sheets.Otimizador.getRange('H4:H11').format.numberFormat = '0.00"%"';
-const xlsx = await SpreadsheetFile.exportXlsx(wb); await xlsx.save(path.join(outDir,'pacote_dados_corrigidos.xlsx'));
+const xlsx = await SpreadsheetFile.exportXlsx(wb);
+await xlsx.save(path.join(outDir, 'pacote_dados_corrigidos.xlsx'));
 console.log(outDir);

@@ -37,7 +37,9 @@ function loadRuntimeComplements(companyId) {
       `complementos/${tenantId}/validation/validation_checklist.json`
     ),
     proxyRegistry: readComplementJson(`complementos/${tenantId}/validation/proxy_registry.json`),
-    scenarioRegistry: readComplementJson(`complementos/${tenantId}/scenarios/scenario_registry.json`),
+    scenarioRegistry: readComplementJson(
+      `complementos/${tenantId}/scenarios/scenario_registry.json`
+    ),
   });
 }
 
