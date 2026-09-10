@@ -23,7 +23,7 @@ import {loadRuntimeBundle} from './tests/runtime_bundle_support.mjs';
 const testRates2026 = getRegimeTaxRates('reform_2026');
 if (testRates2026.cbs !== 0.009 || testRates2026.ibs !== 0.001) throw new Error('reform_2026 rates mismatch');
 const cbsRates2028 = getRegimeTaxRates('reform_2027_2028');
-if (cbsRates2028.cbs !== 0.088 || cbsRates2028.ibs !== 0) throw new Error('reform_2027_2028 rates mismatch');
+if (cbsRates2028.cbs !== 0.088 || cbsRates2028.ibs !== 0.001) throw new Error('reform_2027_2028 rates mismatch');
 for (const companyId of ['empresa1','empresa2']) {
   const bundle = loadRuntimeBundle({companyId, decryptJson});
   const cds = bundle.model.active_cds;

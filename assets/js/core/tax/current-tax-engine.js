@@ -38,6 +38,24 @@ function observedRate(row) {
   return taxValue > 0 && revenue > 0 ? normalizeTaxRate(taxValue / revenue) : 0;
 }
 
+function componentValue(row, keys) {
+  const value = firstValue(row, keys);
+  if (value === null) return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function currentTaxComponents(row) {
+  return {
+    icms: componentValue(row, ['Vlr ICMS - Original', 'vlr_icms_original', 'icms_value']),
+    icms_st: componentValue(row, ['Vlr ICMS-ST', 'vlr_icms_st', 'icms_st_value']),
+    ipi: componentValue(row, ['Vlr IPI', 'vlr_ipi', 'ipi_value']),
+    pis: componentValue(row, ['Vlr PIS', 'vlr_pis', 'pis_value']),
+    cofins: componentValue(row, ['Vlr COFINS', 'vlr_cofins', 'cofins_value']),
+    iss: componentValue(row, ['Vlr ISS', 'vlr_iss', 'iss_value']),
+  };
+}
+
 function buildObservedTaxIndex(taxData) {
   const exact = new Map();
   const byDestination = new Map();
@@ -138,6 +156,15 @@ export function calculateCurrentTax({
       matchCounts.fallback += 1;
     }
     current = grossRevenue * appliedRate * safeNumber(demandMultiplier, 1);
+    const sourceRow = taxData.find(
+      (row) =>
+        normalizeText(firstValue(row, ['UF_ORIGEM', 'uf_origem', 'UF Origem'])) ===
+          normalizeText(flow.origin_uf) &&
+        normalizeText(firstValue(row, ['UF_DESTINO', 'uf_destino', 'UF Destino'])) ===
+          normalizeText(flow.destination_uf)
+    );
+    const components = sourceRow ? currentTaxComponents(sourceRow) : {};
+    const componentCount = Object.values(components).filter((value) => value != null).length;
     return {
       flow_id: flow.flow_id,
       destination_uf: flow.destination_uf,
@@ -153,6 +180,9 @@ export function calculateCurrentTax({
         : referenceRateReconciled
           ? 'reconciled_baseline_parameter'
           : 'default_parameter',
+      current_tax_components: components,
+      current_tax_component_coverage: componentCount,
+      current_tax_calculation_method: 'effective_rate_aggregate',
     };
   });
   const totalCurrentTax = flowBreakdown.reduce((sum, row) => sum + safeNumber(row.current_tax), 0);
@@ -181,6 +211,22 @@ export function calculateCurrentTax({
       selective_tax_total: 0,
       credits_total: 0,
     },
+    current_tax_components: Object.fromEntries(
+      ['icms', 'icms_st', 'ipi', 'pis', 'cofins', 'iss'].map((component) => {
+        const values = flowBreakdown
+          .map((row) => row.current_tax_components?.[component])
+          .filter((value) => value != null);
+        return [
+          component,
+          {
+            total: values.reduce((sum, value) => sum + value, 0),
+            observed_flow_count: values.length,
+          },
+        ];
+      })
+    ),
+    current_tax_component_status:
+      'components_are_reported_when_present_but_total_current_tax_remains_effective_rate_aggregate',
     tax_input_match_summary: {
       ...matchCounts,
       observed_flow_count: matchCounts.exact + matchCounts.destination_proxy,

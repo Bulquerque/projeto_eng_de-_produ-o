@@ -44,6 +44,11 @@ export function calculateReformTax({
       selective_tax: selective,
       credits,
       total_tax: total,
+      tax_base: grossRevenue,
+      credit_base: safeNumber(flow.credit_base, grossRevenue),
+      credit_method: flow.credit_eligible === false ? 'not_eligible' : 'category_rate_proxy',
+      rate_source: regimeDefinition ? 'configured_regime_parameter' : 'default_parameter',
+      calculation_method: 'parametric_cbs_ibs_selective_less_credit',
     };
   });
 
@@ -85,6 +90,8 @@ export function calculateReformTax({
       credits_total: totals.credits_total,
     },
     regime_rates: rates,
+    calculation_method: 'parametric_cbs_ibs_selective_less_credit',
+    tax_components: ['cbs', 'ibs', 'selective_tax', 'credits'],
     rate_provenance: {
       source: regimeDefinition
         ? 'tax_reform_config_model_parameter'

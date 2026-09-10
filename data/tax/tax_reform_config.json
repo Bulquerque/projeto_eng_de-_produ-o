@@ -60,8 +60,8 @@
       "calculation_mode": "reform_cbs",
       "current_weight": 0.72,
       "cbs_rate": 0.088,
-      "ibs_rate": 0,
-      "selective_rate": 0.01,
+      "ibs_rate": 0.001,
+      "selective_rate": 0,
       "credit_rate": 0.15
     },
     "transition_2029": {

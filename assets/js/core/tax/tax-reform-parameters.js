@@ -13,9 +13,9 @@ const DEFAULT_PARAMETERS = {
   regime_overrides: {
     reform_2026: { cbs: 0.009, ibs: 0.001, selective: 0 },
     reform_test_2026: { cbs: 0.009, ibs: 0.001, selective: 0 },
-    reform_2027_2028: { cbs: 0.088, ibs: 0, selective: 0.01 },
-    reform_2027: { cbs: 0.088, ibs: 0, selective: 0.01 },
-    reform_2028: { cbs: 0.088, ibs: 0, selective: 0.01 },
+    reform_2027_2028: { cbs: 0.088, ibs: 0.001, selective: 0 },
+    reform_2027: { cbs: 0.088, ibs: 0.001, selective: 0 },
+    reform_2028: { cbs: 0.088, ibs: 0.001, selective: 0 },
     transition_2029: { cbs: 0.088, ibs: 0.177, selective: 0.01 },
     transition_2030: { cbs: 0.088, ibs: 0.177, selective: 0.01 },
     transition_2031: { cbs: 0.088, ibs: 0.177, selective: 0.01 },
