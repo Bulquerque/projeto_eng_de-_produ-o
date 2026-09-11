@@ -11,9 +11,9 @@ Legenda: `[ ]` pendente, `[x]` aprovado, `[!]` indisponível ou com ressalva.
 ## Registro de execução da release final — 2026-09-10
 
 Esta lista mantém os casos individuais para homologação por empresa. O status
-consolidado abaixo é a evidência produzida nesta release; uma linha individual
-permanece pendente quando o teste automatizado ou a captura atual não prova
-aquele caso específico.
+consolidado abaixo significa **suíte automatizada aprovada**, não homologação manual
+completa de cada empresa. Uma linha individual permanece pendente quando o teste
+automatizado ou a captura atual não prova aquele caso específico.
 
 - `[x]` Código: lint, formatação, auditoria de dependências e `git diff --check` aprovados.
 - `[x]` Dados: build criptografado verificado com 144 arquivos; segredo não encontrado no repositório.

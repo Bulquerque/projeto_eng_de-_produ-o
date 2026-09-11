@@ -1,0 +1,57 @@
+{
+  "package": "visagio_static_simulator",
+  "package_version": "1.0.0",
+  "release_id": "visagio_static_simulator_1.0",
+  "git_commit": "f711df4df027d38e47cfbdb2d6d42fb5000c643b",
+  "generated_at_utc": "2026-09-11T18:11:16+00:00",
+  "status": "ready_with_documented_limitations",
+  "release_qualification": "pacote tecnicamente entregável; recomendações permanecem condicionadas à qualidade dos dados e aos gates registrados",
+  "scope": "Fases 1 a 5 implementadas como site estatico",
+  "phases": {
+    "phase_1": {
+      "status": "implemented",
+      "test_status": "passed"
+    },
+    "phase_2": {
+      "status": "implemented",
+      "test_status": "passed"
+    },
+    "phase_3": {
+      "status": "implemented",
+      "test_status": "passed"
+    },
+    "phase_4": {
+      "status": "implemented",
+      "test_status": "passed"
+    },
+    "phase_5": {
+      "status": "implemented",
+      "test_status": "passed"
+    }
+  },
+  "tests": {
+    "status": "passed",
+    "phase_groups": {
+      "base_paths_phase1_phase2": "passed",
+      "phase3": "passed",
+      "phase4": "passed",
+      "phase5": "passed"
+    },
+    "protected_data_integrity": "OK_PROTECTED_DATA_UNCHANGED"
+  },
+  "methodology": {
+    "status": "documented_with_registered_validation_pending",
+    "tax_study_id": "estudo_proprio_tributacao_visagio_v1",
+    "tax_study_status": "registered_validation_pending",
+    "decision_use_when_coverage_is_partial": "exploratory_only",
+    "official_fiscal_validation": false,
+    "monte_carlo_interpretation": "exploratory_uncertainty_analysis",
+    "tax_interpretation": "parametric_model_reconciliation"
+  },
+  "evidence": {
+    "phase_tests": "data/validation/phase_tests.json",
+    "release_report": "data/validation/release-report.json",
+    "protected_data_integrity": "data/validation/protected-data-integrity.json",
+    "methodology_document": "ESTUDO_PROPRIO_TRIBUTACAO.md"
+  }
+}

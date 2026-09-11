@@ -21,11 +21,7 @@
       <code>http://localhost:8000/</code>.
     </p>
   </div>
-  <script>
-    if (location.protocol !== 'http:' && location.protocol !== 'https:') {
-      document.getElementById('runtimeWarning')?.removeAttribute('hidden');
-    }
-  </script>
+  <script type="module" src="assets/js/core/runtime-warning.js"></script>
 
   <header class="hero" id="topo">
     <nav class="topbar" aria-label="Navegação principal">

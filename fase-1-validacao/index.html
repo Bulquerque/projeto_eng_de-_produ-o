@@ -16,11 +16,7 @@
       disco pode impedir o navegador de completar o redirecionamento corretamente.
     </p>
   </div>
-  <script>
-    if (location.protocol !== 'http:' && location.protocol !== 'https:') {
-      document.getElementById('runtimeWarning')?.removeAttribute('hidden');
-    }
-  </script>
+  <script type="module" src="../assets/js/core/runtime-warning.js"></script>
   <p>Redirecionando para <a href="../index.html#/diagnostico-baseline">a jornada de diagnóstico</a>.</p>
 </body>
 </html>

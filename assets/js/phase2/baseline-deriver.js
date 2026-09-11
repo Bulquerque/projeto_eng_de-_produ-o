@@ -103,10 +103,12 @@ function buildDerivedTaxResults(taxResult, companyId) {
     icms_estimated: safeNumber(currentTax),
     difal_estimated: safeNumber(taxResult?.total_reform_tax),
     total_tax_impact: safeNumber(taxResult?.total_tax_impact),
+    source_classification: companyId === 'empresa1' ? 'shared_reference_proxy' : 'observed',
+    calculation_method: 'parametric_recomputation',
+    validation_scope: 'parametric_model_reconciliation',
+    official_fiscal_validation: false,
     tax_source_classification:
-      companyId === 'empresa1'
-        ? 'official_shared_tax_reference_proxy'
-        : 'observed_tax_inputs_reconciled',
+      companyId === 'empresa1' ? 'shared_reference_proxy' : 'observed_tax_inputs_reconciled',
     tax_source_label:
       companyId === 'empresa1'
         ? 'Proxy tributário — referência compartilhada'
@@ -148,14 +150,18 @@ function refreshEmpresa1ModelMetadata(bundle) {
     metadata: {
       ...currentMetadata,
       methodology:
-        'Baseline da Empresa 1 recalculado em runtime com matriz de distância, proxy quilométrico de transferência e referência tributária oficial. O pacote bruto é mantido em phase2_raw para auditoria.',
+        'Baseline da Empresa 1 recalculado em runtime com matriz de distância, proxy quilométrico de transferência e referência tributária compartilhada usada como proxy paramétrico. O pacote bruto é mantido em phase2_raw para auditoria.',
       derived_baseline: {
         active: true,
         preserves_raw_snapshot: true,
         comparability_status: 'not_comparable_to_raw_snapshot',
         decision_use: 'exploratory_only',
         transfer_source: 'distance_matrix_kilometric_transfer_proxy',
-        tax_source: 'official_tax_reference_recomputed',
+        tax_source: 'shared_reference_proxy_recomputed',
+        tax_source_classification: 'shared_reference_proxy',
+        calculation_method: 'parametric_recomputation',
+        validation_scope: 'parametric_model_reconciliation',
+        official_fiscal_validation: false,
         raw_snapshot_total_with_tax: safeNumber(
           bundle.phase2_raw?.costs?.costs?.total_with_tax,
           null

@@ -1,11 +1,45 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {
-  Workbook,
-  SpreadsheetFile,
-} from '/home/bulquerque/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/@oai/artifact-tool/dist/artifact_tool.mjs';
+import { access } from 'node:fs/promises';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const root = process.cwd();
+const root = fileURLToPath(new URL('../', import.meta.url));
+
+async function loadArtifactTool() {
+  const candidates = [];
+  if (process.env.VISAGIO_ARTIFACT_TOOL_PATH) {
+    candidates.push(process.env.VISAGIO_ARTIFACT_TOOL_PATH);
+  }
+  candidates.push(path.join(root, 'node_modules/@oai/artifact-tool/dist/artifact_tool.mjs'));
+  for (const candidate of candidates) {
+    try {
+      await access(candidate);
+      return import(pathToFileURL(candidate).href);
+    } catch {
+      // Try the next explicitly supported installation location.
+    }
+  }
+  throw new Error(
+    'Dependência de planilha ausente. Instale @oai/artifact-tool no projeto ou defina VISAGIO_ARTIFACT_TOOL_PATH com um caminho local válido; nenhum caminho absoluto do ambiente é usado automaticamente.'
+  );
+}
+
+const { Workbook, SpreadsheetFile } = await loadArtifactTool();
+async function copyOptionalInput(inputPath, outputPath, label) {
+  try {
+    await fs.copyFile(inputPath, outputPath);
+    return { label, status: 'copied', path: inputPath };
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    await fs.writeFile(
+      outputPath,
+      `Recurso opcional não disponível nesta execução: ${label}.\n` +
+        'O pacote foi gerado sem esse anexo textual; consulte references/raw_sources e o manifesto de fontes.\n',
+      'utf8'
+    );
+    return { label, status: 'not_available' };
+  }
+}
 const outDir = path.join(root, 'entregaveis', 'pacote_relatorio_visagio_2026-09-10');
 await fs.mkdir(outDir, { recursive: true });
 const evidence = JSON.parse(
@@ -235,14 +269,24 @@ for (const file of [
   await fs.copyFile(path.join(root, file), path.join(outDir, path.basename(file)));
 }
 await fs.writeFile(path.join(outDir, 'evidence.json'), JSON.stringify(evidence, null, 2), 'utf8');
-await fs.writeFile(
-  path.join(outDir, 'relatorio_recebido_extraido.txt'),
-  await fs.readFile('/tmp/visagio_doc_extract/R_SPRINT3_Grupo2_Visagio(1).txt', 'utf8'),
-  'utf8'
+const optionalInputs = [];
+optionalInputs.push(
+  await copyOptionalInput(
+    path.join(root, 'references/raw_sources/R_SPRINT3_Grupo2_Visagio(1).txt'),
+    path.join(outDir, 'relatorio_recebido_extraido.txt'),
+    'relatório recebido extraído'
+  )
+);
+optionalInputs.push(
+  await copyOptionalInput(
+    path.join(root, 'references/raw_sources/Plano de trabalho(1).txt'),
+    path.join(outDir, 'plano_trabalho_recebido_extraido.txt'),
+    'plano de trabalho recebido extraído'
+  )
 );
 await fs.writeFile(
-  path.join(outDir, 'plano_trabalho_recebido_extraido.txt'),
-  await fs.readFile('/tmp/visagio_doc_extract/Plano de trabalho(1).txt', 'utf8'),
+  path.join(outDir, 'package-input-status.json'),
+  JSON.stringify(optionalInputs, null, 2),
   'utf8'
 );
 

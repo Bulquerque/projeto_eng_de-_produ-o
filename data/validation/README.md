@@ -15,4 +15,7 @@ phase1_implementation_report.json
 phase2_test_results.json ... phase5_test_results.json
 ```
 
-Os diretórios de evidência têm política simples de retenção: uma execução atual por fluxo. Capturas exploratórias e pacotes antigos não fazem parte do estado operacional.
+Os diretórios de evidência têm política simples de retenção: uma execução atual por fluxo.
+Uma mesma captura não deve ser copiada com nomes de casos diferentes; quando dois fluxos
+usarem o mesmo estado visual, o relatório deve referenciar o mesmo arquivo e registrar o
+SHA-256. Capturas exploratórias e pacotes antigos não fazem parte do estado operacional.

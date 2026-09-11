@@ -278,9 +278,13 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
     warnings: td?.warnings || [],
     decision_use: td?.decision_use || 'decision_support',
     tax_study: td?.tax_study || td?.metadata?.tax_study || null,
+    source_classification: companyId === 'empresa1' ? 'shared_reference_proxy' : 'observed',
+    calculation_method: 'parametric_recomputation',
+    validation_scope: 'parametric_model_reconciliation',
+    official_fiscal_validation: false,
     tax_source_classification:
       companyId === 'empresa1'
-        ? 'official_shared_tax_reference_proxy'
+        ? 'shared_reference_proxy'
         : taxUsesProxy
           ? 'observed_tax_inputs_with_fiscal_proxy'
           : taxUsesFlowFallback

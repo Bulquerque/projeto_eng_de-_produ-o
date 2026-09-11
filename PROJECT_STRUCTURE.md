@@ -22,13 +22,20 @@ Este pacote foi reorganizado para deixar cada tipo de artefato em uma pasta clar
 ├── data/                           # dados tratados, contratos e relatórios de validação
 │   ├── empresa1/                   # dados da Empresa 1
 │   ├── empresa2/                   # dados da Empresa 2
+│   ├── complements/                # complementos, referências e fontes tributárias
 │   ├── contracts/                  # contratos de módulos de todas as fases
+│   ├── release-manifest.json       # identidade e status da release validada
 │   └── validation/                 # provas, auditorias e relatórios
 ├── docs/                           # documentação reorganizada por tema
 ├── etl/                            # apoio para geração/regeneração dos dados
 ├── references/                     # arquivos brutos e notas originais
 └── tests/                          # testes separados por tipo
 ```
+
+As pastas `fase-1-validacao/` a `fase-5-entrega-final/` são atalhos de navegação.
+O runtime é único em `index.html`; as páginas de fase redirecionam para ele por hash,
+e os dados versionados de empresa aparecem como `.enc.json`. O caminho sem essa extensão
+é o caminho lógico usado pelo catálogo e pelo runtime antes da resolução criptográfica.
 
 O runtime do site continua simples: `index.html` carrega cada fase por seu próprio `main.js` em `assets/js/phase1/` a `assets/js/phase5/`, sempre com caminhos relativos.
 

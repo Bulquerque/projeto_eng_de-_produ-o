@@ -1,6 +1,7 @@
 import { requireHttpRuntime } from './runtime-env.js';
 import { readStorageJSON, writeStorageJSON } from './browser-storage.js';
 import { resolveProjectUrl } from './project-paths.js';
+import { escapeHtml } from './common.js';
 
 export const DEBUG_LEVELS = Object.freeze({
   INFO: 'info',
@@ -125,14 +126,6 @@ export function buildDebugHint(entry) {
     return 'Valide se o cenário tem scenario_id, company_id, base_scenario_id e pelo menos um CD ativo.';
   return 'Abra o detalhe do erro, confira módulo/fase/evento e reproduza a ação no checklist manual da página.';
 }
-function escapeHtml(v) {
-  return String(v ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
 function escapeDebugJson(value) {
   return escapeHtml(JSON.stringify(value, null, 2));
 }
@@ -143,7 +136,7 @@ export function renderDebugEntries(entries = []) {
     .reverse()
     .map(
       (e) =>
-        `<article class="debug-entry ${e.level}"><header><strong>${e.phase} · ${e.module}</strong><span class="status-chip ${debugStatusClass(e.level === 'error' ? 'failed' : e.level === 'warn' ? 'warning' : 'ok')}">${e.level}</span></header><p><b>${e.event}</b></p><pre>${escapeDebugJson(e.detail)}</pre>${e.error ? `<p class="debug-hint"><b>Erro:</b> ${escapeHtml(e.error.message || 'erro')}<br><b>Como investigar:</b> ${escapeHtml(buildDebugHint(e))}</p>` : ''}<small>${e.timestamp}</small></article>`
+        `<article class="debug-entry ${escapeHtml(e.level)}"><header><strong>${escapeHtml(e.phase)} · ${escapeHtml(e.module)}</strong><span class="status-chip ${debugStatusClass(e.level === 'error' ? 'failed' : e.level === 'warn' ? 'warning' : 'ok')}">${escapeHtml(e.level)}</span></header><p><b>${escapeHtml(e.event)}</b></p><pre>${escapeDebugJson(e.detail)}</pre>${e.error ? `<p class="debug-hint"><b>Erro:</b> ${escapeHtml(e.error.message || 'erro')}<br><b>Como investigar:</b> ${escapeHtml(buildDebugHint(e))}</p>` : ''}<small>${escapeHtml(e.timestamp)}</small></article>`
     )
     .join('')}</div>`;
 }

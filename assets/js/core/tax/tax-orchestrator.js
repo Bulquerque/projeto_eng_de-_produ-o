@@ -79,7 +79,7 @@ function buildTaxScopeMetadata({ calculationMode, precisionMode, sourceContext, 
     validation_scope: 'parametric_model_reconciliation',
     official_fiscal_validation: false,
     source_classification: sourceContext?.package_name
-      ? 'official_reference_parameters'
+      ? 'shared_reference'
       : 'internal_reference_or_fallback',
     tax_period_contract: periodMetadata,
     coverage_status: null,

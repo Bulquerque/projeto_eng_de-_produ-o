@@ -1,7 +1,28 @@
 {
   "package": "visagio_static_simulator",
-  "version": "8.0-phase2-baseline-implemented",
-  "generated_at_utc": "2026-05-06T18:57:02.185564+00:00",
+  "version": "1.0.0",
+  "package_version": "1.0.0",
+  "release_id": "visagio_static_simulator_1.0",
+  "git_commit": "f711df4df027d38e47cfbdb2d6d42fb5000c643b",
+  "generated_at_utc": "2026-09-11T18:11:16+00:00",
+  "release_manifest": "data/release-manifest.json",
+  "release": {
+    "status": "ready_with_documented_limitations",
+    "phase_status": {
+      "phase_1": "implemented",
+      "phase_2": "implemented",
+      "phase_3": "implemented",
+      "phase_4": "implemented",
+      "phase_5": "implemented"
+    },
+    "test_status": {
+      "base_paths_phase1_phase2": "passed",
+      "phase3": "passed",
+      "phase4": "passed",
+      "phase5": "passed"
+    },
+    "methodology_status": "documented_with_registered_validation_pending"
+  },
   "companies": {
     "empresa1": {
       "label": "Empresa 1",

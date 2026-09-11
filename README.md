@@ -71,6 +71,12 @@ node scripts/generate_academic_evidence.mjs
 node scripts/build_academic_package.mjs
 ```
 
+`generate_academic_evidence.mjs` usa apenas as dependências do projeto. A geração da
+planilha requer `@oai/artifact-tool` instalado localmente ou o caminho local informado
+por `VISAGIO_ARTIFACT_TOOL_PATH`; o script não depende de caminhos absolutos de uma
+máquina específica e falha com uma mensagem explícita quando essa dependência não está
+disponível.
+
 Os arquivos derivados ficam em `entregaveis/`, também ignorado pelo Git. O pacote contém agregados, metodologia, reconciliação, auditoria tributária e fontes, mas não exporta os dados-fonte protegidos.
 
 ## Documentação para o relatório
