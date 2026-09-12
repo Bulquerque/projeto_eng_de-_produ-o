@@ -1,8 +1,11 @@
-# Release Final Polido v2 — Simulador Estático Visagio
+# Release final — Simulador Estático Visagio
 
 ## Status
 
-Pacote pronto para uso como versão polida: Fases 1 a 5 preservadas, Fase 2 modularizada, Debug Center adicionado e documentação reorganizada por fase/módulo.
+Pacote tecnicamente entregável dentro do escopo do simulador estático: Fases 1 a 5
+preservadas, Fase 2 modularizada, Debug Center adicionado e documentação organizada
+por fase/módulo. Recomendações continuam condicionadas à qualidade dos dados e aos
+gates metodológicos registrados.
 
 ## Principais mudanças
 
@@ -23,7 +26,9 @@ python tests/09_quality_checks/test_debug_system.py
 python tests/09_quality_checks/test_phase_folders_and_module_docs.py
 ```
 
-Para rodar todas as fases, use os testes por grupo caso o ambiente tenha timeout.
+Para validar a release, use `npm run quality`. O comando encerra com
+`ALL_PHASE5_PACKAGE_TESTS_OK` e inclui os E2E de apresentação e regressão. O teste
+Playwright legado da Fase 1 permanece opcional.
 
 ## Páginas principais
 

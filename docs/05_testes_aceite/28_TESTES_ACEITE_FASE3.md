@@ -17,7 +17,7 @@ python tests/run_all_tests.py
 Resultado esperado:
 
 ```text
-ALL_PHASE3_PACKAGE_TESTS_OK
+ALL_PHASE5_PACKAGE_TESTS_OK
 ```
 
 ## Checklist manual

@@ -46,7 +46,7 @@ Reconstrói fluxos quando CDs são fechados e registra realocações.
     "checklist na página /fase-3-cenarios/"
   ],
   "acceptance": [
-    "tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK"
+    "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
   ]
 }
 ```

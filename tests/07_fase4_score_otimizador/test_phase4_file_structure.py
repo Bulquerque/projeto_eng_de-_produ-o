@@ -23,8 +23,11 @@ missing = [p for p in required if not (ROOT / p).exists()]
 assert not missing, f'Missing Phase 4 files: {missing}'
 html = (ROOT / 'fase-4-score-otimizador/index.html').read_text(encoding='utf-8')
 assert '../assets/styles.css' in html
-assert '../assets/js/phase4/main.js' in html
-assert 'Objective Builder' in html and 'Otimizador' in html
+assert '../assets/js/core/runtime-warning.js' in html
+assert 'index.html#/simulacao-otimizacao' in html
+portal = (ROOT / 'index.html').read_text(encoding='utf-8')
+assert 'assets/js/phase4/main.js' in portal
+assert 'objective-builder' in portal and 'otimizador' in portal.lower()
 css = (ROOT / 'assets/styles.css').read_text(encoding='utf-8')
 for cls in ['objective-builder', 'profile-card', 'optimizer-panel', 'search-log-grid', 'tradeoff-frontier']:
     assert cls in css, f'CSS class missing: {cls}'

@@ -22,12 +22,13 @@ def test_phase2_html_references_assets():
     for token in [
         '../assets/styles.css',
         'type="module"',
-        '../assets/js/phase2/main.js',
-        'phase2ProofCards',
-        'baselineSummaryCards',
-        'calibrationPanel',
+        '../assets/js/core/runtime-warning.js',
+        'index.html#/diagnostico-baseline',
     ]:
         assert token in html, token
+    portal = read('index.html')
+    for token in ['assets/js/phase2/main.js', 'baselineSummaryCards', 'calibrationPanel']:
+        assert token in portal, token
 
 
 def test_phase2_css_components_exist():

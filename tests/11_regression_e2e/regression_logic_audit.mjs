@@ -35,7 +35,9 @@ import { loadRuntimeBundle } from '../runtime_bundle_support.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
-const OUT_DIR = process.env.VISAGIO_E2E_OUTPUT_DIR || path.join(ROOT, 'data', 'validation', 'regression_evidence');
+const OUT_DIR =
+  process.env.VISAGIO_E2E_OUTPUT_DIR ||
+  path.join(ROOT, 'data', 'validation', 'regression_evidence');
 
 function readPassword() {
   if (process.env.VISAGIO_DATA_PASSWORD) return process.env.VISAGIO_DATA_PASSWORD;
@@ -129,54 +131,6 @@ function makeScenario({ companyId, baselineBundle, overrides = {} }) {
   });
   if (overrides.mutate) return overrides.mutate(scenario);
   return scenario;
-}
-
-function validateAndRunScenario({ companyId, baselineBundle, scenario, expectValid = true }) {
-  const validation = validateScenario({ companyId, scenario, baselineBundle });
-  const run = runScenario({ companyId, scenario, baselineBundle });
-  if (expectValid) {
-    ensure(validation.valid, 'scenario deveria ser válido', {
-      companyId,
-      scenario_id: scenario?.scenario_id,
-      errors: validation.errors?.map((e) => e.message || e),
-    });
-    ensure(run.simulation_status === 'success', 'scenario válido deveria simular com sucesso', {
-      companyId,
-      scenario_id: scenario?.scenario_id,
-      simulation_status: run.simulation_status,
-      errors: run.errors,
-    });
-    finiteNumber(run.total_with_tax, 'total_with_tax');
-    finiteNumber(run.costs?.total_logistics_cost, 'total_logistics_cost');
-    finiteNumber(run.costs?.tax_impact, 'tax_impact');
-    ensure(
-      Math.abs(
-        Number(run.costs.total_logistics_cost) +
-          Number(run.costs.tax_impact) -
-          Number(run.total_with_tax)
-      ) < 0.1,
-      'totais do cenário não fecham',
-      {
-        companyId,
-        scenario_id: scenario?.scenario_id,
-        total_logistics_cost: run.costs.total_logistics_cost,
-        tax_impact: run.costs.tax_impact,
-        total_with_tax: run.total_with_tax,
-      }
-    );
-  } else {
-    ensure(!validation.valid, 'scenario deveria ser inválido', {
-      companyId,
-      scenario_id: scenario?.scenario_id,
-    });
-    ensure(run.simulation_status === 'invalid', 'scenario inválido deveria bloquear simulação', {
-      companyId,
-      scenario_id: scenario?.scenario_id,
-      simulation_status: run.simulation_status,
-      errors: run.errors,
-    });
-  }
-  return { validation, run };
 }
 
 function hasMessage(messages, pattern) {

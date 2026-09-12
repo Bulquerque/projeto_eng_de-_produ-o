@@ -24,7 +24,10 @@ missing = [p for p in required if not (ROOT / p).exists()]
 assert not missing, f'Missing Phase 3 files: {missing}'
 html = (ROOT / 'fase-3-cenarios/index.html').read_text(encoding='utf-8')
 assert '../assets/styles.css' in html
-assert '../assets/js/phase3/main.js' in html
+assert '../assets/js/core/runtime-warning.js' in html
+assert 'index.html#/simulacao-otimizacao' in html
+portal = (ROOT / 'index.html').read_text(encoding='utf-8')
+assert 'assets/js/phase3/main.js' in portal
 assert '/mnt/data' not in html and 'C:\\' not in html
 css = (ROOT / 'assets/styles.css').read_text(encoding='utf-8')
 for cls in ['scenario-form', 'scenario-arena', 'scenario-card', 'scenario-library', 'delta-positive', 'delta-negative']:

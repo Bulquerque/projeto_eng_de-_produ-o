@@ -9,7 +9,7 @@ import { runSensitivity, runSensitivityMatrix } from './sensitivity-engine.js';
 import { calculateRobustness } from './robustness-scorer.js';
 import { buildRecommendation } from './recommendation-engine.js';
 import { buildAuditTrail } from './audit-trail-engine.js';
-import { buildExecutiveReportHtml } from './executive-report-builder.js?v=final-release-3';
+import { buildExecutiveReportHtml } from './executive-report-builder.js';
 import { buildExportPackage, triggerBrowserDownload } from './export-center.js';
 import { runFinalQAChecks } from './final-qa-checker.js';
 import { validateRelease } from './release-validator.js';

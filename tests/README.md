@@ -19,15 +19,21 @@ tests/
 └── run_all_tests.py             # roda o gate canônico
 ```
 
-Para rodar tudo que é obrigatório:
+Para rodar o gate canônico completo:
 
 ```bash
 python tests/run_all_tests.py
 ```
 
-O teste visual legado da Fase 1 é opcional porque depende de navegador disponível no
-ambiente. O gate canônico inclui os fluxos de apresentação e regressão E2E quando o
-navegador está disponível.
+O teste visual legado da Fase 1 (`tests/04_e2e_visual_opcional/`) é separado do gate
+porque depende de navegador e cobre somente a Fase 1. O gate canônico inclui os
+fluxos de apresentação e regressão E2E; quando esses testes falham, o comando falha.
+O runner também verifica que todo novo arquivo `test_*.py` numerado foi incluído no
+gate ou explicitamente marcado como opcional.
+
+Os arquivos `crypto_helpers.py`, `runtime_bundle_support.mjs`,
+`11_regression_e2e/regression_logic_audit.mjs` e `05_fase2_baseline/explore_phase2_playwright.py`
+são auxiliares executados por testes, não entradas independentes do runner.
 
 ## Fase 5
 
@@ -39,4 +45,5 @@ Comando principal local:
 python tests/run_all_tests.py
 ```
 
-Em ambientes com limite curto de tempo, rode por grupos, como nos relatórios de validação.
+Em ambientes com limite curto de tempo, rode por grupos, mas use o gate completo antes
+de publicar uma release.

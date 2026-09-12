@@ -1,4 +1,4 @@
-import { setupPhase3 } from './scenario-arena-dashboard.js?v=final-release-1';
+import { setupPhase3 } from './scenario-arena-dashboard.js';
 import { loadCatalog, loadPhase3Report } from '../core/data-loader.js';
 import { loadTaxReformConfiguration } from '../core/tax-reform-config.js';
 import { $ } from '../core/common.js';

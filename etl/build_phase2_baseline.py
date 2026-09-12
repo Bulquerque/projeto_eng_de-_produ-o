@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import base64
 import json
-import os
+import math
+import sys
+import unicodedata
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -12,66 +14,148 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from etl.project_paths import (  # noqa: E402
+    MANIFEST_PATH,
+    PROJECT_ROOT,
+    read_env_value,
+    rel,
+    resolve_project_path,
+)
+
+ROOT = PROJECT_ROOT
 BAD = {None, '', '#REF!', '#DIV/0!', '#VALUE!', '#N/A'}
+BAD_TEXT = {value for value in BAD if isinstance(value, str)}
+
+
+class DataContractError(ValueError):
+    """Raised when a protected input no longer matches the ETL contract."""
 
 
 def _password():
-    value = os.environ.get('VISAGIO_DATA_PASSWORD')
-    env_path = ROOT / '.env.local'
-    if not value and env_path.exists():
-        for line in env_path.read_text(encoding='utf-8').splitlines():
-            if line.startswith('VISAGIO_DATA_PASSWORD='):
-                value = line.split('=', 1)[1].strip().strip('"').strip("'")
-                break
+    value = read_env_value('VISAGIO_DATA_PASSWORD')
     if not value:
         raise RuntimeError('VISAGIO_DATA_PASSWORD missing for encrypted data load')
     return value
 
 
 def _manifest():
-    return json.loads((ROOT / 'data' / 'encrypted_manifest.json').read_text(encoding='utf-8'))
+    if not MANIFEST_PATH.is_file():
+        raise DataContractError(f'Manifesto criptográfico ausente: {rel(MANIFEST_PATH)}')
+    try:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding='utf-8'))
+    except json.JSONDecodeError as exc:
+        raise DataContractError(f'Manifesto criptográfico inválido: {rel(MANIFEST_PATH)}') from exc
+    entries = manifest.get('entries') if isinstance(manifest, dict) else None
+    if not isinstance(entries, list):
+        raise DataContractError('Manifesto criptográfico não contém uma lista entries.')
+    seen = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise DataContractError('Manifesto criptográfico contém uma entrada que não é objeto.')
+        original = entry.get('original_path')
+        encrypted = entry.get('encrypted_path')
+        if not isinstance(original, str) or not isinstance(encrypted, str):
+            raise DataContractError('Manifesto criptográfico contém paths ausentes ou não textuais.')
+        if original in seen:
+            raise DataContractError(f'Entrada duplicada no manifesto: {original}')
+        seen.add(original)
+        if not original.startswith(('data/empresa1/', 'data/empresa2/')):
+            raise DataContractError(f'Original fora do escopo protegido: {original}')
+        if not encrypted.endswith('.enc.json'):
+            raise DataContractError(f'Ciphertext fora do padrão .enc.json: {encrypted}')
+        resolve_project_path(original, field='original_path')
+        resolve_project_path(encrypted, field='encrypted_path')
+    return manifest
 
 
-def _decrypt_json(rel_path):
-    manifest = _manifest()
+def _decrypt_json(rel_path, manifest=None):
+    rel_path = rel(resolve_project_path(rel_path, field='original_path'))
+    manifest = manifest or _manifest()
     entry = next((item for item in manifest['entries'] if item['original_path'] == rel_path), None)
-    encrypted_path = ROOT / (entry['encrypted_path'] if entry else f'{rel_path}.enc.json')
-    if not encrypted_path.exists():
-        raise FileNotFoundError(rel_path)
-    envelope = json.loads(encrypted_path.read_text(encoding='utf-8'))
-    salt = base64.b64decode(envelope['salt'])
-    iv = base64.b64decode(envelope['iv'])
-    ciphertext = base64.b64decode(envelope['ciphertext'])
-    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=int(envelope['iterations']))
-    key = kdf.derive(_password().encode('utf-8'))
-    plaintext = AESGCM(key).decrypt(iv, ciphertext, rel_path.encode('utf-8'))
-    return json.loads(plaintext.decode('utf-8'))
+    if not entry:
+        raise DataContractError(f'Arquivo JSON não está registrado no manifesto: {rel_path}')
+    encrypted_path = resolve_project_path(entry['encrypted_path'], field='encrypted_path')
+    if not encrypted_path.is_file():
+        raise FileNotFoundError(entry['encrypted_path'])
+    try:
+        envelope = json.loads(encrypted_path.read_text(encoding='utf-8'))
+        if not isinstance(envelope, dict):
+            raise DataContractError(f'Envelope não é objeto: {entry["encrypted_path"]}')
+        required = {'salt', 'iv', 'ciphertext', 'iterations', 'aad'}
+        missing = sorted(required - envelope.keys())
+        if missing:
+            raise DataContractError(f'Envelope incompleto ({", ".join(missing)}): {entry["encrypted_path"]}')
+        if envelope['aad'] != rel_path:
+            raise DataContractError(f'AAD divergente para {rel_path}: {envelope["aad"]!r}')
+        salt = base64.b64decode(envelope['salt'], validate=True)
+        iv = base64.b64decode(envelope['iv'], validate=True)
+        ciphertext = base64.b64decode(envelope['ciphertext'], validate=True)
+        iterations = int(envelope['iterations'])
+        if len(salt) < 16 or len(iv) != 12 or len(ciphertext) <= 16 or iterations <= 0:
+            raise DataContractError(f'Parâmetros criptográficos inválidos: {entry["encrypted_path"]}')
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=iterations)
+        key = kdf.derive(_password().encode('utf-8'))
+        plaintext = AESGCM(key).decrypt(iv, ciphertext, rel_path.encode('utf-8'))
+        return json.loads(plaintext.decode('utf-8'))
+    except DataContractError:
+        raise
+    except (ValueError, TypeError, json.JSONDecodeError) as exc:
+        raise DataContractError(f'Envelope inválido ou JSON não decodificável: {entry["encrypted_path"]}') from exc
+    except Exception as exc:
+        raise DataContractError(f'Falha ao descriptografar {rel_path}: {entry["encrypted_path"]}') from exc
 
 
 def jload(p):
-    rel = ROOT / Path(p)
-    if rel.exists():
-        return json.loads(rel.read_text(encoding='utf-8'))
-    return _decrypt_json(rel.relative_to(ROOT).as_posix())
+    path = resolve_project_path(p)
+    rel_path = rel(path)
+    manifest = _manifest()
+    if any(item['original_path'] == rel_path for item in manifest['entries']):
+        return _decrypt_json(rel_path, manifest)
+    if path.is_file():
+        try:
+            return json.loads(path.read_text(encoding='utf-8'))
+        except json.JSONDecodeError as exc:
+            raise DataContractError(f'JSON inválido: {rel_path}') from exc
+    raise FileNotFoundError(rel_path)
 
 
 def jsave(p, o):
-    path = ROOT / p
+    path = resolve_project_path(p)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(o, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
-def num(x, d=0.0):
-    if x in BAD:
+def num(x, d=0.0, *, issues=None, field=None, row=None):
+    if x is None or (isinstance(x, str) and not x.strip()):
+        return d
+    if isinstance(x, str) and x.strip() in BAD_TEXT:
+        if issues is not None:
+            issues.append({'field': field, 'row': row, 'value': x, 'default': d})
         return d
     try:
-        return float(x)
-    except Exception:
+        value = float(x)
+    except (TypeError, ValueError):
+        if issues is not None:
+            issues.append({'field': field, 'row': row, 'value': str(x), 'default': d})
         return d
+    if not math.isfinite(value):
+        if issues is not None:
+            issues.append({'field': field, 'row': row, 'value': str(x), 'default': d})
+        return d
+    return value
 
 
 def txt(x):
-    return '' if x is None else str(x).strip()
+    value = '' if x is None else str(x).strip()
+    return '' if value in BAD_TEXT else value
+
+
+def norm_text(x):
+    value = ' '.join(txt(x).split())
+    return ''.join(char for char in unicodedata.normalize('NFKD', value.casefold()) if not unicodedata.combining(char))
 
 
 def perr(sim, ref):
@@ -136,7 +220,7 @@ def reconcile_tax(canonical_total, raw_matrix_total, tolerance_pct=1.0, adjustme
     raw_pct = None if canonical_total == 0 else (raw_diff / canonical_total * 100)
     adjusted_diff = adjusted_matrix_total - canonical_total
     adjusted_pct = None if canonical_total == 0 else (adjusted_diff / canonical_total * 100)
-    within_tolerance = raw_pct is None or abs(raw_pct) <= tolerance_pct
+    within_tolerance = raw_matrix_total == canonical_total if canonical_total == 0 else abs(raw_pct) <= tolerance_pct
     warning = (
         None
         if within_tolerance
@@ -182,11 +266,10 @@ def reconcile_costs(simulated, reference):
         }
     rows = []
     for metric, ref in reference.items():
-        if metric not in simulated:
-            continue
-        s = num(simulated[metric])
-        r = num(ref)
-        pe = None if r == 0 else (s - r) / r * 100
+        has_simulated = metric in simulated
+        s = num(simulated[metric], None) if has_simulated else None
+        r = num(ref, None)
+        pe = None if s is None or r in (None, 0) else (s - r) / r * 100
         ap = abs(pe) if pe is not None else None
         status = (
             'aligned'
@@ -213,15 +296,25 @@ def reconcile_costs(simulated, reference):
         'tolerable_metrics': sum(1 for x in rows if x['status'] == 'tolerable'),
         'divergent_metrics': sum(1 for x in rows if x['status'] == 'divergent'),
     }
-    status = 'aligned' if summary['divergent_metrics'] == 0 else 'partial'
+    if not rows or summary['missing_metrics']:
+        status = 'pending'
+    else:
+        status = 'aligned' if summary['divergent_metrics'] == 0 else 'partial'
     label = 'reconciliação operacional alinhada' if status == 'aligned' else 'reconciliação operacional parcial'
+    if status == 'pending':
+        label = 'reconciliação operacional pendente'
+    warnings = []
+    if summary['missing_metrics']:
+        warnings.append('A referência operacional possui métricas sem valor comparável no resultado simulado.')
+    if not rows:
+        warnings.append('Nenhuma métrica operacional comum foi encontrada para reconciliação.')
     return {
         'status': status,
         'label': label,
         'source': 'workbook_scenario_totals_cenario_1',
         'rows': rows,
         'summary': summary,
-        'warnings': [],
+        'warnings': warnings,
     }
 
 
@@ -271,12 +364,25 @@ def build_bundle_reconciliation(model, costs, tax, base_fit):
 
 
 def bestdist(matrix, uf, city):
-    exact = [r for r in matrix if txt(r.get('UF_DESTINO')) == uf and txt(r.get('DESTINO')) == city]
+    expected_uf = norm_text(uf)
+    expected_city = norm_text(city)
+    exact = [
+        r
+        for r in matrix
+        if norm_text(r.get('UF_DESTINO')) == expected_uf and norm_text(r.get('DESTINO')) == expected_city
+    ]
     rows = exact
     status = 'exact_match'
     if not rows:
-        rows = [r for r in matrix if txt(r.get('DESTINO')) == city]
-        status = 'city_name_fallback' if rows else 'missing_distance'
+        city_rows = [r for r in matrix if norm_text(r.get('DESTINO')) == expected_city]
+        city_ufs = {norm_text(r.get('UF_DESTINO')) for r in city_rows if norm_text(r.get('UF_DESTINO'))}
+        if city_rows and city_ufs == {expected_uf}:
+            rows = city_rows
+            status = 'city_name_fallback'
+        elif city_rows:
+            return None, 'uf_mismatch'
+        else:
+            status = 'missing_distance'
     if not rows:
         return None, status
     rows = sorted(rows, key=lambda r: (num(r.get('Frete (R$/Kg)'), 10**9), num(r.get('Distancia(KM)'), 10**9)))
@@ -287,7 +393,16 @@ def build_empresa1():
     demand = jload('data/empresa1/core/demand_records.json')
     matrix = jload('data/empresa1/core/distance_matrix.json')
     prem = jload('data/empresa1/core/premissas.json')
-    ass = {txt(p.get('premissa')): num(p.get('valor')) for p in prem}
+    numeric_issues = []
+    ass = {
+        txt(p.get('premissa')): num(
+            p.get('valor'), issues=numeric_issues, field='premissas.valor', row=p.get('__excel_row')
+        )
+        for p in prem
+    }
+    missing_assumptions = [name for name in ('Custo Armazenagem', 'WACC') if name not in ass]
+    if missing_assumptions:
+        raise DataContractError('Premissas obrigatórias ausentes: ' + ', '.join(missing_assumptions))
     agg = defaultdict(
         lambda: {
             'uf': '',
@@ -310,9 +425,24 @@ def build_empresa1():
         a['uf'] = uf
         a['destination'] = city
         a['records'] += 1
-        a['monthly_weight_kg'] += num(r.get('PESO_DEMANDA_KG'))
-        a['monthly_revenue'] += num(r.get('FATURAMENTO_MENSAL'))
-        a['monthly_items'] += num(r.get('QTD_ITENS_UNID'))
+        a['monthly_weight_kg'] += num(
+            r.get('PESO_DEMANDA_KG'),
+            issues=numeric_issues,
+            field='demand_records.PESO_DEMANDA_KG',
+            row=r.get('__excel_row'),
+        )
+        a['monthly_revenue'] += num(
+            r.get('FATURAMENTO_MENSAL'),
+            issues=numeric_issues,
+            field='demand_records.FATURAMENTO_MENSAL',
+            row=r.get('__excel_row'),
+        )
+        a['monthly_items'] += num(
+            r.get('QTD_ITENS_UNID'),
+            issues=numeric_issues,
+            field='demand_records.QTD_ITENS_UNID',
+            row=r.get('__excel_row'),
+        )
     flows = []
     warnings = []
     fallback = 0
@@ -320,14 +450,20 @@ def build_empresa1():
     idx = 1
     for (uf, city), a in sorted(agg.items()):
         d, status = bestdist(matrix, uf, city)
-        if status != 'exact_match':
+        if status == 'city_name_fallback':
             fallback += 1
-            warnings.append(f'Destino {uf}/{city}: distância resolvida com status {status}.')
+        if status != 'exact_match':
+            warnings.append(f'Destino {uf}/{city}: resolução de distância com status {status}.')
         if not d:
             dropped += 1
             continue
         annual = a['monthly_weight_kg'] * 12
-        freight = num(d.get('Frete (R$/Kg)'))
+        freight = num(
+            d.get('Frete (R$/Kg)'),
+            issues=numeric_issues,
+            field='distance_matrix.Frete (R$/Kg)',
+            row=d.get('__excel_row'),
+        )
         flows.append(
             {
                 'flow_id': f'empresa1_base_{idx:03d}',
@@ -343,7 +479,12 @@ def build_empresa1():
                 'annual_weight_kg': annual,
                 'monthly_revenue': a['monthly_revenue'],
                 'annual_revenue': a['monthly_revenue'] * 12,
-                'distance_km': num(d.get('Distancia(KM)')),
+                'distance_km': num(
+                    d.get('Distancia(KM)'),
+                    issues=numeric_issues,
+                    field='distance_matrix.Distancia(KM)',
+                    row=d.get('__excel_row'),
+                ),
                 'freight_per_kg': freight,
                 'distribution_cost': annual * freight,
                 'distance_status': status,
@@ -365,6 +506,10 @@ def build_empresa1():
         'total_logistics_cost': dist + storage + inventory,
         'total_with_tax': dist + storage + inventory,
     }
+    if numeric_issues:
+        warnings.append(
+            f'{len(numeric_issues)} valor(es) numérico(s) inválido(s) foram substituídos por default explícito.'
+        )
     model = {
         'scenario_id': 'baseline_empresa1',
         'scenario_type': 'baseline',
@@ -385,6 +530,7 @@ def build_empresa1():
                 'canonical_rows': len(demand) - invalid,
                 'invalid_rows_dropped': invalid,
                 'invalid_row_rule': 'UF e CENTROIDE obrigatórios; linhas de rodapé/fórmula não entram no grão canônico.',
+                'numeric_coercions': numeric_issues,
             },
         },
         'warnings': warnings
@@ -405,6 +551,8 @@ def build_empresa1():
         'total_monthly_revenue': total_rev,
         'total_annual_revenue': total_rev * 12,
         'destinations_covered': len({(f['destination_uf'], f['destination']) for f in flows}),
+        'unresolved_destinations': dropped,
+        'numeric_coercion_count': len(numeric_issues),
     }
     cost_block = {
         'scenario_id': 'baseline_empresa1',
@@ -474,6 +622,17 @@ def filial_label(code):
     }.get(c, str(code))
 
 
+def select_scenario(rows, scenario_name, source_name):
+    if not isinstance(rows, list) or not rows:
+        raise DataContractError(f'{source_name} não contém linhas.')
+    matches = [row for row in rows if row.get('scenario_name') == scenario_name]
+    if len(matches) != 1:
+        raise DataContractError(
+            f'{source_name} deve conter exatamente um {scenario_name!r}; encontrados {len(matches)}.'
+        )
+    return matches[0]
+
+
 def build_empresa2():
     core = {
         k: jload(f'data/empresa2/core/{k}.json')
@@ -491,15 +650,19 @@ def build_empresa2():
             'parametros',
         ]
     }
-    base = next(
-        (r for r in core['scenario_totals'] if r.get('scenario_name') == 'Cenário 1'), core['scenario_totals'][0]
-    )
-    block = next(
-        (r for r in core['scenario_blocks'] if r.get('scenario_name') == 'Cenário 1'), core['scenario_blocks'][0]
-    )
-    params = {txt(r.get('Parâmetro')): num(r.get('Valor')) for r in core['parametros']}
-    delta_fat = num(params.get('Δ Faturamento'))
-    active = [r.get('Filial') for r in block.get('rows', []) if r.get('Filial') and r.get('Filial') != 'Total']
+    base = select_scenario(core['scenario_totals'], 'Cenário 1', 'scenario_totals')
+    block = select_scenario(core['scenario_blocks'], 'Cenário 1', 'scenario_blocks')
+    numeric_issues = []
+    params = {
+        txt(r.get('Parâmetro')): num(
+            r.get('Valor'), issues=numeric_issues, field='parametros.Valor', row=r.get('__excel_row')
+        )
+        for r in core['parametros']
+    }
+    delta_fat = num(params.get('Δ Faturamento'), issues=numeric_issues, field='parametros.Δ Faturamento')
+    active = [
+        txt(r.get('Filial')) for r in block.get('rows', []) if txt(r.get('Filial')) and txt(r.get('Filial')) != 'Total'
+    ]
     flows = []
     idx = 1
     for r in core['distribuicao_fabrica_cd']:
@@ -516,15 +679,32 @@ def build_empresa2():
                 'cd_uf': txt(r.get('Destino UF')),
                 'destination': txt(r.get('Destino')),
                 'destination_uf': txt(r.get('Destino UF')),
-                'volume': num(r.get('Quantidade')),
-                'batch': num(r.get('Batelada')),
-                'revenue': num(r.get('$')),
+                'volume': num(
+                    r.get('Quantidade'),
+                    issues=numeric_issues,
+                    field='distribuicao_fabrica_cd.Quantidade',
+                    row=r.get('__excel_row'),
+                ),
+                'batch': num(
+                    r.get('Batelada'),
+                    issues=numeric_issues,
+                    field='distribuicao_fabrica_cd.Batelada',
+                    row=r.get('__excel_row'),
+                ),
+                'revenue': num(
+                    r.get('$'), issues=numeric_issues, field='distribuicao_fabrica_cd.$', row=r.get('__excel_row')
+                ),
                 'source': 'distribuicao_fabrica_cd',
             }
         )
         idx += 1
     for r in core['faturamento_filial_uf']:
-        rev = num(r.get('Faturamento 2025'))
+        rev = num(
+            r.get('Faturamento 2025'),
+            issues=numeric_issues,
+            field='faturamento_filial_uf.Faturamento 2025',
+            row=r.get('__excel_row'),
+        )
         if rev <= 0:
             continue
         code = r.get('Filial Origem')
@@ -540,27 +720,78 @@ def build_empresa2():
                 'destination': txt(r.get('UF Destino')),
                 'destination_uf': txt(r.get('UF Destino')),
                 'revenue': rev,
-                'share': num(r.get('%')),
+                'share': num(
+                    r.get('%'), issues=numeric_issues, field='faturamento_filial_uf.%', row=r.get('__excel_row')
+                ),
                 'source': 'faturamento_filial_uf',
             }
         )
         idx += 1
     costs = {
-        'transfer_cost': num(base.get('Custo Transferência')),
-        'distribution_cost': num(base.get('Custo Distribuição')),
-        'storage_cost': num(base.get('Custo Armazenagem')),
-        'inventory_cost': num(base.get('Custo de Estoque')),
-        'tax_impact': num(base.get('Efeitos Tributários')),
-        'freight_cost': num(base.get('Custo Frete')),
+        'transfer_cost': num(
+            base.get('Custo Transferência'),
+            issues=numeric_issues,
+            field='scenario_totals.Custo Transferência',
+            row=base.get('__excel_row'),
+        ),
+        'distribution_cost': num(
+            base.get('Custo Distribuição'),
+            issues=numeric_issues,
+            field='scenario_totals.Custo Distribuição',
+            row=base.get('__excel_row'),
+        ),
+        'storage_cost': num(
+            base.get('Custo Armazenagem'),
+            issues=numeric_issues,
+            field='scenario_totals.Custo Armazenagem',
+            row=base.get('__excel_row'),
+        ),
+        'inventory_cost': num(
+            base.get('Custo de Estoque'),
+            issues=numeric_issues,
+            field='scenario_totals.Custo de Estoque',
+            row=base.get('__excel_row'),
+        ),
+        'tax_impact': num(
+            base.get('Efeitos Tributários'),
+            issues=numeric_issues,
+            field='scenario_totals.Efeitos Tributários',
+            row=base.get('__excel_row'),
+        ),
+        'freight_cost': num(
+            base.get('Custo Frete'),
+            issues=numeric_issues,
+            field='scenario_totals.Custo Frete',
+            row=base.get('__excel_row'),
+        ),
     }
     costs['total_logistics_cost'] = (
         costs['transfer_cost'] + costs['distribution_cost'] + costs['storage_cost'] + costs['inventory_cost']
     )
-    costs['total_with_tax'] = num(base.get('Custo Total'))
-    invval = sum(num(r.get('col_J')) for r in core['estoque'])
+    costs['total_with_tax'] = num(
+        base.get('Custo Total'), issues=numeric_issues, field='scenario_totals.Custo Total', row=base.get('__excel_row')
+    )
+    invval = sum(
+        num(r.get('col_J'), issues=numeric_issues, field='estoque.col_J', row=r.get('__excel_row'))
+        for r in core['estoque']
+    )
     inferred = costs['inventory_cost'] / invval if invval else None
     taxrows = [r for r in core['dados_tributario'] if r.get('# Cenário') == 'Cenário 1']
-    taxmatrix_raw = sum(num(r.get('Efeitos Débitos')) - num(r.get('Efeitos Créditos')) for r in taxrows)
+    taxmatrix_raw = sum(
+        num(
+            r.get('Efeitos Débitos'),
+            issues=numeric_issues,
+            field='dados_tributario.Efeitos Débitos',
+            row=r.get('__excel_row'),
+        )
+        - num(
+            r.get('Efeitos Créditos'),
+            issues=numeric_issues,
+            field='dados_tributario.Efeitos Créditos',
+            row=r.get('__excel_row'),
+        )
+        for r in taxrows
+    )
     tax_reconciliation = reconcile_tax(costs['tax_impact'], taxmatrix_raw, adjustment_factor=delta_fat)
     model = {
         'scenario_id': 'baseline_empresa2',

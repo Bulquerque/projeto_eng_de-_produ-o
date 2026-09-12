@@ -25,6 +25,9 @@ missing = [p for p in required if not (ROOT / p).exists()]
 assert not missing, missing
 html = (ROOT / 'fase-5-entrega-final/index.html').read_text(encoding='utf-8')
 assert '../assets/styles.css' in html
-assert '../assets/js/phase5/main.js' in html
+assert '../assets/js/core/runtime-warning.js' in html
+assert 'index.html#/homologacao-relatorio' in html
+portal = (ROOT / 'index.html').read_text(encoding='utf-8')
+assert 'assets/js/phase5/main.js' in portal
 assert '/mnt/data' not in html and 'C:\\' not in html
 print('PHASE5_FILE_STRUCTURE_OK')

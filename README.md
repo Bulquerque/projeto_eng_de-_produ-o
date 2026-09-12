@@ -42,7 +42,9 @@ ruff format --check .
 npm test
 ```
 
-O resultado esperado da suíte é `ALL_PHASE5_PACKAGE_TESTS_OK`.
+O resultado esperado da suíte é `ALL_PHASE5_PACKAGE_TESTS_OK`. O gate inclui os E2E de
+apresentação e regressão; o teste Playwright legado da Fase 1 é opcional e deve ser
+executado separadamente quando essa cobertura visual específica for necessária.
 
 ## Estrutura do repositório
 

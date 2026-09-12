@@ -54,7 +54,7 @@ Fornece perfis prontos de decisão: CFO, Supply, Fiscal, Conservador, Cresciment
     "checklist na página /fase-4-score-otimizador/"
   ],
   "acceptance": [
-    "tests/run_all_tests.py deve terminar com ALL_PHASE4_PACKAGE_TESTS_OK"
+    "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
   ]
 }
 ```

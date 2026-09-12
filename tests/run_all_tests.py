@@ -47,6 +47,28 @@ TESTS = [
     'tests/11_regression_e2e/test_regression_e2e.py',
 ]
 
+OPTIONAL_TESTS = {
+    'tests/04_e2e_visual_opcional/test_phase1_playwright.py',
+}
+
+
+def validate_test_inventory():
+    """Fail closed when a new numbered test is not wired into the canonical gate."""
+    listed = set(TESTS)
+    discovered = {
+        path.relative_to(ROOT).as_posix()
+        for pattern in ('**/test_*.py', '**/check_*.py')
+        for path in (ROOT / 'tests').glob(pattern)
+        if path.is_file()
+    }
+    missing = sorted(discovered - listed - OPTIONAL_TESTS)
+    stale = sorted(listed - discovered)
+    assert not missing, f'Tests not wired into the canonical gate: {missing}'
+    assert not stale, f'Canonical gate references missing tests: {stale}'
+
+
+validate_test_inventory()
+
 for rel in TESTS:
     print(f'\n>>> {rel}', flush=True)
     env = os.environ.copy()

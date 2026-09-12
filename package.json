@@ -5,10 +5,10 @@
   "description": "Visagio Static Simulator",
   "scripts": {
     "lint": "npm run lint:js -- --max-warnings=0",
-    "lint:js": "eslint \"assets/js/**/*.js\" \"scripts/**/*.mjs\"",
+    "lint:js": "eslint \"assets/js/**/*.js\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\"",
     "format:check": "npm run format:js:check",
-    "format:js:check": "prettier --check \"assets/js/**/*.js\" \"scripts/**/*.mjs\" \"tests/runtime_bundle_support.mjs\"",
-    "format:js:write": "prettier --write \"assets/js/**/*.js\" \"scripts/**/*.mjs\" \"tests/runtime_bundle_support.mjs\"",
+    "format:js:check": "prettier --check \"assets/js/**/*.js\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\"",
+    "format:js:write": "prettier --write \"assets/js/**/*.js\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\"",
     "quality": "npm run lint && npm run format:check && npm test",
     "test": "python tests/run_all_tests.py"
   },

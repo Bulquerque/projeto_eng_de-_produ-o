@@ -1,4 +1,4 @@
-import { buildExecutiveReportHtml } from './executive-report-builder.js?v=final-release-2';
+import { buildExecutiveReportHtml } from './executive-report-builder.js';
 function toCsv(rows) {
   if (!rows?.length) return 'empty\n';
   const cols = [...new Set(rows.flatMap((row) => Object.keys(row || {})))];

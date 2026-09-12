@@ -1,7 +1,7 @@
 import { loadCatalog } from '../core/data-loader.js';
 import { loadTaxReformConfiguration } from '../core/tax-reform-config.js';
 import { $ } from '../core/common.js';
-import { setupPhase5 } from './phase5-dashboard.js?v=final-release-3';
+import { setupPhase5 } from './phase5-dashboard.js';
 
 async function init() {
   setupPhase5();
