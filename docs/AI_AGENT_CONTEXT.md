@@ -29,7 +29,7 @@ O simulador é estruturado em módulos independentes organizados por fases e uti
 
 Um dos pontos mais críticos do projeto é a carga e descriptografia dos dados das empresas:
 
-1. **Dados Brutos:** Os dados originais em Excel/CSV estão localizados em `references/raw_sources/`.
+1. **Fontes Arquivadas:** Os envelopes criptografados das fontes originais estão em `references/raw_sources/`; os arquivos plaintext ficam fora do repositório público.
 2. **Dados Criptografados:** Durante a compilação, o script ETL criptografa os JSONs de dados e os salva em `data/empresa1/` e `data/empresa2/` com a extensão `.enc.json`.
 3. **Mapeamento de Entrada:** O arquivo `data/encrypted_manifest.json` descreve a correlação entre o caminho original do arquivo e o arquivo criptografado gerado.
 4. **Carregamento (Data Loader):** O arquivo `assets/js/core/data-loader.js` lê o manifesto e chama `assets/js/core/crypto-session.js`.

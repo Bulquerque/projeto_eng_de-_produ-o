@@ -41,6 +41,7 @@ TESTS = [
     'tests/09_quality_checks/test_crypto_session_contract.py',
     'tests/09_quality_checks/test_phase_folders_and_module_docs.py',
     'tests/09_quality_checks/test_protected_data_integrity.py',
+    'tests/09_quality_checks/test_reference_source_encryption.py',
     'tests/09_quality_checks/test_model_invariants.py',
     'tests/09_quality_checks/test_evidence_uncertainty_contracts.py',
     'tests/09_quality_checks/test_release_contract.py',

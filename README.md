@@ -64,7 +64,7 @@ O mapa detalhado está em [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md). O proc
 
 ## Dados protegidos e artefatos acadêmicos
 
-Os dados operacionais derivados permanecem criptografados no repositório. As fontes originais em `references/raw_sources/` são arquivos não criptografados e só podem permanecer em um repositório público com autorização documental dos titulares; caso contrário, devem ficar fora do histórico público. `.env.local` é local e ignorado; a senha nunca deve entrar no Git, em relatórios ou em artefatos de entrega. No navegador, senha e chaves ficam somente em memória durante a aba atual.
+Os dados operacionais derivados e os envelopes das fontes permanecem criptografados no repositório. Os arquivos originais ficam fora do histórico público; o manifesto preserva hashes e metadados para rastreabilidade. `.env.local` é local e ignorado; a senha nunca deve entrar no Git, em relatórios ou em artefatos de entrega. No navegador, senha e chaves ficam somente em memória durante a aba atual.
 
 Para gerar novamente os números, a evidência e a planilha do relatório:
 

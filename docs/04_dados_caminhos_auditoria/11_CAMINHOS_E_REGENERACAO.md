@@ -17,7 +17,7 @@ O arquivo `data/validation/path_resolution_report.json` foi gerado para conferir
 - caminhos declarados em `data/catalog.json`;
 - caminhos usados por `index.html`;
 - caminhos usados por `assets/js/phase1/main.js`;
-- arquivos brutos declarados em `references/source_documents_manifest.csv`;
+- envelopes criptografados declarados em `references/source_documents_manifest.csv`;
 - hashes SHA256 dos arquivos brutos contra os originais enviados.
 
 Resultado atual: `OK`.

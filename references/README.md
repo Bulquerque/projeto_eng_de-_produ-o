@@ -3,20 +3,21 @@
 Esta pasta preserva os arquivos enviados e usados como origem.
 
 ```text
-raw_sources/      # XLSX, PDF, PPTX, ZIP e CSV originais
+raw_sources/      # envelopes .enc.json; os arquivos originais ficam fora do Git
 source_documents_manifest.csv
 ```
 
 Esses arquivos são rastreabilidade. O site estático consome os dados tratados em `data/`.
 
-Antes de publicar o repositório, confirme a autorização de compartilhamento dos arquivos
-em `raw_sources/`: eles estão em formato original e não recebem a proteção criptográfica
-aplicada aos dados operacionais em `data/empresa1/` e `data/empresa2/`. O manifesto de
-fontes deve ser consultado para distinguir fontes independentes de cópias byte a byte.
+Os arquivos desta pasta são envelopes AES-GCM individuais. Os arquivos originais
+ficam fora do repositório público e devem ser preservados somente em armazenamento
+local autorizado. O manifesto mantém o nome, o hash e o tamanho do plaintext para
+rastreabilidade, além do caminho e hash do envelope criptografado.
 
-Esta pasta não faz parte do pacote público do site e não deve ser publicada sem
-autorização documental dos titulares. A proteção criptográfica do runtime não
-protege os arquivos originais desta pasta.
+Esta pasta não faz parte do pacote público do site. A senha fica somente em
+`VISAGIO_DATA_PASSWORD`/`.env.local` e nunca deve entrar no Git, em relatórios ou
+em artefatos de entrega. Para verificar os envelopes localmente, use
+`python scripts/manage_reference_sources.py verify`.
 
 Atualmente `Analise_Malha_Empresa2(1).xlsx` e `Análise Malha Logística - vCaracol(3).xlsx`
 possuem o mesmo SHA-256; a segunda é uma referência/alias documental, não uma observação

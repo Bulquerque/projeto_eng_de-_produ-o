@@ -938,7 +938,7 @@ Este módulo não depende diretamente de outro módulo de domínio.
   "scenario": {},
   "taxTables": {
     "icmsRoutes": "data/empresa2/core/dados_tributario.json",
-    "icms216": "references/raw_sources/icms_216_linhas.csv"
+    "icms216": "references/raw_sources/icms_216_linhas.csv.enc.json"
   },
   "taxMode": "current|no_tax|reform_transition|post_reform",
   "assumptions": {

@@ -11,7 +11,7 @@ Esta versão confere, de cabo a rabo, os caminhos de execução do site e o mape
 - Todos os arquivos declarados em `data/catalog.json` existem.
 - `index.html`, `assets/styles.css` e `assets/js/phase1/main.js` existem e usam caminhos relativos.
 - As duas empresas continuam separadas.
-- Os 5 workbooks XLSX enviados foram preservados em `references/raw_sources/`.
+- Os 5 workbooks XLSX enviados são rastreados por hashes e envelopes criptografados em `references/raw_sources/`; os arquivos plaintext ficam fora do repositório público.
 - As 53 abas encontradas nesses workbooks têm export próprio em `data/<empresa>/source_exports/<source_id>/`.
 - As tabelas tratadas de simulação estão em `data/empresa1/core/` e `data/empresa2/core/`.
 - A aba `Cenários` da Empresa 2 tem tratamento especial por blocos em `scenario_blocks.json` e `scenario_totals.json`.
