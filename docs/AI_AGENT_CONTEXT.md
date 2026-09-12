@@ -33,7 +33,7 @@ Um dos pontos mais críticos do projeto é a carga e descriptografia dos dados d
 2. **Dados Criptografados:** Durante a compilação, o script ETL criptografa os JSONs de dados e os salva em `data/empresa1/` e `data/empresa2/` com a extensão `.enc.json`.
 3. **Mapeamento de Entrada:** O arquivo `data/encrypted_manifest.json` descreve a correlação entre o caminho original do arquivo e o arquivo criptografado gerado.
 4. **Carregamento (Data Loader):** O arquivo `assets/js/core/data-loader.js` lê o manifesto e chama `assets/js/core/crypto-session.js`.
-5. **Prompt de Senha:** O `crypto-session.js` solicita a frase de acesso ao usuário (se não estiver em cache no `sessionStorage`), faz a derivação da chave AES-GCM (usando o PBKDF2HMAC) e descriptografa o conteúdo no navegador.
+5. **Prompt de Senha:** O `crypto-session.js` solicita a frase de acesso ao usuário, mantém a senha e as `CryptoKey` somente em memória durante a aba atual, faz a derivação da chave AES-GCM (usando o PBKDF2HMAC) e descriptografa o conteúdo no navegador. A senha nunca é gravada no `sessionStorage`; após recarregar a página, o desbloqueio é solicitado novamente.
 
 > [!WARNING]
 > Nunca tente alterar arquivos `.json.enc` diretamente sem sincronizar com o script de ETL ou scripts de geração. Se precisar regenerar dados de teste, use os utilitários apropriados em `etl/` ou execute checagens na suíte de testes.

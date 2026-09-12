@@ -148,19 +148,42 @@ def run_ui_audit(password: str) -> dict:
         page.close()
 
         page, console_events, page_errors, request_failures = open_page(desktop, base_url, '/fase-2-baseline/')
-        unlock_if_prompted(page, password)
+        assert unlock_if_prompted(page, password) == 1
         page.locator('#phase2Workspace').wait_for(state='visible', timeout=30000)
+        persisted_crypto_values = page.evaluate(
+            """() => ({
+                localPassword: localStorage.getItem('visagio_crypto_password_session'),
+                sessionPassword: sessionStorage.getItem('visagio_crypto_password_session'),
+                localKeys: Object.keys(localStorage).filter((key) => key.startsWith('visagio_crypto_key_')),
+                sessionKeys: Object.keys(sessionStorage).filter((key) => key.startsWith('visagio_crypto_key_')),
+            })"""
+        )
+        assert persisted_crypto_values == {
+            'localPassword': None,
+            'sessionPassword': None,
+            'localKeys': [],
+            'sessionKeys': [],
+        }, persisted_crypto_values
         page.evaluate(
             """() => {
                 localStorage.setItem('visagio_shared_debug_feed', '{broken');
                 localStorage.setItem('visagio_phase2_manual_checks_empresa1', 'broken');
+                localStorage.setItem('visagio_crypto_password_session', 'legacy-local-secret');
+                sessionStorage.setItem('visagio_crypto_password_session', 'legacy-session-secret');
             }"""
         )
         page.reload(wait_until='networkidle', timeout=40000)
-        unlock_if_prompted(page, password)
+        assert unlock_if_prompted(page, password) == 1
         page.locator('#phase2Workspace').wait_for(state='visible', timeout=30000)
         page.locator('#phase2AutoChecks .check-item').first.wait_for(state='visible', timeout=30000)
         assert page.locator('#phase2AutoChecks .check-fail').count() == 0
+        migrated_crypto_values = page.evaluate(
+            """() => ({
+                localPassword: localStorage.getItem('visagio_crypto_password_session'),
+                sessionPassword: sessionStorage.getItem('visagio_crypto_password_session'),
+            })"""
+        )
+        assert migrated_crypto_values == {'localPassword': None, 'sessionPassword': None}, migrated_crypto_values
         save_screenshot(page, 'ui_corrupted_storage_baseline_desktop')
         assert_no_runtime_errors(page, console_events, page_errors, request_failures)
         assert_no_horizontal_overflow(page)

@@ -46,7 +46,7 @@ sem inventar campos fiscais ausentes.
 | Otimização parcial/MILP | Método, seed, espaço declarado, cobertura e `exact_search_space` são exportados; o projeto não declara MILP nem ótimo global sem enumeração completa. |
 | Seleção final enviesada pelo top-10 | Seleção automática usa `scored_scenarios` completo quando disponível; `best_scenarios` é apenas resumo. |
 | Configuração divergente entre Fase 4 e Fase 5 | Objetivo, restrições, método, seed e limite são herdados via store de sessão e exibidos na Fase 5. |
-| Código morto, warnings e segurança | Imports/formatação/lint revisados, vulnerabilidades de dependências corrigidas, senha restrita à `sessionStorage`, dados continuam criptografados e o segredo não entra no Git. |
+| Código morto, warnings e segurança | Imports/formatação/lint revisados, vulnerabilidades de dependências corrigidas, senha e `CryptoKey` mantidas somente em memória durante a aba atual, dados continuam criptografados e o segredo não entra no Git. Após recarregar, o desbloqueio é solicitado novamente. |
 | Interface e acessibilidade | Gráficos receberam rótulos, seleção de empresa usa `aria-pressed`, tabelas têm rolagem horizontal controlada em mobile e mensagens de limitação distinguem resultado entregue de erro técnico. |
 | Entradas diretas e resultados ausentes | Fases 3/4/5 inicializam a empresa ao entrar pela rota; estados sem cenário não exibem saving, custo ou robustez fictícios. |
 

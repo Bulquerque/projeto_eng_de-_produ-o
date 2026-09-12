@@ -10,7 +10,8 @@
     "format:js:check": "prettier --check \"assets/js/**/*.js\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\"",
     "format:js:write": "prettier --write \"assets/js/**/*.js\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\"",
     "quality": "npm run lint && npm run format:check && npm test",
-    "test": "python tests/run_all_tests.py"
+    "test": "python tests/run_all_tests.py",
+    "test:public": "python tests/run_public_tests.py"
   },
   "devDependencies": {
     "eslint": "^8.57.0",

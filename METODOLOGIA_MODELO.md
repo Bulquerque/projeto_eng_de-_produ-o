@@ -48,6 +48,37 @@ somente quando selecionados explicitamente no simulador ou na biblioteca de
 stress. Isso evita comparar um cenário futuro com uma base corrente e chamar a
 diferença de saving operacional.
 
+### Escopo canônico do otimizador
+
+O resultado otimizado deve ser interpretado como o melhor cenário dentro do
+espaço discreto efetivamente modelado. A busca combina topologia e configuração
+de CDs, mantendo a política de frete, demanda, estoque, WACC e regime tributário
+do baseline, salvo quando uma variável é explicitamente habilitada na
+configuração do estudo. Frete, demanda, dias de estoque, WACC e regime futuro
+podem aparecer em stress, sensibilidade ou Monte Carlo, mas esses exercícios
+não ampliam retroativamente o espaço do otimizador canônico.
+
+Por isso, `exact_search_space` e `coverage_ratio` são obrigatórios na leitura
+da entrega: só há ótimo global quando o espaço declarado foi enumerado por
+completo. Caso contrário, o resultado é o melhor cenário encontrado na busca
+modelada, não uma prova de ótimo global do problema real.
+
+### Monte Carlo e `tax_multiplier`
+
+O parâmetro `tax_multiplier` é uma perturbação linear do impacto tributário já
+calculado pela simulação determinística:
+
+~~~text
+tax_impact_sample = tax_impact_determinístico × tax_multiplier
+total_sample      = total_logistics_cost + tax_impact_sample
+~~~
+
+Ele não recalcula alíquotas, créditos, classificação fiscal, origem/destino,
+CFOP, CST ou qualquer outra regra tributária. A análise Monte Carlo é,
+portanto, condicional às premissas fiscais do cenário e deve ser apresentada
+como exploração de incerteza, especialmente quando a cobertura fiscal é
+limitada; não é uma validação fiscal nem uma previsão histórica.
+
 ## 2. Dados e limpeza
 
 ### Empresa 1

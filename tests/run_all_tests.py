@@ -38,6 +38,7 @@ TESTS = [
     'tests/08_fase5_entrega_final/test_phase5_http_server.py',
     'tests/09_quality_checks/test_phase2_refactor_modules.py',
     'tests/09_quality_checks/test_debug_system.py',
+    'tests/09_quality_checks/test_crypto_session_contract.py',
     'tests/09_quality_checks/test_phase_folders_and_module_docs.py',
     'tests/09_quality_checks/test_protected_data_integrity.py',
     'tests/09_quality_checks/test_model_invariants.py',

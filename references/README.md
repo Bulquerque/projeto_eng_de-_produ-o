@@ -14,6 +14,10 @@ em `raw_sources/`: eles estão em formato original e não recebem a proteção c
 aplicada aos dados operacionais em `data/empresa1/` e `data/empresa2/`. O manifesto de
 fontes deve ser consultado para distinguir fontes independentes de cópias byte a byte.
 
+Esta pasta não faz parte do pacote público do site e não deve ser publicada sem
+autorização documental dos titulares. A proteção criptográfica do runtime não
+protege os arquivos originais desta pasta.
+
 Atualmente `Analise_Malha_Empresa2(1).xlsx` e `Análise Malha Logística - vCaracol(3).xlsx`
 possuem o mesmo SHA-256; a segunda é uma referência/alias documental, não uma observação
 independente.
