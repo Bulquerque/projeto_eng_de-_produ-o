@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "package_version": "1.0.0",
   "release_id": "visagio_static_simulator_1.0",
-  "git_commit": "503469eb0ecd49fe79d8007f7af4c4d10488cc8d",
-  "generated_at_utc": "2026-09-11T18:11:16+00:00",
+  "git_commit": "f939684a77cd4f58374bd164f7e72ca6544c73c4",
+  "generated_at_utc": "2026-09-12T15:59:40+00:00",
   "release_manifest": "data/release-manifest.json",
   "release": {
     "status": "ready_with_documented_limitations",
