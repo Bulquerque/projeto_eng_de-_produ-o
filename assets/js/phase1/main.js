@@ -921,4 +921,4 @@ async function init() {
   }
 }
 
-init();
+if (!window.__VISAGIO_NETWORK_UI__) init();

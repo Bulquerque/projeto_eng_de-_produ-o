@@ -19,7 +19,12 @@ function clearLegacySessionArtifacts() {
 clearLegacySessionArtifacts();
 
 function keyId(entry) {
-  return `${KEY_PREFIX}${entry.sha256 || entry.original_path}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const companyId =
+    entry.company_id || String(entry.original_path || '').split('/')[1] || 'unknown';
+  return `${KEY_PREFIX}${companyId}_${entry.sha256 || entry.original_path}`.replace(
+    /[^a-zA-Z0-9_-]/g,
+    '_'
+  );
 }
 
 function logCrypto(level, event, detail = {}, error = null) {
@@ -189,11 +194,7 @@ export async function decryptWithSession(entry, envelope) {
 // lockCryptoSession() (botão de bloqueio) continua limpando tudo — uso intencional.
 function lockCompanyKeys(companyId) {
   if (!companyId) return;
-  // keyId() aplica replace(/[^a-zA-Z0-9_-]/g,'_') em entry.original_path.
-  // Paths da empresa seguem o padrão "data/<companyId>/...".
-  // Após o replace, o prefixo da chave é: KEY_PREFIX + "data_<companyId>_"
-  const rawPrefix = `data/${companyId}/`;
-  const safePrefix = `${KEY_PREFIX}${rawPrefix}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const safePrefix = `${KEY_PREFIX}${companyId}_`.replace(/[^a-zA-Z0-9_-]/g, '_');
   for (const key of [...memoryKeys.keys()]) {
     if (key.startsWith(safePrefix)) memoryKeys.delete(key);
   }

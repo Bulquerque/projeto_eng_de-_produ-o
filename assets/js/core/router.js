@@ -58,9 +58,16 @@ function handleRoute() {
   window.scrollTo(0, 0);
 }
 
-window.addEventListener('hashchange', handleRoute);
-window.addEventListener('DOMContentLoaded', handleRoute);
+window.addEventListener('hashchange', () => {
+  if (!window.__VISAGIO_NETWORK_UI__) handleRoute();
+});
+window.addEventListener('DOMContentLoaded', () => {
+  if (!window.__VISAGIO_NETWORK_UI__) handleRoute();
+});
 
-if (document.readyState === 'interactive' || document.readyState === 'complete') {
+if (
+  !window.__VISAGIO_NETWORK_UI__ &&
+  (document.readyState === 'interactive' || document.readyState === 'complete')
+) {
   handleRoute();
 }

@@ -1,0 +1,84 @@
+{
+  "company_id": "empresa_mock",
+  "release_policy": "demo_only",
+  "scenarios": [
+    {
+      "scenario_id": "mock_baseline",
+      "scenario_name": "Baseline demonstrativo",
+      "company_id": "empresa_mock",
+      "scenario_type": "baseline",
+      "changes": {
+        "active_cds": ["CD Demo Norte", "CD Demo Sul"],
+        "closed_cds": [],
+        "freight_multiplier": 1,
+        "demand_multiplier": 1,
+        "inventory_days": 45,
+        "wacc": 0.15,
+        "tax_mode": "current"
+      },
+      "result": {
+        "scenario_id": "mock_baseline",
+        "scenario_name": "Baseline demonstrativo",
+        "company_id": "empresa_mock",
+        "simulation_status": "success",
+        "calculation_status": "success",
+        "total_with_tax": 336000,
+        "costs": {
+          "total_with_tax": 336000,
+          "total_logistics_cost": 290000,
+          "transfer_cost": 118000,
+          "distribution_cost": 87000,
+          "storage_cost": 54000,
+          "inventory_cost": 31000,
+          "tax_impact": 46000
+        },
+        "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
+        "evidence": {
+          "evidence_score": 100,
+          "evidence_status": "synthetic_fixture",
+          "components": [{ "id": "demo_source", "status": "synthetic" }],
+          "blockers": ["Resultado demonstrativo; não é evidência empresarial."]
+        }
+      }
+    },
+    {
+      "scenario_id": "mock_consolidation",
+      "scenario_name": "Consolidação demonstrativa",
+      "company_id": "empresa_mock",
+      "scenario_type": "demo",
+      "changes": {
+        "active_cds": ["CD Demo Norte"],
+        "closed_cds": ["CD Demo Sul"],
+        "freight_multiplier": 0.96,
+        "demand_multiplier": 1,
+        "inventory_days": 42,
+        "wacc": 0.15,
+        "tax_mode": "current"
+      },
+      "result": {
+        "scenario_id": "mock_consolidation",
+        "scenario_name": "Consolidação demonstrativa",
+        "company_id": "empresa_mock",
+        "simulation_status": "success",
+        "calculation_status": "success",
+        "total_with_tax": 312500,
+        "costs": {
+          "total_with_tax": 312500,
+          "total_logistics_cost": 270000,
+          "transfer_cost": 105000,
+          "distribution_cost": 79000,
+          "storage_cost": 51000,
+          "inventory_cost": 35000,
+          "tax_impact": 42500
+        },
+        "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
+        "evidence": {
+          "evidence_score": 100,
+          "evidence_status": "synthetic_fixture",
+          "components": [{ "id": "demo_source", "status": "synthetic" }],
+          "blockers": ["Resultado demonstrativo; não é evidência empresarial."]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "company_id": "empresa_mock",
+  "kind": "mock",
+  "release_policy": "demo_only",
+  "calculation_profile": "synthetic_fixture",
+  "provenance": {
+    "provider_kind": "mock",
+    "source": "public_demo_fixture",
+    "synthetic": true
+  },
+  "model": {
+    "company_id": "empresa_mock",
+    "scenario_id": "mock_baseline",
+    "active_cds": ["CD Demo Norte", "CD Demo Sul"],
+    "baseline_ready": true
+  },
+  "flows": [
+    { "origin": "Origem Demo A", "destination": "Destino Demo 01", "cd": "CD Demo Norte", "volume": 420 },
+    { "origin": "Origem Demo B", "destination": "Destino Demo 02", "cd": "CD Demo Sul", "volume": 360 },
+    { "origin": "Origem Demo A", "destination": "Destino Demo 03", "cd": "CD Demo Norte", "volume": 290 }
+  ],
+  "costs": {
+    "costs": {
+      "transfer_cost": 118000,
+      "distribution_cost": 87000,
+      "storage_cost": 54000,
+      "inventory_cost": 31000,
+      "tax_impact": 46000,
+      "total_logistics_cost": 290000,
+      "total_with_tax": 336000
+    }
+  },
+  "tax_results": {
+    "tax_results": {
+      "tax_mode": "current",
+      "tax_regime": "current",
+      "decision_use": "demo_only",
+      "tax_coverage": { "coverage_limited": false, "complete_fiscal_coverage_ratio": 1 }
+    }
+  },
+  "warnings": ["Dados sintéticos para demonstração visual; não representam uma empresa observada."]
+}

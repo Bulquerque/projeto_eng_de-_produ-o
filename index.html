@@ -767,11 +767,23 @@
   </footer>
 
   <!-- Entry points por fase -->
-  <script type="module" src="assets/js/phase1/main.js"></script>
-  <script type="module" src="assets/js/phase2/main.js"></script>
-  <script type="module" src="assets/js/phase3/main.js"></script>
-  <script type="module" src="assets/js/phase4/main.js"></script>
-  <script type="module" src="assets/js/phase5/main.js"></script>
-  <script type="module" src="assets/js/core/router.js"></script>
+  <script type="module" src="assets/js/app/main.js"></script>
+  <script type="module">
+    const networkMode =
+      new URLSearchParams(window.location.search).get('ui') === 'network-intelligence' ||
+      window.location.hash.startsWith('#/network/');
+    if (!networkMode) {
+      for (const entrypoint of [
+        'assets/js/phase1/main.js',
+        'assets/js/phase2/main.js',
+        'assets/js/phase3/main.js',
+        'assets/js/phase4/main.js',
+        'assets/js/phase5/main.js',
+        'assets/js/core/router.js',
+      ]) {
+        await import(`./${entrypoint}`);
+      }
+    }
+  </script>
 </body>
 </html>

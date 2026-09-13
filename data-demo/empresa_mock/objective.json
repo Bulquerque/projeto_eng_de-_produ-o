@@ -1,0 +1,27 @@
+{
+  "company_id": "empresa_mock",
+  "release_policy": "demo_only",
+  "objective": {
+    "objective_id": "mock_balanced_demo",
+    "objective_name": "Perfil balanceado demonstrativo",
+    "company_id": "empresa_mock",
+    "weights": {
+      "total_cost": 0.3,
+      "service_quality": 0.25,
+      "operational_risk": 0.2,
+      "tax_impact": 0.15,
+      "inventory_efficiency": 0.1
+    }
+  },
+  "optimizer": {
+    "optimizer_status": "success_with_limited_space",
+    "result_scope": "demo_fixture",
+    "search_log": {
+      "method_applied": "fixture",
+      "exact_search_space": false,
+      "coverage_ratio": 1,
+      "best_scenario_id": "mock_consolidation"
+    },
+    "best_scenarios": [{ "scenario_id": "mock_consolidation", "final_score": 82 }]
+  }
+}

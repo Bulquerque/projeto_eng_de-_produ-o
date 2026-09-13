@@ -1,0 +1,62 @@
+{
+  "company_id": "empresa_mock",
+  "release_policy": "demo_only",
+  "risk": {
+    "monte_carlo": {
+      "monte_carlo_status": "success",
+      "analysis_type": "exploratory_uncertainty_analysis",
+      "forecast": false,
+      "summary": {
+        "iterations": 300,
+        "probability_saving_positive": 0.72,
+        "p10_saving_pct": 1.2,
+        "median_saving_pct": 6.8,
+        "p90_saving_pct": 11.5,
+        "risk_band": "medium",
+        "uncertainty_source": "synthetic_fixture"
+      }
+    },
+    "stress": {
+      "stress_status": "complete_with_warnings",
+      "stress_results": [
+        {
+          "case_id": "demo_demand_up",
+          "case_name": "Demanda +10%",
+          "status": "success",
+          "data_quality_status": "synthetic_fixture",
+          "decision_use": "demo_only",
+          "total_with_tax": 322000,
+          "saving_vs_baseline": 14000,
+          "saving_pct": 4.17,
+          "scenario_still_better_than_baseline": true
+        },
+        {
+          "case_id": "demo_freight_up",
+          "case_name": "Frete +10%",
+          "status": "success",
+          "data_quality_status": "synthetic_fixture",
+          "decision_use": "demo_only",
+          "total_with_tax": 341000,
+          "saving_vs_baseline": -9500,
+          "saving_pct": -2.83,
+          "scenario_still_better_than_baseline": false
+        }
+      ]
+    },
+    "sensitivity": {
+      "most_sensitive_variable": "freight_multiplier",
+      "sensitivity_results": [
+        { "variable": "freight_multiplier", "value": 0.9, "total_with_tax": 303000, "saving_pct": 9.82 },
+        { "variable": "freight_multiplier", "value": 1, "total_with_tax": 312500, "saving_pct": 6.99 },
+        { "variable": "freight_multiplier", "value": 1.1, "total_with_tax": 322000, "saving_pct": 4.17 }
+      ]
+    },
+    "robustness": {
+      "robustness_score": 68,
+      "conditional_robustness_score": 68,
+      "certified_robustness_score": null,
+      "robustness_status": "medium",
+      "robustness_interpretation": "demo_only"
+    }
+  }
+}

@@ -47,6 +47,8 @@ TESTS = [
     'tests/09_quality_checks/test_release_contract.py',
     'tests/10_presentation_e2e/test_presentation_flow_playwright.py',
     'tests/11_regression_e2e/test_regression_e2e.py',
+    'tests/12_network_intelligence/test_app_contracts.py',
+    'tests/12_network_intelligence/test_network_ui_playwright.py',
 ]
 
 OPTIONAL_TESTS = {

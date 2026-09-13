@@ -27,4 +27,4 @@ async function init() {
   // loadCompany já escreve o erro no #phase3Loading e controla o botão de simular.
 }
 
-init();
+if (!window.__VISAGIO_NETWORK_UI__) init();

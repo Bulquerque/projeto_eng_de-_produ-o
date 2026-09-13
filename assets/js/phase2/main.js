@@ -188,4 +188,4 @@ async function init() {
     logError('init:error', e, { stage: 'init' });
   }
 }
-init();
+if (!window.__VISAGIO_NETWORK_UI__) init();
