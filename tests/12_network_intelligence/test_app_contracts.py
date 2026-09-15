@@ -22,6 +22,7 @@ def test_app_foundation_contracts():
         """
         import assert from 'node:assert/strict';
         import { COMPANY_REGISTRY, assertCompanyPolicy } from './assets/js/app/company-registry.js';
+        import { buildAppConfig, resolveInitialCompany } from './assets/js/app/config.js';
         import { isKnownRoute, normalizeRoute, parseRoute, replaceCompanyQuery } from './assets/js/app/router.js';
         import { clearScenarioResults, createEmptyData, createInitialState, createStateStore, commitProviderSnapshot, getSafeStateSnapshot } from './assets/js/app/state.js';
         import { formatMetric, readMetric } from './assets/js/app/metric-registry.js';
@@ -29,6 +30,8 @@ def test_app_foundation_contracts():
         assert.equal(COMPANY_REGISTRY.empresa1.provider, 'project');
         assert.equal(COMPANY_REGISTRY.empresa2.provider, 'project');
         assert.equal(COMPANY_REGISTRY.empresa_mock.release_policy, 'demo_only');
+        assert.equal(resolveInitialCompany({ company_id: 'empresa_mock' }, 'project'), 'empresa_mock');
+        assert.equal(buildAppConfig({ request: { company_id: 'empresa_mock', network_ui: true }, location: { protocol: 'https:' } }).company_id, 'empresa_mock');
         assert.throws(() => assertCompanyPolicy('empresa1', { providerKind: 'mock' }));
         assert.equal(normalizeRoute('#/diagnostico-baseline'), '#/network/overview/summary');
         assert.equal(normalizeRoute('#erros'), '#/network/dev/console?tab=errors');

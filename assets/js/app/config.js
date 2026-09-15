@@ -6,7 +6,7 @@ import {
 
 export const APP_CONFIG = Object.freeze({
   default_runtime_mode: 'auto',
-  default_company_id: 'empresa1',
+  default_company_id: 'empresa_mock',
   default_route: '#/network/overview/summary',
   project_module_base: '../',
   app_build: 'network-intelligence-6.2-modular',
