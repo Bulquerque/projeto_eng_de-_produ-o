@@ -27,6 +27,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
         <div class="network-context">
           <label>Empresa<select id="niCompanySelect" data-testid="company-selector" aria-label="Selecionar empresa">${companies}</select></label>
           <label>Cenário<select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário"><option value="">Baseline</option></select></label>
+          <button type="button" class="ni-button secondary ni-demo-return" data-action="switch-demo-company" data-testid="return-to-demo">Voltar à Empresa Falsa</button>
         </div>
         <div class="network-topbar-actions">
           <span id="niEvidenceTopbar" data-testid="evidence-topbar" class="ni-status status-neutral">Evidence —</span>

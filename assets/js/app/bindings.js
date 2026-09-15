@@ -120,6 +120,8 @@ export function installBindings({ root, store, controller }) {
     const action = event.target.closest('[data-action]')?.getAttribute('data-action');
     if (action === 'open-dev') {
       navigate('#/network/dev/console');
+    } else if (action === 'switch-demo-company') {
+      void controller.switchCompany('empresa_mock');
     } else if (action === 'open-help') {
       controller.openDrawer(
         'Ajuda',
