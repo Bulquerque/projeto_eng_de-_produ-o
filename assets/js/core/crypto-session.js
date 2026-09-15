@@ -70,6 +70,7 @@ function showPasswordPrompt(entry, errorMessage = '') {
       <input type="password" id="cryptoPasswordInput" autocomplete="current-password" placeholder="Frase de acesso" required>
       <div class="crypto-actions">
         <button type="submit" class="primary-button">Desbloquear simulador</button>
+        <button type="button" class="secondary-button" id="cryptoReturnToDemo">Voltar à Empresa Falsa</button>
         <button type="button" class="secondary-button" id="cryptoCancel">Cancelar</button>
       </div>
       <div class="crypto-error" id="cryptoPromptError" ${errorMessage ? '' : 'hidden'}>${errorMessage}</div>
@@ -85,6 +86,9 @@ function showPasswordPrompt(entry, errorMessage = '') {
     card.querySelector('#cryptoCancel').addEventListener('click', () => {
       card.remove();
       reject(new CryptoDataError('CRYPTO_003', 'Acesso negado. Senha não informada.'));
+    });
+    card.querySelector('#cryptoReturnToDemo').addEventListener('click', () => {
+      window.location.replace('?ui=network-intelligence&company=empresa_mock#/network/overview/summary');
     });
   });
 }
