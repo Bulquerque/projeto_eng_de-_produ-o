@@ -1,4 +1,176 @@
 import { buildExecutiveReportHtml } from './executive-report-builder.js';
+
+const PROTECTED_EXPORT_COMPANIES = new Set(['empresa1', 'empresa2']);
+const PROTECTED_EXPORT_REDACTED_KEYS = new Set([
+  'flows',
+  'flow_results',
+  'flow_table',
+  'raw_evidence',
+  'raw_data',
+  'raw_rows',
+  'core_data',
+  'baseline',
+  'baseline_result',
+  'baseline_data',
+  'baseline_bundle',
+  'baselinebundle',
+  'source_exports',
+  'source_files',
+  'source_payload',
+  'input_data',
+  'records',
+  'plaintext',
+  'ciphertext',
+  'password',
+  'secret',
+  'access_token',
+  'api_key',
+  'key_material',
+]);
+const PROTECTED_EXPORT_SOURCE_KEYS = new Set([
+  'data_sources',
+  'source',
+  'source_ref',
+  'source_file',
+  'source_path',
+  'reference_source',
+  'bridge_source_ref',
+  'original_path',
+  'encrypted_path',
+  'file_path',
+  'manifest_path',
+  'input_source',
+  'path',
+]);
+const PROTECTED_SOURCE_PATH = /(?:^|[\\/])data[\\/](?:empresa1|empresa2)(?:[\\/]|$)/i;
+const PROTECTED_EXPORT_NOTICE = 'Fonte protegida (detalhes no pacote de exportação)';
+
+function isProtectedExport(companyId) {
+  return PROTECTED_EXPORT_COMPANIES.has(String(companyId || '').toLowerCase());
+}
+
+function sanitizeExportString(value, protectedExport) {
+  if (!protectedExport || !PROTECTED_SOURCE_PATH.test(value)) return value;
+  return PROTECTED_EXPORT_NOTICE;
+}
+
+/**
+ * Keeps decision aggregates and traceability metadata exportable while
+ * removing protected tenant payloads that are only needed inside the runtime.
+ * This is intentionally applied before JSON, HTML and CSV generation so no
+ * export format can bypass the protected-data boundary.
+ */
+export function sanitizeExportValue(value, { companyId } = {}, key = '') {
+  const protectedExport = isProtectedExport(companyId);
+  if (!protectedExport) return value;
+  if (value === null || value === undefined) return value;
+  const normalizedKey = String(key || '').toLowerCase();
+  if (normalizedKey && PROTECTED_EXPORT_REDACTED_KEYS.has(normalizedKey)) return undefined;
+  if (normalizedKey && PROTECTED_EXPORT_SOURCE_KEYS.has(normalizedKey)) {
+    return Array.isArray(value)
+      ? value.map(() => PROTECTED_EXPORT_NOTICE)
+      : PROTECTED_EXPORT_NOTICE;
+  }
+  if (typeof value === 'string') return sanitizeExportString(value, protectedExport);
+  if (typeof value !== 'object') return value;
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => sanitizeExportValue(item, { companyId }, key))
+      .filter((item) => item !== undefined);
+  }
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([entryKey]) => !PROTECTED_EXPORT_REDACTED_KEYS.has(entryKey.toLowerCase()))
+      .map(([entryKey, entryValue]) => [
+        entryKey,
+        sanitizeExportValue(entryValue, { companyId }, entryKey),
+      ])
+      .filter(([, entryValue]) => entryValue !== undefined)
+  );
+}
+
+const EXPORT_CONTEXT_COLUMNS = [
+  'company_id',
+  'scenario_id',
+  'evidence_score',
+  'evidence_status',
+  'evidence_blockers',
+  'tax_source_classification',
+  'tax_coverage_pct',
+  'tax_eligible_flow_coverage_pct',
+  'tax_input_coverage_ratio',
+  'tax_eligible_coverage_ratio',
+  'tax_destination_coverage_ratio',
+  'tax_origin_coverage_ratio',
+  'tax_revenue_coverage_ratio',
+  'tax_complete_fiscal_coverage_ratio',
+  'tax_eligible_flow_count',
+  'tax_uncovered_flow_count',
+  'tax_missing_origin_uf_count',
+  'fiscal_classification_coverage',
+  'tax_observed_flow_count',
+  'tax_calculation_mode',
+  'tax_precision_mode',
+  'tax_coverage_status',
+  'tax_decision_use',
+  'tax_study_id',
+  'tax_warning_count',
+  'tax_selected_period_year',
+  'tax_selected_period_source_status',
+  'tax_available_period_count',
+  'tax_reference_period_start',
+  'tax_reference_period_end',
+  'tax_observed_data_period_status',
+  'uncertainty_source',
+  'monte_carlo_decision_use',
+  'historical_distribution',
+  'monte_carlo_probability_positive',
+  'robustness_score',
+  'conditional_robustness_score',
+  'certified_robustness_score',
+  'robustness_interpretation',
+  'optimizer_coverage_ratio',
+  'optimizer_exact_search_space',
+];
+const STRESS_EXPORT_COLUMNS = [
+  ...EXPORT_CONTEXT_COLUMNS,
+  'case_id',
+  'case_name',
+  'stressed_scenario_id',
+  'status',
+  'data_quality_status',
+  'decision_use',
+  'total_with_tax',
+  'total_logistics_cost',
+  'tax_impact',
+  'saving_vs_baseline',
+  'saving_pct',
+  'scenario_still_better_than_baseline',
+  'warning_count',
+  'error_count',
+];
+const SENSITIVITY_EXPORT_COLUMNS = [
+  ...EXPORT_CONTEXT_COLUMNS,
+  'variable',
+  'value',
+  'total_with_tax',
+  'saving_abs',
+  'saving_pct',
+  'warning_count',
+  'error_count',
+];
+
+function messageCount(value) {
+  return Array.isArray(value) ? value.length : value ? 1 : 0;
+}
+
+function projectCsvRow(row, exportContext, columns) {
+  const safeRow = { ...exportContext, ...row };
+  safeRow.warning_count = messageCount(row?.warnings);
+  safeRow.error_count = messageCount(row?.errors);
+  return Object.fromEntries(columns.map((column) => [column, safeRow[column] ?? null]));
+}
+
 function toCsv(rows) {
   if (!rows?.length) return 'empty\n';
   const cols = [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
@@ -83,60 +255,91 @@ export function buildExportPackage({
   finalQA = null,
   release = null,
 } = {}) {
+  const safeDecisionPackage = sanitizeExportValue(decisionPackage, { companyId });
+  const safeStress = sanitizeExportValue(stress, { companyId });
+  const safeSensitivity = sanitizeExportValue(sensitivity, { companyId });
+  const safeSensitivityMatrix = sanitizeExportValue(sensitivityMatrix, { companyId });
+  const safeAudit = sanitizeExportValue(audit, { companyId });
+  const safeRecommendation = sanitizeExportValue(recommendation, { companyId });
+  const safeSelectedScenario = sanitizeExportValue(selectedScenario, { companyId });
+  const safeComparison = sanitizeExportValue(comparison, { companyId });
+  const safeRobustness = sanitizeExportValue(robustness, { companyId });
+  const safeWorkbookParity = sanitizeExportValue(workbookParity, { companyId });
+  const safeRankingSensitivity = sanitizeExportValue(rankingSensitivity, { companyId });
+  const safeFinalQA = sanitizeExportValue(finalQA, { companyId });
+  const safeRelease = sanitizeExportValue(release, { companyId });
   const monteCarlo =
-    selectedScenario?.monte_carlo || selectedScenario?.scenario?.monte_carlo || null;
+    safeSelectedScenario?.monte_carlo || safeSelectedScenario?.scenario?.monte_carlo || null;
   const html = buildExecutiveReportHtml({
     companyId,
-    selectedScenario,
-    recommendation,
-    stress,
-    robustness,
-    audit,
-    comparison,
-    workbookParity,
-    rankingSensitivity,
+    selectedScenario: safeSelectedScenario,
+    recommendation: safeRecommendation,
+    stress: safeStress,
+    robustness: safeRobustness,
+    audit: safeAudit,
+    comparison: safeComparison,
+    workbookParity: safeWorkbookParity,
+    rankingSensitivity: safeRankingSensitivity,
   });
   const json = JSON.stringify(
     {
       company_id: companyId,
-      decision_package: decisionPackage,
-      selected_scenario: selectedScenario
+      export_policy: isProtectedExport(companyId) ? 'protected_aggregate_only' : 'demo_fixture',
+      decision_package: safeDecisionPackage,
+      selected_scenario: safeSelectedScenario
         ? {
-            scenario_id: selectedScenario.scenario_id || selectedScenario.scenario?.scenario_id,
-            scenario: selectedScenario.scenario || null,
-            result: selectedScenario.result || null,
-            quality: selectedScenario.quality || null,
+            scenario_id:
+              safeSelectedScenario.scenario_id || safeSelectedScenario.scenario?.scenario_id,
+            scenario: safeSelectedScenario.scenario || null,
+            result: safeSelectedScenario.result || null,
+            quality: safeSelectedScenario.quality || null,
             monte_carlo: monteCarlo,
           }
         : null,
-      recommendation,
-      stress,
-      sensitivity,
-      sensitivity_matrix: sensitivityMatrix,
-      robustness,
-      audit,
-      workbook_parity: workbookParity,
+      recommendation: safeRecommendation,
+      stress: safeStress,
+      sensitivity: safeSensitivity,
+      sensitivity_matrix: safeSensitivityMatrix,
+      robustness: safeRobustness,
+      audit: safeAudit,
+      workbook_parity: safeWorkbookParity,
       monte_carlo: monteCarlo,
-      final_qa: finalQA,
-      release,
+      final_qa: safeFinalQA,
+      release: safeRelease,
       financial_summary: {
-        baseline_total: comparison?.baseline_total ?? null,
-        scenario_total: comparison?.scenario_total ?? null,
-        saving_abs: comparison?.saving_abs ?? null,
-        saving_pct: comparison?.saving_pct ?? null,
-        components: selectedScenario?.result?.costs || selectedScenario?.costs || null,
+        baseline_total: safeComparison?.baseline_total ?? null,
+        scenario_total: safeComparison?.scenario_total ?? null,
+        saving_abs: safeComparison?.saving_abs ?? null,
+        saving_pct: safeComparison?.saving_pct ?? null,
+        components: safeSelectedScenario?.result?.costs || safeSelectedScenario?.costs || null,
       },
-      comparison,
+      comparison: safeComparison,
     },
     null,
     2
   );
-  const exportContext = buildExportContext({ selectedScenario, audit, robustness });
-  const csv = toCsv((stress?.stress_results || []).map((row) => ({ ...exportContext, ...row })));
-  const sensitivityCsv = toCsv([
-    ...(sensitivity?.sensitivity_results || []).map((row) => ({ ...exportContext, ...row })),
-    ...(sensitivityMatrix?.matrix_results || []).map((row) => ({ ...exportContext, ...row })),
-  ]);
+  const exportContext = buildExportContext({
+    selectedScenario: safeSelectedScenario,
+    audit: safeAudit,
+    robustness: safeRobustness,
+  });
+  const csv = toCsv(
+    (safeStress?.stress_results || []).map((row) =>
+      projectCsvRow(row, exportContext, STRESS_EXPORT_COLUMNS)
+    ),
+    STRESS_EXPORT_COLUMNS
+  );
+  const sensitivityCsv = toCsv(
+    [
+      ...(safeSensitivity?.sensitivity_results || []).map((row) =>
+        projectCsvRow(row, exportContext, SENSITIVITY_EXPORT_COLUMNS)
+      ),
+      ...(safeSensitivityMatrix?.matrix_results || []).map((row) =>
+        projectCsvRow(row, exportContext, SENSITIVITY_EXPORT_COLUMNS)
+      ),
+    ],
+    SENSITIVITY_EXPORT_COLUMNS
+  );
   return {
     export_status: 'ready',
     files: [

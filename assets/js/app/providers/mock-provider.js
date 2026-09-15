@@ -192,8 +192,10 @@ export async function createMockProvider() {
       return this.fixtures.objective.optimizer;
     },
     async buildDecisionPackage({ scenarioId } = {}) {
+      const defaultScenarioId =
+        scenarioId || this.fixtures.objective.optimizer.search_log?.best_scenario_id;
       const scenario =
-        this.fixtures.scenarios.scenarios.find((item) => item.scenario_id === scenarioId) ||
+        this.fixtures.scenarios.scenarios.find((item) => item.scenario_id === defaultScenarioId) ||
         this.fixtures.scenarios.scenarios[0];
       const packageResult = buildDecisionPackage({
         baseline: this.fixtures.baseline,

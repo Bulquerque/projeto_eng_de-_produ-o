@@ -13,8 +13,44 @@
         "median_saving_pct": 6.8,
         "p90_saving_pct": 11.5,
         "risk_band": "medium",
-        "uncertainty_source": "synthetic_fixture"
-      }
+        "uncertainty_source": "synthetic_fixture",
+        "histogram": [
+          { "label": "-8% a -4%", "count": 18 },
+          { "label": "-4% a 0%", "count": 66 },
+          { "label": "0% a 4%", "count": 88 },
+          { "label": "4% a 8%", "count": 79 },
+          { "label": "8% a 12%", "count": 37 },
+          { "label": "12% a 16%", "count": 12 }
+        ],
+        "percentile_curve": [
+          { "percentile": 10, "value": 1.2 },
+          { "percentile": 25, "value": 3.4 },
+          { "percentile": 50, "value": 6.8 },
+          { "percentile": 75, "value": 9.1 },
+          { "percentile": 90, "value": 11.5 }
+        ],
+        "total_percentile_curve": [
+          { "percentile": 10, "value": 3.1 },
+          { "percentile": 25, "value": 5.4 },
+          { "percentile": 50, "value": 6.99 },
+          { "percentile": 75, "value": 8.7 },
+          { "percentile": 90, "value": 10.4 }
+        ],
+        "driver_importance": [
+          { "driver": "Frete", "correlation": 0.78 },
+          { "driver": "Demanda", "correlation": 0.46 },
+          { "driver": "Estoque", "correlation": 0.31 },
+          { "driver": "Tributação", "correlation": 0.22 }
+        ]
+      },
+      "samples": [
+        { "inputs": { "freight_multiplier": 0.91, "demand_multiplier": 0.96, "inventory_days": 40 }, "saving_pct": 12.4 },
+        { "inputs": { "freight_multiplier": 0.95, "demand_multiplier": 1.02, "inventory_days": 42 }, "saving_pct": 8.2 },
+        { "inputs": { "freight_multiplier": 1.01, "demand_multiplier": 1.04, "inventory_days": 45 }, "saving_pct": 4.9 },
+        { "inputs": { "freight_multiplier": 1.08, "demand_multiplier": 1.09, "inventory_days": 50 }, "saving_pct": -2.1 },
+        { "inputs": { "freight_multiplier": 0.98, "demand_multiplier": 1.01, "inventory_days": 44 }, "saving_pct": 6.7 },
+        { "inputs": { "freight_multiplier": 0.89, "demand_multiplier": 0.94, "inventory_days": 38 }, "saving_pct": 14.2 }
+      ]
     },
     "stress": {
       "stress_status": "complete_with_warnings",
@@ -40,15 +76,39 @@
           "saving_vs_baseline": -9500,
           "saving_pct": -2.83,
           "scenario_still_better_than_baseline": false
+        },
+        {
+          "case_id": "demo_demand_down",
+          "case_name": "Demanda -8%",
+          "status": "success",
+          "data_quality_status": "synthetic_fixture",
+          "decision_use": "demo_only",
+          "total_with_tax": 298400,
+          "saving_vs_baseline": 37600,
+          "saving_pct": 11.19,
+          "scenario_still_better_than_baseline": true
+        },
+        {
+          "case_id": "demo_inventory_up",
+          "case_name": "Estoque +10 dias",
+          "status": "success",
+          "data_quality_status": "synthetic_fixture",
+          "decision_use": "demo_only",
+          "total_with_tax": 329800,
+          "saving_vs_baseline": 6200,
+          "saving_pct": 1.85,
+          "scenario_still_better_than_baseline": true
         }
       ]
     },
     "sensitivity": {
       "most_sensitive_variable": "freight_multiplier",
       "sensitivity_results": [
+        { "variable": "freight_multiplier", "value": 0.85, "total_with_tax": 298200, "saving_pct": 11.77 },
         { "variable": "freight_multiplier", "value": 0.9, "total_with_tax": 303000, "saving_pct": 9.82 },
         { "variable": "freight_multiplier", "value": 1, "total_with_tax": 312500, "saving_pct": 6.99 },
-        { "variable": "freight_multiplier", "value": 1.1, "total_with_tax": 322000, "saving_pct": 4.17 }
+        { "variable": "freight_multiplier", "value": 1.1, "total_with_tax": 322000, "saving_pct": 4.17 },
+        { "variable": "freight_multiplier", "value": 1.15, "total_with_tax": 326800, "saving_pct": 2.66 }
       ]
     },
     "robustness": {

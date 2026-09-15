@@ -14,6 +14,7 @@ import { navigate, parseRoute, replaceCompanyQuery, startRouter } from './router
 import { renderShell, setActiveNav, showLoading, showToast, updateGlobalContext } from './shell.js';
 import { installBindings } from './bindings.js';
 import { sanitizeError, renderDevConsolePage } from './dev/dev-console.js';
+import { routeFallback } from './view-helpers.js';
 import {
   renderOverviewCosts,
   renderOverviewNetwork,
@@ -39,10 +40,18 @@ import {
   renderTrustValidation,
 } from './pages/trust.js';
 import {
+  renderDistanceHistogram,
   renderCostChart,
   renderRanking,
+  renderRiskCdf,
+  renderRiskDrivers,
+  renderRiskHistogram,
+  renderRiskProbability,
   renderRiskChart,
+  renderRiskScatter,
+  renderRiskTotalCurve,
   renderSensitivity,
+  renderVolumeByCdChart,
 } from './charts/charts.js';
 import {
   clearCompanyScenarios,
@@ -61,9 +70,12 @@ const networkActive = request.network_ui || window.location.hash.startsWith('#/n
 window.__VISAGIO_NETWORK_UI__ = networkActive;
 
 function findScenario(state, scenarioId) {
-  return [...(state.data.scenarios || []), ...(state.data.saved_scenarios || [])].find(
-    (scenario) => scenario.scenario_id === scenarioId
-  );
+  return [
+    ...(state.data.scenarios || []),
+    ...(state.data.saved_scenarios || []),
+    ...(state.data.optimizer?.scored_scenarios || []),
+    ...(state.data.optimizer?.best_scenarios || []),
+  ].find((scenario) => scenario.scenario_id === scenarioId);
 }
 
 function upsertScenario(scenarios, scenario) {
@@ -146,7 +158,9 @@ if (networkActive) {
     let activeAction = null;
     let exportInFlight = false;
     let lastScenarioExportAt = 0;
-    let lastPackageExportAt = 0;
+    const packageExportsInFlight = new Set();
+    const lastPackageExportAt = new Map();
+    let drawerReturnFocus = null;
 
     const nextOperation = () => {
       operationId += 1;
@@ -180,7 +194,7 @@ if (networkActive) {
     const render = () => {
       const state = store.getState();
       const route = parseRoute(state.ui.route || window.location.hash || config.default_route);
-      const renderer = ROUTE_RENDERERS[route.path] || renderOverviewSummary;
+      const renderer = ROUTE_RENDERERS[route.path] || (() => routeFallback(route.hash));
       const page = root.querySelector('#networkPage');
       if (!page) return;
       page.dataset.routeCurrent = route.hash;
@@ -194,6 +208,38 @@ if (networkActive) {
           `<div class="ni-alert error"><strong>Falha</strong><p>${sanitizeError(state.ui.error).message}</p></div>`
         );
       }
+    };
+
+    const commitDecisionPackage = (state, packageResult, activeProvider) => {
+      const selected = packageResult.selected_scenario || null;
+      const mockDecision = packageResult.decision || {};
+      const selectedScenario = selected?.scenario || null;
+      const selectedResult = selected?.result || null;
+      const risk = packageResult.risk || {
+        monte_carlo: mockDecision.monte_carlo,
+        stress: mockDecision.stress_test,
+        robustness: mockDecision.robustness,
+      };
+      state.data.optimizer =
+        packageResult.optimizer || activeProvider.getDomainContext()?.optimizer || null;
+      state.data.selected_scenario = selectedScenario;
+      state.data.scenario_result = selectedResult;
+      state.data.scenario_quality = selected?.quality || null;
+      state.data.comparison = packageResult.comparison || null;
+      state.data.monte_carlo = risk.monte_carlo || null;
+      state.data.stress = risk.stress || null;
+      state.data.sensitivity = risk.sensitivity || null;
+      state.data.sensitivity_matrix = risk.sensitivity_matrix || null;
+      state.data.robustness = risk.robustness || null;
+      state.data.recommendation =
+        packageResult.recommendation || mockDecision.recommendation || null;
+      state.data.audit = packageResult.audit || mockDecision.audit || null;
+      state.data.final_qa = packageResult.final_qa || mockDecision.final_qa || null;
+      state.data.release = packageResult.release || mockDecision.release || null;
+      state.data.export_package = packageResult.export_package || null;
+      state.context.selected_scenario_id = selectedScenario?.scenario_id || null;
+      state.meta.status = 'decision_ready';
+      state.ui.loading = false;
     };
 
     const loadCompany = async (companyId, token) => {
@@ -248,6 +294,16 @@ if (networkActive) {
           const first = state.data.scenarios[0];
           setSelectedScenario(state, first?.scenario_id || null);
         });
+        if (isMockTenant(companyId)) {
+          const packageResult = await nextProvider.buildDecisionPackage({
+            scenarioId: 'mock_consolidation',
+          });
+          if (!isCurrentOperation(token, companyId, nextProvider)) {
+            await nextProvider.dispose({ lock: false });
+            return;
+          }
+          store.update((state) => commitDecisionPackage(state, packageResult, nextProvider));
+        }
         showLoading(root, false);
         showToast(
           root,
@@ -304,6 +360,12 @@ if (networkActive) {
           nextState.data.scenario_result = null;
           nextState.data.scenario_quality = null;
           nextState.data.comparison = null;
+          nextState.data.monte_carlo = null;
+          nextState.data.stress = null;
+          nextState.data.sensitivity = null;
+          nextState.data.sensitivity_matrix = null;
+          nextState.data.robustness = null;
+          nextState.data.recommendation = null;
         });
         navigate('#/network/scenarios/build');
         showToast(
@@ -311,6 +373,33 @@ if (networkActive) {
           `Cenário carregado: ${scenario.scenario_name || scenario.scenario_id}.`,
           'success'
         );
+      },
+      resetScenarioDraft() {
+        store.update((nextState) => {
+          nextState.ui.scenario_draft = null;
+          nextState.context.selected_scenario_id = null;
+          nextState.data.selected_scenario = null;
+          nextState.data.scenario_result = null;
+          nextState.data.scenario_quality = null;
+          nextState.data.comparison = null;
+          nextState.data.monte_carlo = null;
+          nextState.data.stress = null;
+          nextState.data.sensitivity = null;
+          nextState.data.sensitivity_matrix = null;
+          nextState.data.robustness = null;
+          nextState.data.recommendation = null;
+        });
+        navigate('#/network/scenarios/build');
+        showToast(root, 'Rascunho limpo; formulário voltou ao baseline.', 'success');
+      },
+      selectComparedScenario(scenarioId) {
+        const state = store.getState();
+        const candidate = findScenario(state, scenarioId);
+        if (!candidate) {
+          showToast(root, 'Cenário comparado não está disponível para reexecução.', 'error');
+          return;
+        }
+        void this.runScenario({ scenario: candidate.scenario || candidate, scenarioId });
       },
       saveCurrentScenario() {
         const state = store.getState();
@@ -412,6 +501,12 @@ if (networkActive) {
             nextState.data.scenario_result = null;
             nextState.data.scenario_quality = null;
             nextState.data.comparison = null;
+            nextState.data.monte_carlo = null;
+            nextState.data.stress = null;
+            nextState.data.sensitivity = null;
+            nextState.data.sensitivity_matrix = null;
+            nextState.data.robustness = null;
+            nextState.data.recommendation = null;
           });
           navigate('#/network/scenarios/build');
           showToast(
@@ -424,7 +519,11 @@ if (networkActive) {
           showToast(root, sanitizeError(error).message, 'error');
         }
       },
-      async runScenario({ formValues = {}, scenarioId = null } = {}) {
+      async runScenario({
+        formValues = {},
+        scenarioId = null,
+        scenario: inputScenario = null,
+      } = {}) {
         if (!provider) return;
         const activeProvider = provider;
         const companyId = store.getState().context.company_id;
@@ -432,6 +531,7 @@ if (networkActive) {
         if (!action) return;
         const effectiveScenarioId =
           scenarioId ||
+          inputScenario?.scenario_id ||
           (store.getState().context.provider_kind === 'mock'
             ? store.getState().ui.scenario_draft?.scenario_id
             : null);
@@ -443,6 +543,7 @@ if (networkActive) {
           const output = await activeProvider.runScenario({
             formValues,
             scenarioId: effectiveScenarioId,
+            scenario: inputScenario,
           });
           if (!isCurrentAction(action) || (output?.company_id && output.company_id !== companyId)) {
             return;
@@ -454,6 +555,12 @@ if (networkActive) {
             state.data.scenario_result = result;
             state.data.scenario_quality = output.quality || null;
             state.data.comparison = output.comparison || null;
+            state.data.monte_carlo = null;
+            state.data.stress = null;
+            state.data.sensitivity = null;
+            state.data.sensitivity_matrix = null;
+            state.data.robustness = null;
+            state.data.recommendation = null;
             state.meta.status = 'scenario_ready';
             state.ui.loading = false;
             state.context.selected_scenario_id = scenario?.scenario_id || null;
@@ -462,6 +569,52 @@ if (networkActive) {
           showLoading(root, false);
           showToast(root, 'Cenário simulado pelo provider ativo.', 'success');
           window.location.hash = '#/network/scenarios/result';
+        } catch (error) {
+          if (!isCurrentAction(action)) return;
+          store.update((state) => failLoading(state, error));
+          showLoading(root, false);
+          showToast(root, sanitizeError(error).message, 'error');
+        } finally {
+          finishAction(action);
+        }
+        if (isCurrentAction(action) || !activeAction) render();
+      },
+      async runRisk(config = {}) {
+        if (!provider) return;
+        const activeProvider = provider;
+        const current = store.getState();
+        const companyId = current.context.company_id;
+        const selectedScenario = current.data.selected_scenario;
+        const deterministicResult = current.data.scenario_result;
+        if (!selectedScenario || !deterministicResult) {
+          showToast(root, 'Simule um cenário antes de calcular risco.', 'error');
+          return;
+        }
+        const action = beginAction('risk', activeProvider, companyId);
+        if (!action) return;
+        store.update((state) => {
+          beginLoading(state, 'Calculando risco e sensibilidade…');
+        });
+        showLoading(root, true, 'Calculando risco', 'Monte Carlo, stress e sensibilidade.');
+        try {
+          const risk = await activeProvider.runRiskSuite({
+            selectedScenario,
+            deterministicResult,
+            config,
+          });
+          if (!isCurrentAction(action)) return;
+          store.update((state) => {
+            state.data.monte_carlo = risk?.monte_carlo || null;
+            state.data.stress = risk?.stress || null;
+            state.data.sensitivity = risk?.sensitivity || null;
+            state.data.sensitivity_matrix = risk?.sensitivity_matrix || null;
+            state.data.robustness = risk?.robustness || null;
+            state.meta.status = 'risk_ready';
+            state.ui.loading = false;
+          });
+          showLoading(root, false);
+          showToast(root, 'Análise de risco concluída pelo provider ativo.', 'success');
+          window.location.hash = '#/network/scenarios/risk';
         } catch (error) {
           if (!isCurrentAction(action)) return;
           store.update((state) => failLoading(state, error));
@@ -490,36 +643,8 @@ if (networkActive) {
           ) {
             return;
           }
-          const selected = packageResult.selected_scenario || null;
-          const mockDecision = packageResult.decision || {};
-          const selectedScenario = selected?.scenario || null;
-          const selectedResult = selected?.result || null;
-          const risk = packageResult.risk || {
-            monte_carlo: mockDecision.monte_carlo,
-            stress: mockDecision.stress_test,
-            robustness: mockDecision.robustness,
-          };
           store.update((state) => {
-            state.data.optimizer =
-              packageResult.optimizer || activeProvider.getDomainContext()?.optimizer || null;
-            state.data.selected_scenario = selectedScenario;
-            state.data.scenario_result = selectedResult;
-            state.data.scenario_quality = selected?.quality || null;
-            state.data.comparison = packageResult.comparison || null;
-            state.data.monte_carlo = risk.monte_carlo || null;
-            state.data.stress = risk.stress || null;
-            state.data.sensitivity = risk.sensitivity || null;
-            state.data.sensitivity_matrix = risk.sensitivity_matrix || null;
-            state.data.robustness = risk.robustness || null;
-            state.data.recommendation =
-              packageResult.recommendation || mockDecision.recommendation || null;
-            state.data.audit = packageResult.audit || mockDecision.audit || null;
-            state.data.final_qa = packageResult.final_qa || mockDecision.final_qa || null;
-            state.data.release = packageResult.release || mockDecision.release || null;
-            state.data.export_package = packageResult.export_package || null;
-            state.context.selected_scenario_id = selectedScenario?.scenario_id || null;
-            state.meta.status = 'decision_ready';
-            state.ui.loading = false;
+            commitDecisionPackage(state, packageResult, activeProvider);
           });
           showLoading(root, false);
           showToast(root, 'Pipeline de decisão concluído.', 'success');
@@ -535,9 +660,6 @@ if (networkActive) {
         if (isCurrentAction(action) || !activeAction) render();
       },
       exportPackage(index = 0) {
-        if (exportInFlight) return;
-        const now = Date.now();
-        if (now - lastPackageExportAt < 600) return;
         const companyId = store.getState().context.company_id;
         const token = operationId;
         const files = store.getState().data.export_package?.files || [];
@@ -546,8 +668,14 @@ if (networkActive) {
           showToast(root, 'Nenhum pacote de exportação disponível.', 'error');
           return;
         }
-        lastPackageExportAt = now;
-        exportInFlight = true;
+        const exportKey = `${index}:${file.filename || 'export'}`;
+        const now = Date.now();
+        if (index === 0 && exportInFlight) return;
+        if (packageExportsInFlight.has(exportKey)) return;
+        if (now - (lastPackageExportAt.get(exportKey) || 0) < 600) return;
+        lastPackageExportAt.set(exportKey, now);
+        packageExportsInFlight.add(exportKey);
+        if (index === 0) exportInFlight = true;
         import('../phase5/export-center.js')
           .then(({ triggerBrowserDownload }) => {
             if (!isCurrentOperation(token, companyId)) return;
@@ -560,7 +688,8 @@ if (networkActive) {
             }
           })
           .finally(() => {
-            exportInFlight = false;
+            packageExportsInFlight.delete(exportKey);
+            if (index === 0) exportInFlight = false;
           });
       },
       lock() {
@@ -582,15 +711,43 @@ if (networkActive) {
         const backdrop = root.querySelector('#networkDrawerBackdrop');
         if (drawer) drawer.hidden = true;
         if (backdrop) backdrop.hidden = true;
+        const returnFocus = drawerReturnFocus;
+        drawerReturnFocus = null;
+        if (returnFocus && typeof returnFocus.focus === 'function') returnFocus.focus();
+      },
+      openDrawer(title, body) {
+        const drawer = root.querySelector('#networkDrawer');
+        const backdrop = root.querySelector('#networkDrawerBackdrop');
+        const titleNode = root.querySelector('#networkDrawerTitle');
+        const bodyNode = root.querySelector('#networkDrawerBody');
+        if (!drawer || !backdrop || !titleNode || !bodyNode) return;
+        drawerReturnFocus = document.activeElement;
+        titleNode.textContent = title || 'Detalhes';
+        bodyNode.innerHTML = body || '';
+        drawer.hidden = false;
+        backdrop.hidden = false;
+        titleNode.focus();
       },
     };
 
     function renderCharts(path, state) {
       if (path === '/network/overview/costs')
         renderCostChart('niCostChart', state.data.scenario_result || state.data.baseline);
+      if (path === '/network/overview/network') {
+        const flows = state.data.baseline?.flows || [];
+        renderVolumeByCdChart('niVolumeByCdChart', flows);
+        renderDistanceHistogram('niDistanceHistogramChart', flows);
+      }
       if (path.includes('/risk')) {
         renderRiskChart('niRiskChart', state.data.monte_carlo);
         renderSensitivity('niSensitivityChart', state.data.sensitivity);
+        const monteCarlo = state.data.monte_carlo;
+        renderRiskHistogram('niRiskHistogramChart', monteCarlo);
+        renderRiskCdf('niRiskCdfChart', monteCarlo);
+        renderRiskTotalCurve('niRiskTotalChart', monteCarlo);
+        renderRiskDrivers('niRiskDriversChart', monteCarlo);
+        renderRiskScatter('niRiskScatterChart', monteCarlo);
+        renderRiskProbability('niRiskProbabilityChart', monteCarlo);
       }
       if (path === '/network/optimizer/results')
         renderRanking('niRankingChart', state.data.optimizer);

@@ -11,13 +11,82 @@
   "model": {
     "company_id": "empresa_mock",
     "scenario_id": "mock_baseline",
-    "active_cds": ["CD Demo Norte", "CD Demo Sul"],
+    "active_cds": ["CD Demo Norte", "CD Demo Sul", "CD Demo Centro"],
     "baseline_ready": true
   },
   "flows": [
-    { "origin": "Origem Demo A", "destination": "Destino Demo 01", "cd": "CD Demo Norte", "volume": 420 },
-    { "origin": "Origem Demo B", "destination": "Destino Demo 02", "cd": "CD Demo Sul", "volume": 360 },
-    { "origin": "Origem Demo A", "destination": "Destino Demo 03", "cd": "CD Demo Norte", "volume": 290 }
+    {
+      "origin": "Origem Demo A",
+      "destination": "Destino Demo 01",
+      "cd": "CD Demo Norte",
+      "volume": 420,
+      "annual_weight_kg": 420,
+      "distance_km": 118,
+      "service_level": "D+1"
+    },
+    {
+      "origin": "Origem Demo B",
+      "destination": "Destino Demo 02",
+      "cd": "CD Demo Sul",
+      "volume": 360,
+      "annual_weight_kg": 360,
+      "distance_km": 246,
+      "service_level": "D+2"
+    },
+    {
+      "origin": "Origem Demo A",
+      "destination": "Destino Demo 03",
+      "cd": "CD Demo Norte",
+      "volume": 290,
+      "annual_weight_kg": 290,
+      "distance_km": 164,
+      "service_level": "D+1"
+    },
+    {
+      "origin": "Origem Demo C",
+      "destination": "Destino Demo 04",
+      "cd": "CD Demo Centro",
+      "volume": 315,
+      "annual_weight_kg": 315,
+      "distance_km": 302,
+      "service_level": "D+2"
+    },
+    {
+      "origin": "Origem Demo D",
+      "destination": "Destino Demo 05",
+      "cd": "CD Demo Centro",
+      "volume": 240,
+      "annual_weight_kg": 240,
+      "distance_km": 388,
+      "service_level": "D+3"
+    },
+    {
+      "origin": "Origem Demo B",
+      "destination": "Destino Demo 06",
+      "cd": "CD Demo Sul",
+      "volume": 185,
+      "annual_weight_kg": 185,
+      "distance_km": 274,
+      "service_level": "D+2"
+    },
+    {
+      "origin": "Origem Demo E",
+      "destination": "Destino Demo 07",
+      "cd": "CD Demo Norte",
+      "volume": 155,
+      "annual_weight_kg": 155,
+      "distance_km": 92,
+      "service_level": "D+1"
+    },
+    {
+      "origin": "Origem Demo C",
+      "destination": "Destino Demo 08",
+      "cd": "CD Demo Centro",
+      "volume": 130,
+      "annual_weight_kg": 130,
+      "distance_km": 341,
+      "service_level": "D+3"
+    }
   ],
   "costs": {
     "costs": {
@@ -35,6 +104,9 @@
       "tax_mode": "current",
       "tax_regime": "current",
       "decision_use": "demo_only",
+      "period": "2026-demo-current",
+      "available_periods": ["2026-demo-current", "2027-demo-reform"],
+      "coverage_note": "Parâmetros tributários sintéticos para demonstrar a troca de período.",
       "tax_coverage": { "coverage_limited": false, "complete_fiscal_coverage_ratio": 1 }
     }
   },

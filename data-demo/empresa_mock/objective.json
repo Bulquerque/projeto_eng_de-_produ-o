@@ -22,6 +22,35 @@
       "coverage_ratio": 1,
       "best_scenario_id": "mock_consolidation"
     },
-    "best_scenarios": [{ "scenario_id": "mock_consolidation", "final_score": 82 }]
+    "best_scenarios": [
+      {
+        "scenario_id": "mock_consolidation",
+        "scenario_name": "Consolidação demonstrativa",
+        "final_score": 82,
+        "rank": 1,
+        "decision_use": "demo_only"
+      },
+      {
+        "scenario_id": "mock_regional_balance",
+        "scenario_name": "Balanceamento regional demonstrativo",
+        "final_score": 79,
+        "rank": 2,
+        "decision_use": "demo_only"
+      },
+      {
+        "scenario_id": "mock_tax_reform",
+        "scenario_name": "Transição tributária demonstrativa",
+        "final_score": 74,
+        "rank": 3,
+        "decision_use": "demo_only"
+      },
+      {
+        "scenario_id": "mock_service_resilience",
+        "scenario_name": "Resiliência de serviço demonstrativa",
+        "final_score": 65,
+        "rank": 4,
+        "decision_use": "demo_only"
+      }
+    ]
   }
 }

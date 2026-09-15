@@ -64,6 +64,7 @@ def test_mock_fixture_isolation_contract():
     main = (APP / 'main.js').read_text(encoding='utf-8')
     dev_console = (APP / 'dev/dev-console.js').read_text(encoding='utf-8')
     crypto_session = (ROOT / 'assets/js/core/crypto-session.js').read_text(encoding='utf-8')
+    export_center = (ROOT / 'assets/js/phase5/export-center.js').read_text(encoding='utf-8')
     assert 'data-demo/empresa_mock' in mock_provider
     assert 'runDomainScenario' not in mock_provider
     assert "import('./providers/mock-provider.js')" in main
@@ -77,13 +78,17 @@ def test_mock_fixture_isolation_contract():
     assert 'let activeAction = null' in main
     assert "beginAction('scenario'" in main
     assert "beginAction('decision'" in main
-    assert 'if (exportInFlight) return;' in main
+    assert 'packageExportsInFlight' in main
+    assert 'if (index === 0 && exportInFlight) return;' in main
     assert 'isCurrentOperation(token, companyId, activeProvider)' in main
     assert 'getSafeStateSnapshot(state)' in dev_console
     assert 'snapshot: sanitize(state)' not in dev_console
     assert 'getSafeStateSnapshot' in dev_console
     assert 'const companyId =' in crypto_session
     assert '`${KEY_PREFIX}${companyId}_' in crypto_session
+    assert 'sanitizeExportValue' in export_center
+    assert 'STRESS_EXPORT_COLUMNS' in export_center
+    assert 'SENSITIVITY_EXPORT_COLUMNS' in export_center
 
     trust = (APP / 'pages' / 'trust.js').read_text(encoding='utf-8')
     styles = (APP / 'main.css').read_text(encoding='utf-8')
@@ -124,6 +129,9 @@ def test_network_ui_compatibility_and_e2e_hooks():
         'page-trust-validation',
         'scenario-library',
         'saved-scenarios',
+        'network-flow-analytics',
+        'tax-periods-panel',
+        'risk-controls',
         'scenario-save',
         'scenario-export',
         'scenario-import',

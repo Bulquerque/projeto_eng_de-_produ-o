@@ -42,11 +42,16 @@ export async function runDecisionPipeline({
   selectionMode = 'best_by_score',
   manualScenarioId = null,
   optimizerConfig = {},
+  constraints = {},
   riskConfig = {},
 } = {}) {
   const context = provider.getDomainContext();
   const companyId = context.company_id;
-  const optimizer = await provider.runOptimization({ profileId, config: optimizerConfig });
+  const optimizer = await provider.runOptimization({
+    profileId,
+    constraints,
+    config: optimizerConfig,
+  });
   if (!String(optimizer?.optimizer_status || '').startsWith('success')) {
     return buildBlockedPackage(
       companyId,

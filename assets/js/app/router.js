@@ -86,8 +86,7 @@ export function replaceCompanyQuery(companyId) {
 export function startRouter({ initialRoute, onRouteChange } = {}) {
   const handle = () => {
     const parsed = parseRoute(window.location.hash || initialRoute);
-    const route = isKnownRoute(parsed.hash) ? parsed : parseRoute(initialRoute);
-    onRouteChange?.(route);
+    onRouteChange?.(parsed);
   };
   window.addEventListener('hashchange', handle);
   window.addEventListener('popstate', handle);

@@ -8,7 +8,7 @@
       "company_id": "empresa_mock",
       "scenario_type": "baseline",
       "changes": {
-        "active_cds": ["CD Demo Norte", "CD Demo Sul"],
+        "active_cds": ["CD Demo Norte", "CD Demo Sul", "CD Demo Centro"],
         "closed_cds": [],
         "freight_multiplier": 1,
         "demand_multiplier": 1,
@@ -70,6 +70,123 @@
           "storage_cost": 51000,
           "inventory_cost": 35000,
           "tax_impact": 42500
+        },
+        "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
+        "evidence": {
+          "evidence_score": 100,
+          "evidence_status": "synthetic_fixture",
+          "components": [{ "id": "demo_source", "status": "synthetic" }],
+          "blockers": ["Resultado demonstrativo; não é evidência empresarial."]
+        }
+      }
+    },
+    {
+      "scenario_id": "mock_regional_balance",
+      "scenario_name": "Balanceamento regional demonstrativo",
+      "company_id": "empresa_mock",
+      "scenario_type": "demo",
+      "changes": {
+        "active_cds": ["CD Demo Norte", "CD Demo Centro"],
+        "closed_cds": ["CD Demo Sul"],
+        "freight_multiplier": 0.92,
+        "demand_multiplier": 1.02,
+        "inventory_days": 40,
+        "wacc": 0.15,
+        "tax_mode": "current"
+      },
+      "result": {
+        "scenario_id": "mock_regional_balance",
+        "scenario_name": "Balanceamento regional demonstrativo",
+        "company_id": "empresa_mock",
+        "simulation_status": "success",
+        "calculation_status": "success",
+        "total_with_tax": 304800,
+        "costs": {
+          "total_with_tax": 304800,
+          "total_logistics_cost": 263400,
+          "transfer_cost": 101500,
+          "distribution_cost": 77000,
+          "storage_cost": 49000,
+          "inventory_cost": 35900,
+          "tax_impact": 41400
+        },
+        "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
+        "evidence": {
+          "evidence_score": 100,
+          "evidence_status": "synthetic_fixture",
+          "components": [{ "id": "demo_source", "status": "synthetic" }],
+          "blockers": ["Resultado demonstrativo; não é evidência empresarial."]
+        }
+      }
+    },
+    {
+      "scenario_id": "mock_service_resilience",
+      "scenario_name": "Resiliência de serviço demonstrativa",
+      "company_id": "empresa_mock",
+      "scenario_type": "stress_demo",
+      "changes": {
+        "active_cds": ["CD Demo Norte", "CD Demo Sul", "CD Demo Centro"],
+        "closed_cds": [],
+        "freight_multiplier": 1.04,
+        "demand_multiplier": 1.08,
+        "inventory_days": 50,
+        "wacc": 0.15,
+        "tax_mode": "current"
+      },
+      "result": {
+        "scenario_id": "mock_service_resilience",
+        "scenario_name": "Resiliência de serviço demonstrativa",
+        "company_id": "empresa_mock",
+        "simulation_status": "success",
+        "calculation_status": "success",
+        "total_with_tax": 351600,
+        "costs": {
+          "total_with_tax": 351600,
+          "total_logistics_cost": 303200,
+          "transfer_cost": 128000,
+          "distribution_cost": 91000,
+          "storage_cost": 50000,
+          "inventory_cost": 34200,
+          "tax_impact": 48400
+        },
+        "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
+        "evidence": {
+          "evidence_score": 100,
+          "evidence_status": "synthetic_fixture",
+          "components": [{ "id": "demo_source", "status": "synthetic" }],
+          "blockers": ["Resultado demonstrativo; não é evidência empresarial."]
+        }
+      }
+    },
+    {
+      "scenario_id": "mock_tax_reform",
+      "scenario_name": "Transição tributária demonstrativa",
+      "company_id": "empresa_mock",
+      "scenario_type": "tax_demo",
+      "changes": {
+        "active_cds": ["CD Demo Norte"],
+        "closed_cds": ["CD Demo Sul", "CD Demo Centro"],
+        "freight_multiplier": 0.96,
+        "demand_multiplier": 1,
+        "inventory_days": 42,
+        "wacc": 0.15,
+        "tax_mode": "reform_2027_demo"
+      },
+      "result": {
+        "scenario_id": "mock_tax_reform",
+        "scenario_name": "Transição tributária demonstrativa",
+        "company_id": "empresa_mock",
+        "simulation_status": "success_with_warnings",
+        "calculation_status": "success",
+        "total_with_tax": 319900,
+        "costs": {
+          "total_with_tax": 319900,
+          "total_logistics_cost": 270000,
+          "transfer_cost": 105000,
+          "distribution_cost": 79000,
+          "storage_cost": 51000,
+          "inventory_cost": 35000,
+          "tax_impact": 49900
         },
         "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
         "evidence": {

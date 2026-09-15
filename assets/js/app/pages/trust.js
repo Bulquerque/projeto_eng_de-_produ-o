@@ -6,6 +6,7 @@ import {
   formatNumber,
   kpi,
   safeJson,
+  sectionTabs,
   statusChip,
   table,
 } from '../view-helpers.js';
@@ -23,14 +24,14 @@ function auditForPresentation(audit) {
 export function renderTrustOverview(state) {
   const decision = selectDecision(state);
   const evidence = selectEvidence(state);
-  return `<div class="ni-page-heading" data-testid="page-trust-overview"><p class="ni-eyebrow">Trust</p><h1>Dados e confiança</h1><p>Evidence, robustez, cobertura fiscal, busca e release aparecem como dimensões independentes.</p></div><div class="ni-kpi-grid">${kpi('Evidence', evidence?.evidence_score == null ? '—' : `${evidence.evidence_score}/100`)}${kpi('Robustez', decision.risk.robustness?.robustness_score == null ? '—' : `${decision.risk.robustness.robustness_score.toFixed(0)}/100`)}${kpi('QA', decision.final_qa?.final_qa_status || '—')}${kpi('Release', decision.release?.release_status || '—')}</div><div class="ni-grid two">${card('Estado da recomendação', decision.recommendation ? `<p>${statusChip(decision.recommendation.recommendation_status)}</p><p>${escapeHtml(decision.recommendation.executive_summary || '—')}</p>` : emptyState('Nenhuma recomendação calculada.'))}${card('Limitações', `<ul class="ni-list"><li>Robustez pode ser condicional.</li><li>Cobertura fiscal parcial permanece exploratória.</li><li>Busca limitada não é ótimo global.</li></ul>`)}</div>`;
+  return `<div class="ni-page-heading" data-testid="page-trust-overview"><p class="ni-eyebrow">Trust</p><h1>Dados e confiança</h1><p>Evidence, robustez, cobertura fiscal, busca e release aparecem como dimensões independentes.</p></div>${sectionTabs('trust', state.ui.route)}<div class="ni-kpi-grid">${kpi('Evidence', evidence?.evidence_score == null ? '—' : `${evidence.evidence_score}/100`)}${kpi('Robustez', decision.risk.robustness?.robustness_score == null ? '—' : `${decision.risk.robustness.robustness_score.toFixed(0)}/100`)}${kpi('QA', decision.final_qa?.final_qa_status || '—')}${kpi('Release', decision.release?.release_status || '—')}</div><div class="ni-grid two">${card('Estado da recomendação', decision.recommendation ? `<p>${statusChip(decision.recommendation.recommendation_status)}</p><p>${escapeHtml(decision.recommendation.executive_summary || '—')}</p>` : emptyState('Nenhuma recomendação calculada.'))}${card('Limitações', `<ul class="ni-list"><li>Robustez pode ser condicional.</li><li>Cobertura fiscal parcial permanece exploratória.</li><li>Busca limitada não é ótimo global.</li></ul>`)}</div>`;
 }
 
 export function renderTrustEvidence(state) {
   const evidence = selectEvidence(state);
   if (!evidence)
-    return `<div class="ni-page-heading" data-testid="page-trust-evidence"><h1>Evidence</h1></div>${emptyState('Nenhum relatório de evidência disponível.')}`;
-  return `<div class="ni-page-heading" data-testid="page-trust-evidence"><p class="ni-eyebrow">Trust · Evidence</p><h1>Evidence report</h1></div><div class="ni-kpi-grid">${kpi('Score', evidence.evidence_score == null ? '—' : `${evidence.evidence_score}/100`)}${kpi('Status', evidence.evidence_status || '—')}${kpi('Componentes', formatNumber(evidence.components?.length || 0))}${kpi('Blockers', formatNumber(evidence.blockers?.length || 0))}</div><div class="ni-card"><h2>Componentes</h2>${table(
+    return `<div class="ni-page-heading" data-testid="page-trust-evidence"><h1>Evidence</h1></div>${sectionTabs('trust', state.ui.route)}${emptyState('Nenhum relatório de evidência disponível.')}`;
+  return `<div class="ni-page-heading" data-testid="page-trust-evidence"><p class="ni-eyebrow">Trust · Evidence</p><h1>Evidence report</h1></div>${sectionTabs('trust', state.ui.route)}<div class="ni-kpi-grid">${kpi('Score', evidence.evidence_score == null ? '—' : `${evidence.evidence_score}/100`)}${kpi('Status', evidence.evidence_status || '—')}${kpi('Componentes', formatNumber(evidence.components?.length || 0))}${kpi('Blockers', formatNumber(evidence.blockers?.length || 0))}</div><div class="ni-card"><h2>Componentes</h2>${table(
     ['Componente', 'Status'],
     (evidence.components || []).map(
       (component) =>
@@ -43,7 +44,7 @@ export function renderTrustEvidence(state) {
 export function renderTrustSources(state) {
   const decision = selectDecision(state);
   const sources = decision.audit?.data_sources || [];
-  return `<div class="ni-page-heading" data-testid="page-trust-sources"><p class="ni-eyebrow">Trust · Sources</p><h1>Lineage e fontes</h1><p>Paths protegidos não são expostos como arquivos públicos na interface.</p></div><div class="ni-card"><h2>Fontes utilizadas</h2>${table(
+  return `<div class="ni-page-heading" data-testid="page-trust-sources"><p class="ni-eyebrow">Trust · Sources</p><h1>Lineage e fontes</h1><p>Paths protegidos não são expostos como arquivos públicos na interface.</p></div>${sectionTabs('trust', state.ui.route)}<div class="ni-card"><h2>Fontes utilizadas</h2>${table(
     ['Fonte', 'Tratamento'],
     sources.map(
       (source) =>
@@ -57,6 +58,7 @@ export function renderTrustValidation(state) {
   const decision = selectDecision(state);
   const qa = decision.final_qa;
   const release = decision.release;
+  const exportFiles = decision.export_package?.files || [];
   const qaBody = qa
     ? `<p>${statusChip(qa.final_qa_status, qa.final_qa_status)}</p>${table(
         ['Check', 'Status', 'Mensagem'],
@@ -73,10 +75,18 @@ export function renderTrustValidation(state) {
   const auditBody = decision.audit
     ? `<pre class="ni-json">${safeJson(auditForPresentation(decision.audit))}</pre>`
     : emptyState('Audit trail ainda não disponível.');
-  return `<div class="ni-page-heading" data-testid="page-trust-validation"><p class="ni-eyebrow">Trust · Validation</p><h1>QA e release</h1></div><div class="ni-grid two">${card('Final QA', qaBody, { testId: 'qa-status' })}${card('Release', releaseBody, { testId: 'release-status' })}</div><div class="ni-card"><h2>Audit trail</h2>${auditBody}</div>`;
+  const exportBody = exportFiles.length
+    ? `<p>Arquivos gerados pelo provider ativo. Cada download mantém o MIME type e o nome declarados pelo pacote.</p><div class="ni-export-list">${exportFiles
+        .map(
+          (file, index) =>
+            `<div class="ni-export-row"><div><strong>${escapeHtml(file.filename || `arquivo-${index + 1}`)}</strong><small>${escapeHtml(file.type || 'application/octet-stream')}</small></div><button type="button" class="ni-button secondary" data-action="download-export" data-export-index="${index}">Baixar</button></div>`
+        )
+        .join('')}</div>`
+    : emptyState('Pacote de exportação ainda não disponível.');
+  return `<div class="ni-page-heading" data-testid="page-trust-validation"><p class="ni-eyebrow">Trust · Validation</p><h1>QA e release</h1></div>${sectionTabs('trust', state.ui.route)}<div class="ni-grid two">${card('Final QA', qaBody, { testId: 'qa-status' })}${card('Release', releaseBody, { testId: 'release-status' })}</div><div class="ni-card"><h2>Audit trail</h2>${auditBody}</div>${card('Central de exportação', exportBody, { testId: 'export-center-panel' })}`;
 }
 
 export function renderTrustMethodology(state) {
   const decision = selectDecision(state);
-  return `<div class="ni-page-heading" data-testid="page-trust-methodology"><p class="ni-eyebrow">Trust · Methodology</p><h1>Metodologia</h1></div><div class="ni-card"><h2>Contrato de interpretação</h2><ul class="ni-list"><li>Engine atual é a fonte dos cálculos.</li><li>Monte Carlo mede incerteza paramétrica, não histórico automaticamente.</li><li>Evidence não é sinônimo de robustez.</li><li>Dados ausentes são exibidos como —.</li><li>O release depende do Final QA e do pacote de exportação.</li></ul><details><summary>Snapshot técnico</summary><pre class="ni-json">${safeJson({ company_id: state.context.company_id, status: state.meta.status, recommendation: decision.recommendation, release: decision.release })}</pre></details></div>`;
+  return `<div class="ni-page-heading" data-testid="page-trust-methodology"><p class="ni-eyebrow">Trust · Methodology</p><h1>Metodologia</h1></div>${sectionTabs('trust', state.ui.route)}<div class="ni-card"><h2>Contrato de interpretação</h2><ul class="ni-list"><li>Engine atual é a fonte dos cálculos.</li><li>Monte Carlo mede incerteza paramétrica, não histórico automaticamente.</li><li>Evidence não é sinônimo de robustez.</li><li>Dados ausentes são exibidos como —.</li><li>O release depende do Final QA e do pacote de exportação.</li></ul><details><summary>Snapshot técnico</summary><pre class="ni-json">${safeJson({ company_id: state.context.company_id, status: state.meta.status, recommendation: decision.recommendation, release: decision.release })}</pre></details></div>`;
 }
