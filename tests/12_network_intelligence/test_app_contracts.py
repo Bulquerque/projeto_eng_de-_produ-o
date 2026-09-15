@@ -73,6 +73,8 @@ def test_mock_fixture_isolation_contract():
     project_provider = (APP / 'providers/project-provider.js').read_text(encoding='utf-8')
     main = (APP / 'main.js').read_text(encoding='utf-8')
     dev_console = (APP / 'dev/dev-console.js').read_text(encoding='utf-8')
+    shell_source = (APP / 'shell.js').read_text(encoding='utf-8')
+    bindings_source = (APP / 'bindings.js').read_text(encoding='utf-8')
     crypto_session = (ROOT / 'assets/js/core/crypto-session.js').read_text(encoding='utf-8')
     export_center = (ROOT / 'assets/js/phase5/export-center.js').read_text(encoding='utf-8')
     assert 'data-demo/empresa_mock' in mock_provider
@@ -99,6 +101,9 @@ def test_mock_fixture_isolation_contract():
     assert 'sanitizeExportValue' in export_center
     assert 'STRESS_EXPORT_COLUMNS' in export_center
     assert 'SENSITIVITY_EXPORT_COLUMNS' in export_center
+    assert 'return-to-demo' not in shell_source
+    assert 'switch-demo-company' not in bindings_source
+    assert 'currentSection' in shell_source
 
     trust = (APP / 'pages' / 'trust.js').read_text(encoding='utf-8')
     styles = (APP / 'main.css').read_text(encoding='utf-8')

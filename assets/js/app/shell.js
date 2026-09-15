@@ -27,7 +27,6 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
         <div class="network-context">
           <label>Empresa<select id="niCompanySelect" data-testid="company-selector" aria-label="Selecionar empresa">${companies}</select></label>
           <label>Cenário<select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário"><option value="">Baseline</option></select></label>
-          <button type="button" class="ni-button secondary ni-demo-return" data-action="switch-demo-company" data-testid="return-to-demo">Voltar à Empresa Falsa</button>
         </div>
         <div class="network-topbar-actions">
           <span id="niEvidenceTopbar" data-testid="evidence-topbar" class="ni-status status-neutral">Evidence —</span>
@@ -52,9 +51,11 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
 
 export function setActiveNav(root, route) {
   const currentPath = route?.path || route?.hash?.split('?')[0];
+  const currentSection = currentPath?.match(/^\/network\/([^/]+)/)?.[1];
   root.querySelectorAll('[data-route]').forEach((link) => {
     const linkPath = link.getAttribute('data-route')?.split('?')[0].replace(/^#/, '');
-    const active = linkPath === currentPath;
+    const active =
+      linkPath === currentPath || (link.dataset.section && link.dataset.section === currentSection);
     link.classList.toggle('active', active);
     if (active) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');

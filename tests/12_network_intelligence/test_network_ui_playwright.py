@@ -85,6 +85,15 @@ def test_network_ui_mock_flow_and_compatibility():
         page.locator('[data-testid="page-scenarios-result"]').wait_for(state='visible', timeout=10000)
         assert 'R$' in page.locator('#networkPage').inner_text()
         assert '100/100' in page.locator('#networkPage').inner_text()
+        assert page.locator('a[data-section="scenarios"]').get_attribute('aria-current') == 'page'
+        assert page.locator('[data-testid="return-to-demo"]').count() == 0
+        page.evaluate("window.location.hash = '#/network/overview/summary'")
+        page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
+        page.locator('a[data-route="#/network/overview/network"]').click()
+        page.locator('[data-testid="page-overview-network"]').wait_for(state='visible')
+        assert page.locator('a[data-section="overview"]').get_attribute('aria-current') == 'page'
+        page.evaluate("window.location.hash = '#/network/scenarios/result'")
+        page.locator('[data-testid="page-scenarios-result"]').wait_for(state='visible')
         page.locator('[data-action="run-risk"]').click()
         page.locator('[data-testid="page-scenarios-risk"]').wait_for(state='visible', timeout=10000)
         assert 'Monte Carlo' in page.locator('#networkPage').inner_text()

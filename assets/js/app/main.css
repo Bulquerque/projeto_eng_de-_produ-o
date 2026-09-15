@@ -129,10 +129,6 @@ body.network-ui-active > #cryptoLockButton {
   color: #0f3035;
   font-size: 13px;
 }
-.ni-demo-return {
-  position: relative;
-  z-index: 30;
-}
 .network-page {
   max-width: 1400px;
   margin: 0 auto;
@@ -764,6 +760,7 @@ body.network-ui-active .network-toast-root {
   --ni-canvas: #f5f7f7;
   --ni-border: #dfe7e7;
   --ni-muted: #6b7f83;
+  scrollbar-gutter: stable;
 }
 
 body.network-ui-active {
