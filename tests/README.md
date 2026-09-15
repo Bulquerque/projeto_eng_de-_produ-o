@@ -16,6 +16,7 @@ tests/
 ├── 09_quality_checks/           # contratos, invariantes e integridade
 ├── 10_presentation_e2e/         # fluxo completo de apresentação
 ├── 11_regression_e2e/            # regressão lógica e visual
+├── 12_network_intelligence/      # contratos e E2E da interface moderna
 └── run_all_tests.py             # roda o gate canônico
 ```
 
@@ -30,6 +31,17 @@ porque depende de navegador e cobre somente a Fase 1. O gate canônico inclui os
 fluxos de apresentação e regressão E2E; quando esses testes falham, o comando falha.
 O runner também verifica que todo novo arquivo `test_*.py` numerado foi incluído no
 gate ou explicitamente marcado como opcional.
+
+Para validar somente a interface Network Intelligence:
+
+```bash
+npm run test:network
+```
+
+Esse comando cobre os fluxos públicos da interface e executa o fluxo de empresa protegida
+quando `VISAGIO_DATA_PASSWORD` estiver disponível. Sem a credencial, o fluxo protegido é
+reportado explicitamente como `SKIPPED`; ele não deve ser interpretado como validação de
+descriptografia.
 
 Os arquivos `crypto_helpers.py`, `runtime_bundle_support.mjs`,
 `11_regression_e2e/regression_logic_audit.mjs` e `05_fase2_baseline/explore_phase2_playwright.py`

@@ -4,7 +4,7 @@ Este pacote foi reorganizado para deixar cada tipo de artefato em uma pasta clar
 
 ```text
 /
-├── index.html                      # página principal da Fase 1
+├── index.html                      # entrada compatível do portal e da Network UI
 ├── fase-1-validacao/               # rota direta para validação da Fase 1
 ├── fase-2-baseline/                # baseline e paridade
 ├── fase-3-cenarios/                # simulação manual
@@ -15,6 +15,7 @@ Este pacote foi reorganizado para deixar cada tipo de artefato em uma pasta clar
 │   ├── styles.css                  # estilo global
 │   ├── js/phase1/                  # entrypoint e módulos da Fase 1
 │   └── js/
+│       ├── app/                   # shell, rotas, estado e providers da Network UI
 │       ├── core/                  # utilitários compartilhados únicos
 │       ├── debug/                 # runtime do Debug Center
 │       ├── phase1/                 # validação inicial
@@ -37,7 +38,25 @@ O runtime é único em `index.html`; as páginas de fase redirecionam para ele p
 e os dados versionados de empresa aparecem como `.enc.json`. O caminho sem essa extensão
 é o caminho lógico usado pelo catálogo e pelo runtime antes da resolução criptográfica.
 
-O runtime do site continua simples: `index.html` carrega cada fase por seu próprio `main.js` em `assets/js/phase1/` a `assets/js/phase5/`, sempre com caminhos relativos.
+O pacote mantém duas superfícies compatíveis. `index.html` carrega a shell da Network UI
+(`assets/js/app/main.js`) e, quando o modo Network não está ativo, importa os entrypoints
+legados de `assets/js/phase1/` a `assets/js/phase5/` e o roteador legado. Assim, os hashes
+históricos continuam funcionando sem inicializar os dois runtimes ao mesmo tempo.
+
+## Network Intelligence
+
+```text
+assets/js/app/                  Shell moderna e orquestração da interface
+assets/js/app/pages/            Renderers de Overview, Scenarios, Optimizer e Trust
+assets/js/app/providers/        Provider demo isolado e provider real protegido
+assets/js/app/services/         Pipelines de decisão e risco
+assets/js/app/router.js         Rotas canônicas e aliases da Network UI
+data-demo/empresa_mock/         Fixtures sintéticas públicas, sempre demo_only
+tests/12_network_intelligence/  Contratos e E2E da interface moderna
+```
+
+Os engines continuam nas camadas `core/phase3/phase4/phase5`; a Network UI apresenta os
+resultados e não cria uma segunda implementação de cálculo.
 
 
 ## Fase 2 adicionada

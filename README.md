@@ -24,6 +24,15 @@ Rotas principais:
 - `/fase-5-entrega-final/` — stress test, robustez, recomendação e exportação;
 - `/debug/` — diagnóstico de paths, módulos e carregamento.
 
+Para abrir a interface moderna com a fixture pública sintética:
+
+```text
+/?ui=network-intelligence&company=empresa_mock#/network/overview/summary
+```
+
+Ela começa na Empresa Falsa. Empresa 1 e Empresa 2 continuam protegidas e só podem ser
+carregadas após o desbloqueio local com a credencial configurada.
+
 ## Qualidade e testes
 
 O comando recomendado para validar a árvore inteira é:
@@ -32,7 +41,8 @@ O comando recomendado para validar a árvore inteira é:
 npm run quality
 ```
 
-Ele executa ESLint, Prettier e a suíte Python completa. Os comandos individuais são:
+Ele executa a suíte canônica, que inclui ESLint, Prettier, Ruff, contratos, engines e E2E.
+Os comandos individuais são:
 
 ```bash
 npm run lint
@@ -40,11 +50,14 @@ npm run format:check
 ruff check .
 ruff format --check .
 npm test
+npm run test:network
 ```
 
 O resultado esperado da suíte é `ALL_PHASE5_PACKAGE_TESTS_OK`. O gate inclui os E2E de
 apresentação e regressão; o teste Playwright legado da Fase 1 é opcional e deve ser
 executado separadamente quando essa cobertura visual específica for necessária.
+`test:network` executa somente os contratos e o E2E da Network Intelligence; o fluxo
+protegido é executado quando `VISAGIO_DATA_PASSWORD` estiver disponível.
 
 ## Estrutura do repositório
 

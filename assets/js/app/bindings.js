@@ -3,31 +3,27 @@ import { setSelectedScenario } from './state.js';
 import { showLoading, showToast } from './shell.js';
 import { escapeHtml } from './view-helpers.js';
 
+function readFormValue(data, rawValues, name) {
+  return Object.prototype.hasOwnProperty.call(rawValues, name) ? rawValues[name] : data.get(name);
+}
+
 function formValues(form, rawValues = {}) {
   const data = new FormData(form);
-  const read = (name) =>
-    Object.prototype.hasOwnProperty.call(rawValues, name) ? rawValues[name] : data.get(name);
-  const readNumber = (name, fallback) => {
-    const raw = read(name);
-    return raw === null || raw === '' ? fallback : Number(raw);
-  };
   return {
-    scenario_name: read('scenario_name') || 'Cenário manual',
+    scenario_name: readFormValue(data, rawValues, 'scenario_name') || 'Cenário manual',
     active_cds: [...form.querySelectorAll('input[name="active_cds"]:checked')].map(
       (input) => input.value
     ),
-    freight_multiplier: readNumber('freight_multiplier', 1),
-    demand_multiplier: readNumber('demand_multiplier', 1),
-    inventory_days: readNumber('inventory_days', 45),
-    wacc: readNumber('wacc', 0.15),
+    freight_multiplier: readFormNumber(data, rawValues, 'freight_multiplier', 1),
+    demand_multiplier: readFormNumber(data, rawValues, 'demand_multiplier', 1),
+    inventory_days: readFormNumber(data, rawValues, 'inventory_days', 45),
+    wacc: readFormNumber(data, rawValues, 'wacc', 0.15),
     tax_mode: data.get('tax_mode') || 'current',
   };
 }
 
 function readFormNumber(data, rawValues, name, fallback) {
-  const raw = Object.prototype.hasOwnProperty.call(rawValues, name)
-    ? rawValues[name]
-    : data.get(name);
+  const raw = readFormValue(data, rawValues, name);
   return raw === null || raw === '' ? fallback : Number(raw);
 }
 

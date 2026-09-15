@@ -1,6 +1,11 @@
 {
   "company_id": "empresa_mock",
   "release_policy": "demo_only",
+  "provenance": {
+    "provider_kind": "mock",
+    "source": "public_demo_fixture",
+    "synthetic": true
+  },
   "objective": {
     "objective_id": "mock_balanced_demo",
     "objective_name": "Perfil balanceado demonstrativo",

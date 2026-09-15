@@ -49,14 +49,14 @@ def check_js_standards():
         raise AssertionError('npm is required for the JavaScript standards gate.')
 
     print('Checking JavaScript linting (ESLint)...')
-    res_lint = subprocess.run([npm_bin, 'run', 'lint:js'], cwd=ROOT, capture_output=True, text=True)
+    res_lint = subprocess.run([npm_bin, 'run', 'lint'], cwd=ROOT, capture_output=True, text=True)
     if res_lint.returncode != 0:
         print(res_lint.stdout)
         print(res_lint.stderr, file=sys.stderr)
         raise AssertionError('JavaScript linting (ESLint) failed. Fix the issues or run formatting tools.')
 
     print('Checking JavaScript formatting (Prettier)...')
-    res_fmt = subprocess.run([npm_bin, 'run', 'format:js:check'], cwd=ROOT, capture_output=True, text=True)
+    res_fmt = subprocess.run([npm_bin, 'run', 'format:check'], cwd=ROOT, capture_output=True, text=True)
     if res_fmt.returncode != 0:
         print(res_fmt.stdout)
         print(res_fmt.stderr, file=sys.stderr)

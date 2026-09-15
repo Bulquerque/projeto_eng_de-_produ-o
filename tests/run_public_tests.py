@@ -41,6 +41,7 @@ for relative_path in PUBLIC_TESTS:
         env=os.environ.copy(),
         text=True,
         check=False,
+        timeout=300,
     )
     if result.returncode:
         raise SystemExit(result.returncode)

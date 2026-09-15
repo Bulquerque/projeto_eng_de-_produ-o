@@ -205,7 +205,7 @@ def test_network_ui_reference_shell_overview_and_scenario_contracts():
         brazil_map = page.locator('[data-testid="brazil-map"]')
         brazil_map.wait_for(state='visible', timeout=5000)
         assert brazil_map.locator('.ni-map-state').count() == 27
-        assert 'cobertura demonstrativa' in brazil_map.inner_text().lower()
+        assert 'dados por uf do provider' in brazil_map.inner_text().lower()
         brazil_map.locator('.ni-map-state').first.click()
         page.locator('#networkDrawer').wait_for(state='visible')
         assert 'Estado' in page.locator('#networkDrawer').inner_text()
@@ -377,6 +377,11 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
         assert 'Empresa 1' in company_badge
         assert 'PROTECTED' in company_badge
         password = read_optional_password()
+        if not password:
+            print('NETWORK_UI_REAL_TENANT_SKIPPED: VISAGIO_DATA_PASSWORD ausente')
+            page.close()
+            browser.close()
+            return
         if password:
             page.locator('#cryptoPasswordInput').fill(password)
             page.locator('#cryptoPasswordPrompt button[type="submit"]').click()

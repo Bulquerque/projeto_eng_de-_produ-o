@@ -5,6 +5,7 @@ import {
   createStateStore,
   beginLoading,
   commitProviderSnapshot,
+  clearScenarioResults,
   failLoading,
   resetCompanyScopedState,
   setRoute,
@@ -356,16 +357,7 @@ if (networkActive) {
         store.update((nextState) => {
           nextState.ui.scenario_draft = scenario;
           nextState.context.selected_scenario_id = scenario.scenario_id;
-          nextState.data.selected_scenario = null;
-          nextState.data.scenario_result = null;
-          nextState.data.scenario_quality = null;
-          nextState.data.comparison = null;
-          nextState.data.monte_carlo = null;
-          nextState.data.stress = null;
-          nextState.data.sensitivity = null;
-          nextState.data.sensitivity_matrix = null;
-          nextState.data.robustness = null;
-          nextState.data.recommendation = null;
+          clearScenarioResults(nextState);
         });
         navigate('#/network/scenarios/build');
         showToast(
@@ -378,16 +370,7 @@ if (networkActive) {
         store.update((nextState) => {
           nextState.ui.scenario_draft = null;
           nextState.context.selected_scenario_id = null;
-          nextState.data.selected_scenario = null;
-          nextState.data.scenario_result = null;
-          nextState.data.scenario_quality = null;
-          nextState.data.comparison = null;
-          nextState.data.monte_carlo = null;
-          nextState.data.stress = null;
-          nextState.data.sensitivity = null;
-          nextState.data.sensitivity_matrix = null;
-          nextState.data.robustness = null;
-          nextState.data.recommendation = null;
+          clearScenarioResults(nextState);
         });
         navigate('#/network/scenarios/build');
         showToast(root, 'Rascunho limpo; formulário voltou ao baseline.', 'success');
@@ -497,16 +480,7 @@ if (networkActive) {
             nextState.data.scenarios = upsertScenario(nextState.data.scenarios, scenario);
             nextState.ui.scenario_draft = scenario;
             nextState.context.selected_scenario_id = scenario.scenario_id;
-            nextState.data.selected_scenario = null;
-            nextState.data.scenario_result = null;
-            nextState.data.scenario_quality = null;
-            nextState.data.comparison = null;
-            nextState.data.monte_carlo = null;
-            nextState.data.stress = null;
-            nextState.data.sensitivity = null;
-            nextState.data.sensitivity_matrix = null;
-            nextState.data.robustness = null;
-            nextState.data.recommendation = null;
+            clearScenarioResults(nextState);
           });
           navigate('#/network/scenarios/build');
           showToast(

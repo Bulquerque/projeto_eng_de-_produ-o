@@ -14,7 +14,7 @@ def test_crypto_session_does_not_persist_password_or_keys():
     assert 'exportAesKey' not in source
     assert 'importAesKey' not in source
     assert 'sessionStorage' not in source
-    assert "removeStorageKey('local', PASSWORD_KEY)" in source
+    assert 'removeStorageKey(scope, PASSWORD_KEY)' in source
     assert 'deriveAesKey(memoryPassword, envelope.salt, false)' in source
     assert 'memoryPassword = password' in source
 
@@ -25,3 +25,9 @@ def test_crypto_session_clears_memory_on_lock():
     assert 'memoryKeys.clear();' in source
     assert 'memoryPassword = null;' in source
     assert 'clearLegacySessionArtifacts();' in source
+
+
+if __name__ == '__main__':
+    test_crypto_session_does_not_persist_password_or_keys()
+    test_crypto_session_clears_memory_on_lock()
+    print('CRYPTO_SESSION_CONTRACT_OK')

@@ -88,7 +88,9 @@ function showPasswordPrompt(entry, errorMessage = '') {
       reject(new CryptoDataError('CRYPTO_003', 'Acesso negado. Senha não informada.'));
     });
     card.querySelector('#cryptoReturnToDemo').addEventListener('click', () => {
-      window.location.replace('?ui=network-intelligence&company=empresa_mock#/network/overview/summary');
+      window.location.replace(
+        '?ui=network-intelligence&company=empresa_mock#/network/overview/summary'
+      );
     });
   });
 }

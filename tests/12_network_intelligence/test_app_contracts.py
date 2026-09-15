@@ -23,7 +23,7 @@ def test_app_foundation_contracts():
         import assert from 'node:assert/strict';
         import { COMPANY_REGISTRY, assertCompanyPolicy } from './assets/js/app/company-registry.js';
         import { isKnownRoute, normalizeRoute, parseRoute, replaceCompanyQuery } from './assets/js/app/router.js';
-        import { createInitialState, createStateStore, commitProviderSnapshot, getSafeStateSnapshot } from './assets/js/app/state.js';
+        import { clearScenarioResults, createEmptyData, createInitialState, createStateStore, commitProviderSnapshot, getSafeStateSnapshot } from './assets/js/app/state.js';
         import { formatMetric, readMetric } from './assets/js/app/metric-registry.js';
 
         assert.equal(COMPANY_REGISTRY.empresa1.provider, 'project');
@@ -36,6 +36,13 @@ def test_app_foundation_contracts():
         assert.equal(parseRoute('#erros').path, '/network/dev/console');
         const store = createStateStore(createInitialState({ company_id: 'empresa1', default_route: '#/network/overview/summary' }));
         assert.deepEqual(store.getState().data.saved_scenarios, []);
+        const firstData = createEmptyData();
+        const secondData = createEmptyData();
+        firstData.scenarios.push({ scenario_id: 'isolated' });
+        assert.deepEqual(secondData.scenarios, []);
+        store.getState().data.selected_scenario = { scenario_id: 'stale' };
+        clearScenarioResults(store.getState());
+        assert.equal(store.getState().data.selected_scenario, null);
         assert.equal(replaceCompanyQuery('empresa1'), null);
         commitProviderSnapshot(store.getState(), { company_id: 'empresa1', provider_kind: 'project', status: 'ready', data: { baseline: { model: { active_cds: ['A'] } } } });
         assert.equal(store.getState().data.baseline.model.active_cds[0], 'A');
@@ -57,7 +64,7 @@ def test_mock_fixture_isolation_contract():
         assert payload['company_id'] == 'empresa_mock', path
         assert payload['release_policy'] == 'demo_only', path
         provenance = payload.get('provenance', {})
-        assert provenance.get('synthetic', True) is True, path
+        assert provenance.get('synthetic') is True, path
 
     mock_provider = (APP / 'providers/mock-provider.js').read_text(encoding='utf-8')
     project_provider = (APP / 'providers/project-provider.js').read_text(encoding='utf-8')

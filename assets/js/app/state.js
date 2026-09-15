@@ -3,6 +3,45 @@ function clone(value) {
   return structuredClone(value);
 }
 
+export function createEmptyData() {
+  return {
+    baseline: null,
+    scenarios: [],
+    saved_scenarios: [],
+    selected_scenario: null,
+    scenario_result: null,
+    scenario_quality: null,
+    comparison: null,
+    monte_carlo: null,
+    stress: null,
+    sensitivity: null,
+    sensitivity_matrix: null,
+    robustness: null,
+    optimizer: null,
+    recommendation: null,
+    audit: null,
+    final_qa: null,
+    release: null,
+    export_package: null,
+  };
+}
+
+export function clearScenarioResults(state) {
+  Object.assign(state.data, {
+    selected_scenario: null,
+    scenario_result: null,
+    scenario_quality: null,
+    comparison: null,
+    monte_carlo: null,
+    stress: null,
+    sensitivity: null,
+    sensitivity_matrix: null,
+    robustness: null,
+    recommendation: null,
+  });
+  return state;
+}
+
 export function createInitialState(config = {}) {
   return {
     context: {
@@ -12,26 +51,7 @@ export function createInitialState(config = {}) {
       selected_scenario_id: null,
       generation: 0,
     },
-    data: {
-      baseline: null,
-      scenarios: [],
-      saved_scenarios: [],
-      selected_scenario: null,
-      scenario_result: null,
-      scenario_quality: null,
-      comparison: null,
-      monte_carlo: null,
-      stress: null,
-      sensitivity: null,
-      sensitivity_matrix: null,
-      robustness: null,
-      optimizer: null,
-      recommendation: null,
-      audit: null,
-      final_qa: null,
-      release: null,
-      export_package: null,
-    },
+    data: createEmptyData(),
     ui: {
       route: config.default_route || '#/network/overview/summary',
       loading: false,
@@ -63,26 +83,7 @@ export function resetCompanyScopedState(state, companyId) {
   state.context.company_id = companyId;
   state.context.selected_scenario_id = null;
   state.context.generation += 1;
-  state.data = {
-    baseline: null,
-    scenarios: [],
-    saved_scenarios: [],
-    selected_scenario: null,
-    scenario_result: null,
-    scenario_quality: null,
-    comparison: null,
-    monte_carlo: null,
-    stress: null,
-    sensitivity: null,
-    sensitivity_matrix: null,
-    robustness: null,
-    optimizer: null,
-    recommendation: null,
-    audit: null,
-    final_qa: null,
-    release: null,
-    export_package: null,
-  };
+  state.data = createEmptyData();
   state.meta.provider_snapshot = null;
   state.meta.status = 'switching_company';
   state.ui.error = null;

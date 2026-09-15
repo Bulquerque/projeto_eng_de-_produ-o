@@ -34,12 +34,32 @@ function buildAudit(scenario, baseline) {
   };
 }
 
-function buildDecisionPackage({ baseline, scenario, objective, optimizer, risk }) {
-  const result = scenario.result;
-  const baselineTotal = Number(baseline.costs.costs.total_with_tax);
-  const scenarioTotal = Number(result.total_with_tax);
+function buildComparison(baselineTotal, scenario) {
+  const scenarioTotal = Number(scenario.result?.total_with_tax);
   const savingAbs = baselineTotal - scenarioTotal;
   const savingPct = baselineTotal ? (savingAbs / baselineTotal) * 100 : null;
+  return {
+    company_id: 'empresa_mock',
+    comparison: [
+      {
+        scenario_id: scenario.scenario_id,
+        scenario_name: scenario.scenario_name,
+        total_with_tax: scenarioTotal,
+        saving_abs: savingAbs,
+        saving_pct: savingPct,
+      },
+    ],
+    baseline_total: baselineTotal,
+    scenario_total: scenarioTotal,
+    saving_abs: savingAbs,
+    saving_pct: savingPct,
+  };
+}
+
+function buildDecisionPackage({ baseline, scenario, objective, optimizer, risk }) {
+  const baselineTotal = Number(baseline.costs.costs.total_with_tax);
+  const comparison = buildComparison(baselineTotal, scenario);
+  const savingPct = comparison.saving_pct;
   const recommendationStatus =
     scenario.scenario_id === 'mock_consolidation' ? 'recommended_with_warnings' : 'not_recommended';
   const recommendation = {
@@ -83,13 +103,7 @@ function buildDecisionPackage({ baseline, scenario, objective, optimizer, risk }
   };
   return {
     decision,
-    comparison: {
-      company_id: 'empresa_mock',
-      baseline_total: baselineTotal,
-      scenario_total: scenarioTotal,
-      saving_abs: savingAbs,
-      saving_pct: savingPct,
-    },
+    comparison,
     recommendation,
     audit: buildAudit(scenario, baseline),
     final_qa: finalQA,
@@ -157,32 +171,12 @@ export async function createMockProvider() {
       const scenarios = this.fixtures.scenarios.scenarios;
       const scenario = scenarios.find((item) => item.scenario_id === scenarioId) || scenarios[0];
       const baselineTotal = Number(this.fixtures.baseline.costs.costs.total_with_tax);
-      const scenarioTotal = Number(scenario.result?.total_with_tax);
       return {
         company_id: 'empresa_mock',
         scenario,
         result: scenario.result,
         quality: { quality_score: 100, risk_level: 'medium' },
-        comparison: {
-          company_id: 'empresa_mock',
-          comparison: [
-            {
-              scenario_id: scenario.scenario_id,
-              scenario_name: scenario.scenario_name,
-              total_with_tax: scenarioTotal,
-              saving_abs: baselineTotal - scenarioTotal,
-              saving_pct: baselineTotal
-                ? ((baselineTotal - scenarioTotal) / baselineTotal) * 100
-                : null,
-            },
-          ],
-          baseline_total: baselineTotal,
-          scenario_total: scenarioTotal,
-          saving_abs: baselineTotal - scenarioTotal,
-          saving_pct: baselineTotal
-            ? ((baselineTotal - scenarioTotal) / baselineTotal) * 100
-            : null,
-        },
+        comparison: buildComparison(baselineTotal, scenario),
       };
     },
     async runRiskSuite() {
