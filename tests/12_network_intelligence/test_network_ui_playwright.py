@@ -249,7 +249,7 @@ def test_network_ui_fallback_debug_drawer_and_manual_decision():
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
-        assert page.locator('[data-testid="dev-console"]').count() == 1
+        assert page.locator('[data-testid="dev-console"]').count() == 0
 
         page.goto(
             f'{base}/?ui=network-intelligence&company=empresa_mock#/network/route-does-not-exist',

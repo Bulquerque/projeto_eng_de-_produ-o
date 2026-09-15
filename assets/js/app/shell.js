@@ -16,7 +16,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
         <a href="#/network/scenarios/build" data-route="#/network/scenarios/build" data-section="scenarios"><span>02</span>Cenários</a>
         <a href="#/network/optimizer/configure" data-route="#/network/optimizer/configure" data-section="optimizer"><span>03</span>Otimizador</a>
         <a href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust"><span>04</span>Dados & confiança</a>
-        <a href="#/network/dev/console" data-route="#/network/dev/console" data-section="dev">Debug</a>
+        ${debugEnabled ? '<a href="#/network/dev/console" data-route="#/network/dev/console" data-section="dev">Debug</a>' : ''}
       </nav>
       <div class="network-sidebar-tools"><button type="button" data-action="open-help">Ajuda</button><button type="button" data-action="open-settings">Configurações</button><button type="button" data-action="open-styleguide">◫ Style guide</button></div>
       <div class="network-sidebar-foot"><small>Decision workspace</small><span data-testid="mode-badge">runtime</span></div>
@@ -34,7 +34,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
           <span id="niCompanyBadge" data-testid="company-badge" class="ni-context-badge">${escapeHtml(companyId || '—')}</span>
           <span class="ni-runtime-badge" data-testid="runtime-badge">RUNTIME</span>
           <button type="button" class="ni-button secondary" data-action="open-export" data-testid="export-center">Exportar</button>
-          <button type="button" class="ni-button primary" data-action="open-dev" data-testid="dev-console">&lt;/&gt; Dev</button>
+          ${debugEnabled ? '<button type="button" class="ni-button primary" data-action="open-dev" data-testid="dev-console">&lt;/&gt; Dev</button>' : ''}
           <span class="ni-avatar" aria-hidden="true">UI</span>
         </div>
       </header>

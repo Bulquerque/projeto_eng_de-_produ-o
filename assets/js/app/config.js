@@ -10,7 +10,7 @@ export const APP_CONFIG = Object.freeze({
   default_route: '#/network/overview/summary',
   project_module_base: '../',
   app_build: 'network-intelligence-6.2-modular',
-  debug_default: true,
+  debug_default: false,
   mock_query_key: 'mock',
   network_ui_query_key: 'ui',
 });
@@ -61,7 +61,7 @@ export function buildAppConfig({
     company_id: companyId,
     company_definition: definition,
     network_ui: request.network_ui,
-    debug_enabled: runtimeMode === 'project',
+    debug_enabled: Boolean(request.debug_requested && runtimeMode === 'project'),
     mock_disabled: request.mock_disabled,
   });
 }
