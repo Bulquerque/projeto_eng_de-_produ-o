@@ -1,45 +1,41 @@
-# Relatório de QA do Site publicado — 25/09/2026
+# Relatório final de QA do Site — 25/09/2026
 
-## Escopo e veredito
+## Parecer
 
-Foi feita uma navegação manual read-only na URL pública do Site com `company=empresa_mock`, além de consulta ao estado de versões e aos logs do Sites. Foram abertas as 18 rotas da Network Intelligence. Também foram executados dois fluxos demonstrativos: simulação de cenário e execução do pipeline do otimizador até QA/release.
+**Apto para entrega com ressalvas.** A branch de entrega foi commitada e sincronizada com o GitHub; o Site público recebeu a versão 16; a suíte de qualidade completa passou; e a navegação publicada confirmou que o item principal permanece verde claro em rotas internas de Cenários e Dados & confiança.
 
-**Veredito: com ressalvas; não declarar a versão pública sincronizada com o checkout atual nem pronta sem ressalvas para a avaliação.** A UI local passa a suíte completa, mas o endereço público ainda serve uma versão anterior e reproduz o problema de destaque do item pai no menu.
+As ressalvas são a indisponibilidade da inspeção de Console/Network do Chrome nesta sessão e a falta de emulação responsiva na URL publicada. A suíte local cobre erros de Console/requisições em desktop e o viewport 390×844, mas essa evidência não substitui a verificação do deploy real.
 
-## Evidências da publicação e do Git
+## GitHub e Sites
 
-- Sites informa o projeto ativo `Visagio · Simulador Logístico`, versão mais recente salva **v15**, commit `052a7748b24ca6d3b483a735a06bf296cb235a5c`, arquivo com 201 itens e sem `deployment_id`.
-- A **v14** aponta para `661672819ea0bbbeac7c3450f3c1cb33e8823d0f` e tem implantação concluída (`succeeded`) na URL pública do projeto. A evidência do Sites indica que a live continua na v14; v15 está salva, mas não publicada.
-- A branch local `integration/final-delivery` e `origin/integration/final-delivery` coincidem em `6d8872115a54e143b56fd7d1ba98ab7b7f649f3f`. O checkout, porém, contém modificações e arquivos ainda não rastreados.
-- Os commits informados pelo Sites não estão presentes como objetos Git na cópia local, então não foi possível fazer comparação arquivo a arquivo ou afirmar paridade de conteúdo. **Checkout, GitHub e live não estão sincronizados no estado atual.**
+- Repositório GitHub: `Bulquerque/projeto_eng_de-_produ-o`.
+- Branch sincronizada: `integration/final-delivery`.
+- Commit GitHub: `83db80b2faef317b9d3a71f3d155cd0b48059d89`; `git ls-remote` confirmou o mesmo SHA na branch remota.
+- Site público: [Visagio · Simulador Logístico](https://visagio-logistica.gptgrupo-especial.chatgpt.site/).
+- Sites versão **16**, associada ao commit do repositório de fonte do próprio Site `51e995bb052b4f7811bbed33bc7ef679683b2bc4`.
+- Deploy `appgdep_6ab67e5d3b788191b0c8676a27b07821`: status `succeeded`.
+- O arquivo de publicação contém 142 arquivos, com HTML, módulos JS/CSS e somente fixtures demonstrativas `data-demo/empresa_mock`. A auditoria do archive não encontrou `.env`, planilhas, fontes brutas, dados de `empresa1`/`empresa2`, ZIPs, Python ou blobs `.enc.json`.
 
-## Navegação e fluxos observados
+O projeto GitHub e o repositório de fonte do Sites são históricos separados; o commit próprio do Sites identifica precisamente o pacote publicado. O archive foi montado a partir de `dist/client`, evitando enviar o `dist` local completo, que contém material fora do escopo público da demonstração.
 
-| Grupo | Rotas abertas | Resultado observado |
-|---|---|---|
-| Visão executiva | `overview/summary`, `overview/network`, `overview/costs`, `overview/tax` | As quatro páginas renderizaram conteúdo e navegação da seção; sem overlay de carregamento persistente ou erro visível. |
-| Cenários | `scenarios/build`, `result`, `compare`, `risk`, `risk/advanced` | As cinco rotas renderizaram conteúdo e subnavegação. O botão **Simular cenário** da fixture levou a Resultado com estado `SUCCESS`, custos e Evidence identificados como demonstrativos. |
-| Otimizador | `optimizer/configure`, `results`, `tradeoffs` | Formulário e páginas de resultado disponíveis. **Rodar busca** concluiu o pipeline e abriu Validação. |
-| Dados e confiança | `trust/overview`, `evidence`, `sources`, `validation`, `methodology` | As cinco páginas abriram. A Validação exibiu `Final QA PASSED`, release `demo_only`, audit trail da fixture e opção de download. |
-| Desenvolvimento | `dev/console` | A rota abriu e mostrou “Console indisponível”; o próprio conteúdo informa que o console técnico está desabilitado neste runtime. Não tratei isso como falha de carregamento. |
+## Verificações executadas
 
-## Pontos de atenção
+| Área | Resultado |
+|---|---|
+| Qualidade local | `npm run quality` passou, incluindo lint/format, testes de fases, regressão, apresentação, Network Intelligence e `ALL_PHASE5_PACKAGE_TESTS_OK`. |
+| Menu em `scenarios/build` | A página abriu e o item **Cenários** apareceu com o fundo verde claro de seleção. |
+| Subrota `scenarios/compare` | Conteúdo e subnavegação abriram; a captura do Site publicado confirmou **Cenários** ainda selecionado em verde claro e **Comparar** selecionado na navegação interna. |
+| Subrota `trust/methodology` | Conteúdo e subnavegação abriram; a captura confirmou **Dados & confiança** ainda selecionado em verde claro e **Metodologia** selecionada na navegação interna. |
+| Otimizador | `optimizer/configure` abriu com formulário, valores e ação **Rodar busca** visíveis. Não executei essa ação no deploy nesta rodada. |
+| Dados de demonstração | O Site carregou como `Empresa Falsa · MOCK`; o cenário e os valores exibidos estavam identificados como demonstrativos. |
+| Pacote público | Archive inspecionado antes de salvar a versão; contém `dist/.openai/hosting.json`, `dist/index.html` e fixtures demo, sem caminhos ou extensões de dados protegidos na lista de bloqueio. |
 
-1. **Menu principal:** nas capturas de `scenarios/compare` e `trust/validation`, o item pai correspondente na lateral não recebeu o fundo verde claro de seleção; a subaba da rota atual apareceu selecionada em branco. Isso reproduz no Site publicado o problema informado pelo usuário. O ajuste existente no checkout ainda não chegou à live.
-2. **Versão publicada:** a última versão salva não tem implantação; a página pública está associada à v14. A v15 precisa ser publicada e novamente verificada para que seus ajustes cheguem ao professor. Esta auditoria não publicou nem alterou Sites.
-3. **Console/rede do navegador:** o CUA permitiu navegação e capturas, mas não expôs Console/Network. A chamada autorizada ao Playwright MCP falhou porque a instância do browser estava ocupada. O Sites Worker não reportou eventos de erro nos 30 minutos após os fluxos testados; isso não substitui a inspeção do console e da rede do cliente.
-4. **Responsividade da live:** não foi possível emular 390×844 na sessão do Browser. O E2E local cobre 390×844; essa evidência é da cópia local, não da publicação v14.
-5. **Dados protegidos:** só foi usada a empresa mock. O QA não abriu dados protegidos nem tentou desbloqueio.
+## Ressalvas restantes
 
-## Próximo gate antes da entrega
+1. **Console e rede do Site publicado:** o Browser interno usado nesta sessão não expõe essas APIs. A tentativa autorizada de abrir a sessão Playwright MCP foi bloqueada porque a instância Chrome já estava ocupada. Portanto, não afirmo ausência de erros de Console/Network no deploy.
+2. **Responsividade no deploy:** não consegui emular 390×844 na sessão publicada. O Playwright local passou e inclui contexto 390×844, mas a checagem mobile pública continua pendente.
+3. **Ações no Site:** nesta validação ao vivo percorri os menus e conferi os estados; não cliquei em todas as ações, nem rodei todos os fluxos de formulário na produção. A suíte local passou, mas isso não é uma auditoria manual exaustiva de todos os botões publicados.
 
-- Publicar somente após decisão explícita do responsável; em seguida validar que a URL está na versão pretendida.
-- Repetir no Site publicado o destaque da navegação principal, o fluxo de cenário e a decisão final.
-- Rodar inspeção de Console/Network e viewport 390×844 no ambiente publicado quando a sessão de browser estiver disponível.
-- Confirmar que o commit/deployment publicado corresponde exatamente ao artefato que será avaliado.
+## Conclusão para a entrega acadêmica
 
-## Limites desta rodada
-
-Os estados observados vieram da navegação pública em desktop e da fixture `empresa_mock`. A rodada percorreu todas as rotas, mas executou apenas os fluxos de simulação e decisão; não clicou em todos os controles do inventário. Logs sem erros não provam ausência de erros no cliente. O navegador CUA capturou as telas de comparação e validação durante a rodada, mas não foi possível gravar essas capturas como arquivos locais nesta sessão.
-
-Capturas e checklist de uma rodada local anterior estão arquivados em [evidências visuais históricas](historico/2026-09-13_15_network-intelligence/README.md); elas não substituem as observações deste relatório nem representam o Site público de 25/09.
+O problema visual dos menus foi corrigido e confirmado no Site público após o deploy. A versão publicada está sincronizada com seu próprio commit de fonte e o commit do código está no GitHub. Para a submissão, recomendo apontar para a branch `integration/final-delivery` ou para o commit `83db80b`; confirme que o professor tem acesso ao link público acima. A classificação permanece **com ressalvas** até haver uma oportunidade de inspecionar Console/Network e viewport mobile na versão publicada.
