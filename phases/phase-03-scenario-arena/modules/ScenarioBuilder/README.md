@@ -52,7 +52,8 @@ Permite criar cenários manuais a partir do baseline, mudando CDs ativos, aloca�
 - `['nameScenario(scenario, name)', 'Define nome legível e ID.']`
 
 ## Módulos chamados
-- `['ScenarioValidator', 'Valida alterações.']`
+
+A validação do cenário é orquestrada pelo dashboard e também aplicada pelo simulador; o ScenarioBuilder apenas constrói o objeto de cenário.
 - `['FlowBuilder', 'Recria fluxos.']`
 - `['CostEngine', 'Calcula custos do cenário.']`
 - `['TaxEngine', 'Calcula tributos se ligado.']`

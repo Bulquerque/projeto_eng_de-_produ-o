@@ -1,38 +1,21 @@
-# Índice da documentação
+# Guia de leitura do pacote
 
-Este índice organiza a documentação do pacote por ordem de uso. A ideia é facilitar tanto a validação manual quanto a continuidade do desenvolvimento.
+Este documento aponta para a documentação vigente no repositório. Registros de fases e auditorias antigas permanecem no índice como histórico; confirme a data e o escopo antes de usá-los como descrição do estado atual.
 
 ## Comece por aqui
 
-| Arquivo | Para que serve |
-|---|---|
-| `README.md` | Visão geral do pacote, como abrir o site e como rodar testes |
-| `docs/15_GUIA_RAPIDO_FASE1.md` | Passo a passo curto para abrir e validar a Fase 1 |
-| `docs/16_GUIA_USUARIO_FASE1.md` | Como navegar pela interface e o que conferir em cada painel |
+1. [`README.md`](../../README.md): executar o simulador e encontrar os comandos de qualidade.
+2. [`PROJECT_STRUCTURE.md`](../../PROJECT_STRUCTURE.md): entender os entry points, runtimes e diretórios.
+3. [`docs/README.md`](../README.md): navegar pela documentação técnica, metodológica e de aceite.
+4. [`tests/README.md`](../../tests/README.md): conhecer os gates e testes disponíveis.
 
-## Para desenvolver em cima
+## Para entender e defender o modelo
 
-| Arquivo | Para que serve |
-|---|---|
-| `docs/17_GUIA_DESENVOLVEDOR_FASE1.md` | Estrutura técnica de HTML, CSS, JS e módulos da Fase 1 |
-| `docs/18_MAPA_DADOS_CAMINHOS_FASE1.md` | Mapa de dados, caminhos, fontes e arquivos por empresa |
-| `docs/19_TESTES_E_ACEITE_FASE1.md` | Testes automáticos, checklist manual e critérios de aceite |
-| `docs/20_TROUBLESHOOTING_FASE1.md` | Problemas comuns e como resolver |
-| `docs/21_PLANO_FASE2.md` | O que deve ser feito na próxima fase |
+- [`METODOLOGIA_MODELO.md`](../../METODOLOGIA_MODELO.md): premissas, limites e método de análise.
+- [`RELATORIO_FINAL_ACADEMICO.md`](../../RELATORIO_FINAL_ACADEMICO.md): síntese técnica e evidências para a defesa.
+- [`ESTUDO_PROPRIO_TRIBUTACAO.md`](../../ESTUDO_PROPRIO_TRIBUTACAO.md): parâmetros, cobertura e fontes da camada tributária.
+- [`CHECKLIST_ENTREGA_EMPRESAS.md`](../../CHECKLIST_ENTREGA_EMPRESAS.md): roteiro de homologação por empresa.
 
-## Documentos de contexto do projeto
+## Regra de interpretação
 
-| Arquivo | Para que serve |
-|---|---|
-| `docs/01_ENTENDIMENTO_DO_DESAFIO.md` | Interpretação do desafio de malha logística |
-| `docs/02_ARQUITETURA_SITE_ESTATICO.md` | Arquitetura geral planejada |
-| `docs/03_PLANO_EM_5_FASES.md` | Roadmap completo em cinco fases |
-| `docs/04_MODULOS_INPUT_OUTPUT.md` | Contratos de módulos do simulador |
-| `docs/07_REGRAS_DE_SEPARACAO_EMPRESAS.md` | Regra de separação Empresa 1 vs Empresa 2 |
-| `docs/11_CAMINHOS_E_REGENERACAO.md` | Como os dados foram exportados e comparados |
-| `docs/12_AUDITORIA_COMPLETA_CAMINHOS_ABAS.md` | Auditoria de abas e caminhos |
-| `docs/02_fases_do_projeto/14_FASE1_IMPLEMENTADA.md` | Registro original da implementação da Fase 1 |
-
-## Regra de ouro
-
-Nunca misture os dados das duas empresas. O motor pode ser comum no futuro, mas o carregamento, baseline, cenários e conclusões devem permanecer separados por empresa.
+Planos, registros de implementação e relatórios datados documentam decisões e evidências de uma etapa. Eles não substituem a verificação do código e dos testes atuais. Dados sintéticos de demonstração e dados protegidos têm limites de uso diferentes; consulte a seção de dados no README antes de compartilhar ou gerar pacotes.

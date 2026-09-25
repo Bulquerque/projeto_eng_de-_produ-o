@@ -23,6 +23,8 @@ def test_phase1_frontend_files_exist():
         'fase-1-validacao/index.html',
         'assets/styles.css',
         'assets/js/phase1/main.js',
+        'assets/js/phase1/csv-parser.js',
+        'assets/js/phase1/table-view.js',
         'data/catalog.json',
         'data/validation/path_resolution_report.json',
         'data/validation/workbook_sheet_inventory.csv',
@@ -58,7 +60,6 @@ def test_phase1_css_has_visagio_palette_and_components():
 def test_phase1_js_declares_modules_and_uses_relative_paths_only():
     js = read('assets/js/phase1/main.js')
     required_functions = [
-        'parseCsv',
         'renderCompanyPanel',
         'renderDataQualityPanel',
         'renderPathAuditPanel',
@@ -68,6 +69,8 @@ def test_phase1_js_declares_modules_and_uses_relative_paths_only():
     ]
     for fn in required_functions:
         assert f'function {fn}' in js or f'async function {fn}' in js, fn
+    assert "from './csv-parser.js'" in js
+    assert "from './table-view.js'" in js
     assert "from '../core/data-loader.js'" in js
     assert 'fetchJson,' in js
     forbidden = ['/mnt/data', 'C:\\\\', 'A:/', 'file://']

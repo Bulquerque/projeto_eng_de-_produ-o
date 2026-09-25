@@ -19,7 +19,11 @@
     "ver arquivo JS para funções exportadas e helpers internos"
   ],
   "external_calls": [
-    "módulos phase2/phase3 conforme implementação"
+    "módulos phase2/phase3 conforme implementação",
+    [
+      "ScenarioValidator",
+      "Valida o cenário antes da simulação e bloqueia execução inválida."
+    ]
   ],
   "tests": {
     "unit": [

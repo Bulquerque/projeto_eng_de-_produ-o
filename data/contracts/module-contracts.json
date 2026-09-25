@@ -1118,10 +1118,6 @@
       ],
       "external_calls": [
         [
-          "ScenarioValidator",
-          "Valida alterações."
-        ],
-        [
           "FlowBuilder",
           "Recria fluxos."
         ],
@@ -1422,10 +1418,6 @@
       ],
       "external_calls": [
         [
-          "ScenarioValidator",
-          "Valida antes de salvar/importar."
-        ],
-        [
           "AuditTrail",
           "Registra origem do cenário importado/exportado."
         ]
@@ -1492,10 +1484,6 @@
       ],
       "external_calls": [
         [
-          "ScenarioValidator",
-          "Recebe validade básica."
-        ],
-        [
           "ScenarioScoring",
           "Entrega qualityScore para ranking."
         ],
@@ -1542,7 +1530,8 @@
         "ver arquivo JS para funções exportadas e helpers internos"
       ],
       "external_calls": [
-        "módulos phase2/phase3 conforme implementação"
+        "módulos phase2/phase3 conforme implementação",
+        "ScenarioValidator"
       ],
       "tests": {
         "unit": [
@@ -1564,66 +1553,66 @@
       "phase": 3,
       "status": "implemented_phase_3",
       "page": "/fase-3-cenarios/",
-      "purpose": "Bloqueia ou alerta cenários impossíveis: sem CD ativo, demanda sem atendimento, capacidade estourada, distância ausente ou empresa misturada.",
+      "purpose": "Valida vínculo com empresa e baseline, CDs ativos e parâmetros numéricos/tributários antes da simulação. Não verifica capacidade, cobertura real da demanda ou disponibilidade de distâncias.",
       "inputs": {
-        "scenario": {},
-        "constraints": {
-          "minCds": 1,
-          "maxCdUtilization": 0.9,
-          "allowCrossCompanyComparison": false
-        }
+        "companyId": "string",
+        "scenario": "object",
+        "baselineBundle": "object"
       },
       "outputs": {
-        "valid": true,
-        "errors": [],
-        "warnings": [],
-        "blockingReasons": []
+        "scenario_id": "string|null",
+        "valid": "boolean",
+        "severity": "error|warning|ok",
+        "errors": "array",
+        "warnings": "array",
+        "checks": "array",
+        "validation_summary": {
+          "active_cds_count": "number",
+          "closed_cds_count": "number",
+          "requires_reallocation": "boolean"
+        }
       },
       "internal_functions": [
         [
-          "validateCompanyIsolation(scenario)",
-          "Garante que a empresa é única."
+          "validateScenario({ companyId, scenario, baselineBundle })",
+          "Valida vínculos, CDs ativos e parâmetros e monta o resultado."
         ],
         [
-          "validateActiveCds(scenario)",
-          "Confere CDs ativos."
+          "check(cond, code, message, severity)",
+          "Constrói resultado de validação ou retorna null quando a condição passa."
         ],
         [
-          "validateDemandCoverage(scenario)",
-          "Confere atendimento da demanda."
+          "add(result)",
+          "Agrupa resultados em errors/warnings e registra checks que falharam."
         ],
         [
-          "validateCapacity(scenario, constraints)",
-          "Confere capacidade."
-        ],
-        [
-          "validateDistances(scenario)",
-          "Confere rotas com distância."
+          "validate(condition, code, message)",
+          "Executa um check como erro por padrão."
         ]
       ],
       "external_calls": [
         [
-          "DataQualityPanel",
-          "Usa diagnóstico de dados."
+          "core/tax-reform-config.js",
+          "Resolve regime e modo tributário."
         ],
         [
-          "ScenarioQualityCheck",
-          "Envia warnings não bloqueantes."
+          "core/cd-utils.js",
+          "Compara CDs ativos com os CDs conhecidos no baseline."
         ]
       ],
       "tests": {
         "unit": [
-          "sem CD ativo é inválido",
-          "empresa misturada é inválida"
+          "cenário válido e baseline são aceitos",
+          "cenário sem CD ativo e frete inválido são rejeitados"
         ],
         "integration": [
-          "ScenarioBuilder chama validator antes de salvar"
+          "tests/06_fase3_cenarios/test_phase3_logic.py cobre validação tributária e execução subsequente da simulação"
         ],
         "manual": [
-          "tentar cenário absurdo e ver bloqueio"
+          "tests/10_presentation_e2e/test_presentation_flow_playwright.py percorre a jornada de cenário na interface"
         ],
         "acceptance": [
-          "nenhum cenário inválido entra no ranking"
+          "tests/11_regression_e2e/regression_logic_audit.mjs valida casos inválidos contra a simulação"
         ]
       },
       "file": "assets/js/phase3/scenario-validator.js"
@@ -1698,8 +1687,7 @@
         "validateConstraintConfig"
       ],
       "external_calls": [
-        "ScenarioQualityCheck",
-        "ScenarioValidator"
+        "ScenarioQualityCheck"
       ],
       "tests": {
         "unit": [

@@ -256,6 +256,7 @@ Não apresentar proxy como observação, não apresentar Monte Carlo como previs
 for (const file of [
   'METODOLOGIA_MODELO.md',
   'RELATORIO_FINAL_ACADEMICO.md',
+  'ESTUDO_PROPRIO_TRIBUTACAO.md',
   'CHECKLIST_ENTREGA_EMPRESAS.md',
   'PROJECT_STRUCTURE.md',
 ]) {

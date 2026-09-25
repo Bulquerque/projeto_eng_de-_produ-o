@@ -146,11 +146,10 @@ phase,module,test_type,test
 3,ScenarioSimulator,integration,test_phase3_http_server.py
 3,ScenarioSimulator,manual,checklist na página /fase-3-cenarios/
 3,ScenarioSimulator,acceptance,tests/run_all_tests.py deve terminar com ALL_PHASE3_PACKAGE_TESTS_OK
-3,ScenarioValidator,unit,sem CD ativo é inválido
-3,ScenarioValidator,unit,empresa misturada é inválida
-3,ScenarioValidator,integration,ScenarioBuilder chama validator antes de salvar
-3,ScenarioValidator,manual,tentar cenário absurdo e ver bloqueio
-3,ScenarioValidator,acceptance,nenhum cenário inválido entra no ranking
+3,ScenarioValidator,unit,tests/06_fase3_cenarios/test_phase3_logic.py: cenário válido é aceito; cenário sem CD ativo/frete inválido é rejeitado
+3,ScenarioValidator,integration,tests/06_fase3_cenarios/test_phase3_logic.py: validação tributária seguida da simulação
+3,ScenarioValidator,manual,conferir avisos de realocação e concentração no painel
+3,ScenarioValidator,acceptance,tests/11_regression_e2e/regression_logic_audit.mjs: cenário inválido não é simulado
 4,CandidateScenarioGenerator,unit,tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py
 4,CandidateScenarioGenerator,unit,tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py
 4,CandidateScenarioGenerator,integration,tests/07_fase4_score_otimizador/test_phase4_http_server.py

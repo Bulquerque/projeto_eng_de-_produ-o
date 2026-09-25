@@ -1,4 +1,12 @@
 import { $, escapeHtml, formatBRL, formatNumber, formatPct, metric } from '../core/common.js';
+import { renderScenarioMonteCarlo } from './scenario-arena/monte-carlo-view.js';
+import {
+  renderComponentDeltas as renderComponentDeltasView,
+  renderComparisonTable,
+  renderLibraryComparisonTable as renderLibraryComparisonTableView,
+  renderScenarioExecutiveTable as renderScenarioExecutiveTableView,
+} from './scenario-arena/comparison-view.js';
+import { buildLibraryComparisonRows } from './scenario-arena/library-comparison.js';
 import { loadScenarioLibrary } from './scenario-library.js';
 import { buildScenarioFromForm } from './scenario-builder.js';
 import { validateScenario } from './scenario-validator.js';
@@ -19,11 +27,7 @@ import {
 } from './scenario-import-export.js';
 import { buildMonteCarloConfig, runMonteCarloSimulation } from './monte-carlo-engine.js';
 import { appendSharedDebugEntry } from '../core/debug-tools.js';
-import {
-  buildScenarioSummary,
-  formatInventoryDaysDisplay,
-  formatMultiplierDisplay,
-} from '../core/scenario-summary.js';
+import { buildScenarioSummary } from '../core/scenario-summary.js';
 import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
 import {
   getTaxRegimeDefinition,
@@ -31,15 +35,7 @@ import {
   resolveTaxModeForRegime,
   taxRegimeLabel,
 } from '../core/tax-reform-config.js';
-import {
-  renderScenarioComparisonChart,
-  renderMonteCarloHistogram,
-  renderMonteCarloPercentileCurve,
-  renderMonteCarloScatter,
-  renderMonteCarloRiskDonut,
-  renderMonteCarloTotalCurve,
-  renderMonteCarloDriverImportance,
-} from './charts.js';
+import { renderScenarioComparisonChart } from './charts.js';
 
 const EMPTY_STATE = {
   validation: 'Ainda não validado.',
@@ -69,39 +65,6 @@ const COST_LABELS = {
   tax_impact: 'Tributo',
   total_with_tax: 'Total com tributo',
 };
-
-const MONTE_CARLO_DRIVER_LABELS = {
-  freight_multiplier: 'Frete',
-  demand_multiplier: 'Demanda',
-  inventory_days: 'Dias de estoque',
-  wacc: 'WACC',
-  tax_multiplier: 'Tributo',
-};
-
-function monteCarloProfileLabel(profile) {
-  return (
-    {
-      conservative: 'Conservador',
-      balanced: 'Equilibrado',
-      broad: 'Amplo',
-    }[profile] || 'Equilibrado'
-  );
-}
-
-function monteCarloDriverLabel(driver) {
-  return MONTE_CARLO_DRIVER_LABELS[driver] || driver || '—';
-}
-
-function monteCarloInterpretation(summary) {
-  if (!summary) return 'Rode o cenário para visualizar a leitura probabilística.';
-  if (summary.risk_band === 'high') {
-    return 'A distribuição indica risco relevante de perda de saving. Vale revisar premissas e drivers mais voláteis.';
-  }
-  if (summary.risk_band === 'medium') {
-    return 'O cenário mantém saving na maior parte das amostras, mas ainda existe dispersão que merece atenção.';
-  }
-  return 'O cenário mostra estabilidade razoável nas amostras e sustentação probabilística para a decisão.';
-}
 
 function readMonteCarloConfig() {
   return buildMonteCarloConfig({
@@ -467,60 +430,35 @@ function renderResult() {
 }
 
 function renderScenarioExecutiveTable() {
-  if (!state.currentResult) {
-    renderEmpty('scenarioExecutiveTable', EMPTY_STATE.result);
-    return;
-  }
-  const base = state.library?.baselineBundle?.costs?.costs || {};
   const result = state.currentResult;
-  const quality = state.quality;
-  const savingResult = calculateSaving({
-    baselineTotal: base.total_with_tax,
-    scenarioTotal: result.total_with_tax,
+  const baselineCosts = state.library?.baselineBundle?.costs?.costs || {};
+  const savingResult = result
+    ? calculateSaving({
+        baselineTotal: baselineCosts.total_with_tax,
+        scenarioTotal: result.total_with_tax,
+      })
+    : null;
+
+  renderScenarioExecutiveTableView({
+    result,
+    quality: state.quality,
+    baselineCosts,
+    savingResult,
+    emptyMessage: EMPTY_STATE.result,
   });
-  const rows = [
-    ['Baseline', formatBRL(base.total_with_tax, true), '—', 'referência'],
-    [
-      result.scenario_name,
-      formatBRL(result.total_with_tax, true),
-      formatBRL(savingResult.saving_abs, true),
-      formatPct(savingResult.saving_pct, 2),
-    ],
-    [
-      'Quality Score',
-      quality?.quality_score ?? '—',
-      'vs ideal',
-      quality?.quality_score !== undefined ? `${Number(quality.quality_score) - 100}` : '—',
-    ],
-  ];
-  setHtml(
-    'scenarioExecutiveTable',
-    `<table class="executive-table-premium"><thead><tr><th>Item</th><th>Total/Score</th><th>Delta Absoluto</th><th>Delta %</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td><td>${escapeHtml(r[2])}</td><td class="${String(r[3]).includes('-') ? 'delta-negative' : String(r[3]).includes('%') ? 'delta-positive' : ''}">${escapeHtml(r[3])}</td></tr>`).join('')}</tbody></table>`
-  );
 }
 
 function renderComponentDeltas() {
-  if (!state.currentResult) {
-    renderEmpty('componentDeltaPanel', EMPTY_STATE.delta);
-    return;
-  }
-
-  const deltas = componentDelta(state.library.baselineBundle, state.currentResult);
-  setHtml(
-    'componentDeltaPanel',
-    deltas
-      .map(
-        (delta) =>
-          `<div class="breakdown-row"><div><strong>${escapeHtml(COST_LABELS[delta.metric] || delta.metric)}</strong><span>${formatPct(delta.baseline ? (delta.delta / delta.baseline) * 100 : 0, 2)} vs baseline</span></div><div class="breakdown-bar"><span style="width:${Math.min(100, (Math.abs(delta.delta) / Math.max(1, Math.abs(delta.baseline))) * 100)}%"></span></div><b class="${delta.delta <= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(delta.delta)}</b></div>`
-      )
-      .join('')
-  );
+  const deltas = state.currentResult
+    ? componentDelta(state.library.baselineBundle, state.currentResult)
+    : null;
+  renderComponentDeltasView({ deltas, emptyMessage: EMPTY_STATE.delta });
 }
 
 function renderComparison() {
   if (!state.comparison) {
-    renderEmpty('comparisonTable', EMPTY_STATE.comparison);
-    renderEmpty('componentDeltaPanel', EMPTY_STATE.delta);
+    renderComparisonTable(null, EMPTY_STATE.comparison);
+    renderComponentDeltasView({ deltas: null, emptyMessage: EMPTY_STATE.delta });
     renderLibraryComparisonTable();
     return;
   }
@@ -557,98 +495,20 @@ function renderComparison() {
     rank_by_total_cost: row.rank_by_total_cost,
     status: row.status,
   }));
-  setHtml(
-    'comparisonTable',
-    `<table><thead><tr><th>Cenário</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Fonte tributária</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Rank</th><th>Status</th></tr></thead><tbody>${rows
-      .map(
-        (row) =>
-          `<tr><td>${escapeHtml(row.scenario_name)}</td><td>${formatNumber(row.active_cds_count)}</td><td>${escapeHtml(formatMultiplierDisplay(row.freight_multiplier))}</td><td>${escapeHtml(formatMultiplierDisplay(row.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(row.inventory_days))}</td><td>${escapeHtml(row.tax_regime_label)}</td><td>${escapeHtml(row.tax_source_label || '—')}</td><td>${formatBRL(row.transfer_cost)}</td><td>${formatBRL(row.tax_impact)}</td><td>${formatBRL(row.total_with_tax)}</td><td class="${row.saving_abs >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving_abs)}</td><td>${formatPct(row.saving_pct, 2)}</td><td>${row.rank_by_total_cost}</td><td>${escapeHtml(row.status)}</td></tr>`
-      )
-      .join('')}</tbody></table>`
-  );
+  renderComparisonTable(rows, EMPTY_STATE.comparison);
 
   renderComponentDeltas();
   renderLibraryComparisonTable();
 }
 
 function renderLibraryComparisonTable() {
-  if (!state.library) {
-    renderEmpty('scenarioLibraryComparisonTable', EMPTY_STATE.comparison);
-    return;
-  }
-  const formatMultiplier = (value) =>
-    `${Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}x`;
-  const isHiddenScenario = (scenario) =>
-    /apenas\s+malha/i.test(String(scenario?.scenario_name || scenario?.name || '')) ||
-    /apenas\s+malha/i.test(String(scenario?.scenario_id || ''));
-  const baselineTotal = Number(state.library.baselineBundle.costs.costs.total_with_tax || 0);
-  const rows = [
-    {
-      ...buildScenarioSummary({
-        scenario: {
-          scenario_id: 'baseline',
-          scenario_name: 'Baseline',
-          scenario_type: 'referência',
-          changes: {
-            active_cds: state.library.baselineBundle.model?.active_cds || [],
-            freight_multiplier: 1,
-            demand_multiplier: 1,
-            inventory_days: MODEL_DEFAULTS.inventory_days,
-            tax_mode: 'current',
-          },
-        },
-        result: {
-          total_with_tax: baselineTotal,
-          costs: state.library.baselineBundle.costs.costs || {},
-          tax_results: state.library.baselineBundle.tax_results?.tax_results || {},
-        },
-        baselineTotal,
-      }),
-      type: 'referência',
-    },
-  ];
-  const libraryRows = (state.library.scenarios || [])
-    .filter((scenario) => !isHiddenScenario(scenario))
-    .slice(0, 8)
-    .map((scenario) => {
-      const result = runScenario({
-        companyId: state.companyId,
-        scenario,
-        baselineBundle: state.library.baselineBundle,
-      });
-      const quality = evaluateScenarioQuality({
-        scenarioResult: result,
-        baselineBundle: state.library.baselineBundle,
-      });
-      return {
-        ...buildScenarioSummary({
-          scenario,
-          result,
-          quality,
-          baselineTotal,
-        }),
-        type: scenario.scenario_type || 'biblioteca',
-      };
-    });
-  const current =
-    state.currentResult && !isHiddenScenario(state.currentResult.scenario || state.currentResult)
-      ? [
-          {
-            ...buildScenarioSummary({
-              scenario: state.currentResult.scenario,
-              result: state.currentResult,
-              quality: state.quality,
-              baselineTotal,
-            }),
-            scenario_name: `${state.currentResult.scenario_name} (atual)`,
-            type: 'customizado',
-          },
-        ]
-      : [];
-  setHtml(
-    'scenarioLibraryComparisonTable',
-    `<table><thead><tr><th>Cenário</th><th>Tipo</th><th>CDs</th><th>Frete</th><th>Demanda</th><th>Estoque</th><th>Regime tributário</th><th>Fonte tributária</th><th>Transferência</th><th>Tributo</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Quality</th><th>Risco</th></tr></thead><tbody>${[...rows, ...current, ...libraryRows].map((row) => `<tr><td>${escapeHtml(row.scenario_name)}</td><td>${escapeHtml(row.type || '—')}</td><td>${escapeHtml(String(row.active_cds_count ?? '—'))}</td><td>${escapeHtml(formatMultiplier(row.freight_multiplier))}</td><td>${escapeHtml(formatMultiplier(row.demand_multiplier))}</td><td>${escapeHtml(formatInventoryDaysDisplay(row.inventory_days))}</td><td>${escapeHtml(row.tax_regime_label || '—')}</td><td>${escapeHtml(row.tax_source_label || '—')}</td><td>${formatBRL(row.transfer_cost, true)}</td><td>${formatBRL(row.tax_impact, true)}</td><td>${formatBRL(row.total_with_tax, true)}</td><td class="${row.saving_abs >= 0 ? 'delta-positive' : 'delta-negative'}">${formatBRL(row.saving_abs, true)}</td><td>${formatPct(row.saving_pct, 2)}</td><td>${escapeHtml(row.quality_score == null ? '—' : String(row.quality_score))}</td><td>${escapeHtml(row.risk_level || '—')}</td></tr>`).join('')}</tbody></table>`
-  );
+  const rows = buildLibraryComparisonRows({
+    companyId: state.companyId,
+    library: state.library,
+    currentResult: state.currentResult,
+    quality: state.quality,
+  });
+  renderLibraryComparisonTableView(rows, EMPTY_STATE.comparison);
 }
 
 function renderQuality() {
@@ -705,111 +565,8 @@ function renderExplanation() {
   );
 }
 
-function renderMonteCarloSummaryCards() {
-  const summary = state.monteCarlo?.summary;
-  const el = $('monteCarloSummaryCards');
-  const tableEl = $('monteCarloSummaryTable');
-  if (!summary) {
-    if (el) el.innerHTML = '';
-    if (tableEl)
-      tableEl.innerHTML =
-        '<div class="empty-state">Rode o cenário para visualizar a distribuição probabilística.</div>';
-    return;
-  }
-
-  const driverLabel = monteCarloDriverLabel(summary.most_sensitive_driver);
-  const driverCorrelation = Number(summary.most_sensitive_driver_correlation || 0);
-  if (el) {
-    el.innerHTML = [
-      metric(
-        'Prob. saving positivo',
-        formatPct(summary.probability_saving_positive * 100, 1),
-        `risco ${summary.risk_band}`
-      ),
-      metric(
-        'Prob. saving negativo',
-        formatPct(summary.probability_saving_loss * 100, 1),
-        'cenário abaixo do baseline'
-      ),
-      metric(
-        'Saving mediano',
-        formatPct(summary.median_saving_pct, 1),
-        `p10 ${formatPct(summary.p10_saving_pct, 1)} · p90 ${formatPct(summary.p90_saving_pct, 1)}`
-      ),
-      metric('Desvio saving', formatPct(summary.stddev_saving_pct, 1), 'dispersão entre amostras'),
-      metric(
-        'Custo mediano',
-        formatBRL(summary.median_total_with_tax, true),
-        `p10 ${formatBRL(summary.p10_total_with_tax, true)} · p90 ${formatBRL(summary.p90_total_with_tax, true)}`
-      ),
-      metric(
-        'Custo esperado',
-        formatBRL(summary.mean_total_with_tax, true),
-        `desvio ${formatBRL(summary.stddev_total_with_tax, true)}`
-      ),
-      metric(
-        'Driver mais influente',
-        driverLabel,
-        `${driverCorrelation >= 0 ? '+' : ''}${driverCorrelation.toFixed(2)} de correlação`
-      ),
-      metric(
-        'Percentil do cenário',
-        `${Number(summary.deterministic_percentile_saving_pct || 0).toFixed(0)}º`,
-        'posição do cenário base na distribuição'
-      ),
-      metric(
-        'Iterações',
-        formatNumber(summary.iterations_valid ?? summary.iterations, 0),
-        `${formatNumber(summary.iterations_requested ?? summary.iterations, 0)} solicitadas · seed ${summary.seed_effective ?? summary.seed}`
-      ),
-    ].join('');
-  }
-
-  if (tableEl) {
-    tableEl.innerHTML = `
-      <table class="executive-table-premium">
-        <thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
-        <tbody>
-          <tr><td>Perfil</td><td>${escapeHtml(monteCarloProfileLabel(summary.profile))}</td></tr>
-          <tr><td>Seed / RNG</td><td>${escapeHtml(String(summary.seed_effective ?? summary.seed ?? '—'))} · ${escapeHtml(summary.rng_algorithm || '—')}</td></tr>
-          <tr><td>Modelo</td><td>${escapeHtml(summary.analysis_type || 'exploratory_uncertainty_analysis')} · fonte: ${escapeHtml(summary.uncertainty_source || 'parametric_assumptions')} · histórico: ${summary.historical_distribution ? 'sim' : 'não'}</td></tr>
-          <tr><td>Observações históricas</td><td>${escapeHtml(JSON.stringify(summary.historical_observation_counts || {}))}${summary.historical_sample_warning ? ` · ${escapeHtml(summary.historical_sample_warning)}` : ''}</td></tr>
-          <tr><td>Suporte conjunto</td><td>${escapeHtml(`${summary.historical_unique_joint_support ?? 0} combinações únicas · ${summary.historical_complete_joint_observations ?? 0} casos completos`)}</td></tr>
-          <tr><td>Erro Monte Carlo</td><td>${escapeHtml(summary.monte_carlo_probability_positive_standard_error == null ? '—' : formatPct(summary.monte_carlo_probability_positive_standard_error * 100, 2))} · IC condicional: ${escapeHtml(summary.monte_carlo_probability_positive_lower_95 == null ? '—' : formatPct(summary.monte_carlo_probability_positive_lower_95 * 100, 1))}–${escapeHtml(summary.monte_carlo_probability_positive_upper_95 == null ? '—' : formatPct(summary.monte_carlo_probability_positive_upper_95 * 100, 1))}</td></tr>
-          <tr><td>Leitura executiva</td><td>${escapeHtml(monteCarloInterpretation(summary))}</td></tr>
-          <tr><td>Prob. saving positivo</td><td>${formatPct(summary.probability_saving_positive * 100, 1)}</td></tr>
-          <tr><td>Prob. saving negativo</td><td>${formatPct(summary.probability_saving_loss * 100, 1)}</td></tr>
-          <tr><td>Saving p10 / p50 / p90</td><td>${formatPct(summary.p10_saving_pct, 1)} · ${formatPct(summary.median_saving_pct, 1)} · ${formatPct(summary.p90_saving_pct, 1)}</td></tr>
-          <tr><td>Total p10 / p50 / p90</td><td>${formatBRL(summary.p10_total_with_tax, true)} · ${formatBRL(summary.median_total_with_tax, true)} · ${formatBRL(summary.p90_total_with_tax, true)}</td></tr>
-          <tr><td>Driver mais influente</td><td>${escapeHtml(driverLabel)} (${driverCorrelation >= 0 ? '+' : ''}${driverCorrelation.toFixed(2)})</td></tr>
-          <tr><td>Interpretação</td><td>${escapeHtml(summary.probability_interpretation || 'condicional às premissas informadas')}</td></tr>
-          <tr><td>Limitação</td><td>Probabilidades e percentis são condicionais ao histórico disponível e ao modelo; não são intervalo de confiança formal.</td></tr>
-        </tbody>
-      </table>
-    `;
-  }
-}
-
 function renderMonteCarlo() {
-  renderMonteCarloSummaryCards();
-  const summary = state.monteCarlo?.summary;
-  renderMonteCarloHistogram(summary?.histogram);
-  renderMonteCarloPercentileCurve(summary?.percentile_curve);
-  renderMonteCarloTotalCurve(summary?.total_percentile_curve);
-  renderMonteCarloRiskDonut(summary);
-  renderMonteCarloDriverImportance(
-    (summary?.driver_importance || []).map((item) => ({
-      ...item,
-      label: monteCarloDriverLabel(item.driver),
-    }))
-  );
-  renderMonteCarloScatter(
-    state.monteCarlo?.samples || [],
-    summary?.scatter_driver || state.monteCarloConfig?.scatter_driver || 'freight_multiplier',
-    monteCarloDriverLabel(
-      summary?.scatter_driver || state.monteCarloConfig?.scatter_driver || 'freight_multiplier'
-    )
-  );
+  renderScenarioMonteCarlo(state);
 }
 
 function runMonteCarloForCurrentScenario({ rerender = true } = {}) {

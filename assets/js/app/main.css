@@ -34,6 +34,29 @@ body.network-ui-active > #cryptoLockButton {
   color: #e9ffff;
 }
 
+.network-skip-link {
+  position: fixed;
+  z-index: 1000;
+  top: 8px;
+  left: 8px;
+  transform: translateY(calc(-100% - 16px));
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--ni-mint, #a9fdac);
+  color: var(--ni-deep, #00363d);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.network-skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 3px solid #f2b84b;
+  outline-offset: 3px;
+}
+
 .network-brand {
   display: flex;
   gap: 10px;
@@ -71,7 +94,12 @@ body.network-ui-active > #cryptoLockButton {
   text-decoration: none;
   font-size: 14px;
 }
-.network-nav a:hover,
+.network-nav a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 .network-nav a.active {
   color: #00363d;
   background: #a9fdac;
@@ -716,7 +744,7 @@ body.network-ui-active .network-toast-root {
     padding-bottom: 14px;
   }
   .network-nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
   .network-sidebar-foot {
     display: none;
@@ -820,6 +848,8 @@ body.network-ui-active {
 .network-nav a {
   display: flex;
   align-items: center;
+  box-sizing: border-box;
+  min-height: 44px;
   gap: 10px;
   padding: 11px 10px;
   border: 1px solid transparent;
@@ -836,16 +866,25 @@ body.network-ui-active {
   letter-spacing: 0.08em;
 }
 
-.network-nav a:hover,
+.network-nav a:hover {
+  color: #e9ffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
 .network-nav a.active {
   color: var(--ni-deep);
   background: var(--ni-mint);
   border-color: var(--ni-mint);
+  font-weight: 700;
 }
 
-.network-nav a.active span,
-.network-nav a:hover span {
+.network-nav a.active span {
   color: var(--ni-deep-2);
+}
+
+.network-nav a:hover span {
+  color: #bbd1d1;
 }
 
 .network-sidebar-tools {
@@ -1003,7 +1042,8 @@ body.network-ui-active {
 .ni-section-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 20px;
   padding: 4px;
   border: 1px solid var(--ni-border);
@@ -1012,15 +1052,26 @@ body.network-ui-active {
 }
 
 .ni-section-tabs a {
-  padding: 8px 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 14px;
   border-radius: 7px;
   color: var(--ni-muted);
   font-size: 12px;
   font-weight: 800;
+  line-height: 1.25;
+  white-space: nowrap;
   text-decoration: none;
 }
 
-.ni-section-tabs a:hover,
+.ni-section-tabs a:hover {
+  color: var(--ni-deep);
+  background: #f8fbfa;
+}
+
 .ni-section-tabs a.active {
   color: var(--ni-deep);
   background: #fff;

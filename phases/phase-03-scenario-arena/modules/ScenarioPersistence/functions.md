@@ -4,9 +4,10 @@
 - `['loadScenarios(company)', 'Lê cenários da empresa.']`
 - `['deleteScenario(id)', 'Remove cenário.']`
 - `['exportScenario(id)', 'Gera JSON baixável.']`
-- `['importScenario(json)', 'Importa e valida cenário.']`
+- `['importScenario(json)', 'Confere empresa e IDs do objeto importado.']`
 
 # Dependências externas
 
-- `['ScenarioValidator', 'Valida antes de salvar/importar.']`
+A persistência/importação confere empresa e IDs com suas próprias funções; a validação estrutural do cenário é orquestrada pelo dashboard e pelo simulador.
+
 - `['AuditTrail', 'Registra origem do cenário importado/exportado.']`

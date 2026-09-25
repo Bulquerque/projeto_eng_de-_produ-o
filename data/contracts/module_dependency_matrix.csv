@@ -33,7 +33,7 @@ phase,module,calls,file
 2,TaxEngineBasic,FlowBuilder,assets/js/phase2/tax-engine-basic.js
 2,TaxEngineBasic,CostEngine,assets/js/phase2/tax-engine-basic.js
 3,ScenarioArenaDashboard,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-arena-dashboard.js
-3,ScenarioBuilder,"['ScenarioValidator', 'Valida alterações.']",assets/js/phase3/scenario-builder.js
+3,ScenarioArenaDashboard,ScenarioValidator,assets/js/phase3/scenario-arena-dashboard.js
 3,ScenarioBuilder,"['FlowBuilder', 'Recria fluxos.']",assets/js/phase3/scenario-builder.js
 3,ScenarioBuilder,"['CostEngine', 'Calcula custos do cenário.']",assets/js/phase3/scenario-builder.js
 3,ScenarioBuilder,"['TaxEngine', 'Calcula tributos se ligado.']",assets/js/phase3/scenario-builder.js
@@ -44,18 +44,14 @@ phase,module,calls,file
 3,ScenarioFlowRebuilder,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-flow-rebuilder.js
 3,ScenarioImportExport,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-import-export.js
 3,ScenarioLibrary,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-library.js
-3,ScenarioPersistence,"['ScenarioValidator', 'Valida antes de salvar/importar.']",assets/js/phase3/scenario-persistence.js
 3,ScenarioPersistence,"['AuditTrail', 'Registra origem do cenário importado/exportado.']",assets/js/phase3/scenario-persistence.js
-3,ScenarioQualityCheck,"['ScenarioValidator', 'Recebe validade básica.']",assets/js/phase3/scenario-quality-check.js
 3,ScenarioQualityCheck,"['ScenarioScoring', 'Entrega qualityScore para ranking.']",assets/js/phase3/scenario-quality-check.js
 3,ScenarioQualityCheck,"['ExplainabilityEngine', 'Entrega alertas para explicação.']",assets/js/phase3/scenario-quality-check.js
 3,ScenarioSimulator,módulos phase2/phase3 conforme implementação,assets/js/phase3/scenario-simulator.js
-3,ScenarioValidator,"['DataQualityPanel', 'Usa diagnóstico de dados.']",assets/js/phase3/scenario-validator.js
-3,ScenarioValidator,"['ScenarioQualityCheck', 'Envia warnings não bloqueantes.']",assets/js/phase3/scenario-validator.js
+3,ScenarioSimulator,ScenarioValidator,assets/js/phase3/scenario-simulator.js
 4,CandidateScenarioGenerator,ScenarioBuilder,assets/js/phase4/candidate-scenario-generator.js
 4,CandidateScenarioGenerator,ConstraintEngine,assets/js/phase4/candidate-scenario-generator.js
 4,ConstraintEngine,ScenarioQualityCheck,assets/js/phase4/constraint-engine.js
-4,ConstraintEngine,ScenarioValidator,assets/js/phase4/constraint-engine.js
 4,MetricNormalizer,ScenarioMetricExtractor,assets/js/phase4/metric-normalizer.js
 4,MetricNormalizer,ObjectiveValidator,assets/js/phase4/metric-normalizer.js
 4,ObjectiveBuilder,ObjectiveValidator,assets/js/phase4/objective-builder.js

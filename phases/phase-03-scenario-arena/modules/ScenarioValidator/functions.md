@@ -1,12 +1,7 @@
-# Funções internas
+# Funções
 
-- `['validateCompanyIsolation(scenario)', 'Garante que a empresa é única.']`
-- `['validateActiveCds(scenario)', 'Confere CDs ativos.']`
-- `['validateDemandCoverage(scenario)', 'Confere atendimento da demanda.']`
-- `['validateCapacity(scenario, constraints)', 'Confere capacidade.']`
-- `['validateDistances(scenario)', 'Confere rotas com distância.']`
+| Função | Responsabilidade |
+|---|---|
+| `validateScenario({ companyId, scenario, baselineBundle })` | Valida a estrutura e o vínculo do cenário antes da simulação e retorna checks, erros, avisos e resumo. |
 
-# Dependências externas
-
-- `['DataQualityPanel', 'Usa diagnóstico de dados.']`
-- `['ScenarioQualityCheck', 'Envia warnings não bloqueantes.']`
+As validações individuais são registradas pelos códigos descritos em [`contract.json`](contract.json). Capacidade, cobertura da demanda e distâncias não fazem parte desta função; consulte o simulador e a avaliação de qualidade.

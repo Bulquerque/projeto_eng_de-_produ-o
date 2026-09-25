@@ -31,6 +31,7 @@ def main():
     assert '/tmp/visagio_doc_extract' not in package_builder
     assert '/home/' not in package_builder
     assert 'VISAGIO_ARTIFACT_TOOL_PATH' in package_builder
+    assert "'ESTUDO_PROPRIO_TRIBUTACAO.md'" in package_builder
 
     print('RELEASE_CONTRACT_OK')
 

@@ -3,67 +3,88 @@
   "phase": 3,
   "status": "implemented_phase_3",
   "page": "/fase-3-cenarios/",
-  "purpose": "Bloqueia ou alerta cenários impossíveis: sem CD ativo, demanda sem atendimento, capacidade estourada, distância ausente ou empresa misturada.",
+  "purpose": "Valida a estrutura do cenário, o vínculo com empresa e baseline, os CDs ativos e os parâmetros numéricos e tributários antes da simulação.",
+  "scope_note": "A validação estrutural não verifica capacidade, cobertura da demanda ou disponibilidade de distâncias. O simulador e a avaliação de qualidade reportam resultados de fluxo e cobertura.",
   "inputs": {
-    "scenario": {},
-    "constraints": {
-      "minCds": 1,
-      "maxCdUtilization": 0.9,
-      "allowCrossCompanyComparison": false
-    }
+    "companyId": "string",
+    "scenario": "object",
+    "baselineBundle": "object"
   },
   "outputs": {
-    "valid": true,
-    "errors": [],
-    "warnings": [],
-    "blockingReasons": []
+    "scenario_id": "string|null",
+    "valid": "boolean",
+    "severity": "error|warning|ok",
+    "errors": "array",
+    "warnings": "array",
+    "checks": "array",
+    "validation_summary": {
+      "active_cds_count": "number",
+      "closed_cds_count": "number",
+      "requires_reallocation": "boolean"
+    }
+  },
+  "tests": {
+    "unit": [
+      "cenário válido e baseline são aceitos",
+      "cenário sem CD ativo e frete inválido são rejeitados"
+    ],
+    "integration": [
+      "tests/06_fase3_cenarios/test_phase3_logic.py cobre regra tributária e execução subsequente da simulação"
+    ],
+    "manual": [
+      "conferir no painel avisos de realocação e concentração de CD"
+    ],
+    "acceptance": [
+      "tests/11_regression_e2e/regression_logic_audit.mjs confirma que cenário inválido não é simulado"
+    ]
   },
   "internal_functions": [
     [
-      "validateCompanyIsolation(scenario)",
-      "Garante que a empresa é única."
+      "validateScenario({ companyId, scenario, baselineBundle })",
+      "Valida vínculos, CDs ativos e parâmetros e monta o resultado."
     ],
     [
-      "validateActiveCds(scenario)",
-      "Confere CDs ativos."
+      "check(cond, code, message, severity)",
+      "Constrói resultado de validação ou retorna null quando a condição passa."
     ],
     [
-      "validateDemandCoverage(scenario)",
-      "Confere atendimento da demanda."
+      "add(result)",
+      "Agrupa resultados em errors/warnings e registra checks que falharam."
     ],
     [
-      "validateCapacity(scenario, constraints)",
-      "Confere capacidade."
-    ],
-    [
-      "validateDistances(scenario)",
-      "Confere rotas com distância."
+      "validate(condition, code, message)",
+      "Executa check como erro por padrão."
     ]
   ],
   "external_calls": [
     [
-      "DataQualityPanel",
-      "Usa diagnóstico de dados."
+      "assets/js/core/tax-reform-config.js",
+      "Resolve regime e modo tributário."
     ],
     [
-      "ScenarioQualityCheck",
-      "Envia warnings não bloqueantes."
+      "assets/js/core/cd-utils.js",
+      "Compara CDs ativos com CDs conhecidos no baseline."
     ]
   ],
-  "tests": {
-    "unit": [
-      "sem CD ativo é inválido",
-      "empresa misturada é inválida"
-    ],
-    "integration": [
-      "ScenarioBuilder chama validator antes de salvar"
-    ],
-    "manual": [
-      "tentar cenário absurdo e ver bloqueio"
-    ],
-    "acceptance": [
-      "nenhum cenário inválido entra no ranking"
-    ]
-  },
-  "file": "assets/js/phase3/scenario-validator.js"
+  "file": "assets/js/phase3/scenario-validator.js",
+  "check_codes": [
+    "SCENARIO_REQUIRED",
+    "COMPANY_MATCH",
+    "BASELINE_MATCH",
+    "ACTIVE_CD_REQUIRED",
+    "ACTIVE_CD_KNOWN",
+    "FREIGHT_POSITIVE",
+    "DEMAND_POSITIVE",
+    "INVENTORY_NON_NEGATIVE",
+    "WACC_NON_NEGATIVE",
+    "TAX_MODE_VALID",
+    "TAX_MODE_KNOWN",
+    "TAX_REGIME_VALID",
+    "REALLOCATION_RULE_VALID",
+    "basic_structure"
+  ],
+  "warning_codes": [
+    "REALLOCATION_REQUIRED",
+    "SINGLE_CD_CONCENTRATION"
+  ]
 }

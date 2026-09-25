@@ -36,8 +36,9 @@ Aplica restrições de CDs, concentração, risco e modo tributário antes de ra
 - `validateConstraintConfig`
 
 ## Módulos chamados
+
+Aplica as restrições do otimizador sobre o cenário, os resultados e a avaliação de qualidade. Não chama ScenarioValidator; a validação estrutural é orquestrada pelo dashboard e pelo simulador.
 - `ScenarioQualityCheck`
-- `ScenarioValidator`
 
 ## Testes
 ```json

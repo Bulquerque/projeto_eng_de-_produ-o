@@ -16,6 +16,8 @@ required = [
     'assets/js/phase5/final-qa-checker.js',
     'assets/js/phase5/release-validator.js',
     'assets/js/phase5/phase5-dashboard.js',
+    'assets/js/phase5/tax-periods-view.js',
+    'assets/js/phase5/final-situation-view.js',
     'assets/js/core/analysis-quality.js',
     'ESTUDO_PROPRIO_TRIBUTACAO.md',
     'data/empresa1/phase5/default_stress_cases.json.enc.json',

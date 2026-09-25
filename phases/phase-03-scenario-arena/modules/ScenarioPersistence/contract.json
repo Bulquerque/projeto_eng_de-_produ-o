@@ -33,14 +33,10 @@
     ],
     [
       "importScenario(json)",
-      "Importa e valida cenário."
+      "Confere empresa e IDs obrigatórios do objeto importado."
     ]
   ],
   "external_calls": [
-    [
-      "ScenarioValidator",
-      "Valida antes de salvar/importar."
-    ],
     [
       "AuditTrail",
       "Registra origem do cenário importado/exportado."
@@ -61,5 +57,6 @@
       "cenários da Empresa 1 não aparecem na Empresa 2"
     ]
   },
-  "file": "assets/js/phase3/scenario-persistence.js"
+  "file": "assets/js/phase3/scenario-persistence.js",
+  "validation_note": "A persistência valida apenas empresa e IDs com suas próprias funções (`validateStoredScenario`/`validateImportedScenario`); ScenarioValidator é executado pelo dashboard e simulador, não por este módulo."
 }

@@ -1,4 +1,5 @@
 export const METRIC_REGISTRY = Object.freeze({
+  // Scenario inputs and financial outputs.
   active_cds: { label: 'CDs ativos', source_path: 'model.active_cds', format: 'list' },
   freight_multiplier: {
     label: 'Multiplicador de frete',
@@ -10,6 +11,8 @@ export const METRIC_REGISTRY = Object.freeze({
     source_path: 'result.total_with_tax',
     format: 'brl',
   },
+
+  // Data quality and evidence.
   quality_score: { label: 'Qualidade', source_path: 'quality.quality_score', format: 'number' },
   evidence_score: {
     label: 'Evidence',
@@ -22,6 +25,8 @@ export const METRIC_REGISTRY = Object.freeze({
     source_path: 'robustness.robustness_score',
     format: 'score',
   },
+
+  // Tax coverage and optimizer search diagnostics.
   tax_coverage: {
     label: 'Cobertura fiscal',
     source_path: 'result.tax_results.tax_coverage.complete_fiscal_coverage_ratio',
@@ -37,6 +42,8 @@ export const METRIC_REGISTRY = Object.freeze({
     source_path: 'optimizer.search_log.exact_search_space',
     format: 'boolean',
   },
+
+  // Decision and release status.
   recommendation_status: {
     label: 'Recomendação',
     source_path: 'recommendation.recommendation_status',

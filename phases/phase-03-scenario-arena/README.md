@@ -13,4 +13,4 @@ Organização por feature da Fase 3.
 - [`ScenarioPersistence`](modules/ScenarioPersistence/README.md) — Salva cenários criados pelo usuário no navegador e permite exportar/importar JSON de cenário.
 - [`ScenarioQualityCheck`](modules/ScenarioQualityCheck/README.md) — Avalia plausibilidade operacional do cenário, separando cenário barato de cenário realmente executável.
 - [`ScenarioSimulator`](modules/ScenarioSimulator/README.md) — Executa cenário validado, recalcula fluxos, custos e tributo básico.
-- [`ScenarioValidator`](modules/ScenarioValidator/README.md) — Bloqueia ou alerta cenários impossíveis: sem CD ativo, demanda sem atendimento, capacidade estourada, distância ausente ou empresa misturada.
+- [`ScenarioValidator`](modules/ScenarioValidator/README.md) — Valida vínculo com empresa e baseline, CDs ativos e parâmetros numéricos/tributários antes da simulação; capacidade, cobertura real da demanda e distâncias são avaliadas fora deste validador.

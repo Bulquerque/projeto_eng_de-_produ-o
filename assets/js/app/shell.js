@@ -9,6 +9,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
     )
     .join('');
   return `<div id="networkAppRoot" class="network-app" data-testid="network-shell" data-runtime="network-intelligence">
+    <button class="network-skip-link" type="button" data-action="skip-to-content">Pular para o conteúdo</button>
     <aside class="network-sidebar" aria-label="Navegação Network Intelligence">
       <div class="network-brand"><span class="network-brand-mark" aria-hidden="true">V</span><div><strong>visagio</strong><small>Network Intelligence</small></div></div>
       <nav class="network-nav" aria-label="Seções principais">
@@ -52,7 +53,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
 export function setActiveNav(root, route) {
   const currentPath = route?.path || route?.hash?.split('?')[0];
   const currentSection = currentPath?.match(/^\/network\/([^/]+)/)?.[1];
-  root.querySelectorAll('[data-route]').forEach((link) => {
+  root.querySelectorAll('.network-nav [data-route]').forEach((link) => {
     const linkPath = link.getAttribute('data-route')?.split('?')[0].replace(/^#/, '');
     const active =
       linkPath === currentPath || (link.dataset.section && link.dataset.section === currentSection);

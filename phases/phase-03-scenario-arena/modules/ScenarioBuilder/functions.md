@@ -7,7 +7,8 @@
 
 # Dependências externas
 
-- `['ScenarioValidator', 'Valida alterações.']`
+A validação do cenário é orquestrada pelo dashboard e também aplicada pelo simulador; o ScenarioBuilder apenas constrói o objeto de cenário.
+
 - `['FlowBuilder', 'Recria fluxos.']`
 - `['CostEngine', 'Calcula custos do cenário.']`
 - `['TaxEngine', 'Calcula tributos se ligado.']`

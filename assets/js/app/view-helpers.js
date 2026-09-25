@@ -68,7 +68,7 @@ export function sectionTabs(section, currentPath) {
   return `<nav class="ni-section-tabs" aria-label="Navegação da seção">${tabs
     .map(
       ([label, route]) =>
-        `<a href="${route}" data-route="${route}" class="${route === currentPath ? 'active' : ''}">${escapeHtml(label)}</a>`
+        `<a href="${route}" data-route="${route}" class="${route === currentPath ? 'active' : ''}"${route === currentPath ? ' aria-current="page"' : ''}>${escapeHtml(label)}</a>`
     )
     .join('')}</nav>`;
 }

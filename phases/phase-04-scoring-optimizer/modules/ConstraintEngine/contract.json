@@ -24,8 +24,7 @@
     "validateConstraintConfig"
   ],
   "external_calls": [
-    "ScenarioQualityCheck",
-    "ScenarioValidator"
+    "ScenarioQualityCheck"
   ],
   "tests": {
     "unit": [
@@ -41,5 +40,6 @@
     "acceptance": [
       "tests/run_all_tests.py deve terminar com ALL_PHASE5_PACKAGE_TESTS_OK"
     ]
-  }
+  },
+  "validation_note": "Aplica restrições próprias do otimizador sobre cenário, resultado e avaliação de qualidade; não chama ScenarioValidator. A validação estrutural é orquestrada pelo dashboard e pelo simulador."
 }

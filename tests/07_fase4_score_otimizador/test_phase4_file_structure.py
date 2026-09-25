@@ -16,6 +16,7 @@ required = [
     'assets/js/phase4/ranking-explainer.js',
     'assets/js/phase4/tradeoff-frontier.js',
     'assets/js/phase4/phase4-dashboard.js',
+    'assets/js/phase4/objective-preview-view.js',
     'data/empresa1/phase4/default_objectives.json.enc.json',
     'data/empresa2/phase4/default_objectives.json.enc.json',
 ]

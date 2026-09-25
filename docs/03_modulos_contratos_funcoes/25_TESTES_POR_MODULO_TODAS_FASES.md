@@ -190,11 +190,11 @@ Este documento organiza os testes por fase, módulo e tipo. A matriz estruturada
 
 | Tipo de teste | Critério |
 |---|---|
-| unit | sem CD ativo é inválido |
-| unit | empresa misturada é inválida |
-| integration | ScenarioBuilder chama validator antes de salvar |
-| manual | tentar cenário absurdo e ver bloqueio |
-| acceptance | nenhum cenário inválido entra no ranking |
+| integração (`tests/06_fase3_cenarios/test_phase3_logic.py`) | cenário válido e baseline são aceitos; cenário sem CD ativo e frete inválido são rejeitados |
+| integração | verifica validação tributária e execução subsequente da simulação |
+| regressão (`tests/11_regression_e2e/regression_logic_audit.mjs`) | valida cenários válidos/inválidos e confere comportamento com simulador |
+| fluxo de apresentação (`tests/10_presentation_e2e/test_presentation_flow_playwright.py`) | percorre a jornada de cenário pela interface |
+
 
 ## ScenarioComparator
 

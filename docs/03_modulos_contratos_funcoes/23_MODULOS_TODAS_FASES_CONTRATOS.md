@@ -27,7 +27,7 @@ Regra central: Empresa 1 e Empresa 2 são empresas diferentes. Nenhum módulo po
 | 2 | BaseFitScore | planned_phase_2 | Mede a paridade entre resultado simulado e cenário real/base. Essa é a prova de que o simulador replica a realidade... |
 | 2 | CalibrationPanel | planned_phase_2 | Mostra visualmente paridade, erros por componente e pontos que precisam de calibração. |
 | 3 | ScenarioBuilder | planned_phase_3 | Permite criar cenários manuais a partir do baseline, mudando CDs ativos, alocação, frete, estoque, demanda, modo tr... |
-| 3 | ScenarioValidator | planned_phase_3 | Bloqueia ou alerta cenários impossíveis: sem CD ativo, demanda sem atendimento, capacidade estourada, distância aus... |
+| 3 | ScenarioValidator | implemented_phase_3 | Valida o vínculo com empresa e baseline, CDs ativos e parâmetros numéricos/tributários antes da simulação; não verifica capacidade, cobertura real da demanda ou disponibilidade de distâncias. |
 | 3 | ScenarioComparator | planned_phase_3 | Compara múltiplos cenários da mesma empresa contra o baseline correto, mostrando custo, saving, serviço, risco e tr... |
 | 3 | ScenarioQualityCheck | planned_phase_3 | Avalia plausibilidade operacional do cenário, separando cenário barato de cenário realmente executável. |
 | 3 | ScenarioPersistence | planned_phase_3 | Salva cenários criados pelo usuário no navegador e permite exportar/importar JSON de cenário. |
@@ -824,7 +824,6 @@ Este módulo não depende diretamente de outro módulo de domínio.
 | Módulo/função chamado | Por que chama |
 |---|---|
 | DataQualityPanel | Usa warnings de dados para não mascarar faltantes. |
-| ScenarioValidator | Reaproveita regras de validade de cenário. |
 
 
 ### Testes do módulo
@@ -1210,7 +1209,6 @@ Este módulo não depende diretamente de outro módulo de domínio.
 
 | Módulo/função chamado | Por que chama |
 |---|---|
-| ScenarioValidator | Valida alterações. |
 | FlowBuilder | Recria fluxos. |
 | CostEngine | Calcula custos do cenário. |
 | TaxEngine | Calcula tributos se ligado. |
@@ -1230,23 +1228,18 @@ Este módulo não depende diretamente de outro módulo de domínio.
 
 ## ScenarioValidator
 
-**Status:** `planned_phase_3`  
+**Status:** `implemented_phase_3`
 **Página/tela:** `/fase-3-cenarios`
 
-
-**O que faz:** Bloqueia ou alerta cenários impossíveis: sem CD ativo, demanda sem atendimento, capacidade estourada, distância ausente ou empresa misturada.
-
+**O que faz:** Valida presença do cenário, correspondência de empresa e baseline, CDs ativos (mínimo de um e existência no baseline), multiplicadores/valores não negativos, modo e regime tributário e regra de realocação. Não verifica capacidade operacional, cobertura real da demanda nem disponibilidade de distâncias; esses resultados dependem dos fluxos simulados e da avaliação de qualidade.
 
 ### Input JSON
 
 ```json
 {
-  "scenario": {},
-  "constraints": {
-    "minCds": 1,
-    "maxCdUtilization": 0.9,
-    "allowCrossCompanyComparison": false
-  }
+  "companyId": "empresa1",
+  "scenario": { "scenario_id": "cenario-1", "company_id": "empresa1", "base_scenario_id": "baseline-1", "changes": { "active_cds": ["CD1", "CD2"], "closed_cds": [], "freight_multiplier": 1, "demand_multiplier": 1, "inventory_days": 30, "wacc": 0.1, "tax_mode": "current" } },
+  "baselineBundle": { "model": { "scenario_id": "baseline-1", "active_cds": ["CD1", "CD2"] } }
 }
 ```
 
@@ -1254,44 +1247,45 @@ Este módulo não depende diretamente de outro módulo de domínio.
 
 ```json
 {
+  "scenario_id": "cenario-1",
   "valid": true,
+  "severity": "ok",
   "errors": [],
   "warnings": [],
-  "blockingReasons": []
+  "checks": [{ "check": "basic_structure", "status": "passed", "severity": "ok", "message": "Estrutura mínima válida." }],
+  "validation_summary": { "active_cds_count": 2, "closed_cds_count": 0, "requires_reallocation": false }
 }
 ```
 
-### Funções internas do módulo
+`checks` também inclui as falhas com seus códigos, status, severidade e mensagem. `blockingReasons` não faz parte do retorno.
 
+### Funções internas do módulo
 
 | Função | Descrição |
 |---|---|
-| validateCompanyIsolation(scenario) | Garante que a empresa é única. |
-| validateActiveCds(scenario) | Confere CDs ativos. |
-| validateDemandCoverage(scenario) | Confere atendimento da demanda. |
-| validateCapacity(scenario, constraints) | Confere capacidade. |
-| validateDistances(scenario) | Confere rotas com distância. |
+| `validateScenario({ companyId, scenario, baselineBundle })` | Função exportada; valida vínculos, CDs e parâmetros e monta o resultado. |
+| `check(cond, code, message, severity)` | Constrói um resultado de validação ou retorna `null` quando passa. |
+| `add(result)` | Agrupa resultado em erros/avisos e registra checks que falharam. |
+| `validate(condition, code, message)` | Executa check como erro por padrão. |
 
+### Dependências
 
-### Funções/módulos chamados de fora
-
-
-| Módulo/função chamado | Por que chama |
+| Módulo/função | Motivo |
 |---|---|
-| DataQualityPanel | Usa diagnóstico de dados. |
-| ScenarioQualityCheck | Envia warnings não bloqueantes. |
+| `core/tax-reform-config.js` | Resolve regime e modo tributário. |
+| `core/cd-utils.js` | Compara CDs ativos com os CDs conhecidos no baseline. |
 
+O validador não chama `DataQualityPanel` nem `ScenarioQualityCheck`; avaliação operacional ocorre depois da simulação.
+
+Os chamadores diretos são `ScenarioArenaDashboard` (validação antes de atualizar a interface) e `ScenarioSimulator` (guarda antes de executar o cenário).
 
 ### Testes do módulo
 
-
 | Tipo | Teste |
 |---|---|
-| unit | sem CD ativo é inválido |
-| unit | empresa misturada é inválida |
-| integration | ScenarioBuilder chama validator antes de salvar |
-| manual | tentar cenário absurdo e ver bloqueio |
-| acceptance | nenhum cenário inválido entra no ranking |
+| integração (`tests/06_fase3_cenarios/test_phase3_logic.py`) | Aceita cenário válido/baseline e rejeita cenário sem CD ativo e frete inválido; cobre regime tributário e execução subsequente da simulação. |
+| regressão (`tests/11_regression_e2e/regression_logic_audit.mjs`) | Executa validações e cenários inválidos associados à simulação. |
+| fluxo de apresentação (`tests/10_presentation_e2e/test_presentation_flow_playwright.py`) | Exercita a jornada de cenário na interface. |
 
 
 ## ScenarioComparator
@@ -1424,7 +1418,6 @@ Este módulo não depende diretamente de outro módulo de domínio.
 
 | Módulo/função chamado | Por que chama |
 |---|---|
-| ScenarioValidator | Recebe validade básica. |
 | ScenarioScoring | Entrega qualityScore para ranking. |
 | ExplainabilityEngine | Entrega alertas para explicação. |
 
@@ -1487,7 +1480,6 @@ Este módulo não depende diretamente de outro módulo de domínio.
 
 | Módulo/função chamado | Por que chama |
 |---|---|
-| ScenarioValidator | Valida antes de salvar/importar. |
 | AuditTrail | Registra origem do cenário importado/exportado. |
 
 
@@ -1701,7 +1693,6 @@ Este módulo não depende diretamente de outro módulo de domínio.
 
 | Módulo/função chamado | Por que chama |
 |---|---|
-| ScenarioValidator | Reaproveita validade operacional. |
 | ScenarioOptimizer | Filtra candidatos. |
 
 

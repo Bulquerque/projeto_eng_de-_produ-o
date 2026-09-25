@@ -19,12 +19,10 @@ import { buildWorkbookParitySummary, renderWorkbookParityPanel } from './workboo
 import { appendSharedDebugEntry } from '../core/debug-tools.js';
 import { buildCanonicalOptimizationConfig } from '../core/optimization-policy.js';
 import { loadOptimizationConfig } from '../core/optimization-config-store.js';
-import {
-  buildScenarioSummary,
-  formatInventoryDaysDisplay,
-  formatMultiplierDisplay,
-} from '../core/scenario-summary.js';
+import { renderFinalSituationTableHtml } from './final-situation-view.js';
 import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { readDecisionControls } from './decision-controls.js';
+import { renderTaxPeriodsHtml } from './tax-periods-view.js';
 
 const state = {
   companyId: 'empresa1',
@@ -111,11 +109,11 @@ function constraints() {
     allow_tax_disabled: false,
   };
 }
-function optimizerConfig() {
+function optimizerConfig(controls) {
   return buildCanonicalOptimizationConfig({
     ...(state.optimizationConfig?.optimizer_config || {}),
     method: state.optimizationConfig?.optimizer_config?.method || 'exact_discrete',
-    max_candidates: Number($('phase5MaxCandidates')?.value || 2000),
+    max_candidates: controls.maxCandidates,
     seed: Number(state.optimizationConfig?.optimizer_config?.seed ?? 42),
   });
 }
@@ -235,7 +233,7 @@ function blockedDecisionState(message) {
   state.release = validateRelease({ finalQA: state.finalQA });
   state.monteCarlo = null;
 }
-function runDecisionPipeline() {
+function runDecisionPipeline(controls = readDecisionControls()) {
   state.objective = defaultObjective();
   state.workbookParity = buildWorkbookParitySummary(state.bundle);
   state.optimizer = runOptimization({
@@ -243,7 +241,7 @@ function runDecisionPipeline() {
     baselineBundle: state.bundle,
     objective: state.objective,
     constraints: constraints(),
-    optimizerConfig: optimizerConfig(),
+    optimizerConfig: optimizerConfig(controls),
   });
   if (!String(state.optimizer.optimizer_status || '').startsWith('success')) {
     state.selection = null;
@@ -255,8 +253,8 @@ function runDecisionPipeline() {
   state.selection = selectFinalScenario({
     companyId: state.companyId,
     optimizerResult: state.optimizer,
-    selectionMode: $('phase5SelectionMode')?.value || 'best_by_score',
-    manualScenarioId: $('phase5ManualScenarioId')?.value || null,
+    selectionMode: controls.selectionMode,
+    manualScenarioId: controls.manualScenarioId,
   });
   if (!state.selection?.selected_scenario) {
     blockedDecisionState(
@@ -286,7 +284,7 @@ function runDecisionPipeline() {
     baselineResult: baselineResult(),
     stressCases: buildStressCaseLibrary({
       companyId: state.companyId,
-      stressProfile: $('phase5StressProfile')?.value || 'standard',
+      stressProfile: controls.stressProfile,
     }).stress_cases,
   });
   state.sensitivity = runSensitivity({
@@ -294,8 +292,8 @@ function runDecisionPipeline() {
     selectedScenario: scenario,
     baselineBundle: state.bundle,
     sensitivityConfig: {
-      variable: $('phase5SensitivityVariable')?.value || 'freight_multiplier',
-      values: sensitivityValues($('phase5SensitivityVariable')?.value || 'freight_multiplier'),
+      variable: controls.sensitivityVariable,
+      values: sensitivityValues(controls.sensitivityVariable),
     },
   });
   state.sensitivityMatrix = runSensitivityMatrix({
@@ -303,10 +301,10 @@ function runDecisionPipeline() {
     selectedScenario: scenario,
     baselineBundle: state.bundle,
     matrixConfig: {
-      xVariable: $('phase5SensitivityX')?.value || 'freight_multiplier',
-      yVariable: $('phase5SensitivityY')?.value || 'demand_multiplier',
-      xValues: sensitivityValues($('phase5SensitivityX')?.value || 'freight_multiplier', true),
-      yValues: sensitivityValues($('phase5SensitivityY')?.value || 'demand_multiplier', true),
+      xVariable: controls.sensitivityX,
+      yVariable: controls.sensitivityY,
+      xValues: sensitivityValues(controls.sensitivityX, true),
+      yValues: sensitivityValues(controls.sensitivityY, true),
     },
   });
   state.robustness = calculateRobustness({
@@ -490,97 +488,24 @@ function renderOverview() {
   renderFinalSituationTable(selected, comp);
 }
 function renderFinalSituationTable(selected, comp) {
-  if (!selected) {
-    const rows = [
-      ['Empresa', label(state.companyId)],
-      ['Baseline', state.bundle?.model?.scenario_id || '—'],
-      ['Cenário selecionado', '— (nenhum cenário elegível)'],
-      ['Status do cálculo tributário', 'bloqueado'],
-      ['Cobertura fiscal dos fluxos de entrada', '—'],
-      ['Total', '—'],
-      ['Total baseline', formatOptionalBRL(comp.baseline_total, true)],
-      ['Total final', '—'],
-      ['Saving absoluto', '—'],
-      ['Saving percentual', '—'],
-      ['Robustez', '—'],
-      ['Suporte da evidência', '—'],
-      ['Risco', '—'],
-      ['Recomendação', recommendationLabel(state.recommendation?.recommendation_status)],
-    ];
-    const el = $('finalSituationTable');
-    if (el)
-      el.innerHTML = `<table><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td></tr>`).join('')}</tbody></table>`;
-    return;
-  }
-  const quality = selected?.quality || {};
-  const summary = buildScenarioSummary({
-    scenario: selected?.scenario,
-    result: selected?.result || selected,
-    quality,
-    baselineTotal: comp.baseline_total,
-  });
-  const rows = [
-    ['Empresa', label(state.companyId)],
-    ['Baseline', state.bundle?.model?.scenario_id || '—'],
-    ['Cenário selecionado', selected?.scenario_name || selected?.scenario_id || '—'],
-    ['CDs', String(summary.active_cds_count)],
-    ['Frete', formatMultiplierDisplay(summary.freight_multiplier)],
-    ['Demanda', formatMultiplierDisplay(summary.demand_multiplier)],
-    ['Estoque', formatInventoryDaysDisplay(summary.inventory_days)],
-    ['Regime tributário', summary.tax_regime_label],
-    ['Transferência', formatBRL(summary.transfer_cost, true)],
-    ['Tributo', formatBRL(summary.tax_impact, true)],
-    ['Status do cálculo tributário', selected?.result?.tax_results?.calculation_mode || '—'],
-    ['Qualidade dos dados', selected?.result?.data_quality?.status || '—'],
-    ['Uso permitido', selected?.result?.data_quality?.decision_use || 'decision_support'],
-    ['Estudo próprio tributário', selected?.result?.tax_results?.tax_study?.study_id || '—'],
-    [
-      'Cobertura fiscal dos fluxos de entrada',
-      selected?.result?.tax_results?.tax_coverage?.input_coverage_ratio == null
-        ? '—'
-        : formatPct(selected.result.tax_results.tax_coverage.input_coverage_ratio * 100),
-    ],
-    ['Total', formatBRL(summary.total_with_tax, true)],
-    ['Total baseline', formatOptionalBRL(comp.baseline_total, true)],
-    ['Total final', formatOptionalBRL(comp.scenario_total, true)],
-    ['Saving absoluto', formatOptionalBRL(comp.saving_abs, true)],
-    ['Saving percentual', formatOptionalPct(comp.saving_pct)],
-    [
-      state.robustness?.certified_robustness_score != null ? 'Robustez' : 'Robustez condicional',
-      `${formatNumber(state.robustness?.robustness_score, 0)}/100`,
-    ],
-    [
-      'Certificação da robustez',
-      state.robustness?.certified_robustness_score != null
-        ? 'disponível no escopo modelado'
-        : 'não certificada — interpretação exploratória',
-    ],
-    [
-      'Suporte da evidência',
-      `${formatNumber(selected?.result?.evidence?.evidence_score, 0)}/100 · ${selected?.result?.evidence?.evidence_status || '—'}`,
-    ],
-    ['Risco', quality.risk_level || '—'],
-    ['Recomendação', recommendationLabel(state.recommendation?.recommendation_status)],
-  ];
   const el = $('finalSituationTable');
-  if (el)
-    el.innerHTML = `<table><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td></tr>`).join('')}</tbody></table>`;
+  if (el) {
+    el.innerHTML = renderFinalSituationTableHtml({
+      companyLabel: label(state.companyId),
+      baselineId: state.bundle?.model?.scenario_id,
+      selected,
+      comparison: comp,
+      robustness: state.robustness,
+      recommendationLabel: recommendationLabel(state.recommendation?.recommendation_status),
+    });
+  }
 }
 function renderTaxPeriods() {
   const el = $('taxPeriodsPanel');
   if (!el) return;
   const tax = state.selection?.selected_scenario?.result?.tax_results || {};
   const contract = tax.tax_period_contract || tax.metadata?.tax_period_contract || {};
-  const selected = contract.selected_period || {};
-  const dataPeriod = contract.current_reference_data_period || {};
-  const observed = contract.observed_data_coverage || {};
-  const rows = (contract.available_periods || [])
-    .map(
-      (period) =>
-        `<tr><td>${escapeHtml(String(period.year ?? '—'))}</td><td>${escapeHtml(period.phase || '—')}</td><td>${period.current_tax_weight == null ? '—' : formatPct(period.current_tax_weight * 100)}</td><td>${period.reform_tax_weight == null ? '—' : formatPct(period.reform_tax_weight * 100)}</td><td>${escapeHtml(period.source_confidence || '—')}</td><td>${escapeHtml(period.data_status || '—')}</td></tr>`
-    )
-    .join('');
-  el.innerHTML = `<p><strong>Selecionado:</strong> ${escapeHtml(String(selected.year || '—'))} · ${escapeHtml(selected.source_status || '—')} · ${escapeHtml(selected.source_ref || selected.bridge_source_ref || '—')}</p><p><strong>Matriz atual:</strong> ${escapeHtml(`${dataPeriod.period_start || '—'} a ${dataPeriod.period_end || 'aberto'} · ${dataPeriod.source_file || '—'}`)}</p><p><strong>Dados transacionais observados:</strong> ${escapeHtml(`${observed.status || '—'}; período não informado quando ausente na fonte.`)}</p><table><thead><tr><th>Ano</th><th>Fase</th><th>Atual</th><th>IBS</th><th>Fonte</th><th>Status</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Cronograma oficial não carregado.</td></tr>'}</tbody></table><p class="small-note">A tabela separa cronograma oficial, matriz de referência e histórico transacional. A ausência de período observado não é preenchida por hipótese.</p>`;
+  el.innerHTML = renderTaxPeriodsHtml(contract);
 }
 function renderStress() {
   const rows = (state.stress?.stress_results || [])

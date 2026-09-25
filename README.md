@@ -5,7 +5,7 @@ Simulador estático de malha logística com validação de dados, baseline, cen�
 ## Comece aqui
 
 1. Instale as dependências JavaScript com `npm ci`.
-2. Configure `VISAGIO_DATA_PASSWORD` somente no ambiente local ou em `.env.local`.
+2. Para executar fluxos de empresas protegidas, configure `VISAGIO_DATA_PASSWORD` somente no ambiente local ou em `.env.local`. A interface de demonstração com `empresa_mock` não requer essa credencial.
 3. Suba o site:
 
 ```bash
@@ -24,7 +24,9 @@ Rotas principais:
 - `/fase-5-entrega-final/` — stress test, robustez, recomendação e exportação;
 - `/debug/` — diagnóstico de paths, módulos e carregamento.
 
-Para abrir a interface moderna com a fixture pública sintética:
+O portal e a Network Intelligence coexistem. O `index.html` sempre carrega o bootstrap `assets/js/app/main.js`; a shell Network só inicializa com o parâmetro `ui=network-intelligence` ou uma rota `#/network/...`. Fora desse modo, o carregador inline de `index.html` importa os entry points das cinco fases e o roteador legado. As páginas `/fase-1-validacao/` a `/fase-5-entrega-final/` continuam disponíveis; portanto, o projeto não é um runtime único.
+
+Para abrir a interface Network Intelligence com a fixture sintética pública:
 
 ```text
 /?ui=network-intelligence&company=empresa_mock#/network/overview/summary
@@ -73,11 +75,11 @@ protegido é executado quando `VISAGIO_DATA_PASSWORD` estiver disponível.
 | `docs/` | Documentação técnica organizada por assunto. |
 | `references/` | Workbooks, PDF, apresentações e fontes originais. |
 
-O mapa detalhado está em [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md). O processo de contribuição e manutenção está em [`CONTRIBUTING.md`](CONTRIBUTING.md).
+O mapa detalhado está em [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md). O processo de contribuição e manutenção está em [`CONTRIBUTING.md`](CONTRIBUTING.md). Para encontrar guias e documentos acadêmicos, comece por [`docs/README.md`](docs/README.md) e [`docs/00_inicio/00_README_DO_PACOTE.md`](docs/00_inicio/00_README_DO_PACOTE.md).
 
 ## Dados protegidos e artefatos acadêmicos
 
-Os dados operacionais derivados e os envelopes das fontes permanecem criptografados no repositório. Os arquivos originais ficam fora do histórico público; o manifesto preserva hashes e metadados para rastreabilidade. `.env.local` é local e ignorado; a senha nunca deve entrar no Git, em relatórios ou em artefatos de entrega. No navegador, senha e chaves ficam somente em memória durante a aba atual.
+`data-demo/empresa_mock/` contém fixtures sintéticas para demonstração. Em `data/` convivem contratos, catálogos/derivados e dados sujeitos a proteção; arquivos criptografados não devem ser confundidos com arquivos públicos nem descriptografados para publicação. Consulte `.gitignore`, os manifestos e a proveniência antes de compartilhar ou gerar pacotes. `.env.local` é local e ignorado; a senha nunca deve entrar no Git, em relatórios ou em artefatos de entrega. No navegador, senha e chaves ficam somente em memória durante a aba atual. A criptografia no repositório, por si só, não comprova que todo arquivo local ou pacote derivado está livre de dados protegidos.
 
 Para gerar novamente os números, a evidência e a planilha do relatório:
 
@@ -92,7 +94,7 @@ por `VISAGIO_ARTIFACT_TOOL_PATH`; o script não depende de caminhos absolutos de
 máquina específica e falha com uma mensagem explícita quando essa dependência não está
 disponível.
 
-Os arquivos derivados ficam em `entregaveis/`, também ignorado pelo Git. O pacote contém agregados, metodologia, reconciliação, auditoria tributária e fontes, mas não exporta os dados-fonte protegidos.
+Os arquivos derivados ficam em `entregaveis/`, ignorado pelo Git. Antes de entregar ou publicar, confira o manifesto gerado e os arquivos incluídos; não presuma que uma saída local é segura para distribuição apenas por estar fora do Git.
 
 ## Documentação para o relatório
 

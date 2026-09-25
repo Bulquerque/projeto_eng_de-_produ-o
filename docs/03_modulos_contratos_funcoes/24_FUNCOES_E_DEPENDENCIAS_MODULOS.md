@@ -209,7 +209,6 @@ Sem chamadas externas diretas.
 | Chamada externa | Motivo |
 |---|---|
 | DataQualityPanel | Usa warnings de dados para não mascarar faltantes. |
-| ScenarioValidator | Reaproveita regras de validade de cenário. |
 
 ## CostEngine
 
@@ -311,30 +310,24 @@ Sem chamadas externas diretas.
 
 | Chamada externa | Motivo |
 |---|---|
-| ScenarioValidator | Valida alterações. |
 | FlowBuilder | Recria fluxos. |
 | CostEngine | Calcula custos do cenário. |
 | TaxEngine | Calcula tributos se ligado. |
 
 ## ScenarioValidator
 
+### Função e dependências
 
-### Funções internas
-
-| Função interna | Responsabilidade |
+| Função/dependência | Responsabilidade |
 |---|---|
-| validateCompanyIsolation(scenario) | Garante que a empresa é única. |
-| validateActiveCds(scenario) | Confere CDs ativos. |
-| validateDemandCoverage(scenario) | Confere atendimento da demanda. |
-| validateCapacity(scenario, constraints) | Confere capacidade. |
-| validateDistances(scenario) | Confere rotas com distância. |
+| `validateScenario({ companyId, scenario, baselineBundle })` | Valida a estrutura e os vínculos do cenário antes da simulação; retorna `valid`, `severity`, `errors`, `warnings`, `checks` e `validation_summary`. |
+| `core/tax-reform-config.js` | Resolve regime e modo tributário. |
+| `core/cd-utils.js` | Compara CDs ativos com os CDs do baseline. |
 
-### Chamadas externas
+O módulo não aplica restrições de capacidade, cobertura da demanda ou distância. Não chama `DataQualityPanel` nem `ScenarioQualityCheck`; a avaliação de qualidade ocorre depois da simulação.
 
-| Chamada externa | Motivo |
-|---|---|
-| DataQualityPanel | Usa diagnóstico de dados. |
-| ScenarioQualityCheck | Envia warnings não bloqueantes. |
+Os chamadores diretos são `ScenarioArenaDashboard` e `ScenarioSimulator`.
+
 
 ## ScenarioComparator
 
@@ -372,7 +365,6 @@ Sem chamadas externas diretas.
 
 | Chamada externa | Motivo |
 |---|---|
-| ScenarioValidator | Recebe validade básica. |
 | ScenarioScoring | Entrega qualityScore para ranking. |
 | ExplainabilityEngine | Entrega alertas para explicação. |
 
@@ -393,7 +385,6 @@ Sem chamadas externas diretas.
 
 | Chamada externa | Motivo |
 |---|---|
-| ScenarioValidator | Valida antes de salvar/importar. |
 | AuditTrail | Registra origem do cenário importado/exportado. |
 
 # Fase 4
@@ -454,7 +445,6 @@ Sem chamadas externas diretas.
 
 | Chamada externa | Motivo |
 |---|---|
-| ScenarioValidator | Reaproveita validade operacional. |
 | ScenarioOptimizer | Filtra candidatos. |
 
 ## ScenarioOptimizer

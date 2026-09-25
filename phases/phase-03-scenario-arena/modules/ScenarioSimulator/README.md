@@ -31,6 +31,8 @@ Executa cenário validado, recalcula fluxos, custos e tributo básico.
 - `ver arquivo JS para funções exportadas e helpers internos`
 
 ## Módulos chamados
+
+- `ScenarioValidator` valida o cenário antes de executar a simulação.
 - `módulos phase2/phase3 conforme implementação`
 
 ## Testes
