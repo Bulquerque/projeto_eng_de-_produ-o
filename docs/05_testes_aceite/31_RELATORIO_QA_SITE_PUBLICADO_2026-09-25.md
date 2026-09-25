@@ -10,7 +10,7 @@ As ressalvas são a indisponibilidade da inspeção de Console/Network do Chrome
 
 - Repositório GitHub: `Bulquerque/projeto_eng_de-_produ-o`.
 - Branch sincronizada: `integration/final-delivery`.
-- Commit GitHub: `83db80b2faef317b9d3a71f3d155cd0b48059d89`; `git ls-remote` confirmou o mesmo SHA na branch remota.
+- Commit GitHub com as alterações de código: `83db80b2faef317b9d3a71f3d155cd0b48059d89`. O relatório desta publicação foi enviado no commit seguinte. O `HEAD` mais recente da branch, após o envio documental, é `b01458eaeb384d3d285e20e816e0dbc09dddf5a4`; `git ls-remote` confirmou esse SHA na branch remota.
 - Site público: [Visagio · Simulador Logístico](https://visagio-logistica.gptgrupo-especial.chatgpt.site/).
 - Sites versão **16**, associada ao commit do repositório de fonte do próprio Site `51e995bb052b4f7811bbed33bc7ef679683b2bc4`.
 - Deploy `appgdep_6ab67e5d3b788191b0c8676a27b07821`: status `succeeded`.
