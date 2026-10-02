@@ -57,7 +57,7 @@ A branch `codex/interface-guiada` parte de `integration/final-delivery` em `481e
 
 O repositório mantém a implementação e os testes completos. O Sites preserva o pacote de runtime enxuto: interface, motores, demo e 11 inputs de empresa criptografados. Planilhas originais, acervo documental, fontes brutas e configurações locais não integram a publicação. Complementos privados continuam marcados como não publicados nesse runtime; cobertura e resultados não equivalem aos do acervo local completo.
 
-Publicação: **Sites v19**, deploy `succeeded`, em [Visagio](https://visagio-logistica.gptgrupo-especial.chatgpt.site). Código GitHub: `3b054ca72366b59eb45916398e3ad46b1ec7b78b`. Fonte Sites: `d22fab089cca1e4e58e4dd9bf70c7893c6f2cbfb`. As árvores `assets` e `data-demo` do pacote coincidem byte a byte com esse commit de código; `build-info.json` registra a proveniência. A revisão está no [PR #3](https://github.com/Bulquerque/projeto_eng_de-_produ-o/pull/3).
+Publicação: **Sites v20**, deploy `succeeded`, em [Visagio](https://visagio-logistica.gptgrupo-especial.chatgpt.site). Código GitHub: `fa4f757`. Fonte Sites: `4bd509cd205ce118ff44d812a2565a00ac9031c6`. As árvores `assets` e `data-demo` do pacote coincidem byte a byte com esse commit de código; `build-info.json` registra a proveniência. A revisão está no [PR #3](https://github.com/Bulquerque/projeto_eng_de-_produ-o/pull/3).
 
 O workflow GitHub instala Ruff, cryptography, Playwright e Chromium nos dois gates; a credencial de Actions foi alinhada à configuração escolhida, via stdin e sem alteração de fonte.
 
