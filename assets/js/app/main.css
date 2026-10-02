@@ -379,7 +379,7 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
   .network-brand { padding: 0 2px 8px; }
   .network-nav { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 4px; }
   .network-nav a { min-height: 44px; padding: 6px 8px; font-size: 12px; }
-  .network-sidebar-tools { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 4px; margin-top: 6px; padding: 4px 0 0; border-top: 1px solid rgba(255,255,255,.14); }
+  .network-sidebar-tools { grid-template-columns: minmax(0,1fr) auto; gap: 4px; margin-top: 6px; padding: 4px 0 0; border-top: 1px solid rgba(255,255,255,.14); }
   .network-sidebar-tools button { justify-content: center; padding: 6px 4px; text-align: center; font-size: 12px; }
   .network-topbar { position: static; display: grid; grid-template-columns: 1fr; gap: 8px; min-height: 0; padding: 10px 14px; }
   .network-product { min-width: 0; }

@@ -151,6 +151,8 @@ function markSyntheticResult(result) {
     demo_only: true,
     release_policy: 'demo_only',
     decision_use: 'demo_only',
+    simulation_scope: 'exploratory_only',
+    simulation_scope_label: 'Simulação exploratória demonstrativa',
     data_quality: {
       ...(result.data_quality || {}),
       decision_use: 'demo_only',
@@ -164,6 +166,9 @@ function markSyntheticResult(result) {
       tax_source_label: 'Parâmetros tributários sintéticos demonstrativos',
       demo_only: true,
       decision_use: taxResults.decision_use || 'exploratory_only',
+      simulation_scope: 'exploratory_only',
+      simulation_scope_label:
+        'Impacto tributário não calculado: fixture sem cobertura fiscal elegível',
     },
   };
 }
@@ -204,10 +209,11 @@ const PROVIDER_CAPABILITIES = Object.freeze({
     supported: true,
     decision_use: 'exploratory_only',
     complete_fiscal_coverage: false,
-    tax_reform_scenarios: false,
+    tax_reform_scenarios: true,
+    tax_reform_calculation: false,
     baseline_policy: 'zero_tax_when_engine_finds_no_eligible_flows',
     reason:
-      'Fixtures sintéticas não contêm receita e classificação fiscal completas; sem fluxos elegíveis, a comparação demo é logística.',
+      'A linha do tempo legal pode ser explorada em cenários demonstrativos; a fixture não tem receita e classificação fiscal elegíveis, então o impacto tributário calculado permanece indisponível.',
   },
   historical_uncertainty: {
     supported: false,
@@ -303,17 +309,41 @@ function assertScenarioCompany(scenario) {
   return scenario;
 }
 
+const DEMO_TAX_YEARS = new Set([2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033]);
+const DEMO_TAX_MODES = new Set([
+  'reform_2026',
+  'reform_2027',
+  'reform_2028',
+  'reform_2027_2028',
+  'reform_2029',
+  'reform_2030',
+  'reform_2031',
+  'reform_2032',
+  'reform_2033',
+  'reform_full_2033',
+  'transition_2029',
+  'transition_2030',
+  'transition_2031',
+  'transition_2032',
+]);
+
+function isSupportedDemoTaxScenario(scenario) {
+  const year = Number(scenario?.changes?.tax_year);
+  const mode = String(scenario?.changes?.tax_mode || 'current');
+  return mode === 'current' || (DEMO_TAX_YEARS.has(year) && DEMO_TAX_MODES.has(mode));
+}
+
 function assertSupportedScenario(scenario) {
-  if (String(scenario?.changes?.tax_mode || 'current') !== 'current') {
+  if (!isSupportedDemoTaxScenario(scenario)) {
     throw new Error(
-      'Cenários de reforma tributária indisponíveis na demo: a fixture não contém fluxos fiscais elegíveis.'
+      'Cenário tributário demonstrativo inválido: selecione o regime atual ou um ano de 2026 a 2033.'
     );
   }
   return scenario;
 }
 
 function isExecutableDemoScenario(scenario) {
-  return String(scenario?.changes?.tax_mode || 'current') === 'current';
+  return isSupportedDemoTaxScenario(scenario);
 }
 
 function buildScenarioFromExisting(scenario, baselineBundle, scenarioId = scenario?.scenario_id) {

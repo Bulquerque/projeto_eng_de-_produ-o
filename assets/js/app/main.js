@@ -20,9 +20,11 @@ import { loadOptimizationPresets } from '../core/optimization-config-store.js';
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
 import { selectBaseline } from './selectors/business-selectors.js';
 import { ROUTE_RENDERERS } from './route-renderers.js';
+import { comparisonCandidates } from './pages/results.js';
 import {
   renderDistanceHistogram,
   renderCostChart,
+  renderComparisonCostChart,
   renderRanking,
   renderRiskCdf,
   renderRiskDrivers,
@@ -364,6 +366,7 @@ function initializeNetworkIntelligence() {
             nextState.ui.scenario_draft = scenario;
             nextState.ui.scenario_dirty = false;
             nextState.context.selected_scenario_id = scenario.scenario_id;
+            nextState.ui.optimizer_tax_year = null;
             clearScenarioResults(nextState);
           });
           navigate('#/network/scenarios/build');
@@ -379,6 +382,7 @@ function initializeNetworkIntelligence() {
           nextState.ui.scenario_draft = structuredClone(scenario);
           nextState.ui.scenario_dirty = false;
           nextState.context.selected_scenario_id = scenario.scenario_id;
+          nextState.ui.optimizer_tax_year = null;
           clearScenarioResults(nextState);
         });
         navigate('#/network/scenarios/build');
@@ -393,6 +397,7 @@ function initializeNetworkIntelligence() {
           nextState.ui.scenario_draft = null;
           nextState.ui.scenario_dirty = false;
           nextState.context.selected_scenario_id = null;
+          nextState.ui.optimizer_tax_year = null;
           clearScenarioResults(nextState);
         });
         navigate('#/network/scenarios/build');
@@ -410,6 +415,11 @@ function initializeNetworkIntelligence() {
           state.ui.scenario_dirty = true;
           clearScenarioResults(state);
         } else if (formId === 'niOptimizerForm') {
+          values.tax_year =
+            Number(state.ui.optimizer_tax_year) ||
+            Number(values.tax_year) ||
+            Number(state.data.selected_scenario?.changes?.tax_year) ||
+            2027;
           state.ui.optimizer_draft = values;
           const optimizerDrafts = state.ui.optimizer_drafts || (state.ui.optimizer_drafts = {});
           optimizerDrafts[String(values.tax_year || '2027')] = values;
@@ -428,6 +438,15 @@ function initializeNetworkIntelligence() {
           state.data.recommendation = null;
         }
         updateGlobalContext(root, state);
+      },
+      switchOptimizerTaxYear(previousValues, nextValues) {
+        store.update((state) => {
+          state.ui.optimizer_drafts[String(previousValues.tax_year || '2027')] = previousValues;
+          state.ui.optimizer_drafts[String(nextValues.tax_year)] = nextValues;
+          state.ui.optimizer_draft = nextValues;
+          state.ui.optimizer_tax_year = Number(nextValues.tax_year);
+          clearScenarioResults(state);
+        });
       },
       selectComparedScenario(scenarioId) {
         const state = store.getState();
@@ -791,7 +810,14 @@ function initializeNetworkIntelligence() {
     };
 
     function renderCharts(path, state) {
-      if (path === '/network/overview/costs') renderCostChart('niCostChart', state.data.baseline);
+      if (path === '/network/overview/summary' || path === '/network/overview/costs') {
+        const baseline = state.data.baseline;
+        const taxUnavailable =
+          state.context?.provider_kind === 'mock' &&
+          baseline?.tax_results?.tax_results?.tax_coverage?.eligible_flow_count === 0;
+        const chartId = path.endsWith('/costs') ? 'niCostChart' : 'niSummaryCostChart';
+        renderCostChart(chartId, baseline, { taxUnavailable });
+      }
       if (path === '/network/overview/network') {
         const flows = state.data.baseline?.flows || [];
         renderVolumeByCdChart('niVolumeByCdChart', flows);
@@ -810,6 +836,15 @@ function initializeNetworkIntelligence() {
       }
       if (path === '/network/results/summary')
         renderRanking('niRankingChart', state.data.optimizer);
+      if (path === '/network/results/comparison') {
+        const baseline = selectBaseline(state);
+        renderComparisonCostChart(
+          'niComparisonCostChart',
+          comparisonCandidates(state),
+          state.context?.selected_scenario_id,
+          baseline?.model?.scenario_id || 'baseline'
+        );
+      }
     }
 
     window.addEventListener('visagio:crypto-prompt', (event) => {

@@ -119,10 +119,15 @@ def test_demo_journey(base, browser):
     )
     assert year_options[0] == ['', 'Base atual (2025)', False]
     assert [value for value, _, _ in year_options[1:]] == [f'tax-year:{year}' for year in range(2026, 2034)]
-    assert all(disabled and 'indisponível na demonstração' in label for _, label, disabled in year_options[1:])
+    assert all(not disabled for _, _, disabled in year_options[1:])
     assert not any('demonstrativo' in label.lower() or 'consolidação' in label.lower() for _, label, _ in year_options)
     assert page.locator('.network-tool-link').evaluate('el => getComputedStyle(el).color') != 'rgb(128, 0, 128)'
     reference_cost = page.locator('[data-testid="baseline-total"]').inner_text()
+    assert page.locator('#niSummaryCostChart').is_visible()
+    assert page.locator('#niSummaryCostChart').get_attribute('aria-label')
+    route(page, 'overview/costs')
+    assert page.locator('#niCostChart').is_visible()
+    assert page.locator('#niCostChart').get_attribute('aria-label')
     route(page, 'results/summary')
     assert page.locator('[data-testid="optimizer-ranking"] tbody tr').count() == 0
     assert page.locator('[data-action="open-export"]').count() == 0
@@ -277,6 +282,12 @@ def test_demo_journey(base, browser):
         route(page, section)
         assert page.locator('#networkPage h1').count() == 1, section
         assert page.locator('.ni-alert.error').count() == 0, section
+        if section == 'results/comparison':
+            chart = page.locator('#niComparisonCostChart')
+            assert chart.count() == 1
+            assert chart.evaluate(
+                "canvas => { const ctx = canvas.getContext('2d'); return canvas.width > 0 && canvas.height > 0 && ctx.getImageData(2, 2, 1, 1).data[3] > 0; }"
+            )
     route(page, 'scenarios/build')
     page.locator('input[name="demand_multiplier"]').fill('1.2')
     route(page, 'trust/validation')
@@ -436,6 +447,17 @@ def test_real_tenants(base, browser):
         assert 'R$' in page.locator('[data-testid="result-total"]').inner_text()
         route(page, 'optimizer/configure')
         open_details(page, 'input[name="max_candidates"]')
+        if page.locator('[data-testid="optimizer-tax-scenario"]').count():
+            tax_year = page.locator('[data-testid="optimizer-tax-scenario"]')
+            tax_year.select_option('2027')
+            page.locator('input[name="max_candidates"]').fill('400')
+            tax_year.select_option('2032')
+            assert page.locator('input[name="max_candidates"]').input_value() == '2000'
+            assert page.locator('input[name="risk_iterations"]').input_value() == '300'
+            tax_year.select_option('2027')
+            assert page.locator('input[name="max_candidates"]').input_value() == '400'
+            tax_year.select_option('2032')
+            page.locator('input[name="max_candidates"]').fill('100')
         page.locator('input[name="max_candidates"]').fill('100')
         page.locator('input[name="risk_iterations"]').fill('50')
         optimize(page)

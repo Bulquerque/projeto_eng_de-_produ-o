@@ -76,13 +76,13 @@ export function updateGlobalContext(root, state) {
     const fiscalSuffix = fiscalAvailable ? '' : ' — indisponível na demonstração';
     const options = `<option value="">Base atual (2025)</option>
       <optgroup label="Reforma tributária">
-        <option value="tax-year:2026"${fiscalDisabled}>2026 · Ano-teste${fiscalSuffix}</option>
-        <option value="tax-year:2027"${fiscalDisabled}>2027 · CBS e Imposto Seletivo${fiscalSuffix}</option>
-        <option value="tax-year:2028"${fiscalDisabled}>2028 · CBS e Imposto Seletivo${fiscalSuffix}</option>
-        <option value="tax-year:2029"${fiscalDisabled}>2029 · início da transição do IBS${fiscalSuffix}</option>
-        <option value="tax-year:2030"${fiscalDisabled}>2030 · transição do IBS${fiscalSuffix}</option>
-        <option value="tax-year:2031"${fiscalDisabled}>2031 · transição do IBS${fiscalSuffix}</option>
-        <option value="tax-year:2032"${fiscalDisabled}>2032 · transição do IBS${fiscalSuffix}</option>
+        <option value="tax-year:2026"${fiscalDisabled}>2026 · Ano-teste (CBS/IBS)${fiscalSuffix}</option>
+        <option value="tax-year:2027"${fiscalDisabled}>2027 · CBS, IBS-teste e IS${fiscalSuffix}</option>
+        <option value="tax-year:2028"${fiscalDisabled}>2028 · CBS, IBS-teste e IS${fiscalSuffix}</option>
+        <option value="tax-year:2029"${fiscalDisabled}>2029 · IBS: 10% da transição${fiscalSuffix}</option>
+        <option value="tax-year:2030"${fiscalDisabled}>2030 · IBS: 20% da transição${fiscalSuffix}</option>
+        <option value="tax-year:2031"${fiscalDisabled}>2031 · IBS: 30% da transição${fiscalSuffix}</option>
+        <option value="tax-year:2032"${fiscalDisabled}>2032 · IBS: 40% da transição${fiscalSuffix}</option>
         <option value="tax-year:2033"${fiscalDisabled}>2033 · novo sistema integral${fiscalSuffix}</option>
       </optgroup>`;
     if (scenarioSelect.dataset.options !== options) {

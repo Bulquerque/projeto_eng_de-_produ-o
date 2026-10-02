@@ -18,7 +18,8 @@ assert.equal(snapshot.provider_kind, 'mock');
 assert.equal(snapshot.meta.release_policy, 'demo_only');
 assert.equal(snapshot.meta.capabilities.historical_uncertainty.supported, false);
 assert.equal(snapshot.meta.capabilities.fiscal.decision_use, 'exploratory_only');
-assert.equal(snapshot.meta.capabilities.fiscal.tax_reform_scenarios, false);
+assert.equal(snapshot.meta.capabilities.fiscal.tax_reform_scenarios, true);
+assert.equal(snapshot.meta.capabilities.fiscal.tax_reform_calculation, false);
 assert.equal(
   snapshot.meta.capabilities.fiscal.baseline_policy,
   'zero_tax_when_engine_finds_no_eligible_flows'
@@ -56,6 +57,43 @@ assert.equal(
   baselineRun.result.total_with_tax,
   provider.fixtures.baseline.costs.costs.total_with_tax,
   'baseline reference and unchanged baseline simulation must reconcile'
+);
+const annualDemoScenario = {
+  scenario_id: 'empresa_mock_tax_reform_2030',
+  scenario_name: 'Transição demonstrativa 2030',
+  company_id: 'empresa_mock',
+  scenario_type: 'tax_demo',
+  base_scenario_id: 'mock_baseline',
+  changes: {
+    active_cds: ['CD Demo Norte', 'CD Demo Sul', 'CD Demo Centro'],
+    closed_cds: [],
+    freight_multiplier: 1,
+    demand_multiplier: 1,
+    inventory_days: 45,
+    wacc: 0.15,
+    tax_mode: 'reform_2030',
+    tax_year: 2030,
+    tax_regime: 'transition_2030',
+  },
+  metadata: { source: 'ScenarioBuilder' },
+};
+const annualDemoRun = await provider.runScenario({ scenario: annualDemoScenario });
+assert.equal(annualDemoRun.scenario.changes.tax_year, 2030);
+assert.equal(annualDemoRun.result.demo_only, true);
+assert.equal(annualDemoRun.result.simulation_scope, 'exploratory_only');
+assert.equal(annualDemoRun.result.tax_results.simulation_scope, 'exploratory_only');
+assert.equal(annualDemoRun.result.tax_results.tax_coverage.eligible_flow_count, 0);
+assert.equal(annualDemoRun.result.tax_results.decision_use, 'exploratory_only');
+assert.equal(annualDemoRun.result.costs.tax_impact, 0);
+await assert.rejects(
+  provider.runScenario({
+    scenario: {
+      ...annualDemoScenario,
+      scenario_id: 'empresa_mock_tax_reform_invalid',
+      changes: { ...annualDemoScenario.changes, tax_mode: 'reform_2027_demo' },
+    },
+  }),
+  /Cenário tributário demonstrativo inválido/
 );
 const untouchedBaselineFixture = JSON.parse(
   await fs.readFile('./data-demo/empresa_mock/baseline.json', 'utf8')

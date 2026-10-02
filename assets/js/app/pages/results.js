@@ -125,7 +125,7 @@ export function renderResultsSummary(state) {
   return `<section class="ni-workspace ni-workspace-page ni-results" data-testid="page-results-summary"><header class="ni-page-heading"><h1>Resultados</h1></header>${sectionTabs('results', state.ui?.route)}${summary}${blocked ? alert : ''}<section class="ni-workspace-panel ni-results-reference"><h2>Custos e comparação</h2>${table(['Componente', 'Resultado', 'Referência', 'Diferença'], rows)}</section>${ranking}${trustLink}${actions}</section>`;
 }
 
-function comparisonCandidates(state) {
+export function comparisonCandidates(state) {
   const decision = selectDecision(state);
   const baseline = baselineValues(state);
   const comparison = decision.comparison?.comparison || [];
@@ -230,7 +230,13 @@ export function renderResultsComparison(state) {
         `<button type="button" class="ni-button secondary" data-action="select-compared-scenario" data-scenario-id="${escapeHtml(row.scenario_id)}">Selecionar ${escapeHtml(row.scenario_name || 'alternativa')}</button>`
     )
     .join('');
-  return `<section class="ni-workspace ni-workspace-page ni-results-comparison" data-testid="page-results-comparison"><header class="ni-page-heading"><h1>Comparação</h1></header>${sectionTabs('results', state.ui?.route)}<section class="ni-workspace-panel">${body}${selectActions ? `<div class="ni-actions">${selectActions}</div>` : ''}</section></section>`;
+  const chartRows = rows.filter(
+    (row) => row.total_with_tax != null && Number.isFinite(Number(row.total_with_tax))
+  );
+  const chart = chartRows.length
+    ? `<section class="ni-workspace-panel ni-results-comparison-chart"><h2>Custo total por alternativa</h2><canvas id="niComparisonCostChart" class="ni-chart" role="img" aria-label="Gráfico de barras comparando o custo total da referência e das alternativas disponíveis"></canvas><p class="ni-note">A tabela abaixo mantém os valores exatos e os demais indicadores.</p></section>`
+    : '';
+  return `<section class="ni-workspace ni-workspace-page ni-results-comparison" data-testid="page-results-comparison"><header class="ni-page-heading"><h1>Comparação</h1></header>${sectionTabs('results', state.ui?.route)}${chart}<section class="ni-workspace-panel">${body}${selectActions ? `<div class="ni-actions">${selectActions}</div>` : ''}</section></section>`;
 }
 
 function renderTradeoffScatter(candidates) {
