@@ -1,3 +1,5 @@
+import { resolveTaxModeForRegime } from '../core/tax-reform-config.js';
+
 function readFormValue(data, rawValues, name) {
   return Object.prototype.hasOwnProperty.call(rawValues, name) ? rawValues[name] : data.get(name);
 }
@@ -13,13 +15,15 @@ function validationError(message) {
 
 export function parseScenarioForm(data, checkedActiveCds, rawValues = {}) {
   return {
-    scenario_name: readFormValue(data, rawValues, 'scenario_name') || 'Cenário manual',
+    scenario_name: String(readFormValue(data, rawValues, 'scenario_name') ?? 'Cenário manual'),
     active_cds: [...checkedActiveCds].map((input) => input.value),
     freight_multiplier: readFormNumber(data, rawValues, 'freight_multiplier', 1),
     demand_multiplier: readFormNumber(data, rawValues, 'demand_multiplier', 1),
     inventory_days: readFormNumber(data, rawValues, 'inventory_days', 45),
     wacc: readFormNumber(data, rawValues, 'wacc', 0.15),
-    tax_mode: data.get('tax_mode') || 'current',
+    tax_mode: data.get('tax_mode') || resolveTaxModeForRegime(data.get('tax_regime') || 'current'),
+    tax_regime: data.get('tax_regime') || 'current',
+    reallocation_rule: data.get('reallocation_rule') || 'nearest_available_cd',
   };
 }
 
@@ -93,6 +97,8 @@ export function validateOptimizerValues(values) {
   if (!['low', 'medium', 'high'].includes(constraints.max_risk_level)) {
     return validationError('Selecione um nível de risco válido.');
   }
+  const riskValidation = validateRiskValues(values.risk_config);
+  if (!riskValidation.valid) return riskValidation;
   return { valid: true, message: '' };
 }
 

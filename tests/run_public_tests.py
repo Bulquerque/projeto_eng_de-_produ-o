@@ -30,6 +30,10 @@ PUBLIC_TESTS = [
     'tests/09_quality_checks/test_phase2_refactor_modules.py',
     'tests/09_quality_checks/test_phase_folders_and_module_docs.py',
     'tests/09_quality_checks/test_release_contract.py',
+    'tests/12_network_intelligence/test_app_contracts.py',
+    'tests/12_network_intelligence/test_form_values.py',
+    'tests/12_network_intelligence/test_mock_provider_engines.py',
+    'tests/12_network_intelligence/test_network_ui_playwright.py',
 ]
 
 

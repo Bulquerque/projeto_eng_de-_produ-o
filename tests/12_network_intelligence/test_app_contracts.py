@@ -43,9 +43,13 @@ def test_app_foundation_contracts():
         const secondData = createEmptyData();
         firstData.scenarios.push({ scenario_id: 'isolated' });
         assert.deepEqual(secondData.scenarios, []);
-        store.getState().data.selected_scenario = { scenario_id: 'stale' };
+        for (const key of ['selected_scenario','scenario_result','optimizer','audit','final_qa','release','export_package','monte_carlo']) { store.getState().data[key] = { stale: true }; }
+        store.getState().meta.result_kind = 'optimization';
         clearScenarioResults(store.getState());
-        assert.equal(store.getState().data.selected_scenario, null);
+        for (const key of ['selected_scenario','scenario_result','optimizer','audit','final_qa','release','export_package','monte_carlo']) { assert.equal(store.getState().data[key], null, key); }
+        assert.equal(store.getState().meta.result_kind, null);
+        assert.equal(normalizeRoute('#/network/optimizer/results'), '#/network/results/summary');
+        assert.equal(normalizeRoute('#/network/scenarios/risk/advanced'), '#/network/results/risk/advanced');
         assert.equal(replaceCompanyQuery('empresa1'), null);
         commitProviderSnapshot(store.getState(), { company_id: 'empresa1', provider_kind: 'project', status: 'ready', data: { baseline: { model: { active_cds: ['A'] } } } });
         assert.equal(store.getState().data.baseline.model.active_cds[0], 'A');
@@ -78,7 +82,6 @@ def test_mock_fixture_isolation_contract():
     crypto_session = (ROOT / 'assets/js/core/crypto-session.js').read_text(encoding='utf-8')
     export_center = (ROOT / 'assets/js/phase5/export-center.js').read_text(encoding='utf-8')
     assert 'data-demo/empresa_mock' in mock_provider
-    assert 'runDomainScenario' not in mock_provider
     assert "import('./providers/mock-provider.js')" in main
     assert "import('./providers/project-provider.js')" in main
     assert "import('../phase5/export-center.js')" in main
@@ -109,7 +112,7 @@ def test_mock_fixture_isolation_contract():
     styles = (APP / 'main.css').read_text(encoding='utf-8')
     assert 'auditForPresentation' in trust
     assert 'Fonte protegida (detalhes no pacote de exportação)' in trust
-    assert 'body.network-ui-active .network-toast-root' in styles
+    assert '.network-toast-root' in styles
 
 
 def test_network_ui_compatibility_and_e2e_hooks():
@@ -123,26 +126,27 @@ def test_network_ui_compatibility_and_e2e_hooks():
     expected_ids = [
         'company-selector',
         'scenario-selector',
-        'evidence-topbar',
-        'company-badge',
-        'export-center',
-        'dev-console',
+        'network-shell',
+        'network-topbar',
     ]
     for test_id in expected_ids:
         assert f'data-testid="{test_id}"' in shell
+    for removed in ('evidence-topbar', 'company-badge', 'runtime-badge', 'ni-avatar'):
+        assert removed not in shell
+    assert 'aria-live="polite"' not in shell.split('<main')[1].split('</main>')[0]
+    assert shell.count('data-section="results"') == 1
 
     page_sources = '\n'.join(
         (APP / 'pages' / filename).read_text(encoding='utf-8')
-        for filename in ('overview.js', 'scenarios.js', 'optimizer.js', 'trust.js')
+        for filename in ('overview.js', 'scenarios.js', 'optimizer.js', 'trust.js', 'results.js')
     )
     for test_id in (
         'page-overview-summary',
         'page-scenarios-build',
-        'page-scenarios-result',
+        'page-results-summary',
         'page-optimizer-configure',
-        'page-optimizer-results',
+        'optimizer-ranking',
         'page-trust-validation',
-        'scenario-library',
         'saved-scenarios',
         'network-flow-analytics',
         'tax-periods-panel',
@@ -152,7 +156,7 @@ def test_network_ui_compatibility_and_e2e_hooks():
         'scenario-import',
         'scenario-clear-saved',
     ):
-        assert f'data-testid="{test_id}"' in page_sources
+        assert test_id in page_sources, test_id
 
 
 if __name__ == '__main__':

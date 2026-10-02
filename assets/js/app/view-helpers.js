@@ -6,7 +6,7 @@ export function safeJson(value) {
   return escapeHtml(JSON.stringify(value ?? {}, null, 2));
 }
 
-export function statusChip(status, label = status || '—') {
+export function statusChip(status, label = businessLabel(status) || '—') {
   return `<span class="ni-status ${statusClass(status)}">${escapeHtml(label)}</span>`;
 }
 
@@ -15,7 +15,7 @@ export function emptyState(message = 'Dados ainda não disponíveis.') {
 }
 
 export function routeFallback(route = '') {
-  return `<div class="ni-page-heading" data-testid="page-route-fallback"><p class="ni-eyebrow">Network Intelligence</p><h1>Rota não encontrada</h1><p>A rota <code>${escapeHtml(route || '—')}</code> não está disponível nesta versão do workspace.</p><div class="ni-actions"><a class="ni-button primary" href="#/network/overview/summary" data-route="#/network/overview/summary">Voltar à visão executiva</a></div></div>`;
+  return `<div class="ni-page-heading" data-testid="page-route-fallback"><p class="ni-eyebrow">Navegação</p><h1>Rota não encontrada</h1><p>A rota <code>${escapeHtml(route || '—')}</code> não está disponível no sistema.</p><div class="ni-actions"><a class="ni-button primary" href="#/network/overview/summary" data-route="#/network/overview/summary">Voltar à visão geral</a></div></div>`;
 }
 
 export function card(title, body, { eyebrow = '', testId = '' } = {}) {
@@ -46,16 +46,13 @@ export function sectionTabs(section, currentPath) {
         ['Custos', '#/network/overview/costs'],
         ['Tributário', '#/network/overview/tax'],
       ],
-      scenarios: [
-        ['Construir', '#/network/scenarios/build'],
-        ['Resultado', '#/network/scenarios/result'],
-        ['Comparar', '#/network/scenarios/compare'],
-        ['Risco & sensibilidade', '#/network/scenarios/risk'],
-      ],
-      optimizer: [
-        ['Configurar', '#/network/optimizer/configure'],
-        ['Resultados', '#/network/optimizer/results'],
-        ['Trade-offs', '#/network/optimizer/tradeoffs'],
+      scenarios: [],
+      optimizer: [],
+      results: [
+        ['Resumo', '#/network/results/summary'],
+        ['Comparação', '#/network/results/comparison'],
+        ['Alternativas', '#/network/results/tradeoffs'],
+        ['Risco', '#/network/results/risk'],
       ],
       trust: [
         ['Visão geral', '#/network/trust/overview'],
@@ -65,10 +62,51 @@ export function sectionTabs(section, currentPath) {
         ['Metodologia', '#/network/trust/methodology'],
       ],
     }[section] || [];
+  const normalizedPath = String(currentPath || '').split('?')[0];
+  if (!tabs.length) return '';
+  const activeRoute = (route) =>
+    route === normalizedPath ||
+    (route === '#/network/results/risk' && normalizedPath.startsWith(`${route}/`));
   return `<nav class="ni-section-tabs" aria-label="Navegação da seção">${tabs
     .map(
       ([label, route]) =>
-        `<a href="${route}" data-route="${route}" class="${route === currentPath ? 'active' : ''}"${route === currentPath ? ' aria-current="page"' : ''}>${escapeHtml(label)}</a>`
+        `<a href="${route}" data-route="${route}" class="${activeRoute(route) ? 'active' : ''}"${activeRoute(route) ? ' aria-current="page"' : ''}>${escapeHtml(label)}</a>`
     )
     .join('')}</nav>`;
+}
+
+export function businessLabel(value) {
+  const labels = {
+    low: 'Baixo',
+    medium: 'Moderado',
+    high: 'Alto',
+    unknown: 'Não informado',
+    passed: 'Verificado',
+    failed: 'Falhou',
+    warning: 'Com ressalvas',
+    ready: 'Concluído',
+    completed: 'Concluído',
+    success: 'Concluído',
+    simulated: 'Calculado',
+    valid: 'Válido',
+    blocked: 'Bloqueado',
+    partial: 'Parcial',
+    current: 'Atual',
+    reform: 'Reforma',
+    baseline: 'Referência',
+    demo_fixture: 'Amostra pré-calculada',
+    synthetic_fixture: 'Dados de demonstração',
+    demo_only: 'Demonstração',
+    decision_support: 'Apoio à decisão',
+    exploratory_only: 'Exploratório',
+    recommended: 'Recomendado',
+    recommended_with_warnings: 'Recomendado com ressalvas',
+    not_recommended: 'Não recomendado',
+    not_available: 'Não disponível',
+    analytical_full: 'Cobertura analítica completa',
+    analytical_partial: 'Cobertura analítica parcial',
+    observed: 'Observado',
+    estimated: 'Estimado',
+  };
+  return labels[value] || String(value || '—').replaceAll('_', ' ');
 }

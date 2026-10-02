@@ -91,6 +91,19 @@ function niceMax(value) {
   return rounded * exponent;
 }
 
+function niceBounds(values) {
+  const finite = values.map(Number).filter(Number.isFinite);
+  if (!finite.length) return { min: 0, max: 1 };
+  let min = Math.min(0, ...finite);
+  let max = Math.max(0, ...finite);
+  if (min === max) return { min: 0, max: 1 };
+  const span = niceMax(max - min);
+  const padding = Math.max(0, span - (max - min)) / 2;
+  min -= padding;
+  max += padding;
+  return { min, max };
+}
+
 function formatValue(value, mode) {
   if (mode === 'money') return `R$ ${Number(value || 0).toLocaleString('pt-BR')}`;
   if (mode === 'percent') return `${Number(value || 0).toFixed(0)}%`;
@@ -195,7 +208,7 @@ function renderBarChart(
   return instance;
 }
 
-function renderLineChart(canvasId, { labels = [], datasets = [], title, yFormat }) {
+function renderLineChart(canvasId, { labels = [], datasets = [], title, yFormat, xValues }) {
   destroyChart(canvasId);
   const canvas = getCanvas(canvasId);
   if (!canvas) return null;
@@ -205,9 +218,18 @@ function renderLineChart(canvasId, { labels = [], datasets = [], title, yFormat 
   const pad = { top: title ? 30 : 14, right: 20, bottom: 42, left: 50 };
   const chartWidth = width - pad.left - pad.right;
   const chartHeight = height - pad.top - pad.bottom;
-  const values = datasets.flatMap((ds) => (ds.data || []).map((v) => Number(v) || 0));
-  const maxValue = niceMax(Math.max(1, ...values));
+  const values = datasets.flatMap((ds) => (ds.data || []).map(Number).filter(Number.isFinite));
+  const { min: minValue, max: maxValue } = niceBounds(values);
   const points = Math.max(2, labels.length);
+  const numericX = xValues?.map(Number).filter(Number.isFinite) || [];
+  const xMin = numericX.length ? Math.min(...numericX) : 0;
+  const rawXMax = numericX.length ? Math.max(...numericX) : 1;
+  const xMax = rawXMax === xMin ? xMin + 1 : rawXMax;
+  const xAt = (index) => {
+    const raw = Number(xValues?.[index]);
+    const ratio = Number.isFinite(raw) ? (raw - xMin) / (xMax - xMin) : index / (points - 1);
+    return pad.left + ratio * chartWidth;
+  };
 
   ctx.save();
   ctx.strokeStyle = '#d8e1e3';
@@ -220,11 +242,11 @@ function renderLineChart(canvasId, { labels = [], datasets = [], title, yFormat 
   const ticks = 4;
   for (let i = 0; i <= ticks; i += 1) {
     const y = pad.top + chartHeight - (chartHeight / ticks) * i;
-    const value = (maxValue / ticks) * i;
+    const value = minValue + ((maxValue - minValue) / ticks) * i;
     ctx.beginPath();
     ctx.moveTo(pad.left, y);
     ctx.lineTo(pad.left + chartWidth, y);
-    ctx.strokeStyle = i === 0 ? '#b9c7ca' : '#edf1f2';
+    ctx.strokeStyle = Math.abs(value) < 1e-9 ? '#9aaeb1' : '#edf1f2';
     ctx.stroke();
     text(ctx, formatValue(value, yFormat), pad.left - 8, y, {
       size: 11,
@@ -233,15 +255,17 @@ function renderLineChart(canvasId, { labels = [], datasets = [], title, yFormat 
     });
   }
 
+  const labelStep = Math.max(1, Math.ceil(labels.length / 6));
   labels.forEach((label, index) => {
-    const x = pad.left + (chartWidth / (points - 1)) * index;
+    if (index % labelStep !== 0 && index !== labels.length - 1) return;
+    const x = xAt(index);
     text(ctx, label, x, pad.top + chartHeight + 16, { size: 11, align: 'center' });
   });
 
   datasets.forEach((dataset, dsIndex) => {
     const color =
       dataset.borderColor || dataset.backgroundColor || VG_PALETTE[dsIndex % VG_PALETTE.length];
-    const data = (dataset.data || []).map((v) => Number(v) || 0);
+    const data = (dataset.data || []).map((v) => Number(v)).filter(Number.isFinite);
     if (!data.length) return;
     ctx.save();
     ctx.strokeStyle = color;
@@ -249,15 +273,15 @@ function renderLineChart(canvasId, { labels = [], datasets = [], title, yFormat 
     ctx.lineWidth = 2;
     ctx.beginPath();
     data.forEach((value, index) => {
-      const x = pad.left + (chartWidth / (points - 1)) * index;
-      const y = pad.top + chartHeight - (value / maxValue) * chartHeight;
+      const x = xAt(index);
+      const y = pad.top + ((maxValue - value) / (maxValue - minValue)) * chartHeight;
       if (index === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
     ctx.stroke();
     data.forEach((value, index) => {
-      const x = pad.left + (chartWidth / (points - 1)) * index;
-      const y = pad.top + chartHeight - (value / maxValue) * chartHeight;
+      const x = xAt(index);
+      const y = pad.top + ((maxValue - value) / (maxValue - minValue)) * chartHeight;
       ctx.beginPath();
       ctx.arc(x, y, 3.5, 0, Math.PI * 2);
       ctx.fill();

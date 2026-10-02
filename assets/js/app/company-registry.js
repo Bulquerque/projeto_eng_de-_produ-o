@@ -1,7 +1,7 @@
 const COMPANY_REGISTRY = Object.freeze({
   empresa_mock: Object.freeze({
     id: 'empresa_mock',
-    label: 'Empresa Falsa',
+    label: 'Empresa demonstrativa',
     kind: 'mock',
     provider: 'mock',
     data_access: 'embedded',

@@ -55,6 +55,7 @@ TESTS = [
     'tests/11_regression_e2e/test_regression_e2e.py',
     'tests/12_network_intelligence/test_app_contracts.py',
     'tests/12_network_intelligence/test_form_values.py',
+    'tests/12_network_intelligence/test_mock_provider_engines.py',
     'tests/12_network_intelligence/test_network_ui_playwright.py',
 ]
 

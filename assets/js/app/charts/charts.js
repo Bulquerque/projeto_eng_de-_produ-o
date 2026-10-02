@@ -47,11 +47,24 @@ export function renderRiskChart(canvasId, monteCarlo) {
 }
 
 export function renderSensitivity(canvasId, sensitivity) {
-  const rows = sensitivity?.sensitivity_results || [];
+  const rows = (sensitivity?.sensitivity_results || [])
+    .filter((row) => Number.isFinite(Number(row.value)) && Number.isFinite(Number(row.saving_pct)))
+    .slice()
+    .sort((a, b) => Number(a.value) - Number(b.value));
   if (!rows.length) return null;
+  const variableNames = {
+    freight_multiplier: 'Frete',
+    demand_multiplier: 'Demanda',
+    inventory_days: 'Dias de estoque',
+    wacc: 'WACC',
+    tax_multiplier: 'Tributo',
+  };
+  const variable = sensitivity?.most_sensitive_variable || rows[0]?.variable;
+  const variableName = variableNames[variable] || variable || 'variável';
   return renderLineChart(canvasId, {
-    title: 'Sensibilidade',
+    title: `Sensibilidade · ${variableName}`,
     labels: rows.map((row) => String(row.value)),
+    xValues: rows.map((row) => Number(row.value)),
     datasets: [
       { label: 'Saving %', data: rows.map((row) => row.saving_pct), borderColor: '#0f515c' },
     ],
@@ -124,10 +137,16 @@ function renderRiskSeries(canvasId, title, label, points, yFormat = 'percent', c
 export function renderRiskHistogram(canvasId, monteCarlo) {
   const histogram = monteCarlo?.summary?.histogram || [];
   if (!histogram.length) return null;
+  const tickStep = Math.max(1, Math.ceil(histogram.length / 5));
+  const labels = histogram.map((bin, index) => {
+    if (index % tickStep !== 0 && index !== histogram.length - 1) return '';
+    const bounds = String(bin.label || '').match(/-?\d+(?:[.,]\d+)?/g) || [];
+    return bounds.length > 1 ? `${bounds[0]}–${bounds[1]}%` : String(bin.label || '');
+  });
   renderBarChart(canvasId, {
-    labels: histogram.map((bin) => bin.label),
+    labels,
     datasets: [
-      { label: 'Frequência', data: histogram.map((bin) => bin.count), backgroundColor: '#00a189' },
+      { label: 'Simulações', data: histogram.map((bin) => bin.count), backgroundColor: '#00a189' },
     ],
     title: 'Distribuição de saving',
     yFormat: 'number',

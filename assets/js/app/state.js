@@ -38,7 +38,13 @@ export function clearScenarioResults(state) {
     sensitivity_matrix: null,
     robustness: null,
     recommendation: null,
+    optimizer: null,
+    audit: null,
+    final_qa: null,
+    release: null,
+    export_package: null,
   });
+  state.meta.result_kind = null;
   return state;
 }
 
@@ -62,6 +68,9 @@ export function createInitialState(config = {}) {
       selected_metric: null,
       selected_tradeoff: null,
       scenario_draft: null,
+      scenario_dirty: false,
+      optimizer_draft: null,
+      risk_draft: null,
     },
     dev: {
       enabled: Boolean(config.debug_enabled),
@@ -75,6 +84,7 @@ export function createInitialState(config = {}) {
       status: 'idle',
       last_updated: null,
       provider_snapshot: null,
+      result_kind: null,
     },
   };
 }
@@ -88,6 +98,10 @@ export function resetCompanyScopedState(state, companyId) {
   state.meta.status = 'switching_company';
   state.ui.error = null;
   state.ui.scenario_draft = null;
+  state.ui.scenario_dirty = false;
+  state.ui.optimizer_draft = null;
+  state.ui.risk_draft = null;
+  state.meta.result_kind = null;
   return state.context.generation;
 }
 

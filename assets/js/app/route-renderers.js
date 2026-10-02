@@ -5,17 +5,14 @@ import {
   renderOverviewSummary,
   renderOverviewTax,
 } from './pages/overview.js';
+import { renderScenarioBuild } from './pages/scenarios.js';
+import { renderOptimizerConfigure } from './pages/optimizer.js';
 import {
-  renderScenarioBuild,
-  renderScenarioCompare,
-  renderScenarioResult,
-  renderScenarioRisk,
-} from './pages/scenarios.js';
-import {
-  renderOptimizerConfigure,
-  renderOptimizerResults,
-  renderOptimizerTradeoffs,
-} from './pages/optimizer.js';
+  renderResultsComparison,
+  renderResultsRisk,
+  renderResultsSummary,
+  renderResultsTradeoffs,
+} from './pages/results.js';
 import {
   renderTrustEvidence,
   renderTrustMethodology,
@@ -31,13 +28,12 @@ export const ROUTE_RENDERERS = {
   '/network/overview/costs': renderOverviewCosts,
   '/network/overview/tax': renderOverviewTax,
   '/network/scenarios/build': renderScenarioBuild,
-  '/network/scenarios/result': renderScenarioResult,
-  '/network/scenarios/compare': renderScenarioCompare,
-  '/network/scenarios/risk': (state) => renderScenarioRisk(state, false),
-  '/network/scenarios/risk/advanced': (state) => renderScenarioRisk(state, true),
   '/network/optimizer/configure': renderOptimizerConfigure,
-  '/network/optimizer/results': renderOptimizerResults,
-  '/network/optimizer/tradeoffs': renderOptimizerTradeoffs,
+  '/network/results/summary': renderResultsSummary,
+  '/network/results/comparison': renderResultsComparison,
+  '/network/results/tradeoffs': renderResultsTradeoffs,
+  '/network/results/risk': (state) => renderResultsRisk(state, false),
+  '/network/results/risk/advanced': (state) => renderResultsRisk(state, true),
   '/network/trust/overview': renderTrustOverview,
   '/network/trust/evidence': renderTrustEvidence,
   '/network/trust/sources': renderTrustSources,

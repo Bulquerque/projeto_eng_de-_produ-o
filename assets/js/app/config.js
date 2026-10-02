@@ -19,13 +19,12 @@ export function readRuntimeRequest(location = window.location) {
   const params = new URLSearchParams(location.search);
   const requestedCompany = params.get('company');
   const requestedMode = params.get('runtime') || params.get('mode');
-  const requestedUi = params.get(APP_CONFIG.network_ui_query_key);
   const mockDisabled = params.get(APP_CONFIG.mock_query_key) === 'off';
   const debugRequested = params.get('dev') === '1';
   return {
     company_id: requestedCompany || APP_CONFIG.default_company_id,
     runtime_mode: requestedMode || APP_CONFIG.default_runtime_mode,
-    network_ui: requestedUi === 'network-intelligence',
+    network_ui: params.get(APP_CONFIG.network_ui_query_key) === 'network-intelligence',
     mock_disabled: mockDisabled,
     debug_requested: debugRequested,
   };

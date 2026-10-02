@@ -1,3 +1,23 @@
+export const ROUTES = Object.freeze([
+  '#/network/overview/summary',
+  '#/network/overview/network',
+  '#/network/overview/costs',
+  '#/network/overview/tax',
+  '#/network/scenarios/build',
+  '#/network/results/summary',
+  '#/network/results/comparison',
+  '#/network/results/tradeoffs',
+  '#/network/results/risk',
+  '#/network/results/risk/advanced',
+  '#/network/optimizer/configure',
+  '#/network/trust/overview',
+  '#/network/trust/evidence',
+  '#/network/trust/sources',
+  '#/network/trust/validation',
+  '#/network/trust/methodology',
+  '#/network/dev/console',
+]);
+
 export const ROUTE_ALIASES = Object.freeze({
   '#/diagnostico-baseline': '#/network/overview/summary',
   '#/simulacao-otimizacao': '#/network/scenarios/build',
@@ -18,32 +38,18 @@ export const ROUTE_ALIASES = Object.freeze({
   '#/entrega': '#/network/trust/validation',
   '#/debug': '#/network/dev/console',
   '#erros': '#/network/dev/console?tab=errors',
+  '#/network/scenarios/result': '#/network/results/summary',
+  '#/network/scenarios/compare': '#/network/results/comparison',
+  '#/network/scenarios/risk': '#/network/results/risk',
+  '#/network/scenarios/risk/advanced': '#/network/results/risk/advanced',
+  '#/network/optimizer/results': '#/network/results/summary',
+  '#/network/optimizer/tradeoffs': '#/network/results/tradeoffs',
 });
-
-export const ROUTES = Object.freeze([
-  '#/network/overview/summary',
-  '#/network/overview/network',
-  '#/network/overview/costs',
-  '#/network/overview/tax',
-  '#/network/scenarios/build',
-  '#/network/scenarios/result',
-  '#/network/scenarios/compare',
-  '#/network/scenarios/risk',
-  '#/network/scenarios/risk/advanced',
-  '#/network/optimizer/configure',
-  '#/network/optimizer/results',
-  '#/network/optimizer/tradeoffs',
-  '#/network/trust/overview',
-  '#/network/trust/evidence',
-  '#/network/trust/sources',
-  '#/network/trust/validation',
-  '#/network/trust/methodology',
-  '#/network/dev/console',
-]);
 
 export function normalizeRoute(route = '') {
   const raw = route.startsWith('#') ? route : `#${route.startsWith('/') ? route : `/${route}`}`;
-  return ROUTE_ALIASES[raw] || raw;
+  const [path, query = ''] = raw.split('?');
+  return `${ROUTE_ALIASES[path] || path}${query ? `?${query}` : ''}`;
 }
 
 export function resolveLegacyAlias(route = '') {
@@ -57,7 +63,6 @@ export function parseRoute(route = window.location.hash) {
     hash: normalized,
     path: path || '/network/overview/summary',
     query: new URLSearchParams(queryString),
-    legacy: Boolean(resolveLegacyAlias(route)),
   };
 }
 
@@ -86,6 +91,9 @@ export function replaceCompanyQuery(companyId) {
 export function startRouter({ initialRoute, onRouteChange } = {}) {
   const handle = () => {
     const parsed = parseRoute(window.location.hash || initialRoute);
+    if (window.location.hash !== parsed.hash && isKnownRoute(parsed.hash)) {
+      window.history.replaceState({}, '', parsed.hash);
+    }
     onRouteChange?.(parsed);
   };
   window.addEventListener('hashchange', handle);

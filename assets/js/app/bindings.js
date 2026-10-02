@@ -1,5 +1,4 @@
 import { navigate } from './router.js';
-import { setSelectedScenario } from './state.js';
 import { showLoading, showToast } from './shell.js';
 import { escapeHtml } from './view-helpers.js';
 import {
@@ -23,7 +22,7 @@ export function installBindings({ root, store, controller }) {
     if (mapState) {
       controller.openDrawer(
         `Estado ${escapeHtml(mapState.dataset.uf || '—')}`,
-        `<p>${escapeHtml(mapState.getAttribute('aria-label') || 'Detalhes do estado indisponíveis.')}</p><p>O valor exibido segue o recorte e a disponibilidade do provider ativo.</p>`
+        `<p>${escapeHtml(mapState.getAttribute('aria-label') || 'Detalhes do estado indisponíveis.')}</p>`
       );
       return;
     }
@@ -36,22 +35,14 @@ export function installBindings({ root, store, controller }) {
     } else if (action === 'open-help') {
       controller.openDrawer(
         'Ajuda',
-        '<p>Use as seções para explorar baseline, cenários, otimização e confiança. Os resultados continuam sendo calculados pelos engines do projeto.</p>'
-      );
-    } else if (action === 'open-settings') {
-      controller.openDrawer(
-        'Configurações',
-        '<p>As configurações de execução são controladas pelo provider ativo. Para empresas reais, os dados protegidos permanecem isolados e a política fiscal é apresentada sem completar campos ausentes.</p>'
-      );
-    } else if (action === 'open-styleguide') {
-      controller.openDrawer(
-        'Style guide',
-        '<p>Tokens visuais do workspace: azul petróleo para navegação, verde menta para ações positivas, âmbar para alertas e superfícies claras para evidências.</p><div class="ni-styleguide-swatches"><span class="swatch deep">#062d35</span><span class="swatch mint">#c8f3e0</span><span class="swatch amber">#f2b84b</span></div>'
+        '<ol class="ni-list"><li>Veja a operação atual em Visão geral.</li><li>Escolha um cenário no cabeçalho e ajuste seus parâmetros em Simulação.</li><li>Use Otimização para buscar alternativas.</li><li>Compare custos e risco em Resultados.</li></ol><p>Dados e metodologia reúne fontes, premissas e validações.</p>'
       );
     } else if (action === 'open-export') {
       controller.exportPackage();
     } else if (action === 'close-drawer') {
       controller.closeDrawer();
+    } else if (action === 'retry-company') {
+      controller.retryCompany();
     } else if (action === 'lock-crypto') {
       controller.lock();
     } else if (action === 'run-decision') {
@@ -85,6 +76,8 @@ export function installBindings({ root, store, controller }) {
       );
     } else if (action === 'clear-saved-scenarios') {
       controller.clearSavedScenarios();
+    } else if (action === 'import-scenario') {
+      root.querySelector('[data-testid="scenario-import"]')?.click();
     } else if (action === 'reset-scenario-draft') {
       controller.resetScenarioDraft();
     }
@@ -96,10 +89,7 @@ export function installBindings({ root, store, controller }) {
   });
   root.querySelector('#niScenarioSelect')?.addEventListener('change', (event) => {
     if (store.getState().ui.loading) return;
-    const scenarioId = event.target.value || null;
-    store.update((state) => setSelectedScenario(state, scenarioId));
-    navigate('#/network/scenarios/result');
-    void controller.runScenario({ scenarioId });
+    controller.loadScenarioDraft(event.target.value || null);
   });
   root.addEventListener('submit', (event) => {
     if (event.target.id === 'niScenarioForm') {
@@ -157,11 +147,22 @@ export function installBindings({ root, store, controller }) {
   const rawInputValues = new WeakMap();
   root.addEventListener('input', (event) => {
     const form = event.target.form;
-    if (!form || !['niScenarioForm', 'niOptimizerForm'].includes(form.id)) return;
-    if (event.target.type !== 'number' && event.target.name !== 'scenario_name') return;
+    if (!form || !['niScenarioForm', 'niOptimizerForm', 'niRiskForm'].includes(form.id)) return;
     const current = rawInputValues.get(form) || {};
     current[event.target.name] = event.target.value;
     rawInputValues.set(form, current);
+    const data = new FormData(form);
+    const values =
+      form.id === 'niScenarioForm'
+        ? parseScenarioForm(
+            data,
+            form.querySelectorAll('input[name="active_cds"]:checked'),
+            current
+          )
+        : form.id === 'niOptimizerForm'
+          ? parseOptimizerForm(data, current)
+          : parseRiskForm(data, current);
+    controller.captureDraft(form.id, values);
   });
   const onKeyDown = (event) => {
     const drawer = root.querySelector('#networkDrawer');

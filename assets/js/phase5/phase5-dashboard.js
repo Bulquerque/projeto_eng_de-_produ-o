@@ -1,5 +1,5 @@
 import { loadPhase2Bundle } from '../core/data-loader.js';
-import { $, escapeHtml, formatBRL, formatNumber, formatPct, metric } from '../core/common.js';
+import { $, escapeHtml } from '../core/common.js';
 import { buildObjective } from '../phase4/objective-builder.js';
 import { runOptimization } from '../phase4/scenario-optimizer.js';
 import { selectFinalScenario } from './final-scenario-selector.js';
@@ -9,20 +9,17 @@ import { runSensitivity, runSensitivityMatrix } from './sensitivity-engine.js';
 import { calculateRobustness } from './robustness-scorer.js';
 import { buildRecommendation } from './recommendation-engine.js';
 import { buildAuditTrail } from './audit-trail-engine.js';
-import { buildExecutiveReportHtml } from './executive-report-builder.js';
 import { buildExportPackage, triggerBrowserDownload } from './export-center.js';
 import { runFinalQAChecks } from './final-qa-checker.js';
 import { validateRelease } from './release-validator.js';
 import { runMonteCarloSimulation } from '../phase3/monte-carlo-engine.js';
-import { renderSensitivityChart, renderStressChart, renderRobustnessChart } from './charts.js';
-import { buildWorkbookParitySummary, renderWorkbookParityPanel } from './workbook-parity.js';
+import { buildWorkbookParitySummary } from './workbook-parity.js';
 import { appendSharedDebugEntry } from '../core/debug-tools.js';
 import { buildCanonicalOptimizationConfig } from '../core/optimization-policy.js';
 import { loadOptimizationConfig } from '../core/optimization-config-store.js';
-import { renderFinalSituationTableHtml } from './final-situation-view.js';
 import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
 import { readDecisionControls } from './decision-controls.js';
-import { renderTaxPeriodsHtml } from './tax-periods-view.js';
+import { renderPhase5CompanyTabs, renderPhase5Dashboard } from './phase5-dashboard-view.js';
 
 const state = {
   companyId: 'empresa1',
@@ -44,15 +41,6 @@ const state = {
   optimizationConfig: null,
   isLoading: false,
 };
-function label(cid) {
-  return cid === 'empresa2' ? 'Empresa 2' : 'Empresa 1';
-}
-function formatOptionalBRL(value, compact = false) {
-  return value === null || value === undefined || value === '' ? '—' : formatBRL(value, compact);
-}
-function formatOptionalPct(value, digits = 1) {
-  return value === null || value === undefined || value === '' ? '—' : formatPct(value, digits);
-}
 function log(label, obj) {
   appendSharedDebugEntry({
     phase: 'phase5',
@@ -131,14 +119,6 @@ function applyInheritedOptimizationConfig() {
   }
   if (note)
     note.textContent = `Configuração herdada da Fase 4: ${state.optimizationConfig.objective?.objective_name || 'objetivo customizado'} · seed ${state.optimizationConfig.optimizer_config?.seed ?? 42}.`;
-}
-function renderTabs() {
-  document.querySelectorAll('[data-company]').forEach((btn) => {
-    const active = btn.dataset.company === state.companyId;
-    btn.classList.toggle('active', active);
-    btn.setAttribute('aria-pressed', String(active));
-  });
-  $('phase5CompanyLabel').textContent = label(state.companyId);
 }
 function baselineResult() {
   return {
@@ -412,200 +392,8 @@ function sensitivityValues(variable, compact = false) {
       : [0.1, MODEL_DEFAULTS.reference_wacc, 0.2];
   return compact ? [0.9, 1.0, 1.1] : [0.9, 1.0, 1.1, 1.2];
 }
-function variableLabel(variable) {
-  return (
-    {
-      freight_multiplier: 'Frete',
-      demand_multiplier: 'Demanda',
-      inventory_days: 'Estoque',
-      wacc: 'WACC',
-    }[variable] || variable
-  );
-}
-function recommendationLabel(status) {
-  return (
-    {
-      recommended: 'recomendado',
-      recommended_with_warnings: 'recomendado com alertas',
-      not_recommended: 'não recomendado',
-      review_required: 'revisar',
-    }[status] ||
-    status ||
-    '—'
-  );
-}
-function releaseLabel(status) {
-  return { ready: 'pronto', blocked: 'bloqueado', warning: 'atenção' }[status] || status || '—';
-}
-function renderOverview() {
-  const selected = state.selection?.selected_scenario;
-  const comp = scenarioComparison(selected);
-  const robustnessIsCertified = state.robustness?.certified_robustness_score != null;
-  const robustnessValue = selected
-    ? `${formatNumber(state.robustness?.robustness_score, 0)}/100`
-    : '—';
-  $('phase5OverviewCards').innerHTML = [
-    metric(
-      'Cenário selecionado',
-      selected?.scenario_name || selected?.scenario_id || '—',
-      state.selection?.selection_reason || ''
-    ),
-    metric(
-      'Total cenário',
-      formatBRL(selected?.result?.total_with_tax, true),
-      'estimado pelo simulador'
-    ),
-    metric(
-      'Saving vs baseline',
-      formatOptionalBRL(comp.saving_abs, true),
-      formatOptionalPct(comp.saving_pct)
-    ),
-    metric(
-      robustnessIsCertified ? 'Robustez' : 'Robustez condicional',
-      robustnessValue,
-      selected
-        ? robustnessIsCertified
-          ? state.robustness?.robustness_status || '—'
-          : 'exploratória — não certificada'
-        : 'não calculada'
-    ),
-    metric(
-      'Recomendação',
-      recommendationLabel(state.recommendation?.recommendation_status),
-      'status final'
-    ),
-    metric(
-      'Release',
-      releaseLabel(state.release?.release_status),
-      state.release?.release_status === 'warning'
-        ? 'pronto com limitações documentadas'
-        : state.release?.ready_to_deliver
-          ? 'pronto'
-          : 'com bloqueios técnicos'
-    ),
-  ].join('');
-  renderRobustnessChart(state.robustness?.robustness_score);
-  renderFinalSituationTable(selected, comp);
-}
-function renderFinalSituationTable(selected, comp) {
-  const el = $('finalSituationTable');
-  if (el) {
-    el.innerHTML = renderFinalSituationTableHtml({
-      companyLabel: label(state.companyId),
-      baselineId: state.bundle?.model?.scenario_id,
-      selected,
-      comparison: comp,
-      robustness: state.robustness,
-      recommendationLabel: recommendationLabel(state.recommendation?.recommendation_status),
-    });
-  }
-}
-function renderTaxPeriods() {
-  const el = $('taxPeriodsPanel');
-  if (!el) return;
-  const tax = state.selection?.selected_scenario?.result?.tax_results || {};
-  const contract = tax.tax_period_contract || tax.metadata?.tax_period_contract || {};
-  el.innerHTML = renderTaxPeriodsHtml(contract);
-}
-function renderStress() {
-  const rows = (state.stress?.stress_results || [])
-    .map(
-      (r) =>
-        `<tr><td>${escapeHtml(r.case_name)}</td><td>${formatBRL(r.total_with_tax, true)}</td><td>${formatBRL(r.saving_vs_baseline, true)}</td><td>${formatPct(r.saving_pct)}</td><td>${r.scenario_still_better_than_baseline ? 'sim' : 'não'}</td><td>${escapeHtml(r.data_quality_status || 'complete')}</td></tr>`
-    )
-    .join('');
-  $('stressPanel').innerHTML =
-    `<table><thead><tr><th>Caso</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Melhor que base?</th><th>Qualidade dos dados</th></tr></thead><tbody>${rows}</tbody></table><p class="small-note">Casos com cobertura fiscal parcial permanecem disponíveis para leitura exploratória.</p>`;
-  renderStressChart(state.stress?.stress_results);
-}
-function renderSensitivityPanel() {
-  const rows = (state.sensitivity?.sensitivity_results || [])
-    .map(
-      (r) =>
-        `<tr><td>${escapeHtml(r.variable)}</td><td>${escapeHtml(r.value)}</td><td>${formatBRL(r.total_with_tax, true)}</td><td>${formatPct(r.saving_pct)}</td></tr>`
-    )
-    .join('');
-  $('sensitivityPanel').innerHTML =
-    `<table><thead><tr><th>Variável</th><th>Valor</th><th>Total</th><th>Saving %</th></tr></thead><tbody>${rows}</tbody></table><p class="small-note">Mais sensível: ${escapeHtml(state.sensitivity?.most_sensitive_variable || '—')}</p>`;
-  renderSensitivityChart(state.sensitivity?.sensitivity_results);
-  renderSensitivityMatrix();
-}
-function getHeatmapClass(savingPct) {
-  const v = Number(savingPct);
-  if (v >= 5) return 'heatmap-very-good';
-  if (v > 1) return 'heatmap-good';
-  if (v > -1) return 'heatmap-neutral';
-  if (v > -5) return 'heatmap-bad';
-  return 'heatmap-very-bad';
-}
-function renderSensitivityMatrix() {
-  const matrix = state.sensitivityMatrix;
-  const el = $('sensitivityMatrixPanel');
-  if (!el) return;
-  if (matrix?.errors?.length) {
-    el.innerHTML = `<div class="alert-box warn"><strong>Matriz não exibida</strong><p>${escapeHtml(matrix.errors.join('; '))}</p></div>`;
-    return;
-  }
-  const xValues = matrix?.x_values || [];
-  const yValues = matrix?.y_values || [];
-  const rows = yValues
-    .map((yValue) => {
-      const cells = xValues
-        .map((xValue) => {
-          const cell = (matrix.matrix_results || []).find(
-            (r) => String(r.x_value) === String(xValue) && String(r.y_value) === String(yValue)
-          );
-          const hClass = getHeatmapClass(cell?.saving_pct || 0);
-          return `<td class="heatmap-cell ${hClass}">${formatPct(cell?.saving_pct, 1)}<br><span class="small-note" style="color:inherit;opacity:0.8">${formatBRL(cell?.total_with_tax, true)}</span></td>`;
-        })
-        .join('');
-      return `<tr><th>${escapeHtml(String(yValue))}</th>${cells}</tr>`;
-    })
-    .join('');
-  el.innerHTML = `<div class="table-wrap"><table class="sensitivity-matrix executive-table-premium"><thead><tr><th>${escapeHtml(variableLabel(matrix?.y_variable))} / ${escapeHtml(variableLabel(matrix?.x_variable))}</th>${xValues.map((v) => `<th>${escapeHtml(String(v))}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div><p class="small-note">Cada célula mostra o impacto percentual no custo total e o valor final estimado.</p>`;
-}
-function renderRecommendation() {
-  $('recommendationPanel').innerHTML =
-    `<div class="recommendation-card"><span class="status-chip ${state.recommendation?.recommendation_status === 'recommended' ? 'status-ok' : state.recommendation?.recommendation_status === 'not_recommended' ? 'status-error' : 'status-warn'}">${escapeHtml(recommendationLabel(state.recommendation?.recommendation_status))}</span><p>${escapeHtml(state.recommendation?.executive_summary)}</p><h4>Razões</h4><ul>${(state.recommendation?.main_reasons || []).map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul><h4>Riscos e próximos passos</h4><ul>${[...(state.recommendation?.main_risks || []), ...(state.recommendation?.next_actions || [])].map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`;
-}
-function renderReport() {
-  $('executiveReportPanel').innerHTML = buildExecutiveReportHtml({
-    companyId: state.companyId,
-    selectedScenario: state.selection?.selected_scenario,
-    recommendation: state.recommendation,
-    stress: state.stress,
-    robustness: state.robustness,
-    audit: state.audit,
-    comparison: scenarioComparison(state.selection?.selected_scenario),
-    workbookParity: state.workbookParity,
-    rankingSensitivity: state.optimizer?.ranking_sensitivity,
-  });
-}
-function renderWorkbookParity() {
-  const el = $('workbookParityPanel');
-  if (!el) return;
-  el.innerHTML = renderWorkbookParityPanel(state.workbookParity);
-}
-function renderAuditAndExport() {
-  $('auditTrailPanel').innerHTML =
-    `<pre class="debug-console compact">${escapeHtml(JSON.stringify(state.audit, null, 2))}</pre>`;
-  $('exportCenterPanel').innerHTML = (state.exportPackage?.files || [])
-    .map(
-      (f, idx) =>
-        `<button type="button" class="secondary-button export-button" data-export-index="${idx}">${escapeHtml(f.filename)}</button>`
-    )
-    .join('');
-}
 function renderAll() {
-  renderTabs();
-  renderOverview();
-  renderWorkbookParity();
-  renderTaxPeriods();
-  renderStress();
-  renderSensitivityPanel();
-  renderRecommendation();
-  renderReport();
-  renderAuditAndExport();
+  renderPhase5Dashboard(state, scenarioComparison);
   log('Pipeline de decisão final executado', {
     companyId: state.companyId,
     selected: state.selection?.selected_scenario_id,
@@ -626,7 +414,7 @@ export async function loadPhase5Company(companyId) {
   }
   state.isLoading = true;
   state.companyId = companyId;
-  renderTabs();
+  renderPhase5CompanyTabs(state.companyId);
   setCompanyButtonsDisabled(true);
   $('phase5Loading').classList.remove('hidden');
   try {
