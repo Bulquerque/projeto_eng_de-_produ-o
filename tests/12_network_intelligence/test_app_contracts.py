@@ -97,6 +97,11 @@ def test_optimizer_reform_year_and_saved_technical_draft_render():
         assert.match(html, /value="2030" selected/);
         assert.match(html, /value="4200"/);
         assert.match(html, /Fiscal 2030/);
+        assert.match(html, /Perfil do ranking/);
+        assert.equal((html.match(/name="custom_preset_select"/g) || []).length, 1);
+        assert.ok(html.indexOf('ni-optimizer-presets') < html.indexOf('summary>Configuração técnica'));
+        assert.match(html, /data-testid="optimizer-preset-editor"[^>]* hidden/);
+        assert.doesNotMatch(html, /ni-optimizer-custom-preset/);
         assert.doesNotMatch(html, /value="2026"/);
         assert.doesNotMatch(html, /PS7/);
         console.log('OPTIMIZER_REFORM_UI_OK');

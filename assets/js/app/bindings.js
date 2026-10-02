@@ -137,6 +137,22 @@ export function installBindings({ root, store, controller }) {
       root.querySelector('[data-testid="scenario-import"]')?.click();
     } else if (action === 'reset-scenario-draft') {
       controller.resetScenarioDraft();
+    } else if (action === 'open-optimizer-preset-save') {
+      const editor = root.querySelector('#optimizerPresetEditor');
+      const isOpening = editor?.hidden;
+      if (editor) editor.hidden = !isOpening;
+      event.target
+        .closest('[data-action]')
+        ?.setAttribute('aria-expanded', String(Boolean(isOpening)));
+      if (isOpening) editor?.querySelector('input[name="custom_preset_name"]')?.focus();
+    } else if (action === 'cancel-optimizer-preset-save') {
+      const editor = root.querySelector('#optimizerPresetEditor');
+      if (editor) editor.hidden = true;
+      root
+        .querySelector('[data-action="open-optimizer-preset-save"]')
+        ?.setAttribute('aria-expanded', 'false');
+      const nameInput = root.querySelector('#niOptimizerForm [name="custom_preset_name"]');
+      if (nameInput) nameInput.value = '';
     } else if (action === 'save-optimizer-preset') {
       const form = root.querySelector('#niOptimizerForm');
       const name = form?.elements.namedItem('custom_preset_name')?.value.trim();
@@ -161,7 +177,16 @@ export function installBindings({ root, store, controller }) {
       option.value = preset.preset_id;
       option.textContent = preset.name;
       select?.append(option);
+      if (select) {
+        select.disabled = false;
+        select.value = preset.preset_id;
+      }
       form.elements.namedItem('custom_preset_name').value = '';
+      const editor = root.querySelector('#optimizerPresetEditor');
+      if (editor) editor.hidden = true;
+      root
+        .querySelector('[data-action="open-optimizer-preset-save"]')
+        ?.setAttribute('aria-expanded', 'false');
       showToast(root, `Preset salvo: ${name}.`, 'success');
     }
   };
@@ -275,6 +300,7 @@ export function installBindings({ root, store, controller }) {
   root.addEventListener('input', (event) => {
     const form = event.target.form;
     if (!form || !['niScenarioForm', 'niOptimizerForm', 'niRiskForm'].includes(form.id)) return;
+    if (event.target.name === 'custom_preset_name') return;
     const current = rawInputValues.get(form) || {};
     current[event.target.name] = event.target.value;
     rawInputValues.set(form, current);

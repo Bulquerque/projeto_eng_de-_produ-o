@@ -172,6 +172,39 @@ def test_demo_journey(base, browser):
     assert page.locator('input[name="freight_multiplier"]').input_value() == '1'
     route(page, 'optimizer/configure')
     assert not page.locator('input[name="max_candidates"]').is_visible()
+    assert page.locator('select[name="custom_preset_select"]').count() == 1
+    assert page.locator('select[name="custom_preset_select"]').is_disabled()
+    page.locator('input[name="profile_id"][value="fiscal"]').check()
+    open_details(page, 'input[name="max_candidates"]')
+    assert page.locator('input[name="max_candidates"]').input_value() == '5000'
+    assert page.locator('input[name="risk_iterations"]').input_value() == '600'
+    page.evaluate('localStorage.removeItem("visagio_optimization_presets_v1")')
+    page.locator('[data-action="open-optimizer-preset-save"]').click()
+    page.locator('input[name="custom_preset_name"]').fill('Fiscal de teste')
+    page.locator('[data-action="save-optimizer-preset"]').click()
+    saved_presets = page.locator('select[name="custom_preset_select"]')
+    assert saved_presets.is_enabled()
+    saved_preset_id = saved_presets.input_value()
+    assert saved_preset_id
+    saved_in_browser = page.evaluate(
+        'id => JSON.parse(localStorage.getItem("visagio_optimization_presets_v1") || "[]").some(p => p.preset_id === id)',
+        saved_preset_id,
+    )
+    saved_storage_value = page.evaluate('localStorage.getItem("visagio_optimization_presets_v1")')
+    assert saved_in_browser, f'saved preset missing from local storage: {saved_storage_value}'
+    page.locator('input[name="max_candidates"]').fill('1000')
+    saved_presets.select_option('')
+    saved_presets.select_option(saved_preset_id)
+    assert page.locator('input[name="max_candidates"]').input_value() == '5000'
+    assert page.locator('input[name="risk_iterations"]').input_value() == '600'
+    assert page.locator('#optimizerPresetEditor').is_hidden()
+    page.reload(wait_until='networkidle')
+    ready(page)
+    saved_presets = page.locator('select[name="custom_preset_select"]')
+    assert saved_presets.locator(f'option[value="{saved_preset_id}"]').count() == 1
+    saved_presets.select_option(saved_preset_id)
+    open_details(page, 'input[name="max_candidates"]')
+    assert page.locator('input[name="max_candidates"]').input_value() == '5000'
     open_details(page, 'input[name="max_candidates"]')
     page.locator('input[name="max_candidates"]').fill('0')
     page.locator('[data-testid="optimizer-run"]').click()

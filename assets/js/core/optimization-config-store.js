@@ -20,12 +20,12 @@ export function clearOptimizationConfig() {
 }
 
 export function loadOptimizationPresets(companyId) {
-  const presets = readStorageJSON('session', OPTIMIZATION_PRESETS_KEY, []);
+  const presets = readStorageJSON('local', OPTIMIZATION_PRESETS_KEY, []);
   return Array.isArray(presets) ? presets.filter((preset) => preset?.company_id === companyId) : [];
 }
 
 export function saveOptimizationPreset(companyId, preset) {
-  const current = readStorageJSON('session', OPTIMIZATION_PRESETS_KEY, []);
+  const current = readStorageJSON('local', OPTIMIZATION_PRESETS_KEY, []);
   const presets = Array.isArray(current) ? current : [];
   const record = {
     ...preset,
@@ -39,5 +39,5 @@ export function saveOptimizationPreset(companyId, preset) {
     ),
     record,
   ];
-  return writeStorageJSON('session', OPTIMIZATION_PRESETS_KEY, next) ? record : null;
+  return writeStorageJSON('local', OPTIMIZATION_PRESETS_KEY, next) ? record : null;
 }
