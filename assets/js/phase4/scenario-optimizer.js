@@ -128,6 +128,7 @@ export function runOptimization({
   companyId,
   baselineBundle,
   objective,
+  taxYear = null,
   constraints = {},
   optimizerConfig = {},
 }) {
@@ -181,6 +182,7 @@ export function runOptimization({
       inventory_days_options: [CANONICAL_OPTIMIZATION_POLICY.inventory_days],
       base_tax_mode: CANONICAL_OPTIMIZATION_POLICY.tax_mode,
       base_tax_regime: CANONICAL_OPTIMIZATION_POLICY.tax_regime,
+      tax_year: taxYear,
       allow_tax_disabled: CANONICAL_OPTIMIZATION_POLICY.allow_tax_disabled,
       demand_multipliers: [CANONICAL_OPTIMIZATION_POLICY.demand_multiplier],
       seed: canonicalConfig.seed,

@@ -41,6 +41,7 @@ export async function runDecisionPipeline({
   profileId = 'balanced',
   selectionMode = 'best_by_score',
   manualScenarioId = null,
+  taxYear = null,
   optimizerConfig = {},
   constraints = {},
   riskConfig = {},
@@ -49,6 +50,7 @@ export async function runDecisionPipeline({
   const companyId = context.company_id;
   const optimizer = await provider.runOptimization({
     profileId,
+    taxYear,
     constraints,
     config: optimizerConfig,
   });

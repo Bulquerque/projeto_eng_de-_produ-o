@@ -15,11 +15,16 @@ import { navigate, parseRoute, replaceCompanyQuery, startRouter } from './router
 import { renderShell, setActiveNav, showLoading, showToast, updateGlobalContext } from './shell.js';
 import { installBindings } from './bindings.js';
 import { sanitizeError } from './dev/dev-console.js';
-import { routeFallback } from './view-helpers.js';
+import { escapeHtml, routeFallback } from './view-helpers.js';
+import { loadOptimizationPresets } from '../core/optimization-config-store.js';
+import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
+import { selectBaseline } from './selectors/business-selectors.js';
 import { ROUTE_RENDERERS } from './route-renderers.js';
+import { comparisonCandidates } from './pages/results.js';
 import {
   renderDistanceHistogram,
   renderCostChart,
+  renderComparisonCostChart,
   renderRanking,
   renderRiskCdf,
   renderRiskDrivers,
@@ -44,16 +49,20 @@ import {
 } from '../phase3/scenario-import-export.js';
 
 const request = readRuntimeRequest();
-const networkActive = request.network_ui || window.location.hash.startsWith('#/network/');
+const networkActive =
+  request.network_ui ||
+  window.location.hash.startsWith('#/network/') ||
+  !document.querySelector('#sec-diagnostico-baseline');
 window.__VISAGIO_NETWORK_UI__ = networkActive;
 
 function findScenario(state, scenarioId) {
-  return [
+  const entry = [
     ...(state.data.scenarios || []),
     ...(state.data.saved_scenarios || []),
     ...(state.data.optimizer?.scored_scenarios || []),
     ...(state.data.optimizer?.best_scenarios || []),
   ].find((scenario) => scenario.scenario_id === scenarioId);
+  return entry?.scenario || entry;
 }
 
 function upsertScenario(scenarios, scenario) {
@@ -63,7 +72,7 @@ function upsertScenario(scenarios, scenario) {
   ];
 }
 
-if (networkActive) {
+function initializeNetworkIntelligence() {
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.href = new URL('./main.css', import.meta.url);
@@ -96,13 +105,13 @@ if (networkActive) {
     let config;
     try {
       config = buildAppConfig({
-        request: { ...request, network_ui: true },
+        request,
         location: window.location,
       });
     } catch (error) {
       document.body.insertAdjacentHTML(
         'beforeend',
-        `<div class="network-bootstrap-error"><strong>Network Intelligence bloqueado</strong><p>${sanitizeError(error).message}</p></div>`
+        `<div class="network-bootstrap-error"><strong>Network Intelligence bloqueado</strong><p>${escapeHtml(sanitizeError(error).message)}</p></div>`
       );
       return;
     }
@@ -118,6 +127,8 @@ if (networkActive) {
     const packageExportsInFlight = new Set();
     const lastPackageExportAt = new Map();
     let drawerReturnFocus = null;
+    let lastRenderedRoute = null;
+    let decisionOptions = {};
 
     const nextOperation = () => {
       operationId += 1;
@@ -155,14 +166,42 @@ if (networkActive) {
       const page = root.querySelector('#networkPage');
       if (!page) return;
       page.dataset.routeCurrent = route.hash;
-      page.innerHTML = renderer(state, route);
+      const openDetails =
+        lastRenderedRoute === route.hash
+          ? new Set(
+              [...page.querySelectorAll('details[open] > summary')].map(
+                (summary) => summary.textContent
+              )
+            )
+          : new Set();
+      const needsData = route.path !== '/network/dev/console';
+      const heading =
+        {
+          overview: 'Visão geral',
+          scenarios: 'Simulação',
+          optimizer: 'Otimização',
+          results: 'Resultados',
+          trust: 'Dados e metodologia',
+        }[route.path.split('/')[2]] || 'Dados';
+      page.innerHTML =
+        needsData && !state.data.baseline
+          ? `<div class="ni-page-heading"><h1>${heading}</h1></div><div class="ni-empty"><p>${state.ui.loading ? 'Carregando dados…' : state.meta.status === 'locked' ? 'Os dados desta empresa estão bloqueados.' : 'Os dados desta empresa não estão disponíveis.'}</p>${state.ui.loading ? '' : '<button type="button" class="ni-button primary" data-action="retry-company">Carregar dados</button>'}</div>`
+          : renderer(state, route);
+      page.querySelectorAll('details').forEach((details) => {
+        if (openDetails.has(details.querySelector('summary')?.textContent)) details.open = true;
+      });
       setActiveNav(root, route);
       updateGlobalContext(root, state);
       renderCharts(route.path, state);
+      if (lastRenderedRoute !== route.hash) {
+        root.querySelector('#networkRouteAnnouncement').textContent =
+          page.querySelector('h1')?.textContent || 'Página carregada';
+        lastRenderedRoute = route.hash;
+      }
       if (state.ui.error) {
         page.insertAdjacentHTML(
           'afterbegin',
-          `<div class="ni-alert error"><strong>Falha</strong><p>${sanitizeError(state.ui.error).message}</p></div>`
+          `<div class="ni-alert error"><strong>Falha</strong><p>${escapeHtml(sanitizeError(state.ui.error).message)}</p></div>`
         );
       }
     };
@@ -195,7 +234,11 @@ if (networkActive) {
       state.data.release = packageResult.release || mockDecision.release || null;
       state.data.export_package = packageResult.export_package || null;
       state.context.selected_scenario_id = selectedScenario?.scenario_id || null;
-      state.meta.status = 'decision_ready';
+      state.meta.status =
+        packageResult.release?.release_status === 'blocked' ? 'decision_blocked' : 'decision_ready';
+      state.meta.result_kind = 'optimization';
+      state.ui.scenario_draft = selectedScenario;
+      state.ui.scenario_dirty = false;
       state.ui.loading = false;
     };
 
@@ -244,29 +287,21 @@ if (networkActive) {
           state.data.baseline = baseline.baseline;
           state.data.scenarios = scenarios.scenarios || [];
           state.data.saved_scenarios = savedScenarios;
+          state.ui.optimizer_presets = loadOptimizationPresets(companyId);
           state.meta.provider_snapshot = {
             ...state.meta.provider_snapshot,
             warnings: [...(baseline.warnings || []), ...(scenarios.warnings || [])],
           };
-          const first = state.data.scenarios[0];
-          setSelectedScenario(state, first?.scenario_id || null);
+          setSelectedScenario(state, null);
         });
-        if (isMockTenant(companyId)) {
-          const packageResult = await nextProvider.buildDecisionPackage({
-            scenarioId: 'mock_consolidation',
-          });
-          if (!isCurrentOperation(token, companyId, nextProvider)) {
-            await nextProvider.dispose({ lock: false });
-            return;
-          }
-          store.update((state) => commitDecisionPackage(state, packageResult, nextProvider));
-        }
         showLoading(root, false);
-        showToast(
-          root,
-          `${getCompanyDefinition(companyId)?.label || companyId} carregada.`,
-          'success'
-        );
+        if (previousProvider && previousCompany !== companyId) {
+          showToast(
+            root,
+            `${getCompanyDefinition(companyId)?.label || companyId} carregada.`,
+            'success'
+          );
+        }
       } catch (error) {
         if (!isCurrentOperation(token, companyId)) {
           if (nextProvider) await nextProvider.dispose({ lock: companyId !== 'empresa_mock' });
@@ -291,11 +326,15 @@ if (networkActive) {
     };
 
     const controller = {
+      retryCompany() {
+        void this.switchCompany(store.getState().context.company_id);
+      },
       async switchCompany(companyId) {
         if (!getCompanyDefinition(companyId)) return;
         const current = store.getState();
         if (current.context.company_id === companyId && (provider || current.ui.loading)) return;
         activeAction = null;
+        decisionOptions = {};
         const token = nextOperation();
         replaceCompanyQuery(companyId);
         companySwitchQueue = companySwitchQueue
@@ -304,6 +343,44 @@ if (networkActive) {
         await companySwitchQueue;
       },
       loadScenarioDraft(scenarioId) {
+        if (!scenarioId) {
+          this.resetScenarioDraft();
+          return;
+        }
+        const taxYearMatch = /^tax-year:(202[6-9]|203[0-3])$/.exec(scenarioId);
+        if (taxYearMatch) {
+          const state = store.getState();
+          const taxYear = Number(taxYearMatch[1]);
+          const activeScenario = state.ui.scenario_draft || state.data.selected_scenario;
+          const changes = activeScenario?.changes || {};
+          const scenario = buildScenarioFromForm({
+            companyId: state.context.company_id,
+            baselineBundle: selectBaseline(state),
+            scenarioId: `${state.context.company_id}_tax_reform_${taxYear}`,
+            formValues: {
+              scenario_name: activeScenario?.scenario_name
+                ? `${activeScenario.scenario_name} · ${taxYear}`
+                : `Reforma tributária ${taxYear}`,
+              scenario_type: taxYear === 2033 ? 'tax_reform_full' : 'tax_reform_transition',
+              active_cds: changes.active_cds,
+              freight_multiplier: changes.freight_multiplier,
+              demand_multiplier: changes.demand_multiplier,
+              inventory_days: changes.inventory_days,
+              wacc: changes.wacc,
+              reallocation_rule: changes.reallocation_rule,
+              tax_mode: `reform_${taxYear}`,
+              tax_year: taxYear,
+            },
+          });
+          store.update((nextState) => {
+            nextState.ui.scenario_draft = scenario;
+            nextState.ui.scenario_dirty = false;
+            nextState.context.selected_scenario_id = scenario.scenario_id;
+            clearScenarioResults(nextState);
+          });
+          navigate('#/network/scenarios/build');
+          return;
+        }
         const state = store.getState();
         const scenario = findScenario(state, scenarioId);
         if (!scenario) {
@@ -311,7 +388,8 @@ if (networkActive) {
           return;
         }
         store.update((nextState) => {
-          nextState.ui.scenario_draft = scenario;
+          nextState.ui.scenario_draft = structuredClone(scenario);
+          nextState.ui.scenario_dirty = false;
           nextState.context.selected_scenario_id = scenario.scenario_id;
           clearScenarioResults(nextState);
         });
@@ -325,11 +403,44 @@ if (networkActive) {
       resetScenarioDraft() {
         store.update((nextState) => {
           nextState.ui.scenario_draft = null;
+          nextState.ui.scenario_dirty = false;
           nextState.context.selected_scenario_id = null;
           clearScenarioResults(nextState);
         });
         navigate('#/network/scenarios/build');
-        showToast(root, 'Rascunho limpo; formulário voltou ao baseline.', 'success');
+        showToast(root, 'Parâmetros da referência restaurados.', 'success');
+      },
+      captureDraft(formId, values) {
+        const state = store.getState();
+        if (formId === 'niScenarioForm') {
+          state.ui.scenario_draft = {
+            ...(state.ui.scenario_draft || {}),
+            company_id: state.context.company_id,
+            scenario_name: values.scenario_name,
+            changes: { ...values },
+          };
+          state.ui.scenario_dirty = true;
+          clearScenarioResults(state);
+        } else if (formId === 'niOptimizerForm') {
+          values.tax_year = Number(values.tax_year) || null;
+          state.ui.optimizer_draft = values;
+          const optimizerDrafts = state.ui.optimizer_drafts || (state.ui.optimizer_drafts = {});
+          optimizerDrafts[String(values.tax_year || 'current')] = values;
+          clearScenarioResults(state);
+        } else if (formId === 'niRiskForm') {
+          state.ui.risk_draft = values;
+          state.data.monte_carlo = null;
+          state.data.stress = null;
+          state.data.sensitivity = null;
+          state.data.sensitivity_matrix = null;
+          state.data.robustness = null;
+          state.data.audit = null;
+          state.data.final_qa = null;
+          state.data.release = null;
+          state.data.export_package = null;
+          state.data.recommendation = null;
+        }
+        updateGlobalContext(root, state);
       },
       selectComparedScenario(scenarioId) {
         const state = store.getState();
@@ -338,7 +449,11 @@ if (networkActive) {
           showToast(root, 'Cenário comparado não está disponível para reexecução.', 'error');
           return;
         }
-        void this.runScenario({ scenario: candidate.scenario || candidate, scenarioId });
+        if (state.data.optimizer) {
+          void this.runDecision({ selectionMode: 'manual', manualScenarioId: scenarioId });
+        } else {
+          void this.runScenario({ scenario: candidate, scenarioId });
+        }
       },
       saveCurrentScenario() {
         const state = store.getState();
@@ -395,6 +510,8 @@ if (networkActive) {
           if (nextState.ui.scenario_draft?.scenario_id === scenarioId) {
             nextState.ui.scenario_draft = null;
             nextState.context.selected_scenario_id = null;
+            nextState.ui.scenario_dirty = false;
+            clearScenarioResults(nextState);
           }
         });
         showToast(root, 'Cenário salvo excluído.', 'success');
@@ -414,6 +531,12 @@ if (networkActive) {
           nextState.data.scenarios = (nextState.data.scenarios || []).filter(
             (scenario) => !savedIds.has(scenario.scenario_id)
           );
+          if (savedIds.has(nextState.context.selected_scenario_id)) {
+            nextState.context.selected_scenario_id = null;
+            nextState.ui.scenario_draft = null;
+            nextState.ui.scenario_dirty = false;
+            clearScenarioResults(nextState);
+          }
         });
         showToast(root, 'Cenários salvos limpos para esta empresa.', 'success');
       },
@@ -459,28 +582,31 @@ if (networkActive) {
         const companyId = store.getState().context.company_id;
         const action = beginAction('scenario', activeProvider, companyId);
         if (!action) return;
-        const effectiveScenarioId =
-          scenarioId ||
-          inputScenario?.scenario_id ||
-          (store.getState().context.provider_kind === 'mock'
-            ? store.getState().ui.scenario_draft?.scenario_id
-            : null);
+        const effectiveScenarioId = Object.keys(formValues).length
+          ? null
+          : scenarioId || inputScenario?.scenario_id || null;
         store.update((state) => {
           beginLoading(state, 'Simulando cenário…');
         });
-        showLoading(root, true, 'Simulando cenário', 'Chamando o engine de cenários.');
+        showLoading(
+          root,
+          true,
+          'Simulando cenário',
+          'Calculando custos e comparação com a referência.'
+        );
         try {
           const output = await activeProvider.runScenario({
             formValues,
             scenarioId: effectiveScenarioId,
             scenario: inputScenario,
           });
-          if (!isCurrentAction(action) || (output?.company_id && output.company_id !== companyId)) {
-            return;
-          }
+          if (!isCurrentAction(action)) return;
+          if (output?.company_id !== companyId)
+            throw new Error('O resultado não pertence à empresa ativa.');
           const scenario = output.scenario || output;
           const result = output.result || null;
           store.update((state) => {
+            clearScenarioResults(state);
             state.data.selected_scenario = scenario;
             state.data.scenario_result = result;
             state.data.scenario_quality = output.quality || null;
@@ -492,13 +618,15 @@ if (networkActive) {
             state.data.robustness = null;
             state.data.recommendation = null;
             state.meta.status = 'scenario_ready';
+            state.meta.result_kind = 'simulation';
+            state.ui.scenario_dirty = false;
             state.ui.loading = false;
             state.context.selected_scenario_id = scenario?.scenario_id || null;
             state.ui.scenario_draft = scenario;
           });
           showLoading(root, false);
-          showToast(root, 'Cenário simulado pelo provider ativo.', 'success');
-          window.location.hash = '#/network/scenarios/result';
+          showToast(root, 'Resultado do cenário disponível.', 'success');
+          window.location.hash = '#/network/results/summary';
         } catch (error) {
           if (!isCurrentAction(action)) return;
           store.update((state) => failLoading(state, error));
@@ -533,6 +661,8 @@ if (networkActive) {
             config,
           });
           if (!isCurrentAction(action)) return;
+          if (risk?.company_id !== companyId)
+            throw new Error('A análise de risco não pertence à empresa ativa.');
           store.update((state) => {
             state.data.monte_carlo = risk?.monte_carlo || null;
             state.data.stress = risk?.stress || null;
@@ -543,8 +673,8 @@ if (networkActive) {
             state.ui.loading = false;
           });
           showLoading(root, false);
-          showToast(root, 'Análise de risco concluída pelo provider ativo.', 'success');
-          window.location.hash = '#/network/scenarios/risk';
+          showToast(root, 'Análise de risco concluída.', 'success');
+          window.location.hash = '#/network/results/risk';
         } catch (error) {
           if (!isCurrentAction(action)) return;
           store.update((state) => failLoading(state, error));
@@ -557,28 +687,41 @@ if (networkActive) {
       },
       async runDecision(options = {}) {
         if (!provider) return;
+        const executionOptions =
+          options.selectionMode === 'manual' ? { ...decisionOptions, ...options } : options;
         const activeProvider = provider;
         const companyId = store.getState().context.company_id;
         const action = beginAction('decision', activeProvider, companyId);
         if (!action) return;
         store.update((state) => {
-          beginLoading(state, 'Executando pipeline de decisão…');
+          beginLoading(state, 'Avaliando alternativas…');
+          clearScenarioResults(state);
         });
-        showLoading(root, true, 'Executando decisão', 'Optimizer, risco, Evidence, QA e release.');
+        showLoading(
+          root,
+          true,
+          'Otimizando a rede',
+          'Comparando configurações e verificando os resultados.'
+        );
         try {
-          const packageResult = await activeProvider.buildDecisionPackage(options);
-          if (
-            !isCurrentAction(action) ||
-            (packageResult?.company_id && packageResult.company_id !== companyId)
-          ) {
-            return;
-          }
+          const packageResult = await activeProvider.buildDecisionPackage(executionOptions);
+          if (!isCurrentAction(action)) return;
+          if (packageResult?.company_id !== companyId)
+            throw new Error('A decisão não pertence à empresa ativa.');
+          decisionOptions = executionOptions;
           store.update((state) => {
             commitDecisionPackage(state, packageResult, activeProvider);
           });
           showLoading(root, false);
-          showToast(root, 'Pipeline de decisão concluído.', 'success');
-          window.location.hash = '#/network/trust/validation';
+          const blocked = packageResult.release?.release_status === 'blocked';
+          showToast(
+            root,
+            blocked
+              ? 'Não foi possível obter uma alternativa válida.'
+              : 'Resultados da otimização disponíveis.',
+            blocked ? 'error' : 'success'
+          );
+          window.location.hash = '#/network/results/summary';
         } catch (error) {
           if (!isCurrentAction(action)) return;
           store.update((state) => failLoading(state, error));
@@ -661,8 +804,14 @@ if (networkActive) {
     };
 
     function renderCharts(path, state) {
-      if (path === '/network/overview/costs')
-        renderCostChart('niCostChart', state.data.scenario_result || state.data.baseline);
+      if (path === '/network/overview/summary' || path === '/network/overview/costs') {
+        const baseline = state.data.baseline;
+        const taxUnavailable =
+          state.context?.provider_kind === 'mock' &&
+          baseline?.tax_results?.tax_results?.tax_coverage?.eligible_flow_count === 0;
+        const chartId = path.endsWith('/costs') ? 'niCostChart' : 'niSummaryCostChart';
+        renderCostChart(chartId, baseline, { taxUnavailable });
+      }
       if (path === '/network/overview/network') {
         const flows = state.data.baseline?.flows || [];
         renderVolumeByCdChart('niVolumeByCdChart', flows);
@@ -679,15 +828,41 @@ if (networkActive) {
         renderRiskScatter('niRiskScatterChart', monteCarlo);
         renderRiskProbability('niRiskProbabilityChart', monteCarlo);
       }
-      if (path === '/network/optimizer/results')
+      if (path === '/network/results/summary')
         renderRanking('niRankingChart', state.data.optimizer);
+      if (path === '/network/results/comparison') {
+        const baseline = selectBaseline(state);
+        renderComparisonCostChart(
+          'niComparisonCostChart',
+          comparisonCandidates(state),
+          state.context?.selected_scenario_id,
+          baseline?.model?.scenario_id || 'baseline'
+        );
+      }
     }
 
+    window.addEventListener('visagio:crypto-prompt', (event) => {
+      const visible = Boolean(event.detail?.visible);
+      root.querySelector('.network-content').inert = visible;
+      root.querySelector('.network-sidebar').inert = visible;
+      showLoading(root, !visible && store.getState().ui.loading, 'Carregando empresa');
+    });
     store.subscribe(render);
+    let chartResizeFrame = 0;
+    window.addEventListener('resize', () => {
+      window.cancelAnimationFrame(chartResizeFrame);
+      chartResizeFrame = window.requestAnimationFrame(() => {
+        const state = store.getState();
+        const route = parseRoute(state.ui.route || window.location.hash || config.default_route);
+        renderCharts(route.path, state);
+      });
+    });
     stopRouter = startRouter({
       initialRoute: config.default_route,
       onRouteChange(route) {
+        root.querySelector('#networkToastRoot')?.replaceChildren();
         store.update((state) => setRoute(state, route.hash));
+        window.requestAnimationFrame(() => window.scrollTo(0, 0));
       },
     });
     installBindings({ root, store, controller });
@@ -704,3 +879,5 @@ if (networkActive) {
 
   void bootstrap();
 }
+
+if (networkActive) initializeNetworkIntelligence();

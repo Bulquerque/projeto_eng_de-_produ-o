@@ -23,8 +23,11 @@ for (const companyId of ['empresa1','empresa2']) {
  if(gen.candidate_scenarios.length>15) throw new Error('max_candidates ignored');
  if(gen.candidate_scenarios.some(s=>s.company_id!==companyId)) throw new Error('company mismatch in candidates');
  if(gen.candidate_scenarios.some(s=>(s.changes.active_cds||[]).length===0)) throw new Error('candidate without CD');
- const opt=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}});
- const opt2=runOptimization({companyId,baselineBundle:bundle,objective,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}});
+ const fiscalGen=generateCandidateScenarios({companyId,baselineBundle:bundle,generationConfig:{max_candidates:15,tax_year:2030}});
+ if(fiscalGen.candidate_scenarios.some(s=>s.changes.tax_year!==2030 || s.changes.tax_regime!=='transition_2030')) throw new Error('selected reform scenario was not applied to candidates');
+ const opt=runOptimization({companyId,baselineBundle:bundle,objective,taxYear:2030,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}});
+ const opt2=runOptimization({companyId,baselineBundle:bundle,objective,taxYear:2030,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}});
+ if(opt.scored_scenarios.some(s=>s.scenario?.changes?.tax_year!==2030 || s.scenario?.changes?.tax_regime!=='transition_2030')) throw new Error('optimization ignored selected reform scenario');
  if(companyId==='empresa2') {
    if(!String(opt.optimizer_status || '').startsWith('success')) throw new Error('empresa2 optimizer should deliver exploratory results');
    if(opt.decision_use!=='exploratory_only' || opt.data_quality_status!=='limited_fiscal_coverage') throw new Error('empresa2 fiscal limitation status missing');

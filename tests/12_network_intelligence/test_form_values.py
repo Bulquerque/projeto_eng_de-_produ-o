@@ -17,9 +17,10 @@ const form = (values) => ({ get: (name) => values[name] ?? null });
 const validScenarioData = form({ scenario_name: 'Cenário A', tax_mode: 'current' });
 const scenario = parseScenarioForm(validScenarioData, [{ value: 'CD-1' }]);
 assert.deepEqual(scenario, {
-  scenario_name: 'Cenário A', active_cds: ['CD-1'], freight_multiplier: 1,
-  demand_multiplier: 1, inventory_days: 45, wacc: 0.15, tax_mode: 'current',
+  scenario_name: 'Cenário A', active_cds: ['CD-1'], tax_year: null, freight_multiplier: 1,
+  demand_multiplier: 1, inventory_days: 45, wacc: 0.15, tax_mode: 'current', tax_regime: 'current', reallocation_rule: 'nearest_available_cd',
 });
+assert.equal(validateScenarioValues({ ...scenario, scenario_name: '' }).valid, false);
 assert.deepEqual(validateScenarioValues(scenario), { valid: true, message: '' });
 assert.equal(parseScenarioForm(form({ scenario_name: ' ' }), []).scenario_name, ' ');
 assert.equal(validateScenarioValues({ ...scenario, scenario_name: ' ' }).message, 'Informe um nome para o cenário.');
@@ -32,12 +33,17 @@ assert.equal(validateScenarioValues({ ...scenario, tax_mode: 'disabled' }).messa
 
 const optimizer = parseOptimizerForm(form({}), {});
 assert.deepEqual(optimizer, {
+  tax_year: null,
   max_candidates: 2000, seed: 42,
   constraints: { min_active_cds: 1, max_active_cds: 999, max_cd_volume_share: 0.75, max_risk_level: 'high', allow_tax_disabled: false },
   profile_id: 'balanced',
   risk_config: { iterations: 300, seed: 42, profile: 'balanced', scatter_driver: 'freight_multiplier', stress_profile: 'standard', sensitivity_variable: 'freight_multiplier', sensitivity_x: 'freight_multiplier', sensitivity_y: 'demand_multiplier' },
 });
+assert.equal(validateOptimizerValues({ ...optimizer, risk_config: { ...optimizer.risk_config, iterations: 1 } }).valid, false);
 assert.deepEqual(validateOptimizerValues(optimizer), { valid: true, message: '' });
+assert.equal(parseOptimizerForm(form({ tax_year: '2030' })).tax_year, 2030);
+assert.deepEqual(validateOptimizerValues({ ...optimizer, tax_year: 2028 }), { valid: true, message: '' });
+assert.equal(validateOptimizerValues({ ...optimizer, tax_year: 2034 }).message, 'Selecione um ano de cenário tributário entre 2026 e 2033.');
 assert.equal(validateOptimizerValues({ ...optimizer, max_candidates: 99 }).message, 'Máximo de candidatos deve ser um inteiro entre 100 e 10.000.');
 assert.equal(validateOptimizerValues({ ...optimizer, seed: 1.5 }).message, 'Seed deve ser um número inteiro.');
 assert.equal(validateOptimizerValues({ ...optimizer, constraints: { ...optimizer.constraints, min_active_cds: 0 } }).message, 'CDs mínimos deve ser um inteiro maior ou igual a 1.');
@@ -49,6 +55,9 @@ const rawOptimizer = parseOptimizerForm(form({ max_candidates: '2000' }), { max_
 assert.ok(Number.isNaN(rawOptimizer.max_candidates), 'incomplete raw numeric input remains invalid instead of falling back to FormData');
 assert.equal(parseOptimizerForm(form({ max_candidates: '' }), { max_candidates: '' }).max_candidates, 2000);
 assert.equal(parseScenarioForm(form({ scenario_name: 'Cenário' }), [], { scenario_name: '  ' }).scenario_name, '  ');
+const taxYearScenario = parseScenarioForm(form({ scenario_name: 'Reforma 2031', tax_year: '2031', tax_regime: 'transition_2031' }), [{ value: 'CD-1' }]);
+assert.equal(taxYearScenario.tax_year, 2031);
+assert.deepEqual(validateScenarioValues(taxYearScenario), { valid: true, message: '' });
 
 const risk = parseRiskForm(form({}), {});
 assert.deepEqual(risk, {

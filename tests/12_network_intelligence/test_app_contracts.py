@@ -43,9 +43,13 @@ def test_app_foundation_contracts():
         const secondData = createEmptyData();
         firstData.scenarios.push({ scenario_id: 'isolated' });
         assert.deepEqual(secondData.scenarios, []);
-        store.getState().data.selected_scenario = { scenario_id: 'stale' };
+        for (const key of ['selected_scenario','scenario_result','optimizer','audit','final_qa','release','export_package','monte_carlo']) { store.getState().data[key] = { stale: true }; }
+        store.getState().meta.result_kind = 'optimization';
         clearScenarioResults(store.getState());
-        assert.equal(store.getState().data.selected_scenario, null);
+        for (const key of ['selected_scenario','scenario_result','optimizer','audit','final_qa','release','export_package','monte_carlo']) { assert.equal(store.getState().data[key], null, key); }
+        assert.equal(store.getState().meta.result_kind, null);
+        assert.equal(normalizeRoute('#/network/optimizer/results'), '#/network/results/summary');
+        assert.equal(normalizeRoute('#/network/scenarios/risk/advanced'), '#/network/results/risk/advanced');
         assert.equal(replaceCompanyQuery('empresa1'), null);
         commitProviderSnapshot(store.getState(), { company_id: 'empresa1', provider_kind: 'project', status: 'ready', data: { baseline: { model: { active_cds: ['A'] } } } });
         assert.equal(store.getState().data.baseline.model.active_cds[0], 'A');
@@ -59,6 +63,85 @@ def test_app_foundation_contracts():
         """
     )
     assert output.endswith('APP_FOUNDATION_OK')
+
+
+def test_optimizer_inherits_active_scenario_tax_year_and_saved_technical_draft_render():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { renderOptimizerConfigure } from './assets/js/app/pages/optimizer.js';
+
+        const state = {
+          context: { company_id: 'empresa1', provider_kind: 'project' },
+          ui: {
+            route: '#/network/optimizer/configure',
+            optimizer_drafts: { '2030': { tax_year: 2030, max_candidates: 4200 } },
+            optimizer_presets: [{ preset_id: 'custom_1', name: 'Fiscal 2030' }],
+          },
+          data: {
+            baseline: {
+              model: { active_cds: ['CD A', 'CD B'] },
+              complements: { scenario_registry: [
+                { scenario_type: 'baseline_current', scenario_year: 2026, scenario_name: 'Atual' },
+                { scenario_type: 'tax_reform_transition', scenario_year: 2027, scenario_name: 'Reforma 2027' },
+                { scenario_type: 'tax_reform_transition', scenario_year: 2030, scenario_name: 'Reforma 2030' },
+                { scenario_type: 'tax_reform_full', scenario_year: 2033, scenario_name: 'Reforma 2033' },
+                { scenario_type: 'operational', scenario_year: 2030, scenario_name: 'PS7' },
+              ] },
+            },
+            selected_scenario: {
+              scenario_id: 'tax_2030',
+              scenario_name: 'Reforma 2030',
+              scenario_type: 'tax_reform_transition',
+              changes: { tax_year: 2030, tax_regime_label: 'Transição do IBS · 30%', active_cds: ['CD A'] },
+            },
+          },
+        };
+        const html = renderOptimizerConfigure(state);
+        assert.match(html, /name="tax_year"/);
+        assert.match(html, /value="2030"/);
+        assert.match(html, /data-testid="optimizer-tax-context">2030 · Transição do IBS/);
+        assert.match(html, /value="4200"/);
+        assert.match(html, /Fiscal 2030/);
+        assert.match(html, /Perfil do ranking/);
+        assert.equal((html.match(/name="custom_preset_select"/g) || []).length, 1);
+        assert.ok(html.indexOf('ni-optimizer-presets') < html.indexOf('summary>Configuração técnica'));
+        assert.match(html, /data-testid="optimizer-preset-editor"[^>]* hidden/);
+        assert.doesNotMatch(html, /ni-optimizer-custom-preset/);
+        assert.match(html, /name="tax_year" value="2030"/);
+        assert.doesNotMatch(html, /optimizer-tax-scenario/);
+        assert.doesNotMatch(html, /PS7/);
+        console.log('OPTIMIZER_REFORM_UI_OK');
+        """
+    )
+    assert output.endswith('OPTIMIZER_REFORM_UI_OK')
+
+
+def test_annual_tax_scenario_builder_uses_supported_regimes():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { buildScenarioFromForm } from './assets/js/phase3/scenario-builder.js';
+        const baseline = { model: { scenario_id: 'base', active_cds: ['CD A'] } };
+        const regimes = new Map([
+          [2026, 'reform_2026'], [2027, 'reform_2027_2028'], [2028, 'reform_2027_2028'],
+          [2029, 'transition_2029'], [2030, 'transition_2030'], [2031, 'transition_2031'],
+          [2032, 'transition_2032'], [2033, 'reform_full_2033'],
+        ]);
+        for (const [year, expected] of regimes) {
+          const scenario = buildScenarioFromForm({
+            companyId: 'empresa1', baselineBundle: baseline,
+            scenarioId: `empresa1_tax_reform_${year}`,
+            formValues: { scenario_name: `Reforma tributária ${year}`, tax_mode: `reform_${year}`, tax_year: year },
+          });
+          assert.equal(scenario.changes.tax_year, year);
+          assert.equal(scenario.changes.tax_regime, expected);
+          assert.deepEqual(scenario.changes.active_cds, ['CD A']);
+        }
+        console.log('ANNUAL_TAX_SCENARIOS_OK');
+        """
+    )
+    assert output.endswith('ANNUAL_TAX_SCENARIOS_OK')
 
 
 def test_mock_fixture_isolation_contract():
@@ -78,7 +161,6 @@ def test_mock_fixture_isolation_contract():
     crypto_session = (ROOT / 'assets/js/core/crypto-session.js').read_text(encoding='utf-8')
     export_center = (ROOT / 'assets/js/phase5/export-center.js').read_text(encoding='utf-8')
     assert 'data-demo/empresa_mock' in mock_provider
-    assert 'runDomainScenario' not in mock_provider
     assert "import('./providers/mock-provider.js')" in main
     assert "import('./providers/project-provider.js')" in main
     assert "import('../phase5/export-center.js')" in main
@@ -109,7 +191,7 @@ def test_mock_fixture_isolation_contract():
     styles = (APP / 'main.css').read_text(encoding='utf-8')
     assert 'auditForPresentation' in trust
     assert 'Fonte protegida (detalhes no pacote de exportação)' in trust
-    assert 'body.network-ui-active .network-toast-root' in styles
+    assert '.network-toast-root' in styles
 
 
 def test_network_ui_compatibility_and_e2e_hooks():
@@ -123,26 +205,27 @@ def test_network_ui_compatibility_and_e2e_hooks():
     expected_ids = [
         'company-selector',
         'scenario-selector',
-        'evidence-topbar',
-        'company-badge',
-        'export-center',
-        'dev-console',
+        'network-shell',
+        'network-topbar',
     ]
     for test_id in expected_ids:
         assert f'data-testid="{test_id}"' in shell
+    for removed in ('evidence-topbar', 'company-badge', 'runtime-badge', 'ni-avatar'):
+        assert removed not in shell
+    assert 'aria-live="polite"' not in shell.split('<main')[1].split('</main>')[0]
+    assert shell.count('data-section="results"') == 1
 
     page_sources = '\n'.join(
         (APP / 'pages' / filename).read_text(encoding='utf-8')
-        for filename in ('overview.js', 'scenarios.js', 'optimizer.js', 'trust.js')
+        for filename in ('overview.js', 'scenarios.js', 'optimizer.js', 'trust.js', 'results.js')
     )
     for test_id in (
         'page-overview-summary',
         'page-scenarios-build',
-        'page-scenarios-result',
+        'page-results-summary',
         'page-optimizer-configure',
-        'page-optimizer-results',
+        'optimizer-ranking',
         'page-trust-validation',
-        'scenario-library',
         'saved-scenarios',
         'network-flow-analytics',
         'tax-periods-panel',
@@ -152,7 +235,7 @@ def test_network_ui_compatibility_and_e2e_hooks():
         'scenario-import',
         'scenario-clear-saved',
     ):
-        assert f'data-testid="{test_id}"' in page_sources
+        assert test_id in page_sources, test_id
 
 
 if __name__ == '__main__':

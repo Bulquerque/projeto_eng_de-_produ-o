@@ -64,14 +64,25 @@ function showPasswordPrompt(entry, errorMessage = '') {
     const card = document.createElement('form');
     card.id = 'cryptoPasswordPrompt';
     card.className = 'crypto-lock-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'cryptoPromptTitle');
+    const previousFocus = document.activeElement;
+    window.dispatchEvent(new CustomEvent('visagio:crypto-prompt', { detail: { visible: true } }));
+    const closePrompt = () => {
+      card.remove();
+      window.dispatchEvent(
+        new CustomEvent('visagio:crypto-prompt', { detail: { visible: false } })
+      );
+      previousFocus?.focus();
+    };
     card.innerHTML = `
-      <h2>Dados protegidos</h2>
-      <p>Digite a frase de acesso para carregar ${entry.company_id || 'os dados'}.</p>
-      <input type="password" id="cryptoPasswordInput" autocomplete="current-password" placeholder="Frase de acesso" required>
+      <h2 id="cryptoPromptTitle">Dados protegidos</h2>
+      <p>Digite a frase de acesso para carregar ${entry.company_id === 'empresa1' ? 'Empresa 1' : entry.company_id === 'empresa2' ? 'Empresa 2' : 'os dados'}.</p>
+      <input type="password" id="cryptoPasswordInput" autocomplete="current-password" aria-label="Frase de acesso" placeholder="Frase de acesso" required>
       <div class="crypto-actions">
-        <button type="submit" class="primary-button">Desbloquear simulador</button>
-        <button type="button" class="secondary-button" id="cryptoReturnToDemo">Voltar à Empresa Falsa</button>
-        <button type="button" class="secondary-button" id="cryptoCancel">Cancelar</button>
+        <button type="submit" class="ni-button primary">Desbloquear</button>
+        <button type="button" class="ni-button secondary" id="cryptoCancel">Cancelar</button>
       </div>
       <div class="crypto-error" id="cryptoPromptError" ${errorMessage ? '' : 'hidden'}>${errorMessage}</div>
     `;
@@ -81,16 +92,23 @@ function showPasswordPrompt(entry, errorMessage = '') {
     card.addEventListener('submit', (event) => {
       event.preventDefault();
       resolve(input.value);
-      card.remove();
+      closePrompt();
+    });
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') card.querySelector('#cryptoCancel').click();
+      if (event.key !== 'Tab') return;
+      const controls = [...card.querySelectorAll('input, button')];
+      if (event.shiftKey && document.activeElement === controls[0]) {
+        event.preventDefault();
+        controls.at(-1).focus();
+      } else if (!event.shiftKey && document.activeElement === controls.at(-1)) {
+        event.preventDefault();
+        controls[0].focus();
+      }
     });
     card.querySelector('#cryptoCancel').addEventListener('click', () => {
-      card.remove();
+      closePrompt();
       reject(new CryptoDataError('CRYPTO_003', 'Acesso negado. Senha não informada.'));
-    });
-    card.querySelector('#cryptoReturnToDemo').addEventListener('click', () => {
-      window.location.replace(
-        '?ui=network-intelligence&company=empresa_mock#/network/overview/summary'
-      );
     });
   });
 }
@@ -109,12 +127,12 @@ export function lockCryptoSession() {
 }
 
 export function installLockButton() {
-  if (document.getElementById('cryptoLockButton')) return;
+  if (window.__VISAGIO_NETWORK_UI__ || document.getElementById('cryptoLockButton')) return;
   ensureStyles();
   const button = document.createElement('button');
   button.type = 'button';
   button.id = 'cryptoLockButton';
-  button.className = 'secondary-button crypto-lock-button';
+  button.className = 'ni-button secondary crypto-lock-button';
   button.textContent = 'Bloquear dados';
   button.addEventListener('click', () => {
     lockCryptoSession();

@@ -261,6 +261,7 @@ export async function createProjectProvider() {
     },
     async runOptimization({
       profileId = 'balanced',
+      taxYear = null,
       objective = null,
       constraints = {},
       config = {},
@@ -280,6 +281,7 @@ export async function createProjectProvider() {
         companyId,
         baselineBundle: this.baselineBundle,
         objective: effectiveObjective,
+        taxYear,
         constraints: defaultConstraints({
           ...this.optimizationConfig,
           constraints,

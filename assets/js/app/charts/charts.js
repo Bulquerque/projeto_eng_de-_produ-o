@@ -7,25 +7,73 @@ import {
 import { escapeHtml, formatBRL, formatPct } from '../view-helpers.js';
 import { BRAZIL_MAP } from './brazil-map-data.js';
 
-export function renderCostChart(canvasId, result) {
-  const costs = result?.costs || {};
+export function renderCostChart(canvasId, result, { taxUnavailable = false } = {}) {
+  const costs = result?.costs?.costs || result?.costs || {};
+  const labels = ['Transferência', 'Distribuição', 'Armazenagem', 'Estoque'];
+  const data = [
+    costs.transfer_cost,
+    costs.distribution_cost,
+    costs.storage_cost,
+    costs.inventory_cost,
+  ];
+  if (!taxUnavailable) {
+    labels.push('Tributos');
+    data.push(costs.tax_impact);
+  }
   return renderBarChart(canvasId, {
-    title: 'Composição do custo',
-    labels: ['Transferência', 'Distribuição', 'Armazenagem', 'Estoque', 'Tributos'],
+    title: taxUnavailable ? 'Composição do custo logístico · R$' : 'Composição do custo · R$',
+    labels,
     datasets: [
       {
         label: 'R$',
-        data: [
-          costs.transfer_cost,
-          costs.distribution_cost,
-          costs.storage_cost,
-          costs.inventory_cost,
-          costs.tax_impact,
-        ],
+        data,
         backgroundColor: '#0c7878',
       },
     ],
     yFormat: 'money',
+    indexAxis: 'y',
+    showLegend: false,
+  });
+}
+
+export function renderComparisonCostChart(canvasId, rows, activeId, baselineId) {
+  const comparable = (rows || [])
+    .filter(
+      (row) =>
+        row?.scenario_id &&
+        row.total_with_tax != null &&
+        Number.isFinite(Number(row.total_with_tax))
+    )
+    .map((row) => ({ ...row, total_with_tax: Number(row.total_with_tax) }));
+  if (comparable.length < 2) return null;
+
+  const baseline = comparable.find((row) => row.scenario_id === baselineId);
+  const alternatives = comparable
+    .filter((row) => row.scenario_id !== baselineId)
+    .sort((a, b) => a.total_with_tax - b.total_with_tax);
+  const keepIds = new Set([
+    ...(baseline ? [baseline.scenario_id] : []),
+    ...alternatives.slice(0, 7).map((row) => row.scenario_id),
+    ...(alternatives.some((row) => row.scenario_id === activeId) ? [activeId] : []),
+  ]);
+  const visible = comparable.filter((row) => keepIds.has(row.scenario_id)).slice(0, 9);
+  return renderBarChart(canvasId, {
+    title: 'Custo total (R$)',
+    labels: visible.map((row) => {
+      if (row.scenario_id === baselineId) return 'Referência';
+      const name = row.scenario_name || 'Alternativa';
+      return name.length > 18 ? `${name.slice(0, 17)}…` : name;
+    }),
+    datasets: [
+      {
+        label: 'Custo total',
+        data: visible.map((row) => row.total_with_tax),
+        backgroundColor: '#0c7878',
+      },
+    ],
+    yFormat: 'money',
+    indexAxis: 'y',
+    showLegend: false,
   });
 }
 
@@ -47,11 +95,24 @@ export function renderRiskChart(canvasId, monteCarlo) {
 }
 
 export function renderSensitivity(canvasId, sensitivity) {
-  const rows = sensitivity?.sensitivity_results || [];
+  const rows = (sensitivity?.sensitivity_results || [])
+    .filter((row) => Number.isFinite(Number(row.value)) && Number.isFinite(Number(row.saving_pct)))
+    .slice()
+    .sort((a, b) => Number(a.value) - Number(b.value));
   if (!rows.length) return null;
+  const variableNames = {
+    freight_multiplier: 'Frete',
+    demand_multiplier: 'Demanda',
+    inventory_days: 'Dias de estoque',
+    wacc: 'WACC',
+    tax_multiplier: 'Tributo',
+  };
+  const variable = sensitivity?.most_sensitive_variable || rows[0]?.variable;
+  const variableName = variableNames[variable] || variable || 'variável';
   return renderLineChart(canvasId, {
-    title: 'Sensibilidade',
+    title: `Sensibilidade · ${variableName}`,
     labels: rows.map((row) => String(row.value)),
+    xValues: rows.map((row) => Number(row.value)),
     datasets: [
       { label: 'Saving %', data: rows.map((row) => row.saving_pct), borderColor: '#0f515c' },
     ],
@@ -124,10 +185,16 @@ function renderRiskSeries(canvasId, title, label, points, yFormat = 'percent', c
 export function renderRiskHistogram(canvasId, monteCarlo) {
   const histogram = monteCarlo?.summary?.histogram || [];
   if (!histogram.length) return null;
+  const tickStep = Math.max(1, Math.ceil(histogram.length / 5));
+  const labels = histogram.map((bin, index) => {
+    if (index % tickStep !== 0 && index !== histogram.length - 1) return '';
+    const bounds = String(bin.label || '').match(/-?\d+(?:[.,]\d+)?/g) || [];
+    return bounds.length > 1 ? `${bounds[0]}–${bounds[1]}%` : String(bin.label || '');
+  });
   renderBarChart(canvasId, {
-    labels: histogram.map((bin) => bin.label),
+    labels,
     datasets: [
-      { label: 'Frequência', data: histogram.map((bin) => bin.count), backgroundColor: '#00a189' },
+      { label: 'Simulações', data: histogram.map((bin) => bin.count), backgroundColor: '#00a189' },
     ],
     title: 'Distribuição de saving',
     yFormat: 'number',

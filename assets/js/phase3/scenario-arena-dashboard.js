@@ -7,6 +7,12 @@ import {
   renderScenarioExecutiveTable as renderScenarioExecutiveTableView,
 } from './scenario-arena/comparison-view.js';
 import { buildLibraryComparisonRows } from './scenario-arena/library-comparison.js';
+import {
+  renderBaseline as renderBaselineView,
+  renderCdChecks as renderCdChecksView,
+  renderLibraryWarnings as renderLibraryWarningsView,
+  renderScenarioLibrary as renderScenarioLibraryView,
+} from './scenario-arena/library-view.js';
 import { loadScenarioLibrary } from './scenario-library.js';
 import { buildScenarioFromForm } from './scenario-builder.js';
 import { validateScenario } from './scenario-validator.js';
@@ -57,15 +63,6 @@ const DEFAULT_FORM_VALUES = {
   reallocation_rule: 'nearest_available_cd',
 };
 
-const COST_LABELS = {
-  transfer_cost: 'Transferência',
-  distribution_cost: 'Distribuição',
-  storage_cost: 'Armazenagem',
-  inventory_cost: 'Estoque',
-  tax_impact: 'Tributo',
-  total_with_tax: 'Total com tributo',
-};
-
 function readMonteCarloConfig() {
   return buildMonteCarloConfig({
     iterations: Number($('phase3MonteCarloIterations')?.value || 300),
@@ -106,11 +103,6 @@ const state = {
 function setHtml(id, html) {
   const el = $(id);
   if (el) el.innerHTML = html;
-}
-
-function setText(id, value) {
-  const el = $(id);
-  if (el) el.textContent = value;
 }
 
 function setValue(id, value) {
@@ -257,92 +249,6 @@ function renderCompanyTabs() {
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-pressed', active ? 'true' : 'false');
   });
-}
-
-function renderBaseline() {
-  const baseline = state.library.baselineBundle;
-  const costs = baseline.costs.costs;
-
-  setText('phase3CompanyLabel', state.companyId === 'empresa1' ? 'Empresa 1' : 'Empresa 2');
-  renderCards('baselineCards', [
-    metric('Baseline', baseline.model.scenario_id, baseline.model.baseline_status),
-    metric(
-      'CDs ativos',
-      formatNumber((baseline.model.active_cds || []).length),
-      (baseline.model.active_cds || []).slice(0, 4).join(' · ')
-    ),
-    metric('Origens', formatNumber((baseline.model.origins || []).length), 'detectadas'),
-    metric('Destinos', formatNumber((baseline.model.destinations || []).length), 'cobertura'),
-    metric('Fluxos', formatNumber(baseline.flows.length), 'baseline'),
-    metric('Total com tributo', formatBRL(costs.total_with_tax, true), 'referência do baseline'),
-    metric('Base Fit', baseline.base_fit.base_fit_score ?? 'pendente', baseline.base_fit.status),
-  ]);
-  renderBaselineFinanceTable();
-}
-
-function renderBaselineFinanceTable() {
-  const costs = state.library?.baselineBundle?.costs?.costs || {};
-  const rows = [
-    'transfer_cost',
-    'distribution_cost',
-    'storage_cost',
-    'inventory_cost',
-    'tax_impact',
-    'total_with_tax',
-  ]
-    .map(
-      (key) =>
-        `<tr><td>${escapeHtml(COST_LABELS[key] || key)}</td><td>${formatBRL(costs[key], true)}</td></tr>`
-    )
-    .join('');
-  setHtml(
-    'baselineFinanceTable',
-    `<table><thead><tr><th>Componente</th><th>Valor baseline</th></tr></thead><tbody>${rows}</tbody></table>`
-  );
-}
-
-function renderCdChecks() {
-  const cds = state.library.baselineBundle.model.active_cds || [];
-  setHtml(
-    'cdSelector',
-    cds
-      .map(
-        (cd) =>
-          `<label class="chip-check"><input type="checkbox" data-cd-check value="${escapeHtml(cd)}" checked><span>${escapeHtml(cd)}</span></label>`
-      )
-      .join('')
-  );
-}
-
-function renderLibraryWarnings() {
-  const existing = $('libraryWarningBanner');
-  if (existing) existing.remove();
-
-  const warnings = state.library.warnings || [];
-  if (!warnings.length) return;
-
-  const banner = document.createElement('div');
-  banner.id = 'libraryWarningBanner';
-  banner.innerHTML = warnings
-    .map(
-      (w) =>
-        `<div class="alert-box warn"><strong>Aviso de biblioteca</strong><p>${escapeHtml(w.message)}</p></div>`
-    )
-    .join('');
-  $('baselineCards').before(banner);
-}
-
-function renderScenarioLibrary() {
-  const list = state.library.scenarios || [];
-  setHtml(
-    'scenarioLibrary',
-    list
-      .map(
-        (s) =>
-          `<button type="button" class="scenario-card" data-load-scenario="${escapeHtml(s.scenario_id)}"><strong>${escapeHtml(s.scenario_name)}</strong><span>${escapeHtml(s.scenario_type)} · ${escapeHtml(s.metadata?.source || 'local')}${s.monte_carlo?.summary ? ` · MC ${formatPct(s.monte_carlo.summary.probability_saving_positive * 100, 0)}` : ''}</span></button>`
-      )
-      .join('')
-  );
 }
 
 function loadScenarioToForm(scenario) {
@@ -789,11 +695,11 @@ export async function loadCompany(companyId) {
 
   try {
     state.library = await loadScenarioLibrary(companyId);
-    renderBaseline();
-    renderLibraryWarnings();
-    renderCdChecks();
+    renderBaselineView({ companyId: state.companyId, library: state.library });
+    renderLibraryWarningsView(state.library);
+    renderCdChecksView(state.library);
     renderTaxAssumptions();
-    renderScenarioLibrary();
+    renderScenarioLibraryView(state.library);
     renderLibraryComparisonTable();
     renderSaved();
     renderResult();

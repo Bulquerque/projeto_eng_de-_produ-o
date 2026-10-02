@@ -168,7 +168,10 @@ function projectCsvRow(row, exportContext, columns) {
   const safeRow = { ...exportContext, ...row };
   safeRow.warning_count = messageCount(row?.warnings);
   safeRow.error_count = messageCount(row?.errors);
-  return Object.fromEntries(columns.map((column) => [column, safeRow[column] ?? null]));
+  const outputColumns = exportContext.demo_only
+    ? [...columns, 'provider_kind', 'demo_only', 'release_policy']
+    : columns;
+  return Object.fromEntries(outputColumns.map((column) => [column, safeRow[column] ?? null]));
 }
 
 function toCsv(rows) {
@@ -194,8 +197,11 @@ function buildExportContext({ selectedScenario, audit, robustness } = {}) {
     selectedScenario?.scenario?.monte_carlo?.summary ||
     {};
   const optimization = audit?.optimization || {};
+  const companyId = result.company_id || selectedScenario?.company_id || null;
+  const demoOnly = companyId === 'empresa_mock';
   return {
-    company_id: result.company_id || selectedScenario?.company_id || null,
+    company_id: companyId,
+    ...(demoOnly ? { provider_kind: 'mock', demo_only: true, release_policy: 'demo_only' } : {}),
     scenario_id: result.scenario_id || selectedScenario?.scenario_id || null,
     evidence_score: evidence.evidence_score ?? null,
     evidence_status: evidence.evidence_status || null,

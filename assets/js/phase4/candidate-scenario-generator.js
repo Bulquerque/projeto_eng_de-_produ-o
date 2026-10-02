@@ -1,5 +1,6 @@
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
 import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { resolveTaxModeForRegime, resolveTaxRegime } from '../core/tax-reform-config.js';
 import { uniqueByChanges } from './optimizer-utils.js';
 function combinations(arr, k, limit = 80) {
   const out = [];
@@ -45,8 +46,14 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
   const maxCandidates = Number(generationConfig.max_candidates ?? 120);
   const freight = generationConfig.freight_multipliers || [0.95, 1, 1.1];
   const inv = generationConfig.inventory_days_options || [30, MODEL_DEFAULTS.inventory_days, 60];
-  const baseTaxMode = generationConfig.base_tax_mode || 'current';
-  const baseTaxRegime = generationConfig.base_tax_regime || null;
+  const taxYear = Number(generationConfig.tax_year) || null;
+  const taxRegime = taxYear
+    ? resolveTaxRegime({ year: taxYear })
+    : generationConfig.base_tax_regime || null;
+  const baseTaxMode = taxYear
+    ? resolveTaxModeForRegime(taxRegime)
+    : generationConfig.base_tax_mode || 'current';
+  const baseTaxRegime = taxRegime || generationConfig.base_tax_regime || null;
   const tax = generationConfig.allow_tax_disabled ? [baseTaxMode, 'disabled'] : [baseTaxMode];
   const demand = generationConfig.demand_multipliers || [0.95, 1, 1.05];
   const exhaustiveSubsets = generationConfig.exhaustive_subsets === true || baseCds.length <= 4;
@@ -73,7 +80,8 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
       for (const days of inv) {
         for (const tm of tax) {
           for (const dm of demand) {
-            const name = `Candidato ${String(idx).padStart(3, '0')} · ${cds.length} CD(s)`;
+            const fiscalContext = taxYear ? ` · Reforma ${taxYear}` : '';
+            const name = `Candidato ${String(idx).padStart(3, '0')}${fiscalContext} · ${cds.length} CD(s)`;
             const s = buildScenarioFromForm({
               companyId,
               baselineBundle,
@@ -87,6 +95,7 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
                 wacc: MODEL_DEFAULTS.reference_wacc,
                 tax_mode: tm,
                 tax_regime: baseTaxRegime,
+                ...(taxYear ? { tax_year: taxYear } : {}),
                 reallocation_rule: 'nearest_available_cd',
                 scenario_type: 'candidate',
               },

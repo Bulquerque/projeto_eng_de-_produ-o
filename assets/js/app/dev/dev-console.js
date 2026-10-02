@@ -4,7 +4,7 @@ import {
   summarizeDebugEntries,
 } from '../../core/debug-tools.js';
 import { getSafeStateSnapshot } from '../state.js';
-import { escapeHtml, safeJson, statusChip } from '../view-helpers.js';
+import { safeJson, statusChip } from '../view-helpers.js';
 
 function sanitize(value) {
   if (value === null || value === undefined) return value;
@@ -60,6 +60,6 @@ export function renderDevConsolePage(state, route = null) {
 export function sanitizeError(error) {
   return {
     code: error?.code || 'APP_ERROR',
-    message: escapeHtml(error?.message || String(error || 'Erro desconhecido.')),
+    message: error?.message || String(error || 'Erro desconhecido.'),
   };
 }
