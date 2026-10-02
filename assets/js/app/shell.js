@@ -28,7 +28,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
       <header class="network-topbar" data-testid="network-topbar">
         <div class="network-context">
           <label><span>Empresa</span><select id="niCompanySelect" data-testid="company-selector" aria-label="Selecionar empresa">${companies}</select></label>
-          <label><span>Ano tributário</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar ano tributário"><option value="">Base atual (2025)</option></select></label>
+          <label><span>Cenário ativo</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário ativo"><option value="">Base atual (2025)</option></select></label>
         </div>
         <div class="network-topbar-actions">
           <span id="niDemoBadge" class="ni-status status-neutral" hidden>Demonstração</span>
@@ -74,8 +74,7 @@ export function updateGlobalContext(root, state) {
       state.meta.provider_snapshot?.capabilities?.fiscal?.tax_reform_scenarios !== false;
     const fiscalDisabled = fiscalAvailable ? '' : ' disabled';
     const fiscalSuffix = fiscalAvailable ? '' : ' — indisponível na demonstração';
-    const options = `<option value="">Base atual (2025)</option>
-      <optgroup label="Reforma tributária">
+    const annualOptions = `<optgroup label="Reforma tributária">
         <option value="tax-year:2026"${fiscalDisabled}>2026 · Ano-teste (CBS/IBS)${fiscalSuffix}</option>
         <option value="tax-year:2027"${fiscalDisabled}>2027 · CBS, IBS-teste e IS${fiscalSuffix}</option>
         <option value="tax-year:2028"${fiscalDisabled}>2028 · CBS, IBS-teste e IS${fiscalSuffix}</option>
@@ -85,15 +84,61 @@ export function updateGlobalContext(root, state) {
         <option value="tax-year:2032"${fiscalDisabled}>2032 · IBS: 40% da transição${fiscalSuffix}</option>
         <option value="tax-year:2033"${fiscalDisabled}>2033 · novo sistema integral${fiscalSuffix}</option>
       </optgroup>`;
+    const excludedTypes = new Set(['baseline', 'tax_reform_transition', 'tax_reform_full']);
+    const activeScenario = state.ui.scenario_draft || state.data.selected_scenario;
+    const scenarios = (state.data.scenarios || []).filter(
+      (item) => !excludedTypes.has(item.scenario_type)
+    );
+    const uniqueScenarios = [
+      ...new Map(scenarios.map((item) => [item.scenario_id, item])).values(),
+    ];
+    const savedScenarios = [
+      ...new Map(
+        (state.data.saved_scenarios || []).map((item) => [item.scenario_id, item])
+      ).values(),
+    ];
+    const annualScenario = ['tax_reform_transition', 'tax_reform_full'].includes(
+      activeScenario?.scenario_type
+    );
+    const knownScenarioIds = new Set([
+      ...uniqueScenarios.map((item) => item.scenario_id),
+      ...savedScenarios.map((item) => item.scenario_id),
+    ]);
+    const currentScenarioOption =
+      activeScenario?.scenario_id &&
+      !annualScenario &&
+      !knownScenarioIds.has(activeScenario.scenario_id)
+        ? `<option value="${escapeHtml(activeScenario.scenario_id)}">${escapeHtml(activeScenario.scenario_name || 'Cenário ativo')} · ativo</option>`
+        : '';
+    const operationalOptions =
+      uniqueScenarios.length || savedScenarios.length
+        ? `<optgroup label="Cenários operacionais">${currentScenarioOption}${uniqueScenarios
+            .map(
+              (scenario) =>
+                `<option value="${escapeHtml(scenario.scenario_id)}">${escapeHtml(scenario.scenario_name || 'Cenário salvo')}</option>`
+            )
+            .join('')}${savedScenarios
+            .map(
+              (scenario) =>
+                `<option value="${escapeHtml(scenario.scenario_id)}">${escapeHtml(scenario.scenario_name || 'Cenário salvo')} · salvo</option>`
+            )
+            .join('')}</optgroup>`
+        : currentScenarioOption
+          ? `<optgroup label="Cenários operacionais">${currentScenarioOption}</optgroup>`
+          : '';
+    const options = `<option value="">Base atual (2025)</option>${operationalOptions}${annualOptions}`;
     if (scenarioSelect.dataset.options !== options) {
       scenarioSelect.innerHTML = options;
       scenarioSelect.dataset.options = options;
     }
-    const activeTaxYear = Number(
-      state.data.selected_scenario?.changes?.tax_year || state.ui.scenario_draft?.changes?.tax_year
+    const activeTaxYear = Number(activeScenario?.changes?.tax_year);
+    const isAnnualScenario = ['tax_reform_transition', 'tax_reform_full'].includes(
+      activeScenario?.scenario_type
     );
     scenarioSelect.value =
-      activeTaxYear >= 2026 && activeTaxYear <= 2033 ? `tax-year:${activeTaxYear}` : '';
+      isAnnualScenario && activeTaxYear >= 2026 && activeTaxYear <= 2033
+        ? `tax-year:${activeTaxYear}`
+        : activeScenario?.scenario_id || '';
   }
 }
 

@@ -65,7 +65,7 @@ def test_app_foundation_contracts():
     assert output.endswith('APP_FOUNDATION_OK')
 
 
-def test_optimizer_reform_year_and_saved_technical_draft_render():
+def test_optimizer_inherits_active_scenario_tax_year_and_saved_technical_draft_render():
     output = run_node(
         """
         import assert from 'node:assert/strict';
@@ -89,12 +89,18 @@ def test_optimizer_reform_year_and_saved_technical_draft_render():
                 { scenario_type: 'operational', scenario_year: 2030, scenario_name: 'PS7' },
               ] },
             },
-            selected_scenario: { changes: { tax_year: 2030, active_cds: ['CD A'] } },
+            selected_scenario: {
+              scenario_id: 'tax_2030',
+              scenario_name: 'Reforma 2030',
+              scenario_type: 'tax_reform_transition',
+              changes: { tax_year: 2030, tax_regime_label: 'Transição do IBS · 30%', active_cds: ['CD A'] },
+            },
           },
         };
         const html = renderOptimizerConfigure(state);
         assert.match(html, /name="tax_year"/);
-        assert.match(html, /value="2030" selected/);
+        assert.match(html, /value="2030"/);
+        assert.match(html, /data-testid="optimizer-tax-context">2030 · Transição do IBS/);
         assert.match(html, /value="4200"/);
         assert.match(html, /Fiscal 2030/);
         assert.match(html, /Perfil do ranking/);
@@ -102,8 +108,8 @@ def test_optimizer_reform_year_and_saved_technical_draft_render():
         assert.ok(html.indexOf('ni-optimizer-presets') < html.indexOf('summary>Configuração técnica'));
         assert.match(html, /data-testid="optimizer-preset-editor"[^>]* hidden/);
         assert.doesNotMatch(html, /ni-optimizer-custom-preset/);
-        assert.match(html, /value="2026">2026 · Ano-teste/);
-        assert.match(html, /value="2031" selected>2031 · Transição do IBS · 30%/);
+        assert.match(html, /name="tax_year" value="2030"/);
+        assert.doesNotMatch(html, /optimizer-tax-scenario/);
         assert.doesNotMatch(html, /PS7/);
         console.log('OPTIMIZER_REFORM_UI_OK');
         """

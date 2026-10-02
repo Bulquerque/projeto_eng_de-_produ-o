@@ -1478,6 +1478,19 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
   font-size: 13px;
 }
 
+.ni-workspace-field output {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  min-height: 44px;
+  padding: 7px 8px;
+  border: 1px solid #d4e0de;
+  border-radius: 6px;
+  background: #f5f8f7;
+  color: #183f45;
+  font-size: 13px;
+}
+
 .ni-workspace-advanced {
   margin-top: auto;
   border-top: 1px solid var(--ni-border);

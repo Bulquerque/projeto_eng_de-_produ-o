@@ -199,10 +199,6 @@ export function installBindings({ root, store, controller }) {
     if (store.getState().ui.loading) return;
     controller.loadScenarioDraft(event.target.value || null);
   });
-  root.addEventListener('change', (event) => {
-    if (event.target.id !== 'niScenarioLibrarySelect' || store.getState().ui.loading) return;
-    controller.loadScenarioDraft(event.target.value || null);
-  });
   root.addEventListener('submit', (event) => {
     if (event.target.id === 'niScenarioForm') {
       event.preventDefault();
@@ -252,86 +248,6 @@ export function installBindings({ root, store, controller }) {
     }
   });
   root.addEventListener('change', (event) => {
-    if (event.target.matches('[data-testid="optimizer-tax-scenario"]')) {
-      const form = event.target.form;
-      const year = Number(event.target.value);
-      const state = store.getState();
-      const previousYear =
-        Number(state.ui.optimizer_tax_year) ||
-        Number(state.ui.optimizer_draft?.tax_year) ||
-        Number(state.data.selected_scenario?.changes?.tax_year) ||
-        Number(state.ui.scenario_draft?.changes?.tax_year) ||
-        2027;
-      const previousValues = parseOptimizerForm(new FormData(form), rawInputValues.get(form) || {});
-      previousValues.tax_year = previousYear;
-      const nextValues = state.ui.optimizer_drafts?.[String(year)] || {
-        tax_year: year,
-        profile_id: previousValues.profile_id,
-        max_candidates: PRESET_SETTINGS[previousValues.profile_id]?.max_candidates ?? 2000,
-        seed: 42,
-        min_active_cds: state.data.optimizer?.constraints?.min_active_cds ?? 1,
-        max_active_cds:
-          state.data.optimizer?.constraints?.max_active_cds ??
-          state.data.baseline?.model?.active_cds?.length ??
-          999,
-        max_cd_volume_share: state.data.optimizer?.constraints?.max_cd_volume_share ?? 0.75,
-        max_risk_level:
-          PRESET_SETTINGS[previousValues.profile_id]?.max_risk_level ??
-          state.data.optimizer?.constraints?.max_risk_level ??
-          'high',
-        risk_config: {
-          iterations: PRESET_SETTINGS[previousValues.profile_id]?.risk_iterations ?? 300,
-          seed: 42,
-          profile: PRESET_SETTINGS[previousValues.profile_id]?.risk_profile ?? 'balanced',
-          scatter_driver: 'freight_multiplier',
-          stress_profile: 'standard',
-          sensitivity_variable: 'freight_multiplier',
-          sensitivity_x: 'freight_multiplier',
-          sensitivity_y: 'demand_multiplier',
-        },
-      };
-      const mapped = {
-        max_candidates: nextValues.max_candidates,
-        seed: nextValues.seed,
-        min_active_cds: nextValues.constraints?.min_active_cds ?? nextValues.min_active_cds,
-        max_active_cds: nextValues.constraints?.max_active_cds ?? nextValues.max_active_cds,
-        max_cd_volume_share:
-          nextValues.constraints?.max_cd_volume_share ?? nextValues.max_cd_volume_share,
-        max_risk_level: nextValues.constraints?.max_risk_level ?? nextValues.max_risk_level,
-        risk_iterations: nextValues.risk_config?.iterations ?? nextValues.risk_iterations,
-        risk_seed: nextValues.risk_config?.seed ?? nextValues.risk_seed,
-        risk_profile: nextValues.risk_config?.profile ?? nextValues.risk_profile,
-        risk_scatter_driver:
-          nextValues.risk_config?.scatter_driver ?? nextValues.risk_scatter_driver,
-        stress_profile: nextValues.risk_config?.stress_profile ?? nextValues.stress_profile,
-        sensitivity_variable:
-          nextValues.risk_config?.sensitivity_variable ?? nextValues.sensitivity_variable,
-        sensitivity_x: nextValues.risk_config?.sensitivity_x ?? nextValues.sensitivity_x,
-        sensitivity_y: nextValues.risk_config?.sensitivity_y ?? nextValues.sensitivity_y,
-      };
-      controller.switchOptimizerTaxYear(previousValues, {
-        ...nextValues,
-        constraints: {
-          ...nextValues.constraints,
-          min_active_cds: mapped.min_active_cds,
-          max_active_cds: mapped.max_active_cds,
-          max_cd_volume_share: mapped.max_cd_volume_share,
-          max_risk_level: mapped.max_risk_level,
-        },
-        risk_config: {
-          ...nextValues.risk_config,
-          iterations: mapped.risk_iterations,
-          seed: mapped.risk_seed,
-          profile: mapped.risk_profile,
-          scatter_driver: mapped.risk_scatter_driver,
-          stress_profile: mapped.stress_profile,
-          sensitivity_variable: mapped.sensitivity_variable,
-          sensitivity_x: mapped.sensitivity_x,
-          sensitivity_y: mapped.sensitivity_y,
-        },
-      });
-      return;
-    }
     if (event.target.matches('input[name="profile_id"]')) {
       applyOptimizerSettings(
         root.querySelector('#niOptimizerForm'),

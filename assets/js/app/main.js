@@ -351,13 +351,23 @@ function initializeNetworkIntelligence() {
         if (taxYearMatch) {
           const state = store.getState();
           const taxYear = Number(taxYearMatch[1]);
+          const activeScenario = state.ui.scenario_draft || state.data.selected_scenario;
+          const changes = activeScenario?.changes || {};
           const scenario = buildScenarioFromForm({
             companyId: state.context.company_id,
             baselineBundle: selectBaseline(state),
             scenarioId: `${state.context.company_id}_tax_reform_${taxYear}`,
             formValues: {
-              scenario_name: `Reforma tributária ${taxYear}`,
+              scenario_name: activeScenario?.scenario_name
+                ? `${activeScenario.scenario_name} · ${taxYear}`
+                : `Reforma tributária ${taxYear}`,
               scenario_type: taxYear === 2033 ? 'tax_reform_full' : 'tax_reform_transition',
+              active_cds: changes.active_cds,
+              freight_multiplier: changes.freight_multiplier,
+              demand_multiplier: changes.demand_multiplier,
+              inventory_days: changes.inventory_days,
+              wacc: changes.wacc,
+              reallocation_rule: changes.reallocation_rule,
               tax_mode: `reform_${taxYear}`,
               tax_year: taxYear,
             },
@@ -366,7 +376,6 @@ function initializeNetworkIntelligence() {
             nextState.ui.scenario_draft = scenario;
             nextState.ui.scenario_dirty = false;
             nextState.context.selected_scenario_id = scenario.scenario_id;
-            nextState.ui.optimizer_tax_year = null;
             clearScenarioResults(nextState);
           });
           navigate('#/network/scenarios/build');
@@ -382,7 +391,6 @@ function initializeNetworkIntelligence() {
           nextState.ui.scenario_draft = structuredClone(scenario);
           nextState.ui.scenario_dirty = false;
           nextState.context.selected_scenario_id = scenario.scenario_id;
-          nextState.ui.optimizer_tax_year = null;
           clearScenarioResults(nextState);
         });
         navigate('#/network/scenarios/build');
@@ -397,7 +405,6 @@ function initializeNetworkIntelligence() {
           nextState.ui.scenario_draft = null;
           nextState.ui.scenario_dirty = false;
           nextState.context.selected_scenario_id = null;
-          nextState.ui.optimizer_tax_year = null;
           clearScenarioResults(nextState);
         });
         navigate('#/network/scenarios/build');
@@ -415,14 +422,10 @@ function initializeNetworkIntelligence() {
           state.ui.scenario_dirty = true;
           clearScenarioResults(state);
         } else if (formId === 'niOptimizerForm') {
-          values.tax_year =
-            Number(state.ui.optimizer_tax_year) ||
-            Number(values.tax_year) ||
-            Number(state.data.selected_scenario?.changes?.tax_year) ||
-            2027;
+          values.tax_year = Number(values.tax_year) || null;
           state.ui.optimizer_draft = values;
           const optimizerDrafts = state.ui.optimizer_drafts || (state.ui.optimizer_drafts = {});
-          optimizerDrafts[String(values.tax_year || '2027')] = values;
+          optimizerDrafts[String(values.tax_year || 'current')] = values;
           clearScenarioResults(state);
         } else if (formId === 'niRiskForm') {
           state.ui.risk_draft = values;
@@ -438,15 +441,6 @@ function initializeNetworkIntelligence() {
           state.data.recommendation = null;
         }
         updateGlobalContext(root, state);
-      },
-      switchOptimizerTaxYear(previousValues, nextValues) {
-        store.update((state) => {
-          state.ui.optimizer_drafts[String(previousValues.tax_year || '2027')] = previousValues;
-          state.ui.optimizer_drafts[String(nextValues.tax_year)] = nextValues;
-          state.ui.optimizer_draft = nextValues;
-          state.ui.optimizer_tax_year = Number(nextValues.tax_year);
-          clearScenarioResults(state);
-        });
       },
       selectComparedScenario(scenarioId) {
         const state = store.getState();

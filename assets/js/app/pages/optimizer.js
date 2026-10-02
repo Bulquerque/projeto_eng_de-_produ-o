@@ -27,40 +27,12 @@ function selectField(name, label, options, selected) {
 }
 
 export function renderOptimizerConfigure(state) {
-  const registry =
-    selectBaseline(state)?.complements?.scenario_registry ||
-    selectBaseline(state)?.tax_results?.tax_source_context?.scenario_registry ||
-    [];
-  const fiscalCapabilities =
-    state.meta?.capabilities?.fiscal || state.meta?.provider_snapshot?.capabilities?.fiscal;
-  const hasTaxScenarios =
-    fiscalCapabilities?.tax_reform_scenarios ??
-    registry.some((item) =>
-      ['tax_reform_transition', 'tax_reform_full'].includes(item.scenario_type)
-    );
-  const taxScenarios = hasTaxScenarios
-    ? [
-        [2026, 'Ano-teste'],
-        [2027, 'CBS, IBS-teste e IS'],
-        [2028, 'CBS, IBS-teste e IS'],
-        [2029, 'IBS: 10% da transição'],
-        [2030, 'IBS: 20% da transição'],
-        [2031, 'IBS: 30% da transição'],
-        [2032, 'IBS: 40% da transição'],
-        [2033, 'Novo sistema integral'],
-      ]
-    : [];
-  const selectedScenario = state.data?.selected_scenario || state.ui?.scenario_draft;
-  const defaultTaxYear = Number(selectedScenario?.changes?.tax_year) || 2027;
-  const activeTaxYear = Number(
-    state.ui?.optimizer_tax_year ||
-      selectedScenario?.changes?.tax_year ||
-      state.ui?.optimizer_draft?.tax_year ||
-      defaultTaxYear
-  );
+  const selectedScenario = state.ui?.scenario_draft || state.data?.selected_scenario;
+  const activeTaxYear = Number(selectedScenario?.changes?.tax_year) || null;
   const draft =
-    state.ui?.optimizer_drafts?.[String(activeTaxYear)] ||
-    (Number(state.ui?.optimizer_draft?.tax_year) === activeTaxYear ? state.ui.optimizer_draft : {});
+    state.ui?.optimizer_drafts?.[String(activeTaxYear || 'current')] ||
+    state.ui?.optimizer_draft ||
+    {};
   const constraints = state.data?.optimizer?.constraints || {};
   const baseline = selectBaseline(state)?.model || {};
   const activeCount = Array.isArray(baseline.active_cds) ? baseline.active_cds.length : null;
@@ -68,16 +40,9 @@ export function renderOptimizerConfigure(state) {
     ([id, title, description]) =>
       `<label class="ni-workspace-profile"><input type="radio" name="profile_id" value="${id}"${String(draft.profile_id || 'balanced') === id ? ' checked' : ''}><span class="ni-workspace-profile-content"><strong>${title}</strong><span>${description}</span></span></label>`
   ).join('');
-  const taxScenarioControl = taxScenarios.length
-    ? `<label class="ni-workspace-field ni-optimization-tax-scenario"><span>Cenário da reforma tributária</span><select name="tax_year" data-testid="optimizer-tax-scenario">${taxScenarios
-        .map(
-          ([year, label]) =>
-            `<option value="${year}"${year === activeTaxYear ? ' selected' : ''}>${year} · ${escapeHtml(label)}</option>`
-        )
-        .join(
-          ''
-        )}</select><small>A busca compara alternativas da malha para este ano da reforma.</small></label>`
-    : '';
+  const taxContext = activeTaxYear
+    ? escapeHtml(selectedScenario?.changes?.tax_regime_label || `Ano tributário ${activeTaxYear}`)
+    : 'Base atual · 2025';
   const customPresets = (state.ui?.optimizer_presets || [])
     .map(
       (preset) =>
@@ -201,5 +166,5 @@ export function renderOptimizerConfigure(state) {
       value(draft, 'sensitivity_y', 'demand_multiplier')
     ),
   ].join('');
-  return `<section class="ni-workspace ni-workspace-page ni-optimization" data-testid="page-optimizer-configure"><header class="ni-page-heading"><h1>Otimização</h1></header>${sectionTabs('optimizer', state.ui?.route)}<form id="niOptimizerForm" class="ni-card ni-form ni-workspace-form" data-testid="optimizer-form" novalidate>${taxScenarioControl}<fieldset class="ni-workspace-panel ni-workspace-objectives"><legend>Perfil do ranking</legend><div class="ni-workspace-profile-grid">${objectives}</div><div class="ni-optimizer-presets"><label class="ni-workspace-field"><span>Configuração salva</span><select name="custom_preset_select"${hasCustomPresets ? '' : ' disabled'}><option value="">${hasCustomPresets ? 'Carregar configuração salva' : 'Nenhum preset salvo'}</option>${customPresets}</select></label><button type="button" class="ni-button secondary" data-action="open-optimizer-preset-save" aria-expanded="false" aria-controls="optimizerPresetEditor">Salvar configuração atual</button></div><div class="ni-optimizer-preset-editor" id="optimizerPresetEditor" data-testid="optimizer-preset-editor" hidden><label class="ni-workspace-field"><span>Nome do preset</span><input name="custom_preset_name" maxlength="48" placeholder="Ex.: Fiscal conservador"></label><button type="button" class="ni-button primary" data-action="save-optimizer-preset">Salvar</button><button type="button" class="ni-button secondary" data-action="cancel-optimizer-preset-save">Cancelar</button></div></fieldset><fieldset class="ni-workspace-panel ni-workspace-restrictions"><legend>Limites operacionais</legend><div class="ni-workspace-field-grid">${essential}</div></fieldset><details class="ni-workspace-advanced"><summary>Configuração técnica</summary><div class="ni-workspace-field-grid">${technical}</div></details><div class="ni-actions"><button type="submit" class="ni-button primary" data-testid="optimizer-run">Executar otimização</button></div></form></section>`;
+  return `<section class="ni-workspace ni-workspace-page ni-optimization" data-testid="page-optimizer-configure"><header class="ni-page-heading"><h1>Otimização</h1><span class="ni-context-chip" data-testid="optimizer-tax-context">${taxContext}</span></header>${sectionTabs('optimizer', state.ui?.route)}<form id="niOptimizerForm" class="ni-card ni-form ni-workspace-form" data-testid="optimizer-form" novalidate><input type="hidden" name="tax_year" value="${activeTaxYear || ''}"><fieldset class="ni-workspace-panel ni-workspace-objectives"><legend>Perfil do ranking</legend><div class="ni-workspace-profile-grid">${objectives}</div><div class="ni-optimizer-presets"><label class="ni-workspace-field"><span>Configuração salva</span><select name="custom_preset_select"${hasCustomPresets ? '' : ' disabled'}><option value="">${hasCustomPresets ? 'Carregar configuração salva' : 'Nenhum preset salvo'}</option>${customPresets}</select></label><button type="button" class="ni-button secondary" data-action="open-optimizer-preset-save" aria-expanded="false" aria-controls="optimizerPresetEditor">Salvar configuração atual</button></div><div class="ni-optimizer-preset-editor" id="optimizerPresetEditor" data-testid="optimizer-preset-editor" hidden><label class="ni-workspace-field"><span>Nome do preset</span><input name="custom_preset_name" maxlength="48" placeholder="Ex.: Fiscal conservador"></label><button type="button" class="ni-button primary" data-action="save-optimizer-preset">Salvar</button><button type="button" class="ni-button secondary" data-action="cancel-optimizer-preset-save">Cancelar</button></div></fieldset><fieldset class="ni-workspace-panel ni-workspace-restrictions"><legend>Limites operacionais</legend><div class="ni-workspace-field-grid">${essential}</div></fieldset><details class="ni-workspace-advanced"><summary>Configuração técnica</summary><div class="ni-workspace-field-grid">${technical}</div></details><div class="ni-actions"><button type="submit" class="ni-button primary" data-testid="optimizer-run">Executar otimização</button></div></form></section>`;
 }

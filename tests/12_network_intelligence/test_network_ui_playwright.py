@@ -113,14 +113,19 @@ def test_demo_journey(base, browser):
     assert 'Recomendado' not in page.locator('#networkPage').inner_text()
     assert page.locator('#niDemoBadge').is_visible()
     assert page.locator('#niLockButton').is_hidden()
-    assert page.locator('#niScenarioSelect').get_attribute('aria-label') == 'Selecionar ano tributário'
+    assert page.locator('#niScenarioSelect').get_attribute('aria-label') == 'Selecionar cenário ativo'
     year_options = page.locator('#niScenarioSelect option').evaluate_all(
         'options => options.map(o => [o.value, o.textContent.trim(), o.disabled])'
     )
     assert year_options[0] == ['', 'Base atual (2025)', False]
-    assert [value for value, _, _ in year_options[1:]] == [f'tax-year:{year}' for year in range(2026, 2034)]
-    assert all(not disabled for _, _, disabled in year_options[1:])
-    assert not any('demonstrativo' in label.lower() or 'consolidação' in label.lower() for _, label, _ in year_options)
+    annual_options = [
+        (value, label, disabled) for value, label, disabled in year_options if value.startswith('tax-year:')
+    ]
+    assert [value for value, _, _ in annual_options] == [f'tax-year:{year}' for year in range(2026, 2034)]
+    assert all(not disabled for _, _, disabled in annual_options)
+    assert any(
+        value == 'mock_consolidation' and 'Consolidação demonstrativa' in label for value, label, _ in year_options
+    )
     assert page.locator('.network-tool-link').evaluate('el => getComputedStyle(el).color') != 'rgb(128, 0, 128)'
     reference_cost = page.locator('[data-testid="baseline-total"]').inner_text()
     assert page.locator('#niSummaryCostChart').is_visible()
@@ -139,13 +144,26 @@ def test_demo_journey(base, browser):
     page.set_viewport_size({'width': 1440, 'height': 900})
     route(page, 'scenarios/build')
     # Selection loads a preset without silently calculating it; all original CDs remain available.
-    page.locator('#niScenarioLibrarySelect').select_option('mock_consolidation')
+    page.locator('#niScenarioSelect').select_option('mock_consolidation')
     assert page.locator('input[name="scenario_name"]').input_value() == 'Consolidação demonstrativa'
     assert page.locator('input[name="active_cds"]').count() == 3
     assert page.locator('input[name="active_cds"]').first.bounding_box()['width'] <= 24
     assert page.locator('input[name="active_cds"]').first.locator('..').bounding_box()['height'] >= 44
     assert page.locator('input[name="active_cds"]:checked').count() == 1
     assert page.locator('[data-testid="scenario-preview"]').count() == 0
+    operational_freight = page.locator('input[name="freight_multiplier"]').input_value()
+    page.locator('#niScenarioSelect').select_option('tax-year:2031')
+    route(page, 'scenarios/build')
+    assert page.locator('input[name="scenario_name"]').input_value() == 'Consolidação demonstrativa · 2031'
+    assert page.locator('input[name="freight_multiplier"]').input_value() == operational_freight
+    assert page.locator('input[name="tax_year"]').input_value() == '2031'
+    assert page.locator('[data-testid="active-tax-regime"]').inner_text() == 'Transição 2031'
+    route(page, 'optimizer/configure')
+    assert page.locator('[data-testid="optimizer-tax-context"]').inner_text() == 'Transição 2031'
+    assert page.locator('input[name="tax_year"]').input_value() == '2031'
+    route(page, 'scenarios/build')
+    page.locator('#niScenarioSelect').select_option('')
+    assert page.locator('input[name="active_cds"]:checked').count() == 3
     page.locator('input[name="freight_multiplier"]').fill('1.18')
     route(page, 'overview/summary')
     assert page.locator('[data-testid="baseline-total"]').inner_text() == reference_cost
@@ -168,7 +186,7 @@ def test_demo_journey(base, browser):
     route(page, 'scenarios/build')
     open_details(page, '[data-testid="scenario-save"]')
     page.locator('[data-testid="scenario-save"]').click()
-    assert page.locator('#niScenarioSelect option').count() == 9
+    assert page.locator('#niScenarioSelect option[value^="tax-year:"]').count() == 8
     with page.expect_download() as download:
         page.locator('[data-testid="scenario-export"]').click()
     saved = json.loads(Path(download.value.path()).read_text())
@@ -185,9 +203,9 @@ def test_demo_journey(base, browser):
         {'name': 'wrong.json', 'mimeType': 'application/json', 'buffer': json.dumps(wrong).encode()}
     )
     page.locator('.network-toast.error', has_text='outra empresa').wait_for()
-    page.locator('#niScenarioLibrarySelect').select_option('mock_regional_balance')
+    page.locator('#niScenarioSelect').select_option('mock_regional_balance')
     assert page.locator('input[name="active_cds"]:checked').count() == 2
-    page.locator('#niScenarioLibrarySelect').select_option('')
+    page.locator('#niScenarioSelect').select_option('')
     assert page.locator('input[name="active_cds"]:checked').count() == 3
     assert page.locator('input[name="freight_multiplier"]').input_value() == '1'
     route(page, 'optimizer/configure')
@@ -249,7 +267,7 @@ def test_demo_journey(base, browser):
     selector.select_option(selected['id'])
     page.locator('[data-action="run-decision-manual"]').click()
     ready(page)
-    assert page.locator('#niScenarioSelect option').count() == 9
+    assert page.locator('#niScenarioSelect option[value^="tax-year:"]').count() == 8
     assert selected['name'] in page.locator('#networkPage').inner_text()
     open_details(page, '[data-action="open-export"]')
     with page.expect_download() as download:
@@ -453,7 +471,7 @@ def test_real_tenants(base, browser):
         if page.locator('#niScenarioSelect option[value="tax-year:2031"]').is_enabled():
             page.locator('#niScenarioSelect').select_option('tax-year:2031')
             assert page.locator('input[name="scenario_name"]').input_value() == 'Reforma tributária 2031'
-            assert page.locator('select[name="tax_regime"]').input_value() == 'transition_2031'
+            assert page.locator('[data-testid="active-tax-regime"]').inner_text() == 'Transição 2031'
             simulate(page)
             page.locator('#niScenarioSelect').select_option('')
         route(page, 'scenarios/build')
@@ -462,17 +480,8 @@ def test_real_tenants(base, browser):
         assert 'R$' in page.locator('[data-testid="result-total"]').inner_text()
         route(page, 'optimizer/configure')
         open_details(page, 'input[name="max_candidates"]')
-        if page.locator('[data-testid="optimizer-tax-scenario"]').count():
-            tax_year = page.locator('[data-testid="optimizer-tax-scenario"]')
-            tax_year.select_option('2027')
-            page.locator('input[name="max_candidates"]').fill('400')
-            tax_year.select_option('2032')
-            assert page.locator('input[name="max_candidates"]').input_value() == '2000'
-            assert page.locator('input[name="risk_iterations"]').input_value() == '300'
-            tax_year.select_option('2027')
-            assert page.locator('input[name="max_candidates"]').input_value() == '400'
-            tax_year.select_option('2032')
-            page.locator('input[name="max_candidates"]').fill('100')
+        assert page.locator('[data-testid="optimizer-tax-scenario"]').count() == 0
+        assert page.locator('[data-testid="optimizer-tax-context"]').inner_text() == 'Base atual · 2025'
         page.locator('input[name="max_candidates"]').fill('100')
         page.locator('input[name="risk_iterations"]').fill('50')
         optimize(page)
