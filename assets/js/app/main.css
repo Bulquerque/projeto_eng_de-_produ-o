@@ -503,6 +503,44 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
 .ni-results-comparison .ni-workspace-panel, .ni-results-tradeoffs .ni-workspace-panel { padding: 16px; }
 .ni-results-tradeoffs > .ni-table-wrap { border-top: 1px solid var(--ni-border); }
 
+/* Dados e metodologia concentra a decisão e deixa os resultados livres para a leitura do custo. */
+.ni-trust { gap: 14px; }
+.ni-trust-decision { display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; padding: 20px 22px; border: 1px solid #cfe1dc; border-left: 4px solid var(--ni-green); border-radius: 12px; background: #fff; box-shadow: 0 5px 18px rgba(0, 54, 61, 0.06); }
+.ni-trust-decision h2 { margin: 5px 0 5px; color: var(--ni-deep); font-size: 21px; }
+.ni-trust-decision p { max-width: 690px; margin: 0; color: #506a6d; font-size: 13px; line-height: 1.55; }
+.ni-trust-decision-status { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.ni-trust-decision--empty { border-left-color: #b6c9c8; }
+.ni-trust-blockers { flex-basis: 100%; padding-top: 13px; border-top: 1px solid var(--ni-border); color: #5a4440; font-size: 12px; }
+.ni-trust-blockers strong { color: #7a332b; }
+.ni-trust-blockers ul, .ni-trust-list { margin: 7px 0 0; padding-left: 18px; }
+.ni-trust-blockers li, .ni-trust-list li { margin: 4px 0; }
+.ni-trust-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--ni-border); border-bottom: 1px solid var(--ni-border); }
+.ni-trust-metric { min-width: 0; padding: 13px 15px; border-left: 1px solid var(--ni-border); }
+.ni-trust-metric:first-child { border-left: 0; }
+.ni-trust-metric span, .ni-trust-metric small { display: block; color: #587276; font-size: 11px; }
+.ni-trust-metric strong { display: block; margin: 5px 0 2px; color: var(--ni-deep); font-size: 17px; }
+.ni-trust-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.ni-trust-grid .ni-workspace-panel { padding: 17px 19px; }
+.ni-eyebrow { color: #0c7878; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.ni-text-link { color: #006b68; font-size: 12px; font-weight: 700; text-decoration: none; }
+.ni-text-link:hover { text-decoration: underline; }
+.ni-trust-limits { padding: 4px 0; color: #506a6d; font-size: 12px; }
+.ni-trust-limits summary { cursor: pointer; color: #365b60; font-weight: 700; }
+.ni-trust-limits ul { margin: 8px 0 0; padding-left: 18px; }
+.ni-trust-analysis { display: grid; gap: 12px; }
+.ni-trust-analysis > .ni-workspace-section-heading { margin: 4px 0 0; }
+.ni-trust-analysis > .ni-workspace-section-heading h2 { margin: 3px 0; }
+.ni-trust-analysis > .ni-workspace-section-heading p { margin: 3px 0; color: #587276; font-size: 12px; }
+.ni-results-trust-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0; padding: 11px 0; border-bottom: 1px solid var(--ni-border); color: #506a6d; font-size: 12px; }
+
+@media (max-width: 760px) {
+  .ni-trust-decision, .ni-results-trust-link { display: grid; }
+  .ni-trust-decision-status { justify-content: flex-start; }
+  .ni-trust-metrics, .ni-trust-grid { grid-template-columns: 1fr 1fr; }
+  .ni-trust-metric:nth-child(3) { border-left: 0; border-top: 1px solid var(--ni-border); }
+  .ni-trust-metric:nth-child(4) { border-top: 1px solid var(--ni-border); }
+}
+
 .ni-workspace-panel {
   min-width: 0;
   padding: 19px;

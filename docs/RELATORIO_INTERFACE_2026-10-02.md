@@ -45,6 +45,12 @@ As capturas abaixo usam a empresa demonstrativa. Os valores antigos não são us
 |---|---|
 | ![Resultados antes](qa/interface-2026-10-02/resultados-antes.png) | ![Resultados depois](qa/interface-2026-10-02/resultados-depois.png) |
 
+### Reorganização de dados e metodologia
+
+A área **Dados e metodologia** passou a ser o centro da decisão. Ela agora reúne o cenário avaliado, o estado da recomendação, as ressalvas, os indicadores de evidência/robustez/validação/cobertura fiscal, as fontes consideradas e os limites de interpretação. A aba **Metodologia** também recebe a resolução de risco, sensibilidade e estresse quando há dados calculados.
+
+Resultados ficou dedicado à leitura do custo e da comparação. A probabilidade de economia, o risco e o bloco técnico foram retirados do resumo para evitar repetição e linguagem meta; a tela mantém apenas um acesso curto para a confiabilidade e o método. A mudança foi conferida nos estados vazio e após simulação, em desktop e no fluxo de navegação entre as abas.
+
 ## Fonte e publicação
 
 A branch `codex/interface-guiada` parte de `integration/final-delivery` em `481ee7b6216fbd2ec58a2b8ecb9732b84b309bd2`. A fonte exata do Sites v18 (`486820833a8398e5338f43ed69cd44ded7c9f749`) foi recuperada para conservar ajustes já publicados de gráficos, criptografia, loader e módulos de apresentação.

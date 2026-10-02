@@ -97,8 +97,7 @@ export function renderResultsSummary(state) {
   const saving = totalDelta == null ? null : -totalDelta;
   const savingPct =
     saving == null || Number(referenceTotal) === 0 ? null : (saving / Number(referenceTotal)) * 100;
-  const risk = decision.risk || {};
-  const probability = risk.monte_carlo?.summary?.probability_saving_positive;
+  const activeCdCount = scenario?.changes?.active_cds?.length;
   const rows = COST_COMPONENTS.map(([key, label]) => {
     if (taxUnavailable && key === 'tax_impact')
       return '<tr><th scope="row">Tributos · sem base elegível</th><td>—</td><td>—</td><td>—</td></tr>';
@@ -112,33 +111,18 @@ export function renderResultsSummary(state) {
   const ranking = state.data?.optimizer
     ? `<section class="ni-results-ranking ni-workspace-ranking" data-testid="optimizer-ranking"><header class="ni-workspace-section-heading"><h2>Alternativas da otimização</h2></header>${table(['Posição', 'Alternativa', 'Custo total', 'CDs ativos', 'Score', 'Risco', 'Ação'], ranked.rows, 'Nenhuma alternativa elegível.')}<details class="ni-workspace-advanced"><summary>Avaliar seleção manual</summary><div class="ni-results-decision">${ranked.select}${ranked.action}</div></details></section>`
     : '';
-  const evidence = result.evidence;
   const blocked =
     ['blocked', 'failed', 'not_recommended'].includes(
       decision.recommendation?.recommendation_status
     ) || decision.final_qa?.final_qa_status === 'failed';
-  const blockers = [
-    ...(decision.recommendation?.blockers || []),
-    ...(decision.recommendation?.warnings || []),
-    ...(evidence?.blockers || []),
-  ];
-  const alert =
-    blocked || blockers.length
-      ? `<section class="ni-workspace-alert ni-workspace-alert--negative" role="status"><strong>${blocked ? escapeHtml(businessLabel(decision.recommendation?.recommendation_status || decision.final_qa?.final_qa_status)) : 'Ressalvas da análise'}</strong>${blockers.length ? `<ul>${[...new Set(blockers)].map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : ''}</section>`
-      : '';
-  const recommendation =
-    !blocked && decision.recommendation?.recommendation_status
-      ? `<p class="ni-results-recommendation">${escapeHtml(businessLabel(decision.recommendation.recommendation_status))}</p>`
-      : '';
-  const technical = `<details class="ni-workspace-secondary-analytics"><summary>Qualidade e método</summary><dl class="ni-workspace-metadata"><div><dt>Qualidade da análise</dt><dd>${escapeHtml(businessLabel(evidence?.evidence_status || result.quality?.quality_status))}</dd></div><div><dt>Evidências</dt><dd>${state.context?.provider_kind === 'mock' ? '—' : evidence?.evidence_score == null ? '—' : `${escapeHtml(formatNumber(evidence.evidence_score))}/100`}</dd></div><div><dt>Estado da execução</dt><dd>${escapeHtml(businessLabel(result.calculation_status || result.simulation_status || state.meta?.status))}</dd></div></dl>${evidence?.blockers?.length ? `<ul>${evidence.blockers.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : ''}</details>`;
+  const alert = blocked
+    ? `<section class="ni-workspace-alert ni-workspace-alert--negative" role="status"><strong>${escapeHtml(businessLabel(decision.recommendation?.recommendation_status || decision.final_qa?.final_qa_status))}</strong><p>Consulte Dados e metodologia para ver as ressalvas que impedem uma decisão segura.</p><a class="ni-text-link" href="#/network/trust/overview" data-route="#/network/trust/overview">Ver decisão e confiabilidade →</a></section>`
+    : '';
   const exportFiles = decision.export_package?.files || [];
   const actions = `<details class="ni-workspace-secondary-analytics"><summary>Salvar, exportar e verificar</summary><div class="ni-actions">${state.data?.selected_scenario && result ? '<button type="button" class="ni-button secondary" data-action="save-current-scenario" data-testid="scenario-save">Salvar cenário</button><button type="button" class="ni-button secondary" data-action="export-current-scenario" data-testid="scenario-export">Exportar cenário JSON</button>' : ''}${exportFiles.length ? '<button type="button" class="ni-button secondary" data-action="open-export">Abrir pacote de entrega</button>' : ''}<a class="ni-button secondary" href="#/network/trust/validation" data-route="#/network/trust/validation">Ver verificações</a></div></details>`;
-  const riskAction =
-    risk.monte_carlo || risk.stress
-      ? ''
-      : '<button type="button" class="ni-button secondary" data-action="run-risk">Calcular risco</button>';
-  const summary = `<section class="ni-results-summary"><div class="ni-results-decision"><div><span class="ni-results-kind">${kind}</span><h2>${escapeHtml(scenario.scenario_name || 'Cenário avaliado')}</h2><p>Comparado com ${escapeHtml(baseline.name)}</p>${recommendation}</div><div class="ni-results-impact"><span>${taxUnavailable ? 'Economia logística' : 'Economia ante a referência'}</span><strong>${saving == null ? '—' : escapeHtml(formatBRL(saving, true))}</strong><small>${savingPct == null ? '—' : escapeHtml(formatPct(savingPct))}</small></div></div><div class="ni-workspace-kpis ni-results-metrics">${kpi(taxUnavailable ? 'Custo logístico' : 'Custo total', total == null ? '—' : formatBRL(total, true), '', 'result-total')}${kpi('Referência', referenceTotal == null ? '—' : formatBRL(referenceTotal, true))}${kpi('Probabilidade de economia', probability == null ? '—' : formatPct(probability * 100))}${kpi('Risco', businessLabel(result.quality?.risk_level || decision.quality?.risk_level))}</div></section>`;
-  return `<section class="ni-workspace ni-workspace-page ni-results" data-testid="page-results-summary"><header class="ni-page-heading"><h1>Resultados</h1></header>${sectionTabs('results', state.ui?.route)}${summary}${alert}<section class="ni-workspace-panel ni-results-reference"><h2>Custos e comparação</h2>${table(['Componente', 'Resultado', 'Referência', 'Diferença'], rows)}</section>${ranking}<div class="ni-actions">${riskAction}</div>${technical}${actions}</section>`;
+  const summary = `<section class="ni-results-summary"><div class="ni-results-decision"><div><span class="ni-results-kind">${kind}</span><h2>${escapeHtml(scenario.scenario_name || 'Cenário avaliado')}</h2><p>Comparado com ${escapeHtml(baseline.name)}</p></div><div class="ni-results-impact"><span>${taxUnavailable ? 'Economia logística' : 'Economia ante a referência'}</span><strong>${saving == null ? '—' : escapeHtml(formatBRL(saving, true))}</strong><small>${savingPct == null ? '—' : escapeHtml(formatPct(savingPct))}</small></div></div><div class="ni-workspace-kpis ni-results-metrics">${kpi(taxUnavailable ? 'Custo logístico' : 'Custo total', total == null ? '—' : formatBRL(total, true), '', 'result-total')}${kpi('Referência', referenceTotal == null ? '—' : formatBRL(referenceTotal, true))}${kpi('CDs ativos', activeCdCount == null ? '—' : formatNumber(activeCdCount))}${kpi('Estado', businessLabel(result.calculation_status || result.simulation_status || state.meta?.status))}</div></section>`;
+  const trustLink = `<p class="ni-results-trust-link"><span>Confiabilidade e decisão</span><a class="ni-text-link" href="#/network/trust/overview" data-route="#/network/trust/overview">Ver dados, ressalvas e método →</a></p>`;
+  return `<section class="ni-workspace ni-workspace-page ni-results" data-testid="page-results-summary"><header class="ni-page-heading"><h1>Resultados</h1></header>${sectionTabs('results', state.ui?.route)}${summary}${blocked ? alert : ''}<section class="ni-workspace-panel ni-results-reference"><h2>Custos e comparação</h2>${table(['Componente', 'Resultado', 'Referência', 'Diferença'], rows)}</section>${ranking}${trustLink}${actions}</section>`;
 }
 
 function comparisonCandidates(state) {
@@ -341,12 +325,11 @@ function renderSensitivityMatrix(matrix = {}) {
   return `<div class="ni-table-wrap"><table class="ni-workspace-heatmap" data-testid="sensitivity-matrix"><caption>Economia ante a referência (%)</caption><thead>${header}</thead><tbody>${body}</tbody></table></div>`;
 }
 
-export function renderResultsRisk(state, advanced = false) {
+export function renderRiskAnalysis(state, advanced = false) {
   const decision = selectDecision(state);
   const risk = decision.risk || {};
   const monteCarlo = risk.monte_carlo || {};
   const summary = monteCarlo.summary || {};
-  const scenario = decision.scenario;
   const riskConfig = state.ui?.risk_draft || monteCarlo.config || {};
   const options = (name, entries, fallback) =>
     entries
@@ -410,8 +393,7 @@ export function renderResultsRisk(state, advanced = false) {
     'demand_multiplier'
   )}</select></label><button type="submit" class="ni-button primary" data-testid="risk-run">Recalcular risco</button></form></details>`;
   if (noRisk) {
-    const empty = `<section class="ni-workspace ni-workspace-page ni-results-risk"><header class="ni-page-heading"><h1>Resultados · Risco</h1></header>${sectionTabs('results', state.ui?.route)}${emptyState(decision.result ? 'Calcule o risco com as premissas abaixo.' : 'Execute uma simulação ou otimização para consultar a análise de risco.')}${decision.result ? controls : ''}</section>`;
-    return empty;
+    return `${emptyState(decision.result ? 'Calcule o risco com as premissas abaixo.' : 'Execute uma simulação ou otimização para consultar a análise de risco.')}${decision.result ? controls : ''}`;
   }
   const kpis = `<div class="ni-workspace-kpis">${kpi('Probabilidade de economia', summary.probability_saving_positive == null ? '—' : formatPct(summary.probability_saving_positive * 100))}${kpi('Robustez', risk.robustness?.robustness_score == null ? '—' : `${formatNumber(risk.robustness.robustness_score, 0)}/100`)}${kpi('Economia · P10', summary.p10_saving_pct == null ? '—' : formatPct(summary.p10_saving_pct))}${kpi('Economia · mediana', summary.median_saving_pct == null ? '—' : formatPct(summary.median_saving_pct))}</div>`;
   const stressTable = advanced
@@ -431,5 +413,11 @@ export function renderResultsRisk(state, advanced = false) {
   const advancedCharts = advanced
     ? `<div class="ni-workspace-grid">${chart('Faixa de incerteza', 'niRiskChart', 'Faixa de incerteza')}${chart('Probabilidade de economia', 'niRiskProbabilityChart', 'Probabilidade de economia')}${chart('Curva percentílica', 'niRiskCdfChart', 'Curva percentílica')}${chart('Custo total', 'niRiskTotalChart', 'Distribuição do custo total')}${chart('Relação entre fator e economia', 'niRiskScatterChart', 'Relação entre fator e economia')}${chart('Sensibilidade', 'niSensitivityChart', 'Sensibilidade das variáveis')}</div><section class="ni-workspace-panel"><h2>Matriz de sensibilidade</h2>${renderSensitivityMatrix(risk.sensitivity_matrix)}</section>${stressTable}${metadata}`
     : '';
-  return `<section class="ni-workspace ni-workspace-page ni-results-risk" data-testid="page-results-risk"><header class="ni-page-heading"><h1>Resultados · Risco</h1>${scenario ? `<p>${escapeHtml(scenario.scenario_name || 'Cenário analisado')}</p>` : ''}</header>${sectionTabs('results', state.ui?.route)}${kpis}${stressSummary}${controls}${summaryCharts}${advancedCharts}${advanced ? '' : '<a class="ni-button secondary" href="#/network/results/risk/advanced" data-route="#/network/results/risk/advanced">Ver análise detalhada</a>'}</section>`;
+  return `${kpis}${stressSummary}${controls}${summaryCharts}${advancedCharts}`;
+}
+
+export function renderResultsRisk(state, advanced = false) {
+  const decision = selectDecision(state);
+  const scenario = decision.scenario;
+  return `<section class="ni-workspace ni-workspace-page ni-results-risk" data-testid="page-results-risk"><header class="ni-page-heading"><h1>Resultados · Risco</h1>${scenario ? `<p>${escapeHtml(scenario.scenario_name || 'Cenário analisado')}</p>` : ''}</header>${sectionTabs('results', state.ui?.route)}${renderRiskAnalysis(state, advanced)}${advanced ? '' : '<a class="ni-button secondary" href="#/network/results/risk/advanced" data-route="#/network/results/risk/advanced">Ver análise detalhada</a>'}</section>`;
 }
