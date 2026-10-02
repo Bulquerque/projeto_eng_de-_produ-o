@@ -140,6 +140,29 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
   text-align: left;
   cursor: pointer;
 }
+.network-sidebar-tools .network-tool-link {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #b9d7d5;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-decoration: none;
+  transition: background-color .16s ease, color .16s ease, border-color .16s ease;
+}
+.network-sidebar-tools .network-tool-link:visited { color: #b9d7d5; }
+.network-sidebar-tools .network-tool-link:hover,
+.network-sidebar-tools .network-tool-link.active {
+  border-color: rgba(169,253,172,.24);
+  background: rgba(255,255,255,.08);
+  color: #fff;
+}
+.network-sidebar-tools .network-tool-link.active { border-left: 3px solid var(--ni-mint); padding-left: 6px; }
 .network-sidebar-tools button:hover { background: rgba(255,255,255,.08); color: #fff; }
 .network-tool-icon { width: 14px; height: 14px; flex-basis: 14px; opacity: .82; }
 .network-sidebar-foot { display: none; }
@@ -258,7 +281,7 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
 .ni-button.secondary { border-color: #dce8e5; background: #e8f1ef; color: var(--ni-deep); }
 .ni-button:hover { filter: brightness(.96); }
 .ni-button:disabled { cursor: not-allowed; opacity: .55; }
-.ni-button:focus-visible, .ni-form input:focus-visible, .ni-form select:focus-visible, .ni-section-tabs a:focus-visible, .network-nav a:focus-visible, .network-sidebar-tools button:focus-visible, .network-context select:focus-visible, .network-drawer-close:focus-visible, .network-drawer h2:focus-visible, .ni-workspace-advanced summary:focus-visible { outline: 3px solid var(--ni-amber); outline-offset: 2px; }
+.ni-button:focus-visible, .ni-form input:focus-visible, .ni-form select:focus-visible, .ni-section-tabs a:focus-visible, .network-nav a:focus-visible, .network-sidebar-tools a:focus-visible, .network-sidebar-tools button:focus-visible, .network-context select:focus-visible, .network-drawer-close:focus-visible, .network-drawer h2:focus-visible, .ni-workspace-advanced summary:focus-visible { outline: 3px solid var(--ni-amber); outline-offset: 2px; }
 
 .ni-form { display: grid; gap: 14px; }
 .ni-form label, .ni-form legend, .ni-selection-card label { color: #35575b; font-size: 13px; font-weight: 700; }
@@ -533,6 +556,7 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
 .ni-trust-analysis > .ni-workspace-section-heading p { margin: 3px 0; color: #587276; font-size: 12px; }
 .ni-results-trust-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0; padding: 11px 0; border-bottom: 1px solid var(--ni-border); color: #506a6d; font-size: 12px; }
 .ni-optimization-tax-scenario { max-width: 420px; }
+.ni-scenario-library { max-width: 440px; margin-bottom: 14px; }
 .ni-optimizer-presets { display: grid; grid-template-columns: minmax(220px, 1fr) auto; align-items: end; gap: 12px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--ni-border); }
 .ni-optimizer-presets .ni-workspace-field, .ni-optimizer-preset-editor .ni-workspace-field { margin: 0; }
 .ni-optimizer-presets .ni-button, .ni-optimizer-preset-editor .ni-button { min-height: 44px; white-space: nowrap; }

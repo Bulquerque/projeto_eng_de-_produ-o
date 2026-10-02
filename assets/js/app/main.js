@@ -17,6 +17,8 @@ import { installBindings } from './bindings.js';
 import { sanitizeError } from './dev/dev-console.js';
 import { escapeHtml, routeFallback } from './view-helpers.js';
 import { loadOptimizationPresets } from '../core/optimization-config-store.js';
+import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
+import { selectBaseline } from './selectors/business-selectors.js';
 import { ROUTE_RENDERERS } from './route-renderers.js';
 import {
   renderDistanceHistogram,
@@ -341,6 +343,30 @@ function initializeNetworkIntelligence() {
       loadScenarioDraft(scenarioId) {
         if (!scenarioId) {
           this.resetScenarioDraft();
+          return;
+        }
+        const taxYearMatch = /^tax-year:(202[6-9]|203[0-3])$/.exec(scenarioId);
+        if (taxYearMatch) {
+          const state = store.getState();
+          const taxYear = Number(taxYearMatch[1]);
+          const scenario = buildScenarioFromForm({
+            companyId: state.context.company_id,
+            baselineBundle: selectBaseline(state),
+            scenarioId: `${state.context.company_id}_tax_reform_${taxYear}`,
+            formValues: {
+              scenario_name: `Reforma tributária ${taxYear}`,
+              scenario_type: taxYear === 2033 ? 'tax_reform_full' : 'tax_reform_transition',
+              tax_mode: `reform_${taxYear}`,
+              tax_year: taxYear,
+            },
+          });
+          store.update((nextState) => {
+            nextState.ui.scenario_draft = scenario;
+            nextState.ui.scenario_dirty = false;
+            nextState.context.selected_scenario_id = scenario.scenario_id;
+            clearScenarioResults(nextState);
+          });
+          navigate('#/network/scenarios/build');
           return;
         }
         const state = store.getState();

@@ -19,7 +19,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
         <a href="#/network/results/summary" data-route="#/network/results/summary" data-section="results"><span class="network-nav-number" aria-hidden="true">04</span><span>Resultados</span></a>
       </nav>
       <div class="network-sidebar-tools">
-        <a href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust">Dados e metodologia</a>
+        <a class="network-tool-link" href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust"><img class="network-tool-icon" src="assets/icons/bootstrap-icons/shield-check.svg" alt=""><span>Dados e metodologia</span></a>
         <button type="button" data-action="open-help"><img class="network-tool-icon" src="assets/icons/bootstrap-icons/question-circle.svg" alt="">Ajuda</button>
         ${debugEnabled ? '<a href="#/network/dev/console" data-route="#/network/dev/console" data-section="dev">Desenvolvimento</a>' : ''}
       </div>
@@ -28,7 +28,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
       <header class="network-topbar" data-testid="network-topbar">
         <div class="network-context">
           <label><span>Empresa</span><select id="niCompanySelect" data-testid="company-selector" aria-label="Selecionar empresa">${companies}</select></label>
-          <label><span>Cenário ativo</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário"><option value="">Referência</option></select></label>
+          <label><span>Ano tributário</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar ano tributário"><option value="">Base atual (2025)</option></select></label>
         </div>
         <div class="network-topbar-actions">
           <span id="niDemoBadge" class="ni-status status-neutral" hidden>Demonstração</span>
@@ -70,39 +70,30 @@ export function updateGlobalContext(root, state) {
   root.querySelector('#niDraftBadge').hidden = !state.ui.scenario_dirty;
   if (scenarioSelect) {
     scenarioSelect.disabled = Boolean(state.ui.loading || !state.data.baseline);
-    const baselineId = state.data.baseline?.model?.scenario_id;
-    const scenarios = new Map();
-    for (const entry of [
-      ...(state.data.scenarios || []),
-      ...(state.data.saved_scenarios || []),
-      ...(state.data.optimizer?.scored_scenarios || []),
-      ...(state.data.optimizer?.best_scenarios || []),
-      state.ui.scenario_draft,
-      state.data.selected_scenario,
-    ]) {
-      const scenario = entry?.scenario || entry;
-      if (
-        scenario?.scenario_id &&
-        scenario.scenario_id !== baselineId &&
-        scenario.scenario_type !== 'baseline'
-      ) {
-        scenarios.set(scenario.scenario_id, scenario);
-      }
-    }
-    const options = `<option value="">Referência</option>${[...scenarios.values()]
-      .map(
-        (scenario) =>
-          `<option value="${escapeHtml(scenario.scenario_id)}">${escapeHtml(scenario.scenario_name || 'Cenário salvo')}</option>`
-      )
-      .join('')}`;
+    const fiscalAvailable =
+      state.meta.provider_snapshot?.capabilities?.fiscal?.tax_reform_scenarios !== false;
+    const fiscalDisabled = fiscalAvailable ? '' : ' disabled';
+    const fiscalSuffix = fiscalAvailable ? '' : ' — indisponível na demonstração';
+    const options = `<option value="">Base atual (2025)</option>
+      <optgroup label="Reforma tributária">
+        <option value="tax-year:2026"${fiscalDisabled}>2026 · Ano-teste${fiscalSuffix}</option>
+        <option value="tax-year:2027"${fiscalDisabled}>2027 · CBS e Imposto Seletivo${fiscalSuffix}</option>
+        <option value="tax-year:2028"${fiscalDisabled}>2028 · CBS e Imposto Seletivo${fiscalSuffix}</option>
+        <option value="tax-year:2029"${fiscalDisabled}>2029 · início da transição do IBS${fiscalSuffix}</option>
+        <option value="tax-year:2030"${fiscalDisabled}>2030 · transição do IBS${fiscalSuffix}</option>
+        <option value="tax-year:2031"${fiscalDisabled}>2031 · transição do IBS${fiscalSuffix}</option>
+        <option value="tax-year:2032"${fiscalDisabled}>2032 · transição do IBS${fiscalSuffix}</option>
+        <option value="tax-year:2033"${fiscalDisabled}>2033 · novo sistema integral${fiscalSuffix}</option>
+      </optgroup>`;
     if (scenarioSelect.dataset.options !== options) {
       scenarioSelect.innerHTML = options;
       scenarioSelect.dataset.options = options;
     }
+    const activeTaxYear = Number(
+      state.data.selected_scenario?.changes?.tax_year || state.ui.scenario_draft?.changes?.tax_year
+    );
     scenarioSelect.value =
-      state.context.selected_scenario_id === baselineId
-        ? ''
-        : state.context.selected_scenario_id || '';
+      activeTaxYear >= 2026 && activeTaxYear <= 2033 ? `tax-year:${activeTaxYear}` : '';
   }
 }
 

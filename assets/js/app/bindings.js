@@ -199,6 +199,10 @@ export function installBindings({ root, store, controller }) {
     if (store.getState().ui.loading) return;
     controller.loadScenarioDraft(event.target.value || null);
   });
+  root.addEventListener('change', (event) => {
+    if (event.target.id !== 'niScenarioLibrarySelect' || store.getState().ui.loading) return;
+    controller.loadScenarioDraft(event.target.value || null);
+  });
   root.addEventListener('submit', (event) => {
     if (event.target.id === 'niScenarioForm') {
       event.preventDefault();

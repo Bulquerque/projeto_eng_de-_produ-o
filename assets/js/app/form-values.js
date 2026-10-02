@@ -23,6 +23,7 @@ export function parseScenarioForm(data, checkedActiveCds, rawValues = {}) {
     wacc: readFormNumber(data, rawValues, 'wacc', 0.15),
     tax_mode: data.get('tax_mode') || resolveTaxModeForRegime(data.get('tax_regime') || 'current'),
     tax_regime: data.get('tax_regime') || 'current',
+    tax_year: Number(data.get('tax_year')) || null,
     reallocation_rule: data.get('reallocation_rule') || 'nearest_available_cd',
   };
 }
@@ -44,6 +45,9 @@ export function validateScenarioValues(values) {
   }
   if (values.tax_mode === 'disabled') {
     return validationError('O modo tributário desligado não é permitido pela política vigente.');
+  }
+  if (values.tax_year != null && (values.tax_year < 2026 || values.tax_year > 2033)) {
+    return validationError('Ano tributário fora do período de transição (2026–2033).');
   }
   return { valid: true, message: '' };
 }
@@ -80,8 +84,11 @@ export function validateOptimizerValues(values) {
     return validationError('Máximo de candidatos deve ser um inteiro entre 100 e 10.000.');
   }
   if (!Number.isInteger(seed)) return validationError('Seed deve ser um número inteiro.');
-  if (values.tax_year != null && ![2027, 2030, 2033].includes(Number(values.tax_year))) {
-    return validationError('Selecione um ano de cenário tributário disponível.');
+  if (
+    values.tax_year != null &&
+    (Number(values.tax_year) < 2026 || Number(values.tax_year) > 2033)
+  ) {
+    return validationError('Selecione um ano de cenário tributário entre 2026 e 2033.');
   }
   const minCds = constraints.min_active_cds;
   const maxCds = constraints.max_active_cds;

@@ -110,6 +110,33 @@ def test_optimizer_reform_year_and_saved_technical_draft_render():
     assert output.endswith('OPTIMIZER_REFORM_UI_OK')
 
 
+def test_annual_tax_scenario_builder_uses_supported_regimes():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { buildScenarioFromForm } from './assets/js/phase3/scenario-builder.js';
+        const baseline = { model: { scenario_id: 'base', active_cds: ['CD A'] } };
+        const regimes = new Map([
+          [2026, 'reform_2026'], [2027, 'reform_2027_2028'], [2028, 'reform_2027_2028'],
+          [2029, 'transition_2029'], [2030, 'transition_2030'], [2031, 'transition_2031'],
+          [2032, 'transition_2032'], [2033, 'reform_full_2033'],
+        ]);
+        for (const [year, expected] of regimes) {
+          const scenario = buildScenarioFromForm({
+            companyId: 'empresa1', baselineBundle: baseline,
+            scenarioId: `empresa1_tax_reform_${year}`,
+            formValues: { scenario_name: `Reforma tributária ${year}`, tax_mode: `reform_${year}`, tax_year: year },
+          });
+          assert.equal(scenario.changes.tax_year, year);
+          assert.equal(scenario.changes.tax_regime, expected);
+          assert.deepEqual(scenario.changes.active_cds, ['CD A']);
+        }
+        console.log('ANNUAL_TAX_SCENARIOS_OK');
+        """
+    )
+    assert output.endswith('ANNUAL_TAX_SCENARIOS_OK')
+
+
 def test_mock_fixture_isolation_contract():
     for path in sorted((ROOT / 'data-demo/empresa_mock').glob('*.json')):
         payload = json.loads(path.read_text(encoding='utf-8'))
