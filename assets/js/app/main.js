@@ -854,6 +854,15 @@ function initializeNetworkIntelligence() {
       showLoading(root, !visible && store.getState().ui.loading, 'Carregando empresa');
     });
     store.subscribe(render);
+    let chartResizeFrame = 0;
+    window.addEventListener('resize', () => {
+      window.cancelAnimationFrame(chartResizeFrame);
+      chartResizeFrame = window.requestAnimationFrame(() => {
+        const state = store.getState();
+        const route = parseRoute(state.ui.route || window.location.hash || config.default_route);
+        renderCharts(route.path, state);
+      });
+    });
     stopRouter = startRouter({
       initialRoute: config.default_route,
       onRouteChange(route) {

@@ -174,10 +174,13 @@ export function renderResultsComparison(state) {
     candidate[key] == null ? '—' : escapeHtml(formatBRL(candidate[key], true));
   const candidates = rows.filter((row) => row.scenario_id !== baseline.id);
   const headings = rows
-    .map(
-      (row) =>
-        `<th scope="col" class="${row.scenario_id === activeId ? 'is-selected' : ''}">${escapeHtml(row.scenario_name || 'Alternativa')}${row.scenario_id === baseline.id ? '<small>Referência</small>' : row.scenario_id === activeId ? '<small>Selecionado</small>' : ''}</th>`
-    )
+    .map((row) => {
+      const isBaseline = row.scenario_id === baseline.id;
+      const label = isBaseline ? 'Referência' : row.scenario_name || 'Alternativa';
+      const marker =
+        !isBaseline && row.scenario_id === activeId ? '<small>Selecionado</small>' : '';
+      return `<th scope="col" class="${row.scenario_id === activeId ? 'is-selected' : ''}">${escapeHtml(label)}${marker}</th>`;
+    })
     .join('');
   const metrics = [
     ['Custo total', (row) => metric(row, 'total_with_tax')],
@@ -221,7 +224,7 @@ export function renderResultsComparison(state) {
     ],
   ];
   const body = rows.length
-    ? `<div class="ni-workspace-matrix-wrap"><table class="ni-workspace-matrix"><thead><tr><th scope="col">Indicador</th>${headings}</tr></thead><tbody>${metrics.map(([label, render]) => `<tr><th scope="row">${label}</th>${rows.map((row) => `<td class="${row.scenario_id === activeId ? 'is-selected' : ''}">${render(row)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
+    ? `<div class="ni-workspace-matrix-wrap"><table class="ni-workspace-matrix"><thead><tr><th scope="col">Indicador</th>${headings}</tr></thead><tbody>${metrics.map(([label, render]) => `<tr><th scope="row">${label}</th>${rows.map((row) => `<td class="${row.scenario_id === activeId ? 'is-selected' : ''}">${render(row)}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="ni-comparison-cards">${rows.map((row) => `<article class="ni-comparison-card${row.scenario_id === activeId ? ' is-selected' : ''}"><h2>${escapeHtml(row.scenario_id === baseline.id ? 'Referência' : row.scenario_name || 'Alternativa')}</h2><dl>${metrics.map(([label, render]) => `<div><dt>${label}</dt><dd>${render(row)}</dd></div>`).join('')}</dl></article>`).join('')}</div>`
     : emptyState('Execute uma simulação ou otimização para comparar alternativas.');
   const selectActions = candidates
     .filter((row) => row.scenario_id !== activeId)
@@ -233,9 +236,10 @@ export function renderResultsComparison(state) {
   const chartRows = rows.filter(
     (row) => row.total_with_tax != null && Number.isFinite(Number(row.total_with_tax))
   );
-  const chart = chartRows.length
-    ? `<section class="ni-workspace-panel ni-results-comparison-chart"><h2>Custo total por alternativa</h2><canvas id="niComparisonCostChart" class="ni-chart" role="img" aria-label="Gráfico de barras comparando o custo total da referência e das alternativas disponíveis"></canvas><p class="ni-note">A tabela abaixo mantém os valores exatos e os demais indicadores.</p></section>`
-    : '';
+  const chart =
+    chartRows.length > 1
+      ? `<section class="ni-workspace-panel ni-results-comparison-chart"><h2>Custo total por alternativa</h2><canvas id="niComparisonCostChart" class="ni-chart" role="img" aria-label="Gráfico de barras comparando o custo total da referência e das alternativas disponíveis"></canvas><p class="ni-note">A tabela abaixo mantém os valores exatos e os demais indicadores.</p></section>`
+      : '';
   return `<section class="ni-workspace ni-workspace-page ni-results-comparison" data-testid="page-results-comparison"><header class="ni-page-heading"><h1>Comparação</h1></header>${sectionTabs('results', state.ui?.route)}${chart}<section class="ni-workspace-panel">${body}${selectActions ? `<div class="ni-actions">${selectActions}</div>` : ''}</section></section>`;
 }
 

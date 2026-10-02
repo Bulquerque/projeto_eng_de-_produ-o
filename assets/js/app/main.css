@@ -1822,3 +1822,39 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
     overflow-x: auto;
   }
 }
+
+/* Responsive polish: keep charts and comparison content readable at narrow widths. */
+.ni-trust-grid .ni-workspace-panel,
+.ni-trust-list li,
+.ni-trust-decision > div { min-width: 0; overflow-wrap: anywhere; }
+.ni-comparison-cards { display: none; }
+.ni-workspace-matrix thead th small { display: block; margin-top: 2px; color: #668084; font-size: 10px; font-weight: 600; }
+
+@media (max-width: 900px) {
+  .ni-network-overview-grid { grid-template-columns: 1fr; }
+  .ni-results-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ni-trust-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ni-trust-metric strong { overflow-wrap: anywhere; }
+  .ni-workspace-scope-list { grid-template-columns: 1fr; }
+  .ni-workspace-scope-list > div { align-items: flex-start; flex-wrap: wrap; }
+  .ni-results-comparison .ni-workspace-matrix-wrap { display: none; }
+  .ni-comparison-cards { display: grid; gap: 10px; }
+  .ni-comparison-card { min-width: 0; padding: 13px 14px; border: 1px solid var(--ni-border); border-radius: 9px; background: #fff; }
+  .ni-comparison-card.is-selected { border-color: #74c9ae; box-shadow: inset 3px 0 #00a189; }
+  .ni-comparison-card h2 { margin: 0 0 9px; color: var(--ni-deep); font-size: 15px; }
+  .ni-comparison-card dl { display: grid; gap: 0; margin: 0; }
+  .ni-comparison-card dl > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid #e8efed; }
+  .ni-comparison-card dt { min-width: 0; color: #526b70; font-size: 12px; }
+  .ni-comparison-card dd { margin: 0; color: #21474e; font-size: 12px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+}
+
+@media (max-width: 760px) {
+  .ni-workspace-page > .ni-section-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; overscroll-behavior-inline: contain; }
+  .ni-workspace-page > .ni-section-tabs a { flex: 0 0 auto; padding-right: 10px; padding-left: 10px; }
+}
+
+@media (max-width: 430px) {
+  .ni-trust-grid { grid-template-columns: 1fr; }
+  .ni-trust-grid .ni-workspace-panel { padding: 14px; }
+  .ni-trust-metrics { grid-template-columns: 1fr; }
+}

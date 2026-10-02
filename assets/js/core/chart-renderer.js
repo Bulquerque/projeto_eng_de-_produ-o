@@ -113,7 +113,15 @@ function formatValue(value, mode) {
 
 function renderBarChart(
   canvasId,
-  { labels = [], datasets = [], title, yFormat, xFormat: _xFormat, indexAxis = 'x' }
+  {
+    labels = [],
+    datasets = [],
+    title,
+    yFormat,
+    xFormat: _xFormat,
+    indexAxis = 'x',
+    showLegend = true,
+  }
 ) {
   destroyChart(canvasId);
   const canvas = getCanvas(canvasId);
@@ -121,7 +129,10 @@ function renderBarChart(
   const { ctx, width, height } = getContext(canvas);
   drawFrame(ctx, width, height, title);
 
-  const pad = { top: title ? 30 : 14, right: 20, bottom: 42, left: 50 };
+  const pad =
+    indexAxis === 'y'
+      ? { top: title ? 30 : 14, right: 16, bottom: 30, left: 112 }
+      : { top: title ? 30 : 14, right: 20, bottom: 42, left: 78 };
   const chartWidth = width - pad.left - pad.right;
   const chartHeight = height - pad.top - pad.bottom;
   const values = datasets.flatMap((ds) => (ds.data || []).map((v) => Number(v) || 0));
@@ -139,20 +150,35 @@ function renderBarChart(
   ctx.lineTo(pad.left + chartWidth, pad.top + chartHeight);
   ctx.stroke();
 
-  const ticks = 4;
+  const ticks = indexAxis === 'y' && width < 420 ? 3 : 4;
   for (let i = 0; i <= ticks; i += 1) {
-    const y = pad.top + chartHeight - (chartHeight / ticks) * i;
+    const position = indexAxis === 'y' ? i / ticks : 1 - i / ticks;
+    const y = pad.top + chartHeight * position;
+    const x = pad.left + chartWidth * (i / ticks);
     const value = (maxValue / ticks) * i;
     ctx.beginPath();
-    ctx.moveTo(pad.left - 4, y);
-    ctx.lineTo(pad.left + chartWidth, y);
+    if (indexAxis === 'y') {
+      ctx.moveTo(x, pad.top);
+      ctx.lineTo(x, pad.top + chartHeight);
+    } else {
+      ctx.moveTo(pad.left - 4, y);
+      ctx.lineTo(pad.left + chartWidth, y);
+    }
     ctx.strokeStyle = i === 0 ? '#b9c7ca' : '#edf1f2';
     ctx.stroke();
-    text(ctx, formatValue(value, yFormat), pad.left - 8, y, {
-      size: 11,
-      align: 'right',
-      baseline: 'middle',
-    });
+    if (indexAxis === 'y') {
+      text(ctx, formatAxisValue(value, yFormat), x, pad.top + chartHeight + 18, {
+        size: 10,
+        align: i === 0 ? 'left' : i === ticks ? 'right' : 'center',
+        baseline: 'middle',
+      });
+    } else {
+      text(ctx, formatAxisValue(value, yFormat), pad.left - 8, y, {
+        size: 10,
+        align: 'right',
+        baseline: 'middle',
+      });
+    }
   }
 
   if (indexAxis === 'y') {
@@ -160,7 +186,11 @@ function renderBarChart(
     const barHeight = Math.min(24, band * 0.6);
     labels.forEach((label, index) => {
       const y = pad.top + band * index + band / 2 - barHeight / 2;
-      text(ctx, label, pad.left - 8, y + barHeight / 2 + 4, { size: 11, align: 'right' });
+      text(ctx, label, pad.left - 8, y + barHeight / 2 + 4, {
+        size: 10,
+        align: 'right',
+        baseline: 'middle',
+      });
       datasets.forEach((dataset, dsIndex) => {
         const data = Number(dataset.data?.[index] || 0);
         const barWidth = (data / maxValue) * chartWidth;
@@ -192,11 +222,13 @@ function renderBarChart(
     });
   }
 
-  const legendItems = datasets.map((dataset, index) => ({
-    label: dataset.label || `Série ${index + 1}`,
-    color: dataset.backgroundColor || VG_PALETTE[index % VG_PALETTE.length],
-  }));
-  drawLegend(ctx, legendItems, width, height);
+  if (showLegend) {
+    const legendItems = datasets.map((dataset, index) => ({
+      label: dataset.label || `Série ${index + 1}`,
+      color: dataset.backgroundColor || VG_PALETTE[index % VG_PALETTE.length],
+    }));
+    drawLegend(ctx, legendItems, width, height);
+  }
   ctx.restore();
 
   const instance = {
@@ -206,6 +238,14 @@ function renderBarChart(
   };
   _instances.set(canvasId, instance);
   return instance;
+}
+
+function formatAxisValue(value, mode) {
+  if (mode === 'money' && Math.abs(value) >= 1000) {
+    return `${Math.round(value / 1000)} mil`;
+  }
+  if (mode === 'money' && value === 0) return '0';
+  return formatValue(value, mode);
 }
 
 function renderLineChart(canvasId, { labels = [], datasets = [], title, yFormat, xValues }) {

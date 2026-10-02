@@ -21,7 +21,7 @@ export function renderCostChart(canvasId, result, { taxUnavailable = false } = {
     data.push(costs.tax_impact);
   }
   return renderBarChart(canvasId, {
-    title: taxUnavailable ? 'Composição do custo logístico' : 'Composição do custo',
+    title: taxUnavailable ? 'Composição do custo logístico · R$' : 'Composição do custo · R$',
     labels,
     datasets: [
       {
@@ -31,6 +31,8 @@ export function renderCostChart(canvasId, result, { taxUnavailable = false } = {
       },
     ],
     yFormat: 'money',
+    indexAxis: 'y',
+    showLegend: false,
   });
 }
 
@@ -43,7 +45,7 @@ export function renderComparisonCostChart(canvasId, rows, activeId, baselineId) 
         Number.isFinite(Number(row.total_with_tax))
     )
     .map((row) => ({ ...row, total_with_tax: Number(row.total_with_tax) }));
-  if (!comparable.length) return null;
+  if (comparable.length < 2) return null;
 
   const baseline = comparable.find((row) => row.scenario_id === baselineId);
   const alternatives = comparable
@@ -71,6 +73,7 @@ export function renderComparisonCostChart(canvasId, rows, activeId, baselineId) 
     ],
     yFormat: 'money',
     indexAxis: 'y',
+    showLegend: false,
   });
 }
 

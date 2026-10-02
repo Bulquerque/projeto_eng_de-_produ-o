@@ -131,6 +131,12 @@ def test_demo_journey(base, browser):
     route(page, 'results/summary')
     assert page.locator('[data-testid="optimizer-ranking"] tbody tr').count() == 0
     assert page.locator('[data-action="open-export"]').count() == 0
+    route(page, 'results/comparison')
+    assert page.locator('#niComparisonCostChart').count() == 0
+    page.set_viewport_size({'width': 390, 'height': 844})
+    assert page.locator('.ni-comparison-card').is_visible()
+    assert page.locator('.ni-comparison-card h2').first.inner_text() == 'Referência'
+    page.set_viewport_size({'width': 1440, 'height': 900})
     route(page, 'scenarios/build')
     # Selection loads a preset without silently calculating it; all original CDs remain available.
     page.locator('#niScenarioLibrarySelect').select_option('mock_consolidation')
@@ -288,6 +294,15 @@ def test_demo_journey(base, browser):
             assert chart.evaluate(
                 "canvas => { const ctx = canvas.getContext('2d'); return canvas.width > 0 && canvas.height > 0 && ctx.getImageData(2, 2, 1, 1).data[3] > 0; }"
             )
+            assert page.locator('.ni-workspace-matrix thead th').first.inner_text() == 'Indicador'
+            assert page.locator('.ni-workspace-matrix thead th').nth(1).inner_text() != 'ReferênciaReferência'
+            page.set_viewport_size({'width': 390, 'height': 844})
+            page.wait_for_timeout(120)
+            assert page.locator('.ni-comparison-cards').is_visible()
+            assert page.locator('.ni-workspace-matrix-wrap').is_hidden()
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+            assert page.locator('#niComparisonCostChart').evaluate('canvas => canvas.width < 400')
+            page.set_viewport_size({'width': 1440, 'height': 900})
     route(page, 'scenarios/build')
     page.locator('input[name="demand_multiplier"]').fill('1.2')
     route(page, 'trust/validation')
