@@ -111,8 +111,9 @@ def test_demo_journey(base, browser):
     ready(page)
     assert_shell(page)
     assert 'Recomendado' not in page.locator('#networkPage').inner_text()
-    assert page.locator('#niDemoBadge').is_visible()
+    assert page.locator('#niDemoBadge').count() == 0
     assert page.locator('#niLockButton').is_hidden()
+    assert page.locator('#networkPage').get_by_text('Nível de serviço', exact=True).count() == 0
     assert page.locator('#niScenarioSelect').get_attribute('aria-label') == 'Selecionar cenário ativo'
     year_options = page.locator('#niScenarioSelect option').evaluate_all(
         'options => options.map(o => [o.value, o.textContent.trim(), o.disabled])'
@@ -130,6 +131,17 @@ def test_demo_journey(base, browser):
     reference_cost = page.locator('[data-testid="baseline-total"]').inner_text()
     assert page.locator('#niSummaryCostChart').is_visible()
     assert page.locator('#niSummaryCostChart').get_attribute('aria-label')
+    page.set_viewport_size({'width': 1009, 'height': 900})
+    tax_summary = page.locator('.ni-tax-summary-list')
+    assert tax_summary.count() == 1
+    assert tax_summary.evaluate(
+        "el => [...el.querySelectorAll('dd')].every(value => value.scrollWidth <= value.clientWidth + 1)"
+    )
+    route(page, 'overview/tax')
+    assert page.locator('.ni-tax-overview-metrics > .ni-kpi').count() == 3
+    assert page.locator('#networkPage').get_by_text('Uso dos dados', exact=True).count() == 0
+    assert page.locator('.ni-tax-overview-metrics').evaluate('el => el.scrollWidth <= el.clientWidth + 1')
+    page.set_viewport_size({'width': 1440, 'height': 900})
     route(page, 'overview/costs')
     assert page.locator('#niCostChart').is_visible()
     assert page.locator('#niCostChart').get_attribute('aria-label')
@@ -466,7 +478,7 @@ def test_real_tenants(base, browser):
         ready(page)
         assert page.locator('#niCompanySelect').input_value() == company
         assert page.locator('#niScenarioSelect').input_value() == ''
-        assert page.locator('#niDemoBadge').is_hidden()
+        assert page.locator('#niDemoBadge').count() == 0
         assert page.locator('#niLockButton').is_visible()
         if page.locator('#niScenarioSelect option[value="tax-year:2031"]').is_enabled():
             page.locator('#niScenarioSelect').select_option('tax-year:2031')

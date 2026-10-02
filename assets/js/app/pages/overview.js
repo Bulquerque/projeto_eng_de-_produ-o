@@ -31,11 +31,9 @@ export function renderOverviewSummary(state) {
   const { model, costs, tax, flows } = baselineParts(state);
   const activeCds = Array.isArray(model.active_cds) ? model.active_cds : [];
   const total = costs.total_with_tax;
-  const serviceLevels = flows.map((flow) => flow.service_level).filter(Boolean);
-  const serviceLabel = serviceLevels.length ? [...new Set(serviceLevels)].join(', ') : '—';
   const isDemo = state.context?.provider_kind === 'mock';
   const taxUnavailable = isDemo && tax.tax_coverage?.eligible_flow_count === 0;
-  const metrics = `<div class="ni-workspace-kpis ni-results-metrics">${kpi(taxUnavailable ? 'Custo logístico de referência' : 'Custo total de referência', total == null ? '—' : formatBRL(total, true), '', 'baseline-total')}${kpi('CDs ativos', activeCds.length ? formatNumber(activeCds.length) : '—')}${kpi('Fluxos mapeados', flows.length ? formatNumber(flows.length) : '—')}${kpi('Nível de serviço', serviceLabel)}</div>`;
+  const metrics = `<div class="ni-workspace-kpis ni-results-metrics ni-overview-summary-metrics">${kpi(taxUnavailable ? 'Custo logístico de referência' : 'Custo total de referência', total == null ? '—' : formatBRL(total, true), '', 'baseline-total')}${kpi('CDs ativos', activeCds.length ? formatNumber(activeCds.length) : '—')}${kpi('Fluxos mapeados', flows.length ? formatNumber(flows.length) : '—')}</div>`;
   const costsSummary = `<section class="ni-workspace-panel"><h2>Composição do custo</h2><canvas id="niSummaryCostChart" class="ni-chart" role="img" aria-label="Gráfico da composição do custo de referência"></canvas>${costTable(costs, taxUnavailable)}</section>`;
   const taxCoverage = isDemo
     ? taxUnavailable
@@ -44,7 +42,7 @@ export function renderOverviewSummary(state) {
     : tax.tax_coverage?.complete_fiscal_coverage_ratio == null
       ? '—'
       : formatPct(tax.tax_coverage.complete_fiscal_coverage_ratio * 100);
-  const taxSummary = `<section class="ni-workspace-panel"><h2>Contexto tributário</h2><dl class="ni-workspace-scope-list"><div><dt>Regime</dt><dd>${escapeHtml(businessLabel(tax.tax_regime))}</dd></div><div><dt>Modo</dt><dd>${escapeHtml(businessLabel(tax.tax_mode))}</dd></div><div><dt>Cobertura completa</dt><dd>${escapeHtml(taxCoverage)}</dd></div></dl><a class="ni-button secondary" href="#/network/overview/tax" data-route="#/network/overview/tax">Ver contexto tributário</a></section>`;
+  const taxSummary = `<section class="ni-workspace-panel"><h2>Contexto tributário</h2><dl class="ni-workspace-scope-list ni-tax-summary-list"><div><dt>Regime</dt><dd>${escapeHtml(businessLabel(tax.tax_regime))}</dd></div><div><dt>Modo de cálculo</dt><dd>${escapeHtml(businessLabel(tax.tax_mode))}</dd></div><div><dt>Cobertura fiscal</dt><dd>${escapeHtml(taxCoverage)}</dd></div></dl><a class="ni-button secondary" href="#/network/overview/tax" data-route="#/network/overview/tax">Ver contexto tributário</a></section>`;
   const body = `${metrics}<div class="ni-workspace-grid ni-overview-summary-grid">${costsSummary}${taxSummary}</div><div class="ni-actions"><a class="ni-button primary" href="#/network/scenarios/build" data-route="#/network/scenarios/build">Criar simulação</a></div>`;
   return page('Visão geral', 'page-overview-summary', body, state);
 }
@@ -113,7 +111,7 @@ export function renderOverviewTax(state) {
     : coverage.complete_fiscal_coverage_ratio == null
       ? '—'
       : formatPct(coverage.complete_fiscal_coverage_ratio * 100);
-  const details = `<div class="ni-workspace-kpis">${kpi('Regime', businessLabel(tax.tax_regime))}${kpi('Modo de cálculo', businessLabel(tax.tax_mode))}${kpi('Uso dos dados', isDemo ? 'Demonstração' : businessLabel(tax.decision_use))}${kpi('Cobertura fiscal completa', coverageValue)}</div><dl class="ni-workspace-scope-list"><div><dt>Período selecionado</dt><dd>${escapeHtml(selected.year == null ? '—' : `${selected.year} · ${businessLabel(selected.phase)}`)}</dd></div><div><dt>Referência de dados</dt><dd>${escapeHtml(reference.period_start || '—')} a ${escapeHtml(reference.period_end || '—')}</dd></div><div><dt>Dados observados</dt><dd>${escapeHtml(isDemo ? 'Demonstração' : businessLabel(contract.observed_data_coverage?.status))}</dd></div></dl><p>${escapeHtml(tax.explanation || '')}</p><details class="ni-workspace-secondary-analytics" data-testid="tax-periods-panel"><summary>Calendário tributário</summary>${isDemo ? '<p>Períodos demonstrativos sem histórico observado.</p>' : periodRows}</details>`;
+  const details = `<div class="ni-workspace-kpis ni-tax-overview-metrics">${kpi('Regime tributário', businessLabel(tax.tax_regime))}${kpi('Modo de cálculo', businessLabel(tax.tax_mode))}${kpi('Cobertura fiscal', coverageValue)}</div><dl class="ni-workspace-scope-list"><div><dt>Período selecionado</dt><dd>${escapeHtml(selected.year == null ? '—' : `${selected.year} · ${businessLabel(selected.phase)}`)}</dd></div><div><dt>Referência de dados</dt><dd>${escapeHtml(reference.period_start || '—')} a ${escapeHtml(reference.period_end || '—')}</dd></div><div><dt>Dados observados</dt><dd>${escapeHtml(isDemo ? 'Demonstração' : businessLabel(contract.observed_data_coverage?.status))}</dd></div></dl><p>${escapeHtml(tax.explanation || '')}</p><details class="ni-workspace-secondary-analytics" data-testid="tax-periods-panel"><summary>Calendário tributário</summary>${isDemo ? '<p>Períodos demonstrativos sem histórico observado.</p>' : periodRows}</details>`;
   return page(
     'Tributário',
     'page-overview-tax',

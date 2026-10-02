@@ -31,7 +31,6 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
           <label><span>Cenário ativo</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário ativo"><option value="">Base atual (2025)</option></select></label>
         </div>
         <div class="network-topbar-actions">
-          <span id="niDemoBadge" class="ni-status status-neutral" hidden>Demonstração</span>
           <span id="niDraftBadge" class="ni-note" hidden>Alterações não simuladas</span>
           <button id="niLockButton" type="button" class="ni-button secondary" data-action="lock-crypto" hidden>Bloquear dados</button>
         </div>
@@ -65,7 +64,6 @@ export function updateGlobalContext(root, state) {
   const scenarioSelect = root.querySelector('#niScenarioSelect');
   if (companySelect) companySelect.value = state.context.company_id || '';
   const demo = state.context.provider_kind === 'mock';
-  root.querySelector('#niDemoBadge').hidden = !demo;
   root.querySelector('#niLockButton').hidden = demo || !state.data.baseline;
   root.querySelector('#niDraftBadge').hidden = !state.ui.scenario_dirty;
   if (scenarioSelect) {

@@ -902,6 +902,19 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
 .ni-workspace-kpis.ni-results-metrics > .ni-kpi:first-child { border-left: 0; }
 .ni-workspace-kpis.ni-results-metrics > .ni-kpi span { color: #3c5b5e; font-size: 12px; text-transform: none; }
 .ni-workspace-kpis.ni-results-metrics > .ni-kpi strong { margin: 3px 0 0; font-size: 17px; }
+.ni-workspace-kpis.ni-results-metrics.ni-overview-summary-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ni-workspace-kpis.ni-tax-overview-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ni-workspace-scope-list.ni-tax-summary-list { grid-template-columns: 1fr; }
+.ni-workspace-scope-list.ni-tax-summary-list > div { align-items: baseline; flex-wrap: nowrap; }
+.ni-tax-summary-list dd { flex: 0 1 58%; min-width: 150px; overflow-wrap: break-word; }
+
+@media (max-width: 900px) {
+  .ni-workspace-kpis.ni-tax-overview-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .ni-workspace-kpis.ni-results-metrics.ni-overview-summary-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 .ni-workspace-insights {
   display: grid;
