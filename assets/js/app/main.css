@@ -532,6 +532,9 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
 .ni-trust-analysis > .ni-workspace-section-heading h2 { margin: 3px 0; }
 .ni-trust-analysis > .ni-workspace-section-heading p { margin: 3px 0; color: #587276; font-size: 12px; }
 .ni-results-trust-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0; padding: 11px 0; border-bottom: 1px solid var(--ni-border); color: #506a6d; font-size: 12px; }
+.ni-optimization-tax-scenario { max-width: 420px; }
+.ni-optimizer-custom-preset { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.5fr) auto; align-items: end; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--ni-border); }
+.ni-optimizer-custom-preset .ni-workspace-field { margin: 0; }
 
 @media (max-width: 760px) {
   .ni-trust-decision, .ni-results-trust-link { display: grid; }
@@ -539,6 +542,7 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
   .ni-trust-metrics, .ni-trust-grid { grid-template-columns: 1fr 1fr; }
   .ni-trust-metric:nth-child(3) { border-left: 0; border-top: 1px solid var(--ni-border); }
   .ni-trust-metric:nth-child(4) { border-top: 1px solid var(--ni-border); }
+  .ni-optimizer-custom-preset { grid-template-columns: 1fr; }
 }
 
 .ni-workspace-panel {

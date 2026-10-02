@@ -16,6 +16,7 @@ import { renderShell, setActiveNav, showLoading, showToast, updateGlobalContext 
 import { installBindings } from './bindings.js';
 import { sanitizeError } from './dev/dev-console.js';
 import { escapeHtml, routeFallback } from './view-helpers.js';
+import { loadOptimizationPresets } from '../core/optimization-config-store.js';
 import { ROUTE_RENDERERS } from './route-renderers.js';
 import {
   renderDistanceHistogram,
@@ -282,6 +283,7 @@ function initializeNetworkIntelligence() {
           state.data.baseline = baseline.baseline;
           state.data.scenarios = scenarios.scenarios || [];
           state.data.saved_scenarios = savedScenarios;
+          state.ui.optimizer_presets = loadOptimizationPresets(companyId);
           state.meta.provider_snapshot = {
             ...state.meta.provider_snapshot,
             warnings: [...(baseline.warnings || []), ...(scenarios.warnings || [])],
@@ -383,6 +385,8 @@ function initializeNetworkIntelligence() {
           clearScenarioResults(state);
         } else if (formId === 'niOptimizerForm') {
           state.ui.optimizer_draft = values;
+          const optimizerDrafts = state.ui.optimizer_drafts || (state.ui.optimizer_drafts = {});
+          optimizerDrafts[String(values.tax_year || '2027')] = values;
           clearScenarioResults(state);
         } else if (formId === 'niRiskForm') {
           state.ui.risk_draft = values;

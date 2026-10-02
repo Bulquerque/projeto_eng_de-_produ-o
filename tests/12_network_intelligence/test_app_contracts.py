@@ -65,6 +65,46 @@ def test_app_foundation_contracts():
     assert output.endswith('APP_FOUNDATION_OK')
 
 
+def test_optimizer_reform_year_and_saved_technical_draft_render():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { renderOptimizerConfigure } from './assets/js/app/pages/optimizer.js';
+
+        const state = {
+          context: { company_id: 'empresa1', provider_kind: 'project' },
+          ui: {
+            route: '#/network/optimizer/configure',
+            optimizer_drafts: { '2030': { tax_year: 2030, max_candidates: 4200 } },
+            optimizer_presets: [{ preset_id: 'custom_1', name: 'Fiscal 2030' }],
+          },
+          data: {
+            baseline: {
+              model: { active_cds: ['CD A', 'CD B'] },
+              complements: { scenario_registry: [
+                { scenario_type: 'baseline_current', scenario_year: 2026, scenario_name: 'Atual' },
+                { scenario_type: 'tax_reform_transition', scenario_year: 2027, scenario_name: 'Reforma 2027' },
+                { scenario_type: 'tax_reform_transition', scenario_year: 2030, scenario_name: 'Reforma 2030' },
+                { scenario_type: 'tax_reform_full', scenario_year: 2033, scenario_name: 'Reforma 2033' },
+                { scenario_type: 'operational', scenario_year: 2030, scenario_name: 'PS7' },
+              ] },
+            },
+            selected_scenario: { changes: { tax_year: 2030, active_cds: ['CD A'] } },
+          },
+        };
+        const html = renderOptimizerConfigure(state);
+        assert.match(html, /name="tax_year"/);
+        assert.match(html, /value="2030" selected/);
+        assert.match(html, /value="4200"/);
+        assert.match(html, /Fiscal 2030/);
+        assert.doesNotMatch(html, /value="2026"/);
+        assert.doesNotMatch(html, /PS7/);
+        console.log('OPTIMIZER_REFORM_UI_OK');
+        """
+    )
+    assert output.endswith('OPTIMIZER_REFORM_UI_OK')
+
+
 def test_mock_fixture_isolation_contract():
     for path in sorted((ROOT / 'data-demo/empresa_mock').glob('*.json')):
         payload = json.loads(path.read_text(encoding='utf-8'))

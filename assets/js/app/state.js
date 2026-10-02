@@ -70,6 +70,8 @@ export function createInitialState(config = {}) {
       scenario_draft: null,
       scenario_dirty: false,
       optimizer_draft: null,
+      optimizer_drafts: {},
+      optimizer_presets: [],
       risk_draft: null,
     },
     dev: {
@@ -100,6 +102,8 @@ export function resetCompanyScopedState(state, companyId) {
   state.ui.scenario_draft = null;
   state.ui.scenario_dirty = false;
   state.ui.optimizer_draft = null;
+  state.ui.optimizer_drafts = {};
+  state.ui.optimizer_presets = [];
   state.ui.risk_draft = null;
   state.meta.result_kind = null;
   return state.context.generation;

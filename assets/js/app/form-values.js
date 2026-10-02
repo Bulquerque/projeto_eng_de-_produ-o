@@ -50,6 +50,7 @@ export function validateScenarioValues(values) {
 
 export function parseOptimizerForm(data, rawValues = {}) {
   return {
+    tax_year: Number(data.get('tax_year')) || null,
     max_candidates: readFormNumber(data, rawValues, 'max_candidates', 2000),
     seed: readFormNumber(data, rawValues, 'seed', 42),
     constraints: {
@@ -79,6 +80,9 @@ export function validateOptimizerValues(values) {
     return validationError('Máximo de candidatos deve ser um inteiro entre 100 e 10.000.');
   }
   if (!Number.isInteger(seed)) return validationError('Seed deve ser um número inteiro.');
+  if (values.tax_year != null && ![2027, 2030, 2033].includes(Number(values.tax_year))) {
+    return validationError('Selecione um ano de cenário tributário disponível.');
+  }
   const minCds = constraints.min_active_cds;
   const maxCds = constraints.max_active_cds;
   if (!Number.isInteger(minCds) || minCds < 1) {

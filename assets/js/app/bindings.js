@@ -1,6 +1,7 @@
 import { navigate } from './router.js';
 import { showLoading, showToast } from './shell.js';
 import { escapeHtml } from './view-helpers.js';
+import { saveOptimizationPreset } from '../core/optimization-config-store.js';
 import {
   parseOptimizerForm,
   parseRiskForm,
@@ -9,6 +10,62 @@ import {
   validateRiskValues,
   validateScenarioValues,
 } from './form-values.js';
+
+const PRESET_SETTINGS = {
+  balanced: {
+    max_candidates: 2000,
+    risk_iterations: 300,
+    risk_profile: 'balanced',
+    max_risk_level: 'high',
+  },
+  cfo: {
+    max_candidates: 3000,
+    risk_iterations: 400,
+    risk_profile: 'balanced',
+    max_risk_level: 'high',
+  },
+  supply: {
+    max_candidates: 3000,
+    risk_iterations: 600,
+    risk_profile: 'conservative',
+    max_risk_level: 'medium',
+  },
+  fiscal: {
+    max_candidates: 5000,
+    risk_iterations: 600,
+    risk_profile: 'broad',
+    max_risk_level: 'high',
+    risk_scatter_driver: 'tax_multiplier',
+  },
+  conservative: {
+    max_candidates: 5000,
+    risk_iterations: 1000,
+    risk_profile: 'conservative',
+    max_risk_level: 'medium',
+  },
+};
+
+function applyOptimizerSettings(form, settings) {
+  if (!form || !settings) return;
+  const fields = {
+    max_candidates: settings.max_candidates,
+    risk_iterations: settings.risk_iterations,
+    risk_profile: settings.risk_profile,
+    risk_scatter_driver: settings.risk_scatter_driver,
+    max_risk_level: settings.max_risk_level,
+  };
+  for (const [name, value] of Object.entries(fields)) {
+    if (value == null) continue;
+    const field = form.elements.namedItem(name);
+    if (field && [...(field.options || [])].some((option) => option.value === String(value))) {
+      field.value = String(value);
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (field && !field.options) {
+      field.value = String(value);
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }
+}
 
 export function installBindings({ root, store, controller }) {
   const onClick = (event) => {
@@ -80,6 +137,32 @@ export function installBindings({ root, store, controller }) {
       root.querySelector('[data-testid="scenario-import"]')?.click();
     } else if (action === 'reset-scenario-draft') {
       controller.resetScenarioDraft();
+    } else if (action === 'save-optimizer-preset') {
+      const form = root.querySelector('#niOptimizerForm');
+      const name = form?.elements.namedItem('custom_preset_name')?.value.trim();
+      if (!name) {
+        showToast(root, 'Dê um nome para salvar o preset.', 'error');
+        return;
+      }
+      const values = parseOptimizerForm(new FormData(form), rawInputValues.get(form) || {});
+      const preset = saveOptimizationPreset(store.getState().context.company_id, {
+        name,
+        profile_id: values.profile_id,
+        configuration: values,
+      });
+      if (!preset) {
+        showToast(root, 'Não foi possível salvar o preset nesta sessão.', 'error');
+        return;
+      }
+      const state = store.getState();
+      state.ui.optimizer_presets = [...(state.ui.optimizer_presets || []), preset];
+      const select = form.elements.namedItem('custom_preset_select');
+      const option = document.createElement('option');
+      option.value = preset.preset_id;
+      option.textContent = preset.name;
+      select?.append(option);
+      form.elements.namedItem('custom_preset_name').value = '';
+      showToast(root, `Preset salvo: ${name}.`, 'success');
     }
   };
 
@@ -118,6 +201,7 @@ export function installBindings({ root, store, controller }) {
       }
       void controller.runDecision({
         profileId: values.profile_id,
+        taxYear: values.tax_year,
         optimizerConfig: {
           max_candidates: values.max_candidates,
           seed: values.seed,
@@ -139,6 +223,49 @@ export function installBindings({ root, store, controller }) {
     }
   });
   root.addEventListener('change', (event) => {
+    if (event.target.matches('input[name="profile_id"]')) {
+      applyOptimizerSettings(
+        root.querySelector('#niOptimizerForm'),
+        PRESET_SETTINGS[event.target.value]
+      );
+      return;
+    }
+    if (event.target.matches('select[name="custom_preset_select"]')) {
+      const preset = (store.getState().ui.optimizer_presets || []).find(
+        (item) => item.preset_id === event.target.value
+      );
+      const form = root.querySelector('#niOptimizerForm');
+      if (preset?.configuration && form) {
+        const profile = [...form.querySelectorAll('input[name="profile_id"]')].find(
+          (input) => input.value === preset.configuration.profile_id
+        );
+        if (profile) profile.checked = true;
+        const settings = preset.configuration;
+        const mapped = {
+          max_candidates: settings.max_candidates,
+          seed: settings.seed,
+          min_active_cds: settings.constraints?.min_active_cds,
+          max_active_cds: settings.constraints?.max_active_cds,
+          max_cd_volume_share: settings.constraints?.max_cd_volume_share,
+          max_risk_level: settings.constraints?.max_risk_level,
+          risk_iterations: settings.risk_config?.iterations,
+          risk_seed: settings.risk_config?.seed,
+          risk_profile: settings.risk_config?.profile,
+          risk_scatter_driver: settings.risk_config?.scatter_driver,
+          stress_profile: settings.risk_config?.stress_profile,
+          sensitivity_variable: settings.risk_config?.sensitivity_variable,
+          sensitivity_x: settings.risk_config?.sensitivity_x,
+          sensitivity_y: settings.risk_config?.sensitivity_y,
+          tax_year: settings.tax_year,
+        };
+        for (const [name, value] of Object.entries(mapped)) {
+          const control = form.elements.namedItem(name);
+          if (control && value != null) control.value = String(value);
+          control?.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+      return;
+    }
     if (!event.target.matches('[data-testid="scenario-import"]')) return;
     const file = event.target.files?.[0];
     if (file) void controller.importScenario(file);

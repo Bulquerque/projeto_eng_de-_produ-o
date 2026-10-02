@@ -33,6 +33,7 @@ assert.equal(validateScenarioValues({ ...scenario, tax_mode: 'disabled' }).messa
 
 const optimizer = parseOptimizerForm(form({}), {});
 assert.deepEqual(optimizer, {
+  tax_year: null,
   max_candidates: 2000, seed: 42,
   constraints: { min_active_cds: 1, max_active_cds: 999, max_cd_volume_share: 0.75, max_risk_level: 'high', allow_tax_disabled: false },
   profile_id: 'balanced',
@@ -40,6 +41,8 @@ assert.deepEqual(optimizer, {
 });
 assert.equal(validateOptimizerValues({ ...optimizer, risk_config: { ...optimizer.risk_config, iterations: 1 } }).valid, false);
 assert.deepEqual(validateOptimizerValues(optimizer), { valid: true, message: '' });
+assert.equal(parseOptimizerForm(form({ tax_year: '2030' })).tax_year, 2030);
+assert.equal(validateOptimizerValues({ ...optimizer, tax_year: 2028 }).message, 'Selecione um ano de cenário tributário disponível.');
 assert.equal(validateOptimizerValues({ ...optimizer, max_candidates: 99 }).message, 'Máximo de candidatos deve ser um inteiro entre 100 e 10.000.');
 assert.equal(validateOptimizerValues({ ...optimizer, seed: 1.5 }).message, 'Seed deve ser um número inteiro.');
 assert.equal(validateOptimizerValues({ ...optimizer, constraints: { ...optimizer.constraints, min_active_cds: 0 } }).message, 'CDs mínimos deve ser um inteiro maior ou igual a 1.');
