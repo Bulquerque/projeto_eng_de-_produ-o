@@ -472,7 +472,7 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
             assert page.locator('#niRiskHistogramChart').count() == 1
             assert page.locator('#niRiskDriversChart').count() == 1
             page.evaluate("window.location.hash = '#/network/scenarios/risk/advanced'")
-            page.locator('.ni-workspace-risk-settings > summary').click()
+            page.locator('[data-testid="risk-controls"]').evaluate("form => { form.closest('details').open = true; }")
             page.locator('[data-testid="risk-controls"]').wait_for(state='visible', timeout=20000)
             for canvas_id in (
                 'niRiskProbabilityChart',
@@ -481,7 +481,11 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
                 'niRiskDriversChart',
                 'niRiskScatterChart',
             ):
-                assert page.locator(f'#{canvas_id}').count() == 1
+                chart = page.locator(f'#{canvas_id}')
+                chart.wait_for(state='visible', timeout=20000)
+                data_table = page.locator(f'#{canvas_id} + .vg-chart-controls + .vg-chart-data')
+                data_table.wait_for(state='attached', timeout=20000)
+                assert data_table.locator('tbody tr').count() > 0
             page.evaluate("window.location.hash = '#/network/trust/validation'")
             page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=20000)
             lock_button = page.locator('#cryptoLockButton, .crypto-lock-button').first
