@@ -4,7 +4,7 @@
 Fase 4 — `phase-04-scoring-optimizer`
 
 ## O que faz
-Renderiza a página /fase-4-score-otimizador/ com objective builder, ranking, otimizador e validação.
+Renderiza a página /fase-4-score-otimizador/ com objective builder, ranking, mecanismo de avaliação e validação.
 
 ## Implementação real
 `assets/js/phase4/phase4-dashboard.js`

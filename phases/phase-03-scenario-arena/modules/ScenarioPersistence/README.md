@@ -32,10 +32,11 @@ Salva cenários criados pelo usuário no navegador e permite exportar/importar J
 - `['loadScenarios(company)', 'Lê cenários da empresa.']`
 - `['deleteScenario(id)', 'Remove cenário.']`
 - `['exportScenario(id)', 'Gera JSON baixável.']`
-- `['importScenario(json)', 'Importa e valida cenário.']`
+- `['importScenario(json)', 'Confere empresa e IDs do objeto importado.']`
 
 ## Módulos chamados
-- `['ScenarioValidator', 'Valida antes de salvar/importar.']`
+
+Este módulo valida apenas empresa e IDs durante persistência/importação; a validação estrutural do cenário é orquestrada pelo dashboard e pelo simulador.
 - `['AuditTrail', 'Registra origem do cenário importado/exportado.']`
 
 ## Testes

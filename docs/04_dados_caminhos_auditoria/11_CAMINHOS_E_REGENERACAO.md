@@ -24,7 +24,9 @@ Resultado atual: `OK`.
 
 ## Regeneração
 
-O script original de geração está preservado fora do pacote em `etl/build_verified_package_source_v2.py`. Para a próxima versão do projeto, recomenda-se mover uma versão limpa dele para `etl/` e fazer dele o ETL oficial. Nesta versão, o pacote já inclui os CSV/JSON formatados e o relatório de auditoria.
+O repositório contém [`etl/build_phase2_baseline.py`](../../etl/build_phase2_baseline.py), um gerador versionado específico dos artefatos da Fase 2. Ele consome JSON já normalizado em `data/**/core/`, atualiza `data/catalog.json` e grava JSON derivados em `data/**/phase2/` e `data/validation/`. Não é o extrator das planilhas XLSX nem um pipeline para reconstruir todas as fontes do pacote. Consulte [`etl/README_ETL.md`](../../etl/README_ETL.md) antes de executá-lo: a execução grava saídas em texto simples e pode sobrescrever arquivos de dados existentes.
+
+A regeneração dos artefatos não faz parte da suíte comum de validação. Para verificar o pacote existente sem invocar o gerador, execute os testes da Fase 2 listados em `etl/README_ETL.md`.
 
 ## Observação importante sobre Empresa 2
 

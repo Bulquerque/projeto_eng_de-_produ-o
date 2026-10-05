@@ -79,7 +79,7 @@ Não reprova a Fase 1 ainda:
 
 ```text
 não ter cálculo de custo
-não ter otimizador
+não ter mecanismo de avaliação
 não ter cenário base calibrado
 não ter stress test
 não ter relatório executivo

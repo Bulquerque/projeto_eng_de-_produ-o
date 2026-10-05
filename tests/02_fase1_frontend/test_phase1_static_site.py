@@ -17,12 +17,12 @@ def read(path: str) -> str:
     return (ROOT / path).read_text(encoding='utf-8')
 
 
-def test_phase1_frontend_files_exist():
+def test_network_intelligence_frontend_files_exist():
     required = [
         'index.html',
-        'fase-1-validacao/index.html',
-        'assets/styles.css',
-        'assets/js/phase1/main.js',
+        'assets/js/app/main.js',
+        'assets/js/app/main.css',
+        'assets/js/app/shell.js',
         'data/catalog.json',
         'data/validation/path_resolution_report.json',
         'data/validation/workbook_sheet_inventory.csv',
@@ -31,20 +31,13 @@ def test_phase1_frontend_files_exist():
     assert not missing, missing
 
 
-def test_phase1_index_contains_required_sections():
+def test_index_loads_only_network_intelligence():
     html = read('index.html')
-    for required_id in [
-        'visao-geral',
-        'dados',
-        'qualidade',
-        'abas',
-        'fase-1-validacao',
-        'proximas-fases',
-        'debugConsole',
-    ]:
-        assert f'id="{required_id}"' in html, required_id
-    assert 'assets/styles.css' in html
-    assert 'assets/js/phase1/main.js' in html
+    assert '<title>Visagio · Network Intelligence</title>' in html
+    assert 'assets/js/app/main.js' in html
+    assert 'assets/js/phase1/main.js' not in html
+    assert 'runtimeWarning' not in html
+    assert 'phase1AutoChecks' not in html
 
 
 def test_phase1_css_has_visagio_palette_and_components():
@@ -58,7 +51,6 @@ def test_phase1_css_has_visagio_palette_and_components():
 def test_phase1_js_declares_modules_and_uses_relative_paths_only():
     js = read('assets/js/phase1/main.js')
     required_functions = [
-        'parseCsv',
         'renderCompanyPanel',
         'renderDataQualityPanel',
         'renderPathAuditPanel',
@@ -68,6 +60,8 @@ def test_phase1_js_declares_modules_and_uses_relative_paths_only():
     ]
     for fn in required_functions:
         assert f'function {fn}' in js or f'async function {fn}' in js, fn
+    assert "from './csv-parser.js'" in js
+    assert "from './table-view.js'" in js
     assert "from '../core/data-loader.js'" in js
     assert 'fetchJson,' in js
     forbidden = ['/mnt/data', 'C:\\\\', 'A:/', 'file://']
@@ -112,8 +106,8 @@ def test_phase1_path_report_clean():
 
 
 if __name__ == '__main__':
-    test_phase1_frontend_files_exist()
-    test_phase1_index_contains_required_sections()
+    test_network_intelligence_frontend_files_exist()
+    test_index_loads_only_network_intelligence()
     test_phase1_css_has_visagio_palette_and_components()
     test_phase1_js_declares_modules_and_uses_relative_paths_only()
     test_phase1_company_catalog_separation()

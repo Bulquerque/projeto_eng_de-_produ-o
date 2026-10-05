@@ -14,5 +14,5 @@ phases[5]{id,goal,validation_page}:
   phase_1, dados e fundação, /fase-1-validacao
   phase_2, baseline e paridade, /fase-2-baseline
   phase_3, cenarios e comparacao, /fase-3-cenarios
-  phase_4, score e otimizador, /fase-4-score-otimizador
+  phase_4, score e mecanismo de avaliação, /fase-4-score-otimizador
   phase_5, stress e auditoria, /fase-5-entrega-final

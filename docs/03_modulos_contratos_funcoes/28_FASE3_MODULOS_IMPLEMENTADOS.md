@@ -4,7 +4,7 @@
 |---|---|---|
 | ScenarioLibrary | `assets/js/phase3/scenario-library.js` | carrega baseline, cenários exemplo e salvos |
 | ScenarioBuilder | `assets/js/phase3/scenario-builder.js` | cria objeto de cenário manual |
-| ScenarioValidator | `assets/js/phase3/scenario-validator.js` | bloqueia cenários inválidos |
+| ScenarioValidator | `assets/js/phase3/scenario-validator.js` | valida vínculos, CDs ativos e parâmetros antes da simulação e retorna erros, avisos, checks e resumo; não testa capacidade, cobertura real da demanda ou disponibilidade de distâncias |
 | ScenarioFlowRebuilder | `assets/js/phase3/scenario-flow-rebuilder.js` | realoca fluxos após fechamento de CD |
 | ScenarioSimulator | `assets/js/phase3/scenario-simulator.js` | recalcula custos e tributo básico |
 | ScenarioComparator | `assets/js/phase3/scenario-comparator.js` | compara contra baseline |

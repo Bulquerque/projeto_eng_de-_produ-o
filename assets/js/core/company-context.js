@@ -16,10 +16,6 @@ export function setActiveCompany(companyId) {
   activeCompanyId = companyId;
 }
 
-export function getActiveCompany() {
-  return activeCompanyId;
-}
-
 export function assertCompanyPath(companyId, path) {
   if (!String(path).startsWith(`data/${companyId}/`)) {
     const error = new Error(`Tentativa de carregar path fora da empresa atual: ${path}`);

@@ -10,19 +10,26 @@ PUBLIC_TESTS = [
     'tests/01_paths_auditoria/test_full_workbook_paths.py',
     'tests/01_paths_auditoria/test_paths_and_regeneration.py',
     'tests/01_paths_auditoria/test_final_deep_audit.py',
+    'tests/02_fase1_frontend/test_phase1_csv_parser.py',
     'tests/02_fase1_frontend/test_phase1_static_site.py',
+    'tests/02_fase1_frontend/test_phase1_table_view.py',
     'tests/02_fase1_frontend/test_phase1_http_server.py',
     'tests/03_contratos_modulos/test_module_contracts_documentation.py',
     'tests/05_fase2_baseline/test_phase2_static_site.py',
     'tests/05_fase2_baseline/test_phase2_http_server.py',
     'tests/06_fase3_cenarios/test_phase3_file_structure.py',
+    'tests/06_fase3_cenarios/test_phase3_library_view.py',
     'tests/06_fase3_cenarios/test_phase3_js_syntax.py',
     'tests/06_fase3_cenarios/test_phase3_http_server.py',
     'tests/07_fase4_score_otimizador/test_phase4_file_structure.py',
+    'tests/07_fase4_score_otimizador/test_phase4_objective_preview_view.py',
     'tests/07_fase4_score_otimizador/test_phase4_js_syntax.py',
     'tests/07_fase4_score_otimizador/test_phase4_scoring_logic.py',
     'tests/07_fase4_score_otimizador/test_phase4_http_server.py',
     'tests/08_fase5_entrega_final/test_phase5_file_structure.py',
+    'tests/08_fase5_entrega_final/test_phase5_dashboard_view.py',
+    'tests/08_fase5_entrega_final/test_phase5_tax_periods_view.py',
+    'tests/08_fase5_entrega_final/test_phase5_final_situation_view.py',
     'tests/08_fase5_entrega_final/test_phase5_js_syntax.py',
     'tests/08_fase5_entrega_final/test_phase5_http_server.py',
     'tests/09_quality_checks/test_crypto_session_contract.py',
@@ -30,8 +37,14 @@ PUBLIC_TESTS = [
     'tests/09_quality_checks/test_phase2_refactor_modules.py',
     'tests/09_quality_checks/test_phase_folders_and_module_docs.py',
     'tests/09_quality_checks/test_release_contract.py',
+    'tests/12_network_intelligence/test_app_contracts.py',
+    'tests/12_network_intelligence/test_form_values.py',
+    'tests/12_network_intelligence/test_mock_provider_engines.py',
+    'tests/12_network_intelligence/test_network_ui_playwright.py',
+    'tests/12_network_intelligence/test_decision_optimizer_flow.py',
 ]
 
+assert len(PUBLIC_TESTS) == len(set(PUBLIC_TESTS)), 'Public suite contains duplicate test paths.'
 
 for relative_path in PUBLIC_TESTS:
     print(f'\n>>> {relative_path}', flush=True)
@@ -41,6 +54,7 @@ for relative_path in PUBLIC_TESTS:
         env=os.environ.copy(),
         text=True,
         check=False,
+        timeout=300,
     )
     if result.returncode:
         raise SystemExit(result.returncode)

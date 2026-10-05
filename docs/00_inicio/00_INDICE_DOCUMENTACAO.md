@@ -41,7 +41,9 @@ A documentação foi reorganizada por tema.
 ## 05_testes_aceite
 
 - testes manuais;
-- critérios de aceite.
+- critérios de aceite;
+- [`30_INVENTARIO_FEATURES_ACOES_UI.md`](../05_testes_aceite/30_INVENTARIO_FEATURES_ACOES_UI.md) — inventário de páginas, features, ações e cobertura de testes dos dois runtimes.
+- [`31_RELATORIO_QA_SITE_PUBLICADO_2026-09-25.md`](../05_testes_aceite/31_RELATORIO_QA_SITE_PUBLICADO_2026-09-25.md) — versões Sites/GitHub, rotas percorridas, fluxos observados e limites de verificação da live.
 
 ## 06_manifestos
 

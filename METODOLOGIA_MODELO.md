@@ -42,26 +42,27 @@ Moeda, população de fluxos e período precisam ser iguais entre baseline e
 cenário. Uma reconciliação aritmética que fecha, mas mistura períodos ou
 unidades, não é considerada validação independente.
 
-Na busca do otimizador, o regime tributário canônico é o regime atual, igual ao
+Na busca do mecanismo de avaliação, o regime tributário canônico é o regime atual, igual ao
 baseline publicado. Cenários da reforma tributária, inclusive 2033, entram
 somente quando selecionados explicitamente no simulador ou na biblioteca de
 stress. Isso evita comparar um cenário futuro com uma base corrente e chamar a
 diferença de saving operacional.
 
-### Escopo canônico do otimizador
+### Escopo canônico do mecanismo de avaliação
 
-O resultado otimizado deve ser interpretado como o melhor cenário dentro do
-espaço discreto efetivamente modelado. A busca combina topologia e configuração
+O resultado deve ser interpretado como a alternativa mais bem classificada
+dentro do catálogo avaliado. A busca combina topologia e configuração
 de CDs, mantendo a política de frete, demanda, estoque, WACC e regime tributário
 do baseline, salvo quando uma variável é explicitamente habilitada na
 configuração do estudo. Frete, demanda, dias de estoque, WACC e regime futuro
 podem aparecer em stress, sensibilidade ou Monte Carlo, mas esses exercícios
-não ampliam retroativamente o espaço do otimizador canônico.
+não ampliam retroativamente o catálogo usado na avaliação de alternativas.
 
 Por isso, `exact_search_space` e `coverage_ratio` são obrigatórios na leitura
-da entrega: só há ótimo global quando o espaço declarado foi enumerado por
-completo. Caso contrário, o resultado é o melhor cenário encontrado na busca
-modelada, não uma prova de ótimo global do problema real.
+da entrega: a classificação cobre todo o espaço declarado apenas quando ele
+foi enumerado por completo e a cobertura observada coincide com a esperada.
+Catálogo parcial ou busca truncada deve ser descrito como avaliação limitada ao
+conjunto efetivamente analisado.
 
 ### Monte Carlo e `tax_multiplier`
 
@@ -276,9 +277,9 @@ Quando a classificação fiscal completa fica abaixo de 100%, o bloco registra
 útil para exploração sob premissas, mas não deve ser apresentada como evidência
 de decisão fiscal ou como previsão.
 
-## 7. Otimizador e estabilidade
+## 7. Mecanismo de avaliação e estabilidade
 
-O otimizador trabalha em uma grade discreta de cenários. Para Empresas com até
+O mecanismo de avaliação trabalha em uma grade discreta de cenários. Para Empresas com até
 quatro CDs, todos os subconjuntos não vazios são enumerados. Para espaços
 maiores, a geração usa um catálogo limitado de subconjuntos e informa:
 
@@ -297,7 +298,7 @@ quantidade gerada coincide com o espaço total calculado. A cobertura dos
 candidatos é registrada separadamente; catálogo parcial ou busca truncada não
 é promovido a ótimo global.
 
-O seed do otimizador ordena deterministicamente o catálogo de candidatos. A
+O seed do mecanismo de avaliação ordena deterministicamente o catálogo de candidatos. A
 sensibilidade dos pesos avalia os seis perfis padrão (balanceado, CFO, Supply,
 fiscal, conservador e crescimento) sem alterar o cenário oficial. O resultado
 informa frequência do vencedor e status \`stable\`, \`sensitive\` ou \`unstable\`.
@@ -317,7 +318,7 @@ operacional ou pooling de risco.
 
 ## 8. Stress, reconciliação e recomendação
 
-Stress cases sujeitos a uma política de otimização não podem desligar tributos
+Stress cases sujeitos a uma política de seleção de cenários não podem desligar tributos
 apenas para aumentar artificialmente o saving. A biblioteca padrão usa choques
 de frete, demanda, WACC, dias de estoque e regimes tributários permitidos.
 

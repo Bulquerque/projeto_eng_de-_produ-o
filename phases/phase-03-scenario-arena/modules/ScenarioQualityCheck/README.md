@@ -43,7 +43,8 @@ Avalia plausibilidade operacional do cenário, separando cenário barato de cen�
 - `['aggregateQualityScore(parts)', 'Agrega qualidade 0-100.']`
 
 ## Módulos chamados
-- `['ScenarioValidator', 'Recebe validade básica.']`
+
+Recebe resultados depois da simulação; a validação estrutural anterior é orquestrada pelo dashboard e pelo simulador.
 - `['ScenarioScoring', 'Entrega qualityScore para ranking.']`
 - `['ExplainabilityEngine', 'Entrega alertas para explicação.']`
 

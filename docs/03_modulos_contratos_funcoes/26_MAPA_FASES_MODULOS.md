@@ -33,18 +33,18 @@ Este documento mostra a arquitetura em 5 fases e quais módulos pertencem a cada
 | Módulo | Status | Página | Responsabilidade |
 |---|---|---|---|
 | ScenarioBuilder | planned_phase_3 | /fase-3-cenarios | Permite criar cenários manuais a partir do baseline, mudando CDs ativos, alocação, frete, estoque, demanda, modo tributário e outras premissas controladas. |
-| ScenarioValidator | planned_phase_3 | /fase-3-cenarios | Bloqueia ou alerta cenários impossíveis: sem CD ativo, demanda sem atendimento, capacidade estourada, distância ausente ou empresa misturada. |
+| ScenarioValidator | implemented_phase_3 | /fase-3-cenarios | Valida vínculo com empresa e baseline, CDs ativos, parâmetros numéricos, modo/regime tributário e regra de realocação; não verifica capacidade, cobertura real da demanda ou disponibilidade de distâncias. |
 | ScenarioComparator | planned_phase_3 | /fase-3-cenarios | Compara múltiplos cenários da mesma empresa contra o baseline correto, mostrando custo, saving, serviço, risco e tributo. |
 | ScenarioQualityCheck | planned_phase_3 | /fase-3-cenarios e /fase-4-score-otimizador | Avalia plausibilidade operacional do cenário, separando cenário barato de cenário realmente executável. |
 | ScenarioPersistence | planned_phase_3 | /fase-3-cenarios | Salva cenários criados pelo usuário no navegador e permite exportar/importar JSON de cenário. |
 
-# Fase 4 — Função objetivo customizada, score, restrições e otimização exata discreta.
+# Fase 4 — Critérios e pesos customizados, score, restrições e comparação de alternativas.
 
 | Módulo | Status | Página | Responsabilidade |
 |---|---|---|---|
 | ObjectiveBuilder | planned_phase_4 | /fase-4-score-otimizador | Permite ao usuário criar sua própria função objetivo com pesos de custo, serviço, risco, tributo e estoque. |
 | ScenarioScoring | planned_phase_4 | /fase-4-score-otimizador | Normaliza métricas heterogêneas e calcula o score final de cada cenário conforme função objetivo escolhida. |
-| ConstraintEngine | planned_phase_4 | /fase-4-score-otimizador | Define e valida restrições usadas pelo otimizador: mínimo/máximo de CDs, capacidade, concentração, cobertura e lead time. |
+| ConstraintEngine | planned_phase_4 | /fase-4-score-otimizador | Define e valida restrições usadas pelo mecanismo de avaliação: mínimo/máximo de CDs, capacidade, concentração, cobertura e lead time. |
 | ScenarioOptimizer | planned_phase_4 | /fase-4-score-otimizador | Enumera o espaço discreto modelado, aplica restrições, calcula score e retorna o melhor cenário viável com desempate determinístico. |
 | SearchLogPanel | planned_phase_4 | /fase-4-score-otimizador | Mostra rastreabilidade da busca: método, seed, candidatos testados, rejeições e top cenários. |
 

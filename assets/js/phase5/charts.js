@@ -73,7 +73,7 @@ export function renderRobustnessChart(robustnessScore) {
   else if (value < 70) color = '#92400e'; // warn/yellow
 
   renderDonutChart('robustnessChart', {
-    labels: ['Robustez', 'Risco'],
+    labels: ['Score de robustez', 'Complemento do score'],
     datasets: [
       {
         data: [value, remaining],

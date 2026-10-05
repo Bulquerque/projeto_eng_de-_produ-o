@@ -9,8 +9,8 @@ Entrega: página `/fase-2-baseline` com baseline, custos calculados e Base Fit S
 ## Fase 3 — Cenários e comparação
 Entrega: página `/fase-3-cenarios` com criador de cenários, comparação contra baseline e quality score.
 
-## Fase 4 — Score customizado e otimização exata discreta
-Entrega: página `/fase-4-score-otimizador` com Objective Builder, ranking e busca exata sobre o espaço discreto modelado.
+## Fase 4 — Critérios customizados e avaliação de alternativas
+Entrega: página `/fase-4-score-otimizador` com critérios e pesos, restrições, geração de candidatos, classificação e comparação dentro do espaço discreto declarado.
 
 ## Fase 5 — Stress test, relatório e auditoria
 Entrega: página `/fase-5-entrega-final` com stress test, explicabilidade, relatório executivo e audit trail.

@@ -1,77 +1,70 @@
-# Estrutura organizada do pacote
+# Estrutura do projeto
 
-Este pacote foi reorganizado para deixar cada tipo de artefato em uma pasta clara.
+Este mapa descreve a estrutura presente no checkout. `index.html` inicia uma aplicação Network Intelligence com rotas para visão executiva, cenários, avaliação de alternativas, risco e dados/confiança. Módulos por fase continuam no repositório porque a aplicação compartilha vários desses engines; as páginas `fase-*` são atalhos para as rotas atuais.
 
-```text
-/
-├── index.html                      # página principal da Fase 1
-├── fase-1-validacao/               # rota direta para validação da Fase 1
-├── fase-2-baseline/                # baseline e paridade
-├── fase-3-cenarios/                # simulação manual
-├── fase-4-score-otimizador/        # score e otimização
-├── fase-5-entrega-final/           # entrega final e decisão
-├── debug/                          # Debug Center isolado
-├── assets/
-│   ├── styles.css                  # estilo global
-│   ├── js/phase1/                  # entrypoint e módulos da Fase 1
-│   └── js/
-│       ├── core/                  # utilitários compartilhados únicos
-│       ├── debug/                 # runtime do Debug Center
-│       ├── phase1/                 # validação inicial
-│       └── phase2/phase3/phase4/phase5  # módulos de domínio por fase
-├── data/                           # dados tratados, contratos e relatórios de validação
-│   ├── empresa1/                   # dados da Empresa 1
-│   ├── empresa2/                   # dados da Empresa 2
-│   ├── complements/                # complementos, referências e fontes tributárias
-│   ├── contracts/                  # contratos de módulos de todas as fases
-│   ├── release-manifest.json       # identidade e status da release validada
-│   └── validation/                 # provas, auditorias e relatórios
-├── docs/                           # documentação reorganizada por tema
-├── etl/                            # apoio para geração/regeneração dos dados
-├── references/                     # arquivos brutos e notas originais
-└── tests/                          # testes separados por tipo
-```
+## Entry points e navegação
 
-As pastas `fase-1-validacao/` a `fase-5-entrega-final/` são atalhos de navegação.
-O runtime é único em `index.html`; as páginas de fase redirecionam para ele por hash,
-e os dados versionados de empresa aparecem como `.enc.json`. O caminho sem essa extensão
-é o caminho lógico usado pelo catálogo e pelo runtime antes da resolução criptográfica.
+- [`index.html`](index.html) é a entrada do site estático e carrega `assets/js/app/main.js`, que inicia a shell Network Intelligence.
+- `assets/js/phase1/main.js` a `assets/js/phase5/main.js` mantêm os módulos das fases legadas, compartilhando engines e utilitários; as páginas de fase listadas abaixo são fachadas para subrotas do runtime Network.
+- [`fase-1-validacao/`](fase-1-validacao/) redireciona para `#/network/overview/summary`; [`fase-2-baseline/`](fase-2-baseline/) para `#/network/trust/overview`; [`fase-3-cenarios/`](fase-3-cenarios/) para `#/network/scenarios/build`; [`fase-4-score-otimizador/`](fase-4-score-otimizador/) para `#/network/optimizer/configure`; e [`fase-5-entrega-final/`](fase-5-entrega-final/) para `#/network/trust/validation`. O roteador canônico mantém aliases históricos e preserva os parâmetros da query.
+- [`debug/`](debug/) contém a entrada do Debug Center.
 
-O runtime do site continua simples: `index.html` carrega cada fase por seu próprio `main.js` em `assets/js/phase1/` a `assets/js/phase5/`, sempre com caminhos relativos.
+## Mapa de diretórios
 
+| Caminho | Responsabilidade observada |
+|---|---|
+| `assets/js/app/` | Shell, estado, roteamento, bindings, páginas, providers e visualizações da Network UI. |
+| `assets/js/core/` | Utilitários e serviços compartilhados, incluindo carregamento e sessão de dados. |
+| `assets/js/phase1/` … `phase5/` | Engines por domínio e módulos de interface legados; confira imports/provedores antes de mover ou remover. |
+| `assets/styles.css` e folhas específicas | Estilos globais e de cada interface. |
+| `data-demo/empresa_mock/` | Fixture sintética para a demonstração pública da Network UI. |
+| `data/` | Catálogos, contratos e derivados; pode haver arquivos protegidos, criptografados ou locais ignorados pelo Git. |
+| `references/` | Fontes, documentos e materiais de referência do projeto. |
+| `phases/` | Documentação de módulos, contratos, funções e testes por feature. |
+| `docs/` | Documentação de arquitetura, método, dados, fases, aceite e releases. |
+| `tests/` | Verificações automatizadas, testes por fase e fluxos E2E. |
+| `etl/` e `scripts/` | Preparação/regeneração de dados e geração de evidências/pacotes. |
+| `dist/` e `entregaveis/` | Saídas regeneráveis e locais; consulte os scripts e `.gitignore` antes de usá-las ou compartilhá-las. |
 
-## Fase 2 adicionada
+## Network Intelligence
 
 ```text
-fase-2-baseline/                  Página estática da Fase 2
-assets/js/phase2/main.js          Entry point da Fase 2
-assets/js/phase2/                 Módulos do domínio de baseline
-assets/js/core/                   Única camada de utilitários compartilhados
-data/empresa1/phase2/             Artefatos derivados da Empresa 1 para baseline
-data/empresa2/phase2/             Artefatos derivados da Empresa 2 para baseline
-tests/05_fase2_baseline/          Testes da Fase 2
+assets/js/app/main.js                bootstrap e coordenação da interface
+assets/js/app/route-renderers.js      associação das rotas aos renderers
+assets/js/app/router.js              rotas, aliases e mudança de página
+assets/js/app/bindings.js             ações delegadas da shell
+assets/js/app/form-values.js          parsing e validação puros dos formulários
+assets/js/app/shell.js                estrutura global e seção ativa da navegação
+assets/js/app/pages/                  renderers organizados por área
+assets/js/app/providers/              provider sintético e provider protegido
+assets/js/app/services/               serviços de decisão e risco
+assets/js/phase1/csv-parser.js         parser CSV puro usado pela Fase 1
+assets/js/phase1/table-view.js         builder de tabelas com escaping e formatação
+assets/js/phase2/manual-checklist.js  checklist reutilizado pelo portal
+assets/js/phase3/scenario-arena/      views de Monte Carlo/comparação e builder de linhas
+assets/js/phase3/                    engines e coordenação do fluxo de cenários
+assets/js/phase4/                    objetivos, busca e classificação de alternativas
+assets/js/phase5/                    decisão, controles, views e exportação de entrega
+data-demo/empresa_mock/              dados sintéticos de demonstração
+tests/12_network_intelligence/       contratos e E2E dessa interface
 ```
 
+Os dashboards das fases coordenam estado, eventos e engines. As views extraídas recebem dados prontos e devolvem apresentação; elas não substituem nem duplicam cálculos de domínio. Consulte [`docs/05_testes_aceite/30_INVENTARIO_FEATURES_ACOES_UI.md`](docs/05_testes_aceite/30_INVENTARIO_FEATURES_ACOES_UI.md) para relacionar rotas, controles e cobertura de testes.
 
-## Fase 3 implementada
+O provider sintético serve para exploração e demonstração. Os providers de empresa real seguem o fluxo local de desbloqueio descrito no [`README.md`](README.md); a disponibilidade do código não autoriza publicar fontes ou credenciais.
 
-Acesse `http://localhost:8000/fase-3-cenarios/` para criar, validar, simular, comparar, salvar, exportar e importar cenários manuais. Rode `python tests/run_all_tests.py` para validar o pacote completo.
-
-
-## Fase 5 — Entrega Final
-
-A Fase 5 foi implementada em `/fase-5-entrega-final/` com stress test, robustez, recomendação, audit trail, relatório executivo, exportação e QA final.
-
-Para abrir:
+## Comandos principais
 
 ```bash
+npm ci
 python -m http.server 8000
 ```
 
-Depois acesse `http://localhost:8000/fase-5-entrega-final/`.
+Abra `http://localhost:8000/`. Para rodar o gate de testes, execute `npm test` (equivalente a `python tests/run_all_tests.py`). Para lint e formatação: `npm run lint` e `npm run format:check`. Para a Network UI: `npm run test:network`; para o escopo público: `npm run test:public`. Os detalhes e limites estão em [`tests/README.md`](tests/README.md).
 
+## Navegação documental
 
----
-## Reestruturação final por fases/módulos
-
-Use `phases/` para navegar por feature. Use `/debug/` para depurar paths, módulos e erros.
+- [`README.md`](README.md) — instalação, execução, dados e limites do modelo.
+- [`docs/README.md`](docs/README.md) — índice da documentação.
+- [`phases/README.md`](phases/README.md) — documentação por feature/módulo.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — processo local de contribuição.

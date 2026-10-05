@@ -43,10 +43,6 @@
   ],
   "external_calls": [
     [
-      "ScenarioValidator",
-      "Recebe validade básica."
-    ],
-    [
       "ScenarioScoring",
       "Entrega qualityScore para ranking."
     ],
@@ -70,5 +66,6 @@
       "custo baixo não apaga risco alto"
     ]
   },
-  "file": "assets/js/phase3/scenario-quality-check.js"
+  "file": "assets/js/phase3/scenario-quality-check.js",
+  "validation_note": "A qualidade recebe o resultado já simulado. A validação estrutural acontece antes, orquestrada pelo dashboard e pelo simulador; este módulo não chama ScenarioValidator."
 }

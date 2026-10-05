@@ -190,11 +190,11 @@ Este documento organiza os testes por fase, módulo e tipo. A matriz estruturada
 
 | Tipo de teste | Critério |
 |---|---|
-| unit | sem CD ativo é inválido |
-| unit | empresa misturada é inválida |
-| integration | ScenarioBuilder chama validator antes de salvar |
-| manual | tentar cenário absurdo e ver bloqueio |
-| acceptance | nenhum cenário inválido entra no ranking |
+| integração (`tests/06_fase3_cenarios/test_phase3_logic.py`) | cenário válido e baseline são aceitos; cenário sem CD ativo e frete inválido são rejeitados |
+| integração | verifica validação tributária e execução subsequente da simulação |
+| regressão (`tests/11_regression_e2e/regression_logic_audit.mjs`) | valida cenários válidos/inválidos e confere comportamento com simulador |
+| fluxo de apresentação (`tests/10_presentation_e2e/test_presentation_flow_playwright.py`) | percorre a jornada de cenário pela interface |
+
 
 ## ScenarioComparator
 
@@ -256,7 +256,7 @@ Este documento organiza os testes por fase, módulo e tipo. A matriz estruturada
 |---|---|
 | unit | minCds > maxCds é inválido |
 | unit | maxConcentration fora de 0-1 é inválido |
-| integration | otimizador rejeita candidato inválido |
+| integration | mecanismo de avaliação rejeita candidato inválido |
 | manual | limitar max CDs e conferir busca |
 | acceptance | cenário que viola hard constraint não entra no top |
 
@@ -268,7 +268,7 @@ Este documento organiza os testes por fase, módulo e tipo. A matriz estruturada
 | unit | não gera cenário sem CD |
 | integration | top 5 aparecem na tela |
 | manual | rodar busca e conferir log |
-| acceptance | otimizador sempre informa quantos cenários testou |
+| acceptance | mecanismo de avaliação sempre informa quantos cenários testou |
 
 ## SearchLogPanel
 
@@ -276,7 +276,7 @@ Este documento organiza os testes por fase, módulo e tipo. A matriz estruturada
 |---|---|
 | unit | valid+invalid = tested |
 | unit | rejection summary agrupa corretamente |
-| integration | log aparece após otimização |
+| integration | log aparece após avaliação de alternativas |
 | manual | verificar método e seed usados |
 | acceptance | busca sem log não é aceita |
 

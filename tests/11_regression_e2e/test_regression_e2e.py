@@ -9,7 +9,6 @@ import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
-from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -53,18 +52,6 @@ def run_server():
         server.shutdown()
         server.server_close()
         os.chdir(old_cwd)
-
-
-def unlock_if_prompted(page, password: str) -> int:
-    prompt = page.locator('#cryptoPasswordInput')
-    try:
-        prompt.wait_for(state='visible', timeout=6000)
-    except PlaywrightTimeoutError:
-        return 0
-    prompt.fill(password)
-    prompt.press('Enter')
-    page.wait_for_timeout(1000)
-    return 1
 
 
 def assert_no_runtime_errors(page, console_events, page_errors, request_failures):
@@ -124,91 +111,89 @@ def run_logic_audit() -> dict:
     return report
 
 
-def run_ui_audit(password: str) -> dict:
-    ui_report = {
-        'generated_at': None,
-        'screenshots': [],
-        'checks': [],
-    }
+def run_ui_audit() -> dict:
+    ui_report = {'generated_at': None, 'screenshots': [], 'checks': []}
+    request_urls = []
     with run_server() as port, sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
         base_url = f'http://127.0.0.1:{port}'
-
         desktop = browser.new_context(viewport={'width': 1440, 'height': 1000}, device_scale_factor=1)
+        desktop.on('request', lambda request: request_urls.append(request.url))
 
-        page, console_events, page_errors, request_failures = open_page(desktop, base_url, '/index.html#/bogus-route')
-        page.locator('#sec-diagnostico-baseline').wait_for(state='visible', timeout=10000)
+        page, console_events, page_errors, request_failures = open_page(
+            desktop, base_url, '/?company=empresa_mock#/network/unknown-route'
+        )
+        page.locator('[data-testid="page-route-fallback"]').wait_for(state='visible', timeout=10000)
+        assert 'Rota não encontrada' in page.locator('#networkPage').inner_text()
+        page.locator('[data-testid="page-route-fallback"] [data-route]').click()
+        page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
         save_screenshot(page, 'ui_invalid_route_fallback_desktop')
-        assert page.locator('#sec-diagnostico-baseline').is_visible()
-        assert page.locator('#sec-simulacao-otimizacao').is_hidden()
         assert_no_runtime_errors(page, console_events, page_errors, request_failures)
         assert_no_horizontal_overflow(page)
         ui_report['checks'].append({'case': 'invalid_route_fallback', 'status': 'ok'})
         ui_report['screenshots'].append('ui_invalid_route_fallback_desktop.png')
-        page.close()
 
-        page, console_events, page_errors, request_failures = open_page(desktop, base_url, '/fase-2-baseline/')
-        assert unlock_if_prompted(page, password) == 1
-        page.locator('#phase2Workspace').wait_for(state='visible', timeout=30000)
-        persisted_crypto_values = page.evaluate(
-            """() => ({
-                localPassword: localStorage.getItem('visagio_crypto_password_session'),
-                sessionPassword: sessionStorage.getItem('visagio_crypto_password_session'),
-                localKeys: Object.keys(localStorage).filter((key) => key.startsWith('visagio_crypto_key_')),
-                sessionKeys: Object.keys(sessionStorage).filter((key) => key.startsWith('visagio_crypto_key_')),
-            })"""
-        )
-        assert persisted_crypto_values == {
-            'localPassword': None,
-            'sessionPassword': None,
-            'localKeys': [],
-            'sessionKeys': [],
-        }, persisted_crypto_values
         page.evaluate(
             """() => {
                 localStorage.setItem('visagio_shared_debug_feed', '{broken');
                 localStorage.setItem('visagio_phase2_manual_checks_empresa1', 'broken');
-                localStorage.setItem('visagio_crypto_password_session', 'legacy-local-secret');
-                sessionStorage.setItem('visagio_crypto_password_session', 'legacy-session-secret');
             }"""
         )
-        page.reload(wait_until='networkidle', timeout=40000)
-        assert unlock_if_prompted(page, password) == 1
-        page.locator('#phase2Workspace').wait_for(state='visible', timeout=30000)
-        page.locator('#phase2AutoChecks .check-item').first.wait_for(state='visible', timeout=30000)
-        assert page.locator('#phase2AutoChecks .check-fail').count() == 0
-        migrated_crypto_values = page.evaluate(
-            """() => ({
-                localPassword: localStorage.getItem('visagio_crypto_password_session'),
-                sessionPassword: sessionStorage.getItem('visagio_crypto_password_session'),
-            })"""
+        page.reload(wait_until='networkidle', timeout=30000)
+        page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible', timeout=10000)
+        assert page.locator('[data-testid="overview-recommendation"]').is_visible()
+        persisted_sensitive_keys = page.evaluate(
+            """() => [...Object.keys(localStorage), ...Object.keys(sessionStorage)]
+                .filter((key) => /password|secret|crypto_key/i.test(key))"""
         )
-        assert migrated_crypto_values == {'localPassword': None, 'sessionPassword': None}, migrated_crypto_values
-        save_screenshot(page, 'ui_corrupted_storage_baseline_desktop')
+        assert persisted_sensitive_keys == [], persisted_sensitive_keys
+        save_screenshot(page, 'ui_corrupted_legacy_storage_desktop')
         assert_no_runtime_errors(page, console_events, page_errors, request_failures)
         assert_no_horizontal_overflow(page)
-        ui_report['checks'].append({'case': 'corrupted_storage_baseline', 'status': 'ok'})
-        ui_report['screenshots'].append('ui_corrupted_storage_baseline_desktop.png')
-        page.close()
+        ui_report['checks'].append({'case': 'corrupted_legacy_storage', 'status': 'ok'})
+        ui_report['screenshots'].append('ui_corrupted_legacy_storage_desktop.png')
 
+        page.evaluate("window.location.hash = '#/network/optimizer/configure'")
+        page.locator('[data-testid="page-optimizer-configure"]').wait_for(state='visible')
+        page.locator('[data-testid="optimizer-run"]').click()
+        page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=30000)
+        page.wait_for_function("location.hash === '#/network/results/summary'")
+        page.evaluate("window.location.hash = '#/network/trust/validation'")
+        page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=30000)
+        page.locator('[data-testid="qa-status"]').wait_for(state='visible')
+        page.locator('[data-testid="release-status"]').wait_for(state='visible')
+        page.locator('summary', has_text='Registro técnico').first.click()
+        audit_text = page.locator('#networkPage').inner_text()
+        assert 'Fonte protegida (detalhes no pacote de exportação)' in audit_text
+        assert 'data/empresa' not in audit_text
+        assert 'VISAGIO_DATA_PASSWORD' not in audit_text
+        save_screenshot(page, 'ui_validation_privacy_desktop')
+        assert_no_runtime_errors(page, console_events, page_errors, request_failures)
+        ui_report['checks'].append({'case': 'validation_and_privacy_boundary', 'status': 'ok'})
+        ui_report['screenshots'].append('ui_validation_privacy_desktop.png')
+        page.close()
         desktop.close()
 
         mobile = browser.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=1)
-        page, console_events, page_errors, request_failures = open_page(mobile, base_url, '/fase-5-entrega-final/')
-        unlock_if_prompted(page, password)
-        page.locator('#executiveReportPanel').wait_for(state='visible', timeout=30000)
-        page.locator('#exportCenterPanel .export-button').first.wait_for(state='visible', timeout=30000)
-        assert page.locator('#exportCenterPanel .export-button').count() >= 4
-        assert 'audit_id' in page.locator('#auditTrailPanel').inner_text()
-        save_screenshot(page, 'ui_final_delivery_mobile')
+        mobile.on('request', lambda request: request_urls.append(request.url))
+        page, console_events, page_errors, request_failures = open_page(
+            mobile, base_url, '/?company=empresa_mock#/network/scenarios/build'
+        )
+        page.locator('[data-testid="scenario-load-mock_consolidation"]').click()
+        page.locator('[data-testid="scenario-run"]').click()
+        page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=15000)
+        page.wait_for_function("location.hash === '#/network/results/summary'")
         assert_no_runtime_errors(page, console_events, page_errors, request_failures)
         assert_no_horizontal_overflow(page)
-        ui_report['checks'].append({'case': 'final_delivery_mobile', 'status': 'ok'})
-        ui_report['screenshots'].append('ui_final_delivery_mobile.png')
+        save_screenshot(page, 'ui_scenario_mobile')
+        ui_report['checks'].append({'case': 'scenario_mobile', 'status': 'ok'})
+        ui_report['screenshots'].append('ui_scenario_mobile.png')
         page.close()
         mobile.close()
         browser.close()
 
+    assert not any('/data/empresa' in url for url in request_urls), request_urls
+    assert not any('/assets/js/phase' in url and '/main.js' in url for url in request_urls), request_urls
     ui_report['generated_at'] = datetime.now(timezone.utc).isoformat()
     UI_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     UI_REPORT_PATH.write_text(json.dumps(ui_report, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -216,9 +201,9 @@ def run_ui_audit(password: str) -> dict:
 
 
 def main():
-    password = read_password()
+    read_password()
     logic_report = run_logic_audit()
-    ui_report = run_ui_audit(password)
+    ui_report = run_ui_audit()
 
     def report_path(path: Path) -> str:
         return str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)

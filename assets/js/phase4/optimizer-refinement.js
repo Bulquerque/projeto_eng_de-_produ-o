@@ -21,6 +21,7 @@ function buildVariant({ companyId, baselineBundle, seedRecord, roundIndex, label
       wacc: patch.wacc ?? current.wacc ?? MODEL_DEFAULTS.reference_wacc,
       tax_mode: patch.tax_mode ?? current.tax_mode ?? 'current',
       tax_regime: patch.tax_regime ?? current.tax_regime ?? null,
+      tax_year: patch.tax_year ?? current.tax_year ?? null,
       reallocation_rule: current.reallocation_rule || 'nearest_available_cd',
       scenario_type: 'refinement',
     },

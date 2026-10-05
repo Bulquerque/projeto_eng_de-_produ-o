@@ -128,6 +128,7 @@ export function runOptimization({
   companyId,
   baselineBundle,
   objective,
+  taxYear = null,
   constraints = {},
   optimizerConfig = {},
 }) {
@@ -181,6 +182,7 @@ export function runOptimization({
       inventory_days_options: [CANONICAL_OPTIMIZATION_POLICY.inventory_days],
       base_tax_mode: CANONICAL_OPTIMIZATION_POLICY.tax_mode,
       base_tax_regime: CANONICAL_OPTIMIZATION_POLICY.tax_regime,
+      tax_year: taxYear,
       allow_tax_disabled: CANONICAL_OPTIMIZATION_POLICY.allow_tax_disabled,
       demand_multipliers: [CANONICAL_OPTIMIZATION_POLICY.demand_multiplier],
       seed: canonicalConfig.seed,
@@ -198,7 +200,7 @@ export function runOptimization({
   }
 
   if (requestedMethod !== SUPPORTED_METHOD) {
-    const message = `Método de otimização "${requestedMethod}" não é suportado. Use "${SUPPORTED_METHOD}".`;
+    const message = `Método de busca "${requestedMethod}" não é suportado. Use "${SUPPORTED_METHOD}".`;
     return buildFailureResult({
       companyId,
       searchLog: buildSearchLog({
@@ -215,7 +217,7 @@ export function runOptimization({
   }
 
   if (generated.generation_summary?.limited_by_max_candidates) {
-    const message = `Espaço discreto truncado pelo limite de segurança (${maxCandidates}). Aumente o limite para rodar a otimização exata.`;
+    const message = `Espaço discreto truncado pelo limite de segurança (${maxCandidates}). Aumente o limite para avaliar todas as alternativas.`;
     return buildFailureResult({
       companyId,
       searchLog: buildSearchLog({
@@ -482,7 +484,7 @@ export function runOptimization({
       ...(rankingSensitivity.warnings || []),
       ...(limitedFiscalRecords.length
         ? [
-            `A otimização entregou ${limitedFiscalRecords.length} cenário(s) com cobertura fiscal parcial; o ranking é exploratório e os campos ausentes não foram inventados.`,
+            `A busca encontrou ${limitedFiscalRecords.length} cenário(s) com cobertura fiscal parcial; a classificação é exploratória e os campos ausentes não foram inventados.`,
           ]
         : []),
     ],

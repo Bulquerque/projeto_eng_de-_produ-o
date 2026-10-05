@@ -96,7 +96,7 @@ http://localhost:8000/fase-4-score-otimizador/
 4. Escolha um perfil pronto, como CFO ou Supply.
 5. Ajuste os pesos se quiser.
 6. Defina restrições.
-7. Clique em **Rodar otimizador leve**.
+7. Clique em **Avaliar alternativas**.
 8. Confira search log, ranking, explicação do melhor cenário e fronteira de trade-off.
 
 A Fase 4 continua 100% estática. Ela roda no navegador e usa os dados da Fase 2 e os motores da Fase 3.

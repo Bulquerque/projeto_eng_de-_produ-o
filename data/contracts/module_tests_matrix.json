@@ -885,31 +885,25 @@
     "phase": 3,
     "module": "ScenarioValidator",
     "test_type": "unit",
-    "test": "sem CD ativo é inválido"
-  },
-  {
-    "phase": 3,
-    "module": "ScenarioValidator",
-    "test_type": "unit",
-    "test": "empresa misturada é inválida"
+    "test": "tests/06_fase3_cenarios/test_phase3_logic.py: cenário válido é aceito; cenário sem CD ativo/frete inválido é rejeitado"
   },
   {
     "phase": 3,
     "module": "ScenarioValidator",
     "test_type": "integration",
-    "test": "ScenarioBuilder chama validator antes de salvar"
+    "test": "tests/06_fase3_cenarios/test_phase3_logic.py: validação tributária seguida da simulação"
   },
   {
     "phase": 3,
     "module": "ScenarioValidator",
     "test_type": "manual",
-    "test": "tentar cenário absurdo e ver bloqueio"
+    "test": "conferir avisos de realocação e concentração no painel"
   },
   {
     "phase": 3,
     "module": "ScenarioValidator",
     "test_type": "acceptance",
-    "test": "nenhum cenário inválido entra no ranking"
+    "test": "tests/11_regression_e2e/regression_logic_audit.mjs: cenário inválido não é simulado"
   },
   {
     "phase": 4,

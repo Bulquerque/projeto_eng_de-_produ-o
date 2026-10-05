@@ -8,7 +8,7 @@ Organização por feature da Fase 4.
 - [`ObjectiveBuilder`](modules/ObjectiveBuilder/README.md) — Cria função objetivo com pesos customizados, normaliza pesos e gera preview da fórmula.
 - [`ObjectiveProfileLibrary`](modules/ObjectiveProfileLibrary/README.md) — Fornece perfis prontos de decisão: CFO, Supply, Fiscal, Conservador, Crescimento e Balanceado.
 - [`ObjectiveValidator`](modules/ObjectiveValidator/README.md) — Valida se a função objetivo tem empresa, métricas conhecidas e pesos coerentes.
-- [`Phase4Dashboard`](modules/Phase4Dashboard/README.md) — Renderiza a página /fase-4-score-otimizador/ com objective builder, ranking, otimizador e validação.
+- [`Phase4Dashboard`](modules/Phase4Dashboard/README.md) — Renderiza a página /fase-4-score-otimizador/ com objective builder, ranking, mecanismo de avaliação e validação.
 - [`RankingExplainer`](modules/RankingExplainer/README.md) — Explica por que o cenário ranqueado venceu ou quais componentes pesaram no score.
 - [`ScenarioMetricExtractor`](modules/ScenarioMetricExtractor/README.md) — Extrai métricas comparáveis dos cenários simulados: custo, qualidade, risco, tributo e eficiência de estoque.
 - [`ScenarioOptimizer`](modules/ScenarioOptimizer/README.md) — Roda busca leve no navegador, simula candidatos, aplica restrições, normaliza métricas e ranqueia.

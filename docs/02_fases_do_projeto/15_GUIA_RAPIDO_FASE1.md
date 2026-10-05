@@ -82,4 +82,4 @@ missing_paths: 0
 
 ## 5. O que ainda não é para testar na Fase 1
 
-Não procure ainda por cálculo de custo, cenário base calibrado, otimizador ou stress test. Essas funcionalidades começam a partir da Fase 2.
+Não procure ainda por cálculo de custo, cenário base calibrado, mecanismo de avaliação ou stress test. Essas funcionalidades começam a partir da Fase 2.

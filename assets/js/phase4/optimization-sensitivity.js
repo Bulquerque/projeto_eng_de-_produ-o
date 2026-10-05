@@ -10,7 +10,7 @@ const STABILITY_THRESHOLDS = Object.freeze({
 /**
  * Mede se o ranking permanece estável quando a decisão é vista por perfis
  * de pesos diferentes. Isto é uma auditoria do ranking, não um segundo
- * otimizador e não altera o cenário oficial escolhido.
+ * mecanismo de avaliação e não altera o cenário oficial escolhido.
  */
 export function assessObjectiveSensitivity({
   companyId,

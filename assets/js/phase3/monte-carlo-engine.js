@@ -579,6 +579,92 @@ function summarizeSamples({
   };
 }
 
+function sampleUncertaintyInputs({
+  baseFreight,
+  baseDemand,
+  baseInventory,
+  baseWacc,
+  historicalData,
+  historicalDrivers,
+  preset,
+  rng,
+}) {
+  const sharedShock = gaussian(rng);
+  const historicalObservation = sampleHistoricalObservation(historicalData.observations, rng);
+  const historicalValue = (driver) => {
+    const value = historicalObservation?.[driver];
+    return Number.isFinite(Number(value))
+      ? Number(value)
+      : sampleHistorical(historicalData[driver], rng);
+  };
+
+  return {
+    freight_multiplier: historicalDrivers.has('freight_multiplier')
+      ? historicalValue('freight_multiplier')
+      : sampleMultiplicative(
+          baseFreight,
+          preset.spread.freight_multiplier,
+          rng,
+          sharedShock,
+          1,
+          preset.idiosyncratic_shock,
+          0.6,
+          1.8
+        ),
+    demand_multiplier: historicalDrivers.has('demand_multiplier')
+      ? historicalValue('demand_multiplier')
+      : sampleMultiplicative(
+          baseDemand,
+          preset.spread.demand_multiplier,
+          rng,
+          sharedShock,
+          0.9,
+          preset.idiosyncratic_shock,
+          0.6,
+          1.6
+        ),
+    inventory_days: historicalDrivers.has('inventory_days')
+      ? Math.max(0, Math.round(historicalValue('inventory_days')))
+      : Math.round(
+          sampleAdditive(
+            baseInventory,
+            preset.spread.inventory_days,
+            rng,
+            sharedShock,
+            1,
+            preset.idiosyncratic_shock,
+            0,
+            120
+          )
+        ),
+    wacc: historicalDrivers.has('wacc')
+      ? Math.max(0, historicalValue('wacc'))
+      : sampleAdditive(
+          baseWacc,
+          preset.spread.wacc,
+          rng,
+          sharedShock,
+          0.7,
+          preset.idiosyncratic_shock,
+          0,
+          0.5
+        ),
+    tax_multiplier: historicalDrivers.has('tax_multiplier')
+      ? Math.max(0, historicalValue('tax_multiplier'))
+      : sampleMultiplicative(
+          1,
+          preset.spread.tax_multiplier,
+          rng,
+          sharedShock,
+          0.5,
+          preset.idiosyncratic_shock,
+          0.7,
+          1.35
+        ),
+    common_shock: sharedShock,
+  };
+}
+
 export function runMonteCarloSimulation({
   companyId,
   selectedScenario,
@@ -685,80 +771,16 @@ export function runMonteCarloSimulation({
 
   const samples = [];
   for (let index = 0; index < normalizedConfig.iterations; index += 1) {
-    const sharedShock = gaussian(rng);
-    const historicalObservation = sampleHistoricalObservation(historicalData.observations, rng);
-    const historicalValue = (driver) => {
-      const value = historicalObservation?.[driver];
-      return Number.isFinite(Number(value))
-        ? Number(value)
-        : sampleHistorical(historicalData[driver], rng);
-    };
-
-    const sampled = {
-      freight_multiplier: historicalDrivers.has('freight_multiplier')
-        ? historicalValue('freight_multiplier')
-        : sampleMultiplicative(
-            baseFreight,
-            preset.spread.freight_multiplier,
-            rng,
-            sharedShock,
-            1,
-            preset.idiosyncratic_shock,
-            0.6,
-            1.8
-          ),
-      demand_multiplier: historicalDrivers.has('demand_multiplier')
-        ? historicalValue('demand_multiplier')
-        : sampleMultiplicative(
-            baseDemand,
-            preset.spread.demand_multiplier,
-            rng,
-            sharedShock,
-            0.9,
-            preset.idiosyncratic_shock,
-            0.6,
-            1.6
-          ),
-      inventory_days: historicalDrivers.has('inventory_days')
-        ? Math.max(0, Math.round(historicalValue('inventory_days')))
-        : Math.round(
-            sampleAdditive(
-              baseInventory,
-              preset.spread.inventory_days,
-              rng,
-              sharedShock,
-              1,
-              preset.idiosyncratic_shock,
-              0,
-              120
-            )
-          ),
-      wacc: historicalDrivers.has('wacc')
-        ? Math.max(0, historicalValue('wacc'))
-        : sampleAdditive(
-            baseWacc,
-            preset.spread.wacc,
-            rng,
-            sharedShock,
-            0.7,
-            preset.idiosyncratic_shock,
-            0,
-            0.5
-          ),
-      tax_multiplier: historicalDrivers.has('tax_multiplier')
-        ? Math.max(0, historicalValue('tax_multiplier'))
-        : sampleMultiplicative(
-            1,
-            preset.spread.tax_multiplier,
-            rng,
-            sharedShock,
-            0.5,
-            preset.idiosyncratic_shock,
-            0.7,
-            1.35
-          ),
-      common_shock: sharedShock,
-    };
+    const sampled = sampleUncertaintyInputs({
+      baseFreight,
+      baseDemand,
+      baseInventory,
+      baseWacc,
+      historicalData,
+      historicalDrivers,
+      preset,
+      rng,
+    });
 
     const sampledScenario = buildSampleScenario({
       scenario: baseScenario,

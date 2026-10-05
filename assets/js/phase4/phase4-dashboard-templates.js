@@ -8,7 +8,7 @@ import {
 } from '../core/scenario-summary.js';
 
 export function renderSearchLog(searchLog) {
-  if (!searchLog) return '<div class="empty-state">Otimizador ainda não rodou.</div>';
+  if (!searchLog) return '<div class="empty-state">Mecanismo de avaliação ainda não rodou.</div>';
   const method = searchLog.method_applied || searchLog.method_requested || searchLog.method || '—';
   const coverage =
     searchLog.coverage_ratio == null ? '—' : formatPct(Number(searchLog.coverage_ratio) * 100, 1);

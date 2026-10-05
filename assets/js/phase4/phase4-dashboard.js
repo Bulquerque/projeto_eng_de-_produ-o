@@ -1,5 +1,6 @@
 import { loadPhase2Bundle } from '../core/data-loader.js';
 import { $, escapeHtml } from '../core/common.js';
+import { buildObjectivePreviewHtml } from './objective-preview-view.js';
 import { loadDefaultProfiles, cloneProfileAsObjective } from './objective-profile-library.js';
 import { buildObjective, buildObjectivePreviewText } from './objective-builder.js';
 import { runOptimization } from './scenario-optimizer.js';
@@ -90,8 +91,10 @@ function renderObjectivePreview() {
     objectiveName: $('objectiveName')?.value || 'Objetivo customizado',
     weights: currentWeights(),
   });
-  $('objectivePreview').innerHTML =
-    `<strong>${escapeHtml(state.objective.objective_name)}</strong><p>${escapeHtml(buildObjectivePreviewText(state.objective))}</p>${state.objective.valid ? '<span class="status-chip status-ok">objetivo válido</span>' : `<div class="alert-box error">${escapeHtml(state.objective.errors.join('; '))}</div>`}`;
+  $('objectivePreview').innerHTML = buildObjectivePreviewHtml({
+    objective: state.objective,
+    previewText: buildObjectivePreviewText(state.objective),
+  });
 }
 function renderBaseline() {
   $('baselinePhase4Cards').innerHTML = buildBaselineCardsHtml({
@@ -221,13 +224,13 @@ function runOpt() {
       }
       renderOptimizer();
       if (!String(state.optimizer.optimizer_status || '').startsWith('success')) {
-        log('Otimizador bloqueado', state.optimizer.errors || []);
-        alert((state.optimizer.errors || ['Falha na otimização']).join('; '));
+        log('Mecanismo de avaliação bloqueado', state.optimizer.errors || []);
+        alert((state.optimizer.errors || ['Falha ao gerar recomendações']).join('; '));
         return;
       }
       log('Busca discreta executada', state.optimizer.search_log);
     } catch (e) {
-      logError('Erro no otimizador', e.message);
+      logError('Erro no mecanismo de avaliação', e.message);
       alert(e.message);
     } finally {
       $('runOptimizer').disabled = false;

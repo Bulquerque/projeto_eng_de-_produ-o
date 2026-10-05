@@ -54,9 +54,34 @@ for (const companyId of ['empresa1','empresa2']) {
  if(!pkg.files.find(f=>f.filename.endsWith('stress_results.csv')).content.includes('tax_selected_period_year')) throw new Error('tax period missing from csv');
  if(!pkg.files.find(f=>f.filename.endsWith('sensitivity_results.csv'))) throw new Error('sensitivity csv missing');
  if(!pkg.files.find(f=>f.filename.endsWith('.html')).content.includes('Relatório executivo')) throw new Error('html missing report');
+ if(companyId.startsWith('empresa')) {
+   for(const file of pkg.files) {
+     const content=file.content.toLowerCase();
+     for(const marker of [`data/${companyId}`, '"flows"', '"flow_results"', '"core_data"', '"raw_rows"', '"password"', '"secret"']) {
+       if(content.includes(marker)) throw new Error(`${file.filename} leaked protected marker ${marker}`);
+     }
+   }
+ }
  const escapedPkg=buildExportPackage({companyId,decisionPackage:{company_id:companyId},stress:{stress_results:[{case_id:'a,b',warnings:['x','y'],errors:['quote"']} ]},audit,recommendation:rec,selectedScenario:selected,robustness,comparison:{saving_abs:1},workbookParity});
  const escapedCsv=escapedPkg.files.find(f=>f.filename.endsWith('stress_results.csv')).content;
- if(!escapedCsv.includes('"a,b"') || !escapedCsv.includes('"[""x"",""y""]"') || !escapedCsv.includes('[""quote')) throw new Error('stress csv escaping is invalid');
+ if(!escapedCsv.includes('"a,b"') || !escapedCsv.includes('warning_count') || !escapedCsv.includes('error_count')) throw new Error('stress csv projection is invalid');
+ const sentinelPkg=buildExportPackage({
+   companyId,
+   decisionPackage:{company_id:companyId,flows:['RAW_FLOW_SENTINEL'],password:'RAW_PASSWORD_SENTINEL'},
+   stress:{stress_results:[{case_id:'sentinel',flows:['RAW_FLOW_SENTINEL'],raw_rows:['RAW_ROWS_SENTINEL'],warnings:['x'],errors:[]}]},
+   audit:{company_id:companyId,data_sources:[`data/${companyId}/raw.json`],secret:'RAW_SECRET_SENTINEL'},
+   recommendation:rec,
+   selectedScenario:{...selected,flows:['RAW_FLOW_SENTINEL'],result:{...selected.result,raw_rows:['RAW_ROWS_SENTINEL']}},
+   robustness,
+   comparison:{saving_abs:1},
+   workbookParity,
+ });
+ for(const file of sentinelPkg.files) {
+   const content=file.content;
+   for(const marker of ['RAW_FLOW_SENTINEL','RAW_PASSWORD_SENTINEL','RAW_ROWS_SENTINEL','RAW_SECRET_SENTINEL',`data/${companyId}`]) {
+     if(content.includes(marker)) throw new Error(`${file.filename} leaked sentinel ${marker}`);
+   }
+ }
 }
 console.log('PHASE5_NODE_AUDIT_EXPORT_OK');
 """

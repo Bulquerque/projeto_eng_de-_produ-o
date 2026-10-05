@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-files = sorted((ROOT / 'assets/js/phase3').glob('*.js'))
+files = sorted((ROOT / 'assets/js/phase3').rglob('*.js'))
 assert files
 for f in files:
     subprocess.run(['node', '--check', str(f)], check=True, cwd=ROOT)

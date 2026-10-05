@@ -7,6 +7,7 @@
 
 # Dependências externas
 
-- `['ScenarioValidator', 'Recebe validade básica.']`
+Recebe resultados depois da simulação; a validação estrutural anterior é orquestrada pelo dashboard e pelo simulador.
+
 - `['ScenarioScoring', 'Entrega qualityScore para ranking.']`
 - `['ExplainabilityEngine', 'Entrega alertas para explicação.']`

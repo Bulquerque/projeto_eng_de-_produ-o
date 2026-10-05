@@ -249,15 +249,6 @@
     "phase": 3,
     "module": "ScenarioBuilder",
     "calls": [
-      "ScenarioValidator",
-      "Valida alterações."
-    ],
-    "file": "assets/js/phase3/scenario-builder.js"
-  },
-  {
-    "phase": 3,
-    "module": "ScenarioBuilder",
-    "calls": [
       "FlowBuilder",
       "Recria fluxos."
     ],
@@ -336,28 +327,10 @@
     "phase": 3,
     "module": "ScenarioPersistence",
     "calls": [
-      "ScenarioValidator",
-      "Valida antes de salvar/importar."
-    ],
-    "file": "assets/js/phase3/scenario-persistence.js"
-  },
-  {
-    "phase": 3,
-    "module": "ScenarioPersistence",
-    "calls": [
       "AuditTrail",
       "Registra origem do cenário importado/exportado."
     ],
     "file": "assets/js/phase3/scenario-persistence.js"
-  },
-  {
-    "phase": 3,
-    "module": "ScenarioQualityCheck",
-    "calls": [
-      "ScenarioValidator",
-      "Recebe validade básica."
-    ],
-    "file": "assets/js/phase3/scenario-quality-check.js"
   },
   {
     "phase": 3,
@@ -385,21 +358,9 @@
   },
   {
     "phase": 3,
-    "module": "ScenarioValidator",
-    "calls": [
-      "DataQualityPanel",
-      "Usa diagnóstico de dados."
-    ],
-    "file": "assets/js/phase3/scenario-validator.js"
-  },
-  {
-    "phase": 3,
-    "module": "ScenarioValidator",
-    "calls": [
-      "ScenarioQualityCheck",
-      "Envia warnings não bloqueantes."
-    ],
-    "file": "assets/js/phase3/scenario-validator.js"
+    "module": "ScenarioSimulator",
+    "calls": "ScenarioValidator",
+    "file": "assets/js/phase3/scenario-simulator.js"
   },
   {
     "phase": 4,
@@ -417,12 +378,6 @@
     "phase": 4,
     "module": "ConstraintEngine",
     "calls": "ScenarioQualityCheck",
-    "file": "assets/js/phase4/constraint-engine.js"
-  },
-  {
-    "phase": 4,
-    "module": "ConstraintEngine",
-    "calls": "ScenarioValidator",
     "file": "assets/js/phase4/constraint-engine.js"
   },
   {
@@ -976,5 +931,11 @@
       "Comparar contra base."
     ],
     "file": ""
+  },
+  {
+    "phase": 3,
+    "module": "ScenarioArenaDashboard",
+    "calls": "ScenarioValidator",
+    "file": "assets/js/phase3/scenario-arena-dashboard.js"
   }
 ]

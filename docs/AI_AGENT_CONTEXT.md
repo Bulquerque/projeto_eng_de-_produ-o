@@ -14,7 +14,7 @@ O simulador é estruturado em módulos independentes organizados por fases e uti
 ├── fase-1-validacao/               # Validação e integridade de dados iniciais
 ├── fase-2-baseline/                # Análise de Baseline e Paridade
 ├── fase-3-cenarios/                # Simulador de Cenários Logísticos Manuais
-├── fase-4-score-otimizador/        # Otimizador de Cenários (Algoritmo Genético/Procura Leve)
+├── fase-4-score-otimizador/        # Avaliação comparativa de cenários por critérios e restrições
 ├── fase-5-entrega-final/           # Dashboard executivo, stress-tests e auditorias finais
 │
 ├── assets/js/

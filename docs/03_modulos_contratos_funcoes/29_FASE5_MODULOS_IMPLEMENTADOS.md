@@ -11,7 +11,7 @@ Principais contratos:
 - `SensitivityEngine`: recebe variável e valores; retorna resultados por valor.
 - `RobustnessScorer`: recebe stress e qualidade; retorna `robustness_score`.
 - `RecommendationEngine`: recebe cenário, comparação, qualidade e robustez; retorna recomendação explicável.
-- `AuditTrailEngine`: recebe cenário, baseline, objetivo, fontes e resumo da otimização; retorna audit trail.
+- `AuditTrailEngine`: recebe cenário, baseline, objetivo, fontes e resumo da avaliação de alternativas; retorna audit trail.
 - `ExecutiveReportBuilder`: recebe pacote de decisão; retorna HTML executivo.
 - `ExportCenter`: recebe pacote de decisão; retorna arquivos JSON/CSV/HTML prontos para download.
 - `FinalQAChecker`: valida disponibilidade das fases, cenário, stress, recomendação e auditoria.

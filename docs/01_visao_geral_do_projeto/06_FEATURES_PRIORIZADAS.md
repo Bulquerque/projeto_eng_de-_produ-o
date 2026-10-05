@@ -14,7 +14,7 @@
 
 - Objective Builder.
 - Scenario Quality Score.
-- Otimizador leve.
+- Avaliação e classificação comparativa de cenários.
 - Stress test.
 - Explicação automática.
 - Audit trail.
