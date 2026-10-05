@@ -6,12 +6,23 @@
   "provenance": {
     "provider_kind": "mock",
     "source": "public_demo_fixture",
-    "synthetic": true
+    "synthetic": true,
+    "fiscal_model": {
+      "kind": "synthetic_demo_assumption",
+      "annual_revenue_by_flow": "annual_weight_kg × R$ 600/kg",
+      "current_tax_reference": 46000,
+      "fiscal_categories": "proxy categories; no NCM, CFOP or CST are asserted",
+      "decision_use": "demo_only"
+    }
   },
   "model": {
     "company_id": "empresa_mock",
     "scenario_id": "mock_baseline",
-    "active_cds": ["CD Demo Norte", "CD Demo Sul", "CD Demo Centro"],
+    "active_cds": [
+      "CD Demo Norte",
+      "CD Demo Sul",
+      "CD Demo Centro"
+    ],
     "baseline_ready": true
   },
   "flows": [
@@ -25,7 +36,9 @@
       "volume": 420,
       "annual_weight_kg": 420,
       "distance_km": 118,
-      "service_level": "D+1"
+      "service_level": "D+1",
+      "annual_revenue": 252000,
+      "fiscal_category": "default_goods"
     },
     {
       "origin": "Origem Demo B",
@@ -37,7 +50,9 @@
       "volume": 360,
       "annual_weight_kg": 360,
       "distance_km": 246,
-      "service_level": "D+2"
+      "service_level": "D+2",
+      "annual_revenue": 216000,
+      "fiscal_category": "default_goods"
     },
     {
       "origin": "Origem Demo A",
@@ -49,7 +64,9 @@
       "volume": 290,
       "annual_weight_kg": 290,
       "distance_km": 164,
-      "service_level": "D+1"
+      "service_level": "D+1",
+      "annual_revenue": 174000,
+      "fiscal_category": "essential_goods"
     },
     {
       "origin": "Origem Demo C",
@@ -61,7 +78,9 @@
       "volume": 315,
       "annual_weight_kg": 315,
       "distance_km": 302,
-      "service_level": "D+2"
+      "service_level": "D+2",
+      "annual_revenue": 189000,
+      "fiscal_category": "default_goods"
     },
     {
       "origin": "Origem Demo D",
@@ -73,7 +92,9 @@
       "volume": 240,
       "annual_weight_kg": 240,
       "distance_km": 388,
-      "service_level": "D+3"
+      "service_level": "D+3",
+      "annual_revenue": 144000,
+      "fiscal_category": "default_goods"
     },
     {
       "origin": "Origem Demo B",
@@ -85,7 +106,9 @@
       "volume": 185,
       "annual_weight_kg": 185,
       "distance_km": 274,
-      "service_level": "D+2"
+      "service_level": "D+2",
+      "annual_revenue": 111000,
+      "fiscal_category": "default_goods"
     },
     {
       "origin": "Origem Demo E",
@@ -97,7 +120,9 @@
       "volume": 155,
       "annual_weight_kg": 155,
       "distance_km": 92,
-      "service_level": "D+1"
+      "service_level": "D+1",
+      "annual_revenue": 93000,
+      "fiscal_category": "essential_goods"
     },
     {
       "origin": "Origem Demo C",
@@ -109,7 +134,9 @@
       "volume": 130,
       "annual_weight_kg": 130,
       "distance_km": 341,
-      "service_level": "D+3"
+      "service_level": "D+3",
+      "annual_revenue": 78000,
+      "fiscal_category": "default_goods"
     },
     {
       "origin": "Origem Demo F",
@@ -121,7 +148,9 @@
       "volume": 110,
       "annual_weight_kg": 110,
       "distance_km": 512,
-      "service_level": "D+3"
+      "service_level": "D+3",
+      "annual_revenue": 66000,
+      "fiscal_category": "default_goods"
     },
     {
       "origin": "Origem Demo G",
@@ -133,7 +162,9 @@
       "volume": 95,
       "annual_weight_kg": 95,
       "distance_km": 688,
-      "service_level": "D+4"
+      "service_level": "D+4",
+      "annual_revenue": 57000,
+      "fiscal_category": "default_goods"
     }
   ],
   "costs": {
@@ -153,10 +184,30 @@
       "tax_regime": "current",
       "decision_use": "demo_only",
       "period": "2026-demo-current",
-      "available_periods": ["2026-demo-current", "2027-demo-reform"],
+      "available_periods": [
+        "2026-demo-current",
+        "2027-demo-reform"
+      ],
       "coverage_note": "Parâmetros tributários sintéticos para demonstrar a troca de período.",
-      "tax_coverage": { "coverage_limited": false, "complete_fiscal_coverage_ratio": 1 }
+      "tax_coverage": {
+        "coverage_limited": true,
+        "complete_fiscal_coverage_ratio": 0,
+        "decision_use": "exploratory_only",
+        "coverage_note": "All demo flows have synthetic revenue; fiscal classification uses category proxies."
+      },
+      "total_tax": 46000,
+      "total_tax_impact": 46000,
+      "total_current_tax": 46000,
+      "synthetic_model_assumption": "R$ 46.000 over R$ 1.380.000 synthetic annual revenue"
     }
   },
-  "warnings": ["Dados sintéticos para demonstração visual; não representam uma empresa observada."]
+  "warnings": [
+    "Dados sintéticos para demonstração visual; não representam uma empresa observada."
+  ],
+  "flow_summary": {
+    "total_annual_revenue": 1380000,
+    "revenue_provenance": "synthetic_demo_assumption",
+    "unit_revenue_per_kg": 600,
+    "decision_use": "demo_only"
+  }
 }

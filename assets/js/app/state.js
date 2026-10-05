@@ -8,6 +8,7 @@ export function createEmptyData() {
     baseline: null,
     scenarios: [],
     saved_scenarios: [],
+    analysis_runs: { simulation: null, optimization: null },
     selected_scenario: null,
     scenario_result: null,
     scenario_quality: null,
@@ -27,6 +28,7 @@ export function createEmptyData() {
 }
 
 export function clearScenarioResults(state) {
+  // Keep the latest successful execution of each kind for side-by-side comparison.
   Object.assign(state.data, {
     selected_scenario: null,
     scenario_result: null,

@@ -83,7 +83,49 @@ function normalizeDemoBaselineTax(baseline, baselineScenario) {
     eligibilityProbe?.costs?.tax_details?.tax_coverage ||
     null;
   const eligibleFlowCount = Number(coverage?.eligible_flow_count);
-  if (!Number.isFinite(eligibleFlowCount) || eligibleFlowCount > 0) return baseline;
+  if (Number.isFinite(eligibleFlowCount) && eligibleFlowCount > 0) {
+    const sourceCosts = baseline?.costs?.costs || {};
+    const sourceTaxResults = baseline?.tax_results || {};
+    const storedTaxResults = sourceTaxResults.tax_results || {};
+    const calculatedTaxResults = eligibilityProbe?.tax_results || {};
+    const taxImpact = Number(
+      eligibilityProbe?.costs?.tax_impact ?? calculatedTaxResults.total_tax_impact ?? 0
+    );
+    const logisticsTotal = Number(sourceCosts.total_logistics_cost);
+    const warnings = [
+      ...(baseline.warnings || []),
+      ...(eligibilityProbe.warnings || []),
+      'A receita fiscal da empresa_mock é sintética; categorias proxy deixam a classificação fiscal incompleta.',
+    ];
+    return {
+      ...baseline,
+      costs: {
+        ...baseline.costs,
+        costs: {
+          ...sourceCosts,
+          tax_impact: taxImpact,
+          total_with_tax: Number.isFinite(logisticsTotal)
+            ? logisticsTotal + taxImpact
+            : sourceCosts.total_with_tax,
+        },
+      },
+      tax_results: {
+        ...sourceTaxResults,
+        tax_results: {
+          ...storedTaxResults,
+          ...calculatedTaxResults,
+          total_tax: taxImpact,
+          total_tax_impact: taxImpact,
+          total_current_tax: calculatedTaxResults.total_current_tax ?? taxImpact,
+          tax_source_classification: 'synthetic_fixture',
+          decision_use: 'exploratory_only',
+          tax_coverage: coverage,
+        },
+      },
+      warnings: [...new Set(warnings)],
+    };
+  }
+  if (!Number.isFinite(eligibleFlowCount)) return baseline;
 
   const sourceCosts = baseline?.costs?.costs || {};
   const logisticsTotal = Number(sourceCosts.total_logistics_cost);
@@ -139,6 +181,7 @@ function normalizeDemoBaselineTax(baseline, baselineScenario) {
 function markSyntheticResult(result) {
   if (!result) return result;
   const taxResults = result.tax_results || {};
+  const hasEligibleFiscalFlows = Number(taxResults.tax_coverage?.eligible_flow_count) > 0;
   return {
     ...result,
     company_id: COMPANY_ID,
@@ -167,8 +210,9 @@ function markSyntheticResult(result) {
       demo_only: true,
       decision_use: taxResults.decision_use || 'exploratory_only',
       simulation_scope: 'exploratory_only',
-      simulation_scope_label:
-        'Impacto tributário não calculado: fixture sem cobertura fiscal elegível',
+      simulation_scope_label: hasEligibleFiscalFlows
+        ? 'Impacto tributário calculado com receitas e categorias proxy sintéticas; uso apenas demonstrativo.'
+        : 'Impacto tributário indisponível: a fixture não tem receita fiscal elegível.',
     },
   };
 }
@@ -181,9 +225,9 @@ const PROVIDER_CAPABILITIES = Object.freeze({
     supported: true,
     engine: 'phase4',
     controls: ['profileId', 'max_candidates', 'seed', 'constraints'],
-    unavailable_metrics: {
+    demo_only_metrics: {
       tax_impact:
-        'A amostra não possui receita fiscal elegível; o componente fiscal fica em zero e a comparação demo é logística.',
+        'Calculado com receita e categoria proxy sintéticas; não representa imposto observado nem uma apuração fiscal.',
     },
   },
   risk: {
@@ -200,8 +244,10 @@ const PROVIDER_CAPABILITIES = Object.freeze({
       'sensitivity_y',
     ],
     unavailable_controls: {
-      scatter_driver_tax_multiplier: 'Sem impacto tributário elegível na fixture demo.',
-      tax_reform_stress: 'A fixture não possui fluxos elegíveis para comparar reforma tributária.',
+      scatter_driver_tax_multiplier:
+        'Impacto tributário sintético e exploratório; não reflete tributo observado.',
+      tax_reform_stress:
+        'A análise usa categorias proxy sintéticas e não valida uma apuração fiscal.',
     },
     uncertainty_source: 'model_prior',
   },
@@ -210,10 +256,10 @@ const PROVIDER_CAPABILITIES = Object.freeze({
     decision_use: 'exploratory_only',
     complete_fiscal_coverage: false,
     tax_reform_scenarios: true,
-    tax_reform_calculation: false,
-    baseline_policy: 'zero_tax_when_engine_finds_no_eligible_flows',
+    tax_reform_calculation: true,
+    baseline_policy: 'synthetic_proxy_revenue_calculation_demo_only',
     reason:
-      'A linha do tempo legal pode ser explorada em cenários demonstrativos; a fixture não tem receita e classificação fiscal elegíveis, então o impacto tributário calculado permanece indisponível.',
+      'O cálculo usa receitas e categorias fiscais sintéticas; NCM, CFOP e CST não são inventados e a saída é somente demonstrativa, sem validação fiscal oficial.',
   },
   historical_uncertainty: {
     supported: false,

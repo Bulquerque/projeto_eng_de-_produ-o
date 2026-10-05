@@ -24,7 +24,7 @@ def test_app_foundation_contracts():
         import { COMPANY_REGISTRY, assertCompanyPolicy } from './assets/js/app/company-registry.js';
         import { buildAppConfig, resolveInitialCompany } from './assets/js/app/config.js';
         import { isKnownRoute, normalizeRoute, parseRoute, replaceCompanyQuery } from './assets/js/app/router.js';
-        import { clearScenarioResults, createEmptyData, createInitialState, createStateStore, commitProviderSnapshot, getSafeStateSnapshot } from './assets/js/app/state.js';
+        import { clearScenarioResults, createEmptyData, createInitialState, createStateStore, commitProviderSnapshot, getSafeStateSnapshot, resetCompanyScopedState } from './assets/js/app/state.js';
         import { formatMetric, readMetric } from './assets/js/app/metric-registry.js';
 
         assert.equal(COMPANY_REGISTRY.empresa1.provider, 'project');
@@ -43,11 +43,18 @@ def test_app_foundation_contracts():
         const secondData = createEmptyData();
         firstData.scenarios.push({ scenario_id: 'isolated' });
         assert.deepEqual(secondData.scenarios, []);
+        store.getState().data.analysis_runs.simulation = { run_id: 'keep-simulation' };
+        store.getState().data.analysis_runs.optimization = { run_id: 'keep-optimization' };
         for (const key of ['selected_scenario','scenario_result','optimizer','audit','final_qa','release','export_package','monte_carlo']) { store.getState().data[key] = { stale: true }; }
         store.getState().meta.result_kind = 'optimization';
         clearScenarioResults(store.getState());
         for (const key of ['selected_scenario','scenario_result','optimizer','audit','final_qa','release','export_package','monte_carlo']) { assert.equal(store.getState().data[key], null, key); }
         assert.equal(store.getState().meta.result_kind, null);
+        assert.equal(store.getState().data.analysis_runs.simulation.run_id, 'keep-simulation');
+        assert.equal(store.getState().data.analysis_runs.optimization.run_id, 'keep-optimization');
+        resetCompanyScopedState(store.getState(), 'empresa2');
+        assert.deepEqual(store.getState().data.analysis_runs, { simulation: null, optimization: null });
+        store.getState().context.company_id = 'empresa1';
         assert.equal(normalizeRoute('#/network/optimizer/results'), '#/network/results/summary');
         assert.equal(normalizeRoute('#/network/scenarios/risk/advanced'), '#/network/results/risk/advanced');
         assert.equal(replaceCompanyQuery('empresa1'), null);

@@ -83,7 +83,7 @@ export function renderResultsSummary(state) {
     const message = blocked
       ? `<section class="ni-workspace-alert ni-workspace-alert--negative" role="alert" data-testid="decision-blocked"><h2>Não foi possível concluir a otimização</h2>${issues.length ? `<ul>${issues.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : `<p>${escapeHtml(decision.recommendation?.executive_summary || 'Revise as restrições e execute novamente.')}</p>`}<a href="#/network/trust/validation" data-route="#/network/trust/validation">Ver verificações</a></section>`
       : emptyState('Simule um cenário ou execute uma otimização para gerar resultados.');
-    return `<section class="ni-workspace ni-workspace-page ni-results" data-testid="page-results-summary"><header class="ni-page-heading"><h1>Resultados</h1></header>${sectionTabs('results', state.ui?.route)}${message}<div class="ni-actions"><a class="ni-button primary" href="#/network/scenarios/build" data-route="#/network/scenarios/build">Ir para simulação</a><a class="ni-button secondary" href="#/network/optimizer/configure" data-route="#/network/optimizer/configure">Ir para otimização</a></div></section>`;
+    return `<section class="ni-workspace ni-workspace-page ni-results" data-testid="page-results-summary"><header class="ni-page-heading"><h1>Resultados</h1></header>${sectionTabs('results', state.ui?.route)}${message}</section>`;
   }
 
   const currentCosts = result.costs || {};
@@ -115,9 +115,10 @@ export function renderResultsSummary(state) {
     ['blocked', 'failed', 'not_recommended'].includes(
       decision.recommendation?.recommendation_status
     ) || decision.final_qa?.final_qa_status === 'failed';
-  const alert = blocked
-    ? `<section class="ni-workspace-alert ni-workspace-alert--negative" role="status"><strong>${escapeHtml(businessLabel(decision.recommendation?.recommendation_status || decision.final_qa?.final_qa_status))}</strong><p>Consulte Dados e metodologia para ver as ressalvas que impedem uma decisão segura.</p><a class="ni-text-link" href="#/network/trust/overview" data-route="#/network/trust/overview">Ver decisão e confiabilidade →</a></section>`
-    : '';
+  const alert =
+    blocked && state.context?.provider_kind !== 'mock'
+      ? `<section class="ni-workspace-alert ni-workspace-alert--negative" role="status"><strong>${escapeHtml(businessLabel(decision.recommendation?.recommendation_status || decision.final_qa?.final_qa_status))}</strong><p>Consulte Dados e metodologia para ver as ressalvas que impedem uma decisão segura.</p><a class="ni-text-link" href="#/network/trust/overview" data-route="#/network/trust/overview">Ver decisão e confiabilidade →</a></section>`
+      : '';
   const exportFiles = decision.export_package?.files || [];
   const actions = `<details class="ni-workspace-secondary-analytics"><summary>Salvar, exportar e verificar</summary><div class="ni-actions">${state.data?.selected_scenario && result ? '<button type="button" class="ni-button secondary" data-action="save-current-scenario" data-testid="scenario-save">Salvar cenário</button><button type="button" class="ni-button secondary" data-action="export-current-scenario" data-testid="scenario-export">Exportar cenário JSON</button>' : ''}${exportFiles.length ? '<button type="button" class="ni-button secondary" data-action="open-export">Abrir pacote de entrega</button>' : ''}<a class="ni-button secondary" href="#/network/trust/validation" data-route="#/network/trust/validation">Ver verificações</a></div></details>`;
   const summary = `<section class="ni-results-summary"><div class="ni-results-decision"><div><span class="ni-results-kind">${kind}</span><h2>${escapeHtml(scenario.scenario_name || 'Cenário avaliado')}</h2><p>Comparado com ${escapeHtml(baseline.name)}</p></div><div class="ni-results-impact"><span>${taxUnavailable ? 'Economia logística' : 'Economia ante a referência'}</span><strong>${saving == null ? '—' : escapeHtml(formatBRL(saving, true))}</strong><small>${savingPct == null ? '—' : escapeHtml(formatPct(savingPct))}</small></div></div><div class="ni-workspace-kpis ni-results-metrics">${kpi(taxUnavailable ? 'Custo logístico' : 'Custo total', total == null ? '—' : formatBRL(total, true), '', 'result-total')}${kpi('Referência', referenceTotal == null ? '—' : formatBRL(referenceTotal, true))}${kpi('CDs ativos', activeCdCount == null ? '—' : formatNumber(activeCdCount))}${kpi('Estado', businessLabel(result.calculation_status || result.simulation_status || state.meta?.status))}</div></section>`;
@@ -153,6 +154,24 @@ export function comparisonCandidates(state) {
       risk_level: row.quality?.risk_level,
     });
   }
+  for (const kind of ['simulation', 'optimization']) {
+    const run = state.data?.analysis_runs?.[kind];
+    if (!run?.scenario || !run?.result || run.company_id !== state.context?.company_id) continue;
+    const runId = `saved-${kind}:${run.run_id}`;
+    const taxResults = run.result.tax_results || {};
+    byId.set(runId, {
+      scenario_id: runId,
+      scenario_name: `${kind === 'simulation' ? 'Simulação' : 'Otimização'} · ${run.scenario.scenario_name || 'Última execução'}`,
+      total_with_tax: run.result.total_with_tax ?? run.result.costs?.total_with_tax,
+      active_cds_count: run.scenario.changes?.active_cds?.length,
+      risk_level: run.quality?.risk_level || run.result.risk_level,
+      robustness_score: run.quality?.robustness_score,
+      complete_fiscal_coverage_ratio: taxResults.tax_coverage?.complete_fiscal_coverage_ratio,
+      tax_coverage: taxResults.tax_coverage,
+      preserved_execution: true,
+      execution_kind: kind,
+    });
+  }
   const selected = decision.scenario;
   if (selected?.scenario_id && !byId.has(selected.scenario_id)) {
     byId.set(selected.scenario_id, {
@@ -172,7 +191,9 @@ export function renderResultsComparison(state) {
   const activeId = state.context?.selected_scenario_id;
   const metric = (candidate, key) =>
     candidate[key] == null ? '—' : escapeHtml(formatBRL(candidate[key], true));
-  const candidates = rows.filter((row) => row.scenario_id !== baseline.id);
+  const candidates = rows.filter(
+    (row) => row.scenario_id !== baseline.id && !row.preserved_execution
+  );
   const headings = rows
     .map((row) => {
       const isBaseline = row.scenario_id === baseline.id;

@@ -41,7 +41,7 @@ export function renderOptimizerConfigure(state) {
       `<label class="ni-workspace-profile"><input type="radio" name="profile_id" value="${id}"${String(draft.profile_id || 'balanced') === id ? ' checked' : ''}><span class="ni-workspace-profile-content"><strong>${title}</strong><span>${description}</span></span></label>`
   ).join('');
   const taxContext = activeTaxYear
-    ? escapeHtml(selectedScenario?.changes?.tax_regime_label || `Ano tributário ${activeTaxYear}`)
+    ? `${activeTaxYear} · ${escapeHtml(selectedScenario?.changes?.tax_regime_label || 'Reforma tributária')}`
     : 'Base atual · 2025';
   const customPresets = (state.ui?.optimizer_presets || [])
     .map(

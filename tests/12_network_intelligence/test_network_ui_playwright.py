@@ -111,6 +111,7 @@ def test_demo_journey(base, browser):
     ready(page)
     assert_shell(page)
     assert 'Recomendado' not in page.locator('#networkPage').inner_text()
+    assert '10/10 fluxos' in page.locator('#networkPage').inner_text()
     assert page.locator('#niDemoBadge').count() == 0
     assert page.locator('#niLockButton').is_hidden()
     assert page.locator('#networkPage').get_by_text('Nível de serviço', exact=True).count() == 0
@@ -139,6 +140,8 @@ def test_demo_journey(base, browser):
     )
     route(page, 'overview/tax')
     assert page.locator('.ni-tax-overview-metrics > .ni-kpi').count() == 3
+    assert '10 fluxos · sintética' in page.locator('.ni-tax-overview-metrics').inner_text()
+    assert 'não representa apuração fiscal' in page.locator('#networkPage').inner_text()
     assert page.locator('#networkPage').get_by_text('Uso dos dados', exact=True).count() == 0
     assert page.locator('.ni-tax-overview-metrics').evaluate('el => el.scrollWidth <= el.clientWidth + 1')
     page.set_viewport_size({'width': 1440, 'height': 900})
@@ -148,6 +151,8 @@ def test_demo_journey(base, browser):
     route(page, 'results/summary')
     assert page.locator('[data-testid="optimizer-ranking"] tbody tr').count() == 0
     assert page.locator('[data-action="open-export"]').count() == 0
+    assert page.locator('#networkPage a[data-route="#/network/scenarios/build"]').count() == 0
+    assert page.locator('#networkPage a[data-route="#/network/optimizer/configure"]').count() == 0
     route(page, 'results/comparison')
     assert page.locator('#niComparisonCostChart').count() == 0
     page.set_viewport_size({'width': 390, 'height': 844})
@@ -171,7 +176,7 @@ def test_demo_journey(base, browser):
     assert page.locator('input[name="tax_year"]').input_value() == '2031'
     assert page.locator('[data-testid="active-tax-regime"]').inner_text() == 'Transição 2031'
     route(page, 'optimizer/configure')
-    assert page.locator('[data-testid="optimizer-tax-context"]').inner_text() == 'Transição 2031'
+    assert page.locator('[data-testid="optimizer-tax-context"]').inner_text() == '2031 · Transição 2031'
     assert page.locator('input[name="tax_year"]').input_value() == '2031'
     route(page, 'scenarios/build')
     page.locator('#niScenarioSelect').select_option('')
@@ -195,6 +200,22 @@ def test_demo_journey(base, browser):
     route(page, 'scenarios/build')
     simulate(page)
     assert page.locator('[data-testid="result-total"]').inner_text() != cost_a
+    # Run one optimization after a simulation and compare both saved executions together.
+    route(page, 'optimizer/configure')
+    open_details(page, 'input[name="max_candidates"]')
+    page.locator('input[name="max_candidates"]').fill('100')
+    page.locator('input[name="risk_iterations"]').fill('50')
+    page.locator('[data-testid="optimizer-run"]').click()
+    page.locator('[data-testid="optimizer-ranking"] tbody tr').first.wait_for(timeout=90000)
+    route(page, 'results/comparison')
+    comparison_text = page.locator('#networkPage').inner_text()
+    assert 'Referência' in comparison_text
+    assert 'Simulação ·' in comparison_text
+    assert 'Otimização ·' in comparison_text
+    assert page.locator('#niComparisonCostChart').is_visible()
+    assert page.locator('[data-action="select-compared-scenario"][data-scenario-id^="saved-"]').count() == 0
+    route(page, 'results/summary')
+    assert page.locator('[data-testid="decision-blocked"]').count() == 0
     route(page, 'scenarios/build')
     open_details(page, '[data-testid="scenario-save"]')
     page.locator('[data-testid="scenario-save"]').click()
@@ -267,8 +288,8 @@ def test_demo_journey(base, browser):
     ready(page)
     rows = page.locator('[data-testid="optimizer-ranking"] tbody tr')
     assert rows.count() >= 1
-    assert 'Economia logística' in page.locator('.ni-results-impact').inner_text()
-    assert 'sem base elegível' in page.locator('.ni-results-reference').inner_text()
+    assert 'Economia ante a referência' in page.locator('.ni-results-impact').inner_text()
+    assert 'Tributos' in page.locator('.ni-results-reference').inner_text()
     for text in rows.all_text_contents():
         assert 'R$' in text, text
     # Actual candidate selection must survive the complete decision pipeline.

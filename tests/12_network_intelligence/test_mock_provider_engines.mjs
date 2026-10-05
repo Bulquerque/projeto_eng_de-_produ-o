@@ -19,10 +19,10 @@ assert.equal(snapshot.meta.release_policy, 'demo_only');
 assert.equal(snapshot.meta.capabilities.historical_uncertainty.supported, false);
 assert.equal(snapshot.meta.capabilities.fiscal.decision_use, 'exploratory_only');
 assert.equal(snapshot.meta.capabilities.fiscal.tax_reform_scenarios, true);
-assert.equal(snapshot.meta.capabilities.fiscal.tax_reform_calculation, false);
+assert.equal(snapshot.meta.capabilities.fiscal.tax_reform_calculation, true);
 assert.equal(
   snapshot.meta.capabilities.fiscal.baseline_policy,
-  'zero_tax_when_engine_finds_no_eligible_flows'
+  'synthetic_proxy_revenue_calculation_demo_only'
 );
 await assert.rejects(provider.init({ company_id: 'empresa1' }), /Provider incompatível/);
 
@@ -43,15 +43,18 @@ assert.equal(baselineRun.result.simulation_status, 'success');
 assert.equal(baselineRun.result.decision_use, 'demo_only');
 assert.equal(baselineRun.result.tax_results.tax_source_classification, 'synthetic_fixture');
 assert.equal(provider.fixtures.baseline.costs.costs.total_logistics_cost, 290000);
-assert.equal(provider.fixtures.baseline.costs.costs.tax_impact, 0);
-assert.equal(provider.fixtures.baseline.costs.costs.total_with_tax, 290000);
-assert.equal(baselineRun.result.costs.tax_impact, 0);
-assert.equal(baselineRun.result.total_with_tax, 290000);
-assert.equal(baselineRun.result.tax_results.tax_coverage.eligible_flow_count, 0);
+assert.equal(provider.fixtures.baseline.costs.costs.tax_impact, 46000);
+assert.equal(provider.fixtures.baseline.costs.costs.total_with_tax, 336000);
+assert.equal(baselineRun.result.costs.tax_impact, 46000);
+assert.equal(baselineRun.result.total_with_tax, 336000);
+assert.equal(baselineRun.result.tax_results.tax_coverage.eligible_flow_count, 10);
+assert.equal(baselineRun.result.tax_results.tax_coverage.complete_fiscal_coverage_ratio, 0);
 assert.equal(baselineRun.result.tax_results.tax_coverage.coverage_limited, true);
 assert.equal(baselineRun.result.tax_results.decision_use, 'exploratory_only');
 assert.ok(
-  provider.fixtures.baseline.warnings.some((warning) => /somente custos logísticos/.test(warning))
+  provider.fixtures.baseline.warnings.some((warning) =>
+    /categoria.*proxy|proxy.*sintética/i.test(warning)
+  )
 );
 assert.equal(
   baselineRun.result.total_with_tax,
@@ -82,9 +85,9 @@ assert.equal(annualDemoRun.scenario.changes.tax_year, 2030);
 assert.equal(annualDemoRun.result.demo_only, true);
 assert.equal(annualDemoRun.result.simulation_scope, 'exploratory_only');
 assert.equal(annualDemoRun.result.tax_results.simulation_scope, 'exploratory_only');
-assert.equal(annualDemoRun.result.tax_results.tax_coverage.eligible_flow_count, 0);
+assert.equal(annualDemoRun.result.tax_results.tax_coverage.eligible_flow_count, 10);
 assert.equal(annualDemoRun.result.tax_results.decision_use, 'exploratory_only');
-assert.equal(annualDemoRun.result.costs.tax_impact, 0);
+assert.ok(annualDemoRun.result.costs.tax_impact > 0);
 await assert.rejects(
   provider.runScenario({
     scenario: {
@@ -185,13 +188,16 @@ const twoCdCandidates = defaultOptimization.scored_scenarios.filter(
 );
 assert.ok(twoCdCandidates.length > 0, 'fixture engine search should include a 2-CD candidate');
 for (const row of twoCdCandidates) {
-  assert.equal(row.result.costs.tax_impact, 0);
-  assert.equal(row.result.tax_results.total_tax_impact, 0);
-  assert.equal(row.result.total_with_tax, row.result.costs.total_logistics_cost);
+  assert.ok(row.result.costs.tax_impact > 0);
+  assert.equal(row.result.tax_results.total_tax_impact, row.result.costs.tax_impact);
   assert.equal(
-    290000 - row.result.total_with_tax,
-    290000 - row.result.costs.total_logistics_cost,
-    'demo savings must be explained only by logistic costs when fiscal eligibility is zero'
+    row.result.total_with_tax,
+    row.result.costs.total_logistics_cost + row.result.costs.tax_impact
+  );
+  assert.equal(
+    row.result.total_with_tax,
+    row.result.costs.total_logistics_cost + row.result.costs.tax_impact,
+    'demo totals must reconcile logistics and synthetic tax components'
   );
 }
 const constrained = await provider.runOptimization({

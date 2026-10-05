@@ -218,6 +218,16 @@ function initializeNetworkIntelligence() {
       };
       state.data.optimizer =
         packageResult.optimizer || activeProvider.getDomainContext()?.optimizer || null;
+      state.data.analysis_runs ||= { simulation: null, optimization: null };
+      state.data.analysis_runs.optimization = {
+        run_id: `optimization-${Date.now()}`,
+        company_id: state.context.company_id,
+        created_at: new Date().toISOString(),
+        scenario: structuredClone(selectedScenario),
+        result: structuredClone(selectedResult),
+        quality: structuredClone(selected?.quality || null),
+        optimizer: structuredClone(packageResult.optimizer || null),
+      };
       state.data.selected_scenario = selectedScenario;
       state.data.scenario_result = selectedResult;
       state.data.scenario_quality = selected?.quality || null;
@@ -607,6 +617,15 @@ function initializeNetworkIntelligence() {
           const result = output.result || null;
           store.update((state) => {
             clearScenarioResults(state);
+            state.data.analysis_runs ||= { simulation: null, optimization: null };
+            state.data.analysis_runs.simulation = {
+              run_id: `simulation-${Date.now()}`,
+              company_id: state.context.company_id,
+              created_at: new Date().toISOString(),
+              scenario: structuredClone(scenario),
+              result: structuredClone(result),
+              quality: structuredClone(output.quality || null),
+            };
             state.data.selected_scenario = scenario;
             state.data.scenario_result = result;
             state.data.scenario_quality = output.quality || null;
