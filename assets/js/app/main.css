@@ -904,6 +904,18 @@ body.network-ui-active > #cryptoLockButton[hidden] { display: none !important; }
 .ni-workspace-kpis.ni-results-metrics > .ni-kpi strong { margin: 3px 0 0; font-size: 17px; }
 .ni-workspace-kpis.ni-results-metrics.ni-overview-summary-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .ni-workspace-kpis.ni-tax-overview-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ni-reference-context {
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border-left: 3px solid var(--ni-green);
+  border-radius: 0 8px 8px 0;
+  background: #eef8f5;
+  color: #35575b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.ni-cost-logistics-charts { margin-top: 12px; }
+.ni-cost-logistics-charts > .ni-workspace-panel { min-width: 0; }
 .ni-workspace-scope-list.ni-tax-summary-list { grid-template-columns: 1fr; }
 .ni-workspace-scope-list.ni-tax-summary-list > div { align-items: baseline; flex-wrap: nowrap; }
 .ni-tax-summary-list dd { flex: 0 1 58%; min-width: 150px; overflow-wrap: break-word; }

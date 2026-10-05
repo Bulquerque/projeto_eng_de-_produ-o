@@ -111,11 +111,11 @@ def test_demo_journey(base, browser):
     ready(page)
     assert_shell(page)
     assert 'Recomendado' not in page.locator('#networkPage').inner_text()
-    assert '10/10 fluxos' in page.locator('#networkPage').inner_text()
+    assert '10/10 fluxos' not in page.locator('#networkPage').inner_text()
     assert page.locator('#niDemoBadge').count() == 0
     assert page.locator('#niLockButton').is_hidden()
     assert page.locator('#networkPage').get_by_text('Nível de serviço', exact=True).count() == 0
-    assert page.locator('#niScenarioSelect').get_attribute('aria-label') == 'Selecionar cenário ativo'
+    assert page.locator('#niScenarioSelect').get_attribute('aria-label') == 'Selecionar cenário para editar'
     year_options = page.locator('#niScenarioSelect option').evaluate_all(
         'options => options.map(o => [o.value, o.textContent.trim(), o.disabled])'
     )
@@ -140,7 +140,10 @@ def test_demo_journey(base, browser):
     )
     route(page, 'overview/tax')
     assert page.locator('.ni-tax-overview-metrics > .ni-kpi').count() == 3
-    assert '10 fluxos · sintética' in page.locator('.ni-tax-overview-metrics').inner_text()
+    assert 'Estimativa ·' in page.locator('.ni-tax-overview-metrics').inner_text()
+    assert page.locator('.ni-tax-overview-metrics .ni-kpi span').nth(2).text_content().strip() == 'Tributos estimados'
+    assert 'Ano da referência' in page.locator('#networkPage').inner_text()
+    assert 'Referência de dados' not in page.locator('#networkPage').inner_text()
     assert 'não representa apuração fiscal' in page.locator('#networkPage').inner_text()
     assert page.locator('#networkPage').get_by_text('Uso dos dados', exact=True).count() == 0
     assert page.locator('.ni-tax-overview-metrics').evaluate('el => el.scrollWidth <= el.clientWidth + 1')
@@ -148,6 +151,8 @@ def test_demo_journey(base, browser):
     route(page, 'overview/costs')
     assert page.locator('#niCostChart').is_visible()
     assert page.locator('#niCostChart').get_attribute('aria-label')
+    assert page.locator('#niCostVolumeByCdChart').is_visible()
+    assert page.locator('#niCostDistanceHistogramChart').is_visible()
     route(page, 'results/summary')
     assert page.locator('[data-testid="optimizer-ranking"] tbody tr').count() == 0
     assert page.locator('[data-action="open-export"]').count() == 0
@@ -178,6 +183,19 @@ def test_demo_journey(base, browser):
     route(page, 'optimizer/configure')
     assert page.locator('[data-testid="optimizer-tax-context"]').inner_text() == '2031 · Transição 2031'
     assert page.locator('input[name="tax_year"]').input_value() == '2031'
+    route(page, 'overview/summary')
+    assert page.locator('#niScenarioSelect').input_value() == 'tax-year:2031'
+    assert (
+        'Referência exibida: 2025. Ano tributário 2031 aberto para edição'
+        in page.locator('[data-testid="reference-context"]').inner_text()
+    )
+    route(page, 'overview/tax')
+    assert 'Ano da referência' in page.locator('#networkPage').inner_text()
+    assert 'Período selecionado' not in page.locator('#networkPage').inner_text()
+    route(page, 'overview/costs')
+    assert page.locator('[data-testid="reference-context"]').is_visible()
+    assert page.locator('#niCostVolumeByCdChart').is_visible()
+    assert page.locator('#niCostDistanceHistogramChart').is_visible()
     route(page, 'scenarios/build')
     page.locator('#niScenarioSelect').select_option('')
     assert page.locator('input[name="active_cds"]:checked').count() == 3

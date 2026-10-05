@@ -27,18 +27,25 @@ function page(title, testId, body, state) {
   return `<section class="ni-workspace ni-workspace-page ni-overview" data-testid="${testId}"><header class="ni-page-heading"><h1>${title}</h1></header>${sectionTabs('overview', state.ui?.route)}${body}</section>`;
 }
 
+function referenceContext(state) {
+  const draft = state.ui?.scenario_draft;
+  if (!draft)
+    return '<p class="ni-reference-context" data-testid="reference-context">Valores da base de referência · 2025</p>';
+  const taxYear = Number(draft.changes?.tax_year);
+  const target =
+    taxYear >= 2026 && taxYear <= 2033
+      ? `Ano tributário ${taxYear}`
+      : draft.scenario_name || 'cenário selecionado';
+  return `<p class="ni-reference-context" data-testid="reference-context">Referência exibida: 2025. ${escapeHtml(target)} aberto para edição; veja o resultado após executar.</p>`;
+}
+
 export function renderOverviewSummary(state) {
   const { model, costs, tax, flows } = baselineParts(state);
   const activeCds = Array.isArray(model.active_cds) ? model.active_cds : [];
   const total = costs.total_with_tax;
   const isDemo = state.context?.provider_kind === 'mock';
   const taxUnavailable = isDemo && tax.tax_coverage?.eligible_flow_count === 0;
-  const fiscalCoverage = isDemo
-    ? `${formatNumber(tax.tax_coverage?.eligible_flow_count || 0)}/${formatNumber(flows.length)} fluxos`
-    : tax.tax_coverage?.complete_fiscal_coverage_ratio == null
-      ? '—'
-      : formatPct(tax.tax_coverage.complete_fiscal_coverage_ratio * 100);
-  const metrics = `<div class="ni-workspace-kpis ni-results-metrics ni-overview-summary-metrics">${kpi(taxUnavailable ? 'Custo logístico de referência' : 'Custo total de referência', total == null ? '—' : formatBRL(total, true), '', 'baseline-total')}${kpi('CDs ativos', activeCds.length ? formatNumber(activeCds.length) : '—')}${kpi('Fluxos mapeados', flows.length ? formatNumber(flows.length) : '—')}${kpi(isDemo ? 'Receita fiscal sintética' : 'Cobertura fiscal', fiscalCoverage)}</div>`;
+  const metrics = `${referenceContext(state)}<div class="ni-workspace-kpis ni-results-metrics ni-overview-summary-metrics">${kpi(taxUnavailable ? 'Custo logístico de referência' : 'Custo total de referência', total == null ? '—' : formatBRL(total, true), '', 'baseline-total')}${kpi('CDs ativos', activeCds.length ? formatNumber(activeCds.length) : '—')}${kpi('Fluxos mapeados', flows.length ? formatNumber(flows.length) : '—')}</div>`;
   const costsSummary = `<section class="ni-workspace-panel"><h2>Composição do custo</h2><canvas id="niSummaryCostChart" class="ni-chart" role="img" aria-label="Gráfico da composição do custo de referência"></canvas>${costTable(costs, taxUnavailable)}</section>`;
   const taxCoverage = isDemo
     ? taxUnavailable
@@ -88,8 +95,15 @@ function uniqueCount(rows, key) {
 }
 
 export function renderOverviewCosts(state) {
-  const { costs, tax } = baselineParts(state);
-  const body = `<section class="ni-workspace-panel"><h2>Composição do custo</h2><canvas id="niCostChart" class="ni-chart" role="img" aria-label="Gráfico da composição dos custos de referência"></canvas>${costTable(costs, state.context.provider_kind === 'mock' && tax.tax_coverage?.eligible_flow_count === 0)}</section>`;
+  const { costs, tax, flows } = baselineParts(state);
+  const unavailable =
+    state.context.provider_kind === 'mock' && tax.tax_coverage?.eligible_flow_count === 0;
+  const hasVolume = flows.some(
+    (flow) => Number(flow.annual_weight_kg ?? flow.weight_kg ?? flow.volume ?? 0) > 0
+  );
+  const hasDistance = flows.some((flow) => Number(flow.distance_km ?? flow.distance ?? 0) > 0);
+  const analytics = `<div class="ni-workspace-grid ni-cost-logistics-charts"><section class="ni-workspace-panel"><h2>Volume por centro de distribuição</h2><canvas id="niCostVolumeByCdChart" class="ni-chart" role="img" aria-label="Volume anual distribuído por centro de distribuição"></canvas>${hasVolume ? '' : '<p class="ni-note">Volume indisponível na referência.</p>'}</section><section class="ni-workspace-panel"><h2>Distância dos fluxos</h2><canvas id="niCostDistanceHistogramChart" class="ni-chart" role="img" aria-label="Distribuição das distâncias dos fluxos de referência"></canvas>${hasDistance ? '' : '<p class="ni-note">Distâncias indisponíveis na referência.</p>'}</section></div>`;
+  const body = `${referenceContext(state)}<section class="ni-workspace-panel"><h2>Composição do custo</h2><canvas id="niCostChart" class="ni-chart" role="img" aria-label="Gráfico da composição dos custos de referência"></canvas>${costTable(costs, unavailable)}</section>${analytics}`;
   return page('Custos de referência', 'page-overview-costs', body, state);
 }
 
@@ -98,7 +112,6 @@ export function renderOverviewTax(state) {
   const coverage = tax.tax_coverage || {};
   const contract = tax.tax_period_contract || tax.metadata?.tax_period_contract || {};
   const selected = contract.selected_period || {};
-  const reference = contract.current_reference_data_period || {};
   const isDemo = state.context?.provider_kind === 'mock';
   const rows = (contract.available_periods || []).map(
     (period) =>
@@ -111,8 +124,8 @@ export function renderOverviewTax(state) {
   );
   const coverageValue = isDemo
     ? coverage.eligible_flow_count === 0
-      ? 'Sem base fiscal elegível'
-      : `${formatNumber(coverage.eligible_flow_count)} fluxos · sintética`
+      ? 'Sem estimativa tributária'
+      : `Estimativa · ${formatBRL(baselineParts(state).costs.tax_impact, true)}`
     : coverage.complete_fiscal_coverage_ratio == null
       ? '—'
       : formatPct(coverage.complete_fiscal_coverage_ratio * 100);
@@ -120,7 +133,11 @@ export function renderOverviewTax(state) {
     isDemo && coverage.eligible_flow_count > 0
       ? '<p class="ni-note">Receitas e categorias são sintéticas. Sem NCM, CFOP e CST, o resultado é demonstrativo e não representa apuração fiscal.</p>'
       : '';
-  const details = `<div class="ni-workspace-kpis ni-tax-overview-metrics">${kpi('Regime tributário', businessLabel(tax.tax_regime))}${kpi('Modo de cálculo', businessLabel(tax.tax_mode))}${kpi(isDemo ? 'Receita fiscal sintética' : 'Cobertura fiscal', coverageValue)}</div><dl class="ni-workspace-scope-list"><div><dt>Período selecionado</dt><dd>${escapeHtml(selected.year == null ? '—' : `${selected.year} · ${businessLabel(selected.phase)}`)}</dd></div><div><dt>Referência de dados</dt><dd>${escapeHtml(reference.period_start || '—')} a ${escapeHtml(reference.period_end || '—')}</dd></div><div><dt>Dados observados</dt><dd>${escapeHtml(isDemo ? 'Demonstração' : businessLabel(contract.observed_data_coverage?.status))}</dd></div></dl>${fiscalNote}<details class="ni-workspace-secondary-analytics" data-testid="tax-periods-panel"><summary>Calendário tributário</summary>${isDemo ? '<p>Períodos demonstrativos sem histórico observado.</p>' : periodRows}</details>`;
+  const referenceYear =
+    selected.year == null
+      ? '2025 · Base atual'
+      : `${selected.year} · ${businessLabel(selected.phase)}`;
+  const details = `${referenceContext(state)}<div class="ni-workspace-kpis ni-tax-overview-metrics">${kpi('Regime da referência', businessLabel(tax.tax_regime))}${kpi('Cálculo da referência', businessLabel(tax.tax_mode))}${kpi(isDemo ? 'Tributos estimados' : 'Cobertura fiscal', coverageValue)}</div><dl class="ni-workspace-scope-list"><div><dt>Ano da referência</dt><dd>${escapeHtml(referenceYear)}</dd></div><div><dt>Dados observados</dt><dd>${escapeHtml(isDemo ? 'Demonstração' : businessLabel(contract.observed_data_coverage?.status))}</dd></div></dl>${fiscalNote}<details class="ni-workspace-secondary-analytics" data-testid="tax-periods-panel"><summary>Calendário tributário</summary>${isDemo ? '<p>Períodos demonstrativos sem histórico observado.</p>' : periodRows}</details>`;
   return page(
     'Tributário',
     'page-overview-tax',

@@ -836,6 +836,11 @@ function initializeNetworkIntelligence() {
         renderVolumeByCdChart('niVolumeByCdChart', flows);
         renderDistanceHistogram('niDistanceHistogramChart', flows);
       }
+      if (path === '/network/overview/costs') {
+        const flows = state.data.baseline?.flows || [];
+        renderVolumeByCdChart('niCostVolumeByCdChart', flows);
+        renderDistanceHistogram('niCostDistanceHistogramChart', flows);
+      }
       if (path.includes('/risk')) {
         renderRiskChart('niRiskChart', state.data.monte_carlo);
         renderSensitivity('niSensitivityChart', state.data.sensitivity);

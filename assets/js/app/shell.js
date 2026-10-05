@@ -28,7 +28,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
       <header class="network-topbar" data-testid="network-topbar">
         <div class="network-context">
           <label><span>Empresa</span><select id="niCompanySelect" data-testid="company-selector" aria-label="Selecionar empresa">${companies}</select></label>
-          <label><span>Cenário ativo</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário ativo"><option value="">Base atual (2025)</option></select></label>
+          <label><span>Cenário em edição</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário para editar"><option value="">Base atual (2025)</option></select></label>
         </div>
         <div class="network-topbar-actions">
           <span id="niDraftBadge" class="ni-note" hidden>Alterações não simuladas</span>
