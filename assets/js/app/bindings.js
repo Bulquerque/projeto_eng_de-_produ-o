@@ -55,7 +55,7 @@ export function installBindings({ root, store, controller }) {
     } else if (action === 'close-drawer') {
       controller.closeDrawer();
     } else if (action === 'lock-crypto') {
-      controller.lock();
+      void controller.lock();
     } else if (action === 'run-decision') {
       const state = store.getState();
       const selectedId = state.context.selected_scenario_id;

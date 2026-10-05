@@ -135,6 +135,10 @@ def test_mock_fixture_isolation_contract():
     assert 'return-to-demo' not in shell_source
     assert 'switch-demo-company' not in bindings_source
     assert 'currentSection' in shell_source
+    assert 'id="niLockButton"' in shell_source
+    assert 'data-action="lock-crypto"' in shell_source
+    assert "lockButton.hidden = state.context.provider_kind !== 'project'" in shell_source
+    assert 'controller.lock()' in bindings_source
 
     trust = (APP / 'pages' / 'trust.js').read_text(encoding='utf-8')
     styles = (APP / 'main.css').read_text(encoding='utf-8')

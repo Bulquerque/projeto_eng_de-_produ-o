@@ -35,6 +35,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
           <span id="niEvidenceTopbar" data-testid="evidence-topbar" class="ni-status status-neutral">Evidence —</span>
           <span id="niCompanyBadge" data-testid="company-badge" class="ni-context-badge">${escapeHtml(companyId || '—')}</span>
           <span class="ni-runtime-badge" data-testid="runtime-badge">RUNTIME</span>
+          <button id="niLockButton" type="button" class="ni-button secondary" data-action="lock-crypto" aria-label="Bloquear sessão protegida" hidden>Bloquear dados</button>
           <button type="button" class="ni-button secondary" data-action="open-export" data-testid="export-center">Exportar</button>
           ${debugEnabled ? '<button type="button" class="ni-button primary" data-action="open-dev" data-testid="dev-console">&lt;/&gt; Dev</button>' : ''}
         </div>
@@ -116,12 +117,8 @@ export function updateGlobalContext(root, state) {
     const draftYear = state.ui.scenario_draft?.changes?.tax_year;
     scenarioSelect.value = draftYear ? `tax-year:${draftYear}` : selected;
   }
-  const lockButton = document.getElementById('cryptoLockButton');
-  const actions = root.querySelector('.network-topbar-actions');
-  if (lockButton && actions) {
-    lockButton.hidden = state.context.provider_kind === 'mock';
-    if (lockButton.parentElement !== actions) actions.appendChild(lockButton);
-  }
+  const lockButton = root.querySelector('#niLockButton');
+  if (lockButton) lockButton.hidden = state.context.provider_kind !== 'project';
   const evidenceScore = state.data.scenario_result?.evidence?.evidence_score;
   if (evidence)
     evidence.textContent = `Evidence ${evidenceScore == null ? '—' : `${evidenceScore}/100`}`;

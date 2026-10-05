@@ -336,19 +336,18 @@ function initializeNetworkIntelligence() {
             if (index === 0) exportInFlight = false;
           });
       },
-      lock() {
+      async lock() {
         nextOperation();
         cancelActiveAction();
         const activeProvider = provider;
         provider = null;
-        void activeProvider?.dispose({ lock: true });
+        await activeProvider?.dispose({ lock: true });
         showLoading(root, false);
         store.update((state) => {
           resetCompanyScopedState(state, state.context.company_id);
           state.meta.status = 'locked';
         });
-        render();
-        showToast(root, 'Sessão bloqueada e estado da empresa limpo.', 'success');
+        window.location.reload();
       },
       closeDrawer() {
         const drawer = root.querySelector('#networkDrawer');

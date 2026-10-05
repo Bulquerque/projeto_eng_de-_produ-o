@@ -65,6 +65,8 @@ def test_network_ui_is_the_default_public_entrypoint():
         page.locator('#networkAppRoot').wait_for(state='visible')
         page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
         assert page.locator('[data-testid="company-selector"]').input_value() == 'empresa_mock'
+        assert page.locator('#niLockButton').count() == 1
+        assert page.locator('#niLockButton').is_hidden()
         assert (
             page.locator('[data-testid="network-topbar"]').evaluate(
                 'element => getComputedStyle(element).backgroundColor'
@@ -488,8 +490,9 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
                 assert data_table.locator('tbody tr').count() > 0
             page.evaluate("window.location.hash = '#/network/trust/validation'")
             page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=20000)
-            lock_button = page.locator('#cryptoLockButton, .crypto-lock-button').first
+            lock_button = page.locator('#niLockButton')
             assert lock_button.count() == 1
+            assert lock_button.is_visible()
             toast = page.locator('.network-toast').last
             if toast.count() and toast.is_visible() and lock_button.is_visible():
                 toast_box = toast.bounding_box()
@@ -501,8 +504,11 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
                         and toast_box['y'] < lock_box['y'] + lock_box['height']
                         and toast_box['y'] + toast_box['height'] > lock_box['y']
                     )
-            lock_button.click()
+            with page.expect_navigation(wait_until='networkidle', timeout=20000):
+                lock_button.click()
             page.locator('#cryptoPasswordPrompt').wait_for(state='visible', timeout=20000)
+            assert page.locator('#cryptoPasswordInput').input_value() == ''
+            assert page.locator('#niLockButton').is_visible()
             page.locator('#cryptoCancel').click()
             page.goto(
                 f'{base}/?dev=1&company=empresa1#/network/dev/console',
