@@ -160,7 +160,6 @@ function initializeNetworkIntelligence() {
       state.data.export_package = packageResult.export_package || null;
       state.context.selected_scenario_id = selectedScenario?.scenario_id || null;
       state.meta.status = resolveDecisionStatus(packageResult);
-      state.meta.result_kind = 'optimization';
       state.ui.loading = false;
     };
 

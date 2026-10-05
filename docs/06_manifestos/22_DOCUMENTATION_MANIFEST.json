@@ -3,7 +3,7 @@
   "purpose": "Deterministic inventory of documentation and test files excluding ignored or generated artifacts.",
   "generated_by": "python scripts/manage_documentation_inventory.py --write",
   "documentation": {
-    "count": 95,
+    "count": 96,
     "files": [
       "docs/00_inicio/00_INDICE_DOCUMENTACAO.md",
       "docs/00_inicio/00_README_DO_PACOTE.md",
@@ -89,6 +89,7 @@
       "docs/05_testes_aceite/historico/2026-09-13_15_network-intelligence/qa-screenshots/trust-overview.png",
       "docs/05_testes_aceite/historico/2026-09-13_15_network-intelligence/qa-screenshots/trust-sources.png",
       "docs/05_testes_aceite/historico/2026-09-13_15_network-intelligence/qa-screenshots/trust-validation.png",
+      "docs/06_manifestos/AUDITORIA_ORGANIZACAO_ARQUIVOS_2026-10-05.md",
       "docs/06_manifestos/FINAL_RELEASE_MANIFEST.md",
       "docs/AI_AGENT_CONTEXT.md",
       "docs/CODING_STANDARDS.md",
