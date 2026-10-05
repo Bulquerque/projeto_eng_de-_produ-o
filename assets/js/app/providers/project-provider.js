@@ -261,10 +261,10 @@ export async function createProjectProvider() {
     },
     async runOptimization({
       profileId = 'balanced',
-      taxYear = null,
       objective = null,
       constraints = {},
       config = {},
+      taxYear = null,
     } = {}) {
       const companyId = this.context.company_id;
       const effectiveObjective =
@@ -277,24 +277,40 @@ export async function createProjectProvider() {
         max_candidates: Number(config.max_candidates || 2000),
         seed: Number(config.seed ?? 42),
       });
+      const effectiveConstraints = defaultConstraints({
+        ...this.optimizationConfig,
+        constraints,
+      });
       const result = runDomainOptimization({
         companyId,
         baselineBundle: this.baselineBundle,
         objective: effectiveObjective,
         taxYear,
-        constraints: defaultConstraints({
-          ...this.optimizationConfig,
-          constraints,
-        }),
+        constraints: effectiveConstraints,
         optimizerConfig,
       });
-      this.lastOptimization = { ...result, objective: effectiveObjective };
+      this.lastOptimization = {
+        ...result,
+        objective: effectiveObjective,
+        requested_config: {
+          profile_id: profileId,
+          tax_year: taxYear,
+          constraints: effectiveConstraints,
+          optimizer_config: optimizerConfig,
+        },
+      };
       assertNoMockLeakage(result, companyId);
       return this.lastOptimization;
     },
     async buildDecisionPackage(input = {}) {
       const { runDecisionPipeline } = await import('../services/decision-service.js');
-      const packageResult = await runDecisionPipeline({ provider: this, ...input });
+      const packageResult = await runDecisionPipeline({
+        provider: this,
+        ...input,
+        existingOptimizerResult:
+          input.existingOptimizerResult ||
+          (input.selectionMode === 'manual' ? this.lastOptimization : null),
+      });
       return assertNoMockLeakage(packageResult, this.context.company_id);
     },
     getDomainContext() {
@@ -303,6 +319,7 @@ export async function createProjectProvider() {
         baselineBundle: this.baselineBundle,
         scenarios: this.scenarioLibrary?.scenarios || [],
         optimizationConfig: this.optimizationConfig,
+        optimizer: this.lastOptimization,
       };
     },
     getHealth() {

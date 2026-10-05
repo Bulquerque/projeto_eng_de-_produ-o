@@ -9,7 +9,9 @@
     "format:check": "npm run format:js:check",
     "format:js:check": "prettier --check \"assets/js/**/*.js\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\"",
     "format:js:write": "prettier --write \"assets/js/**/*.js\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\"",
-    "quality": "npm test",
+    "quality:static": "npm run lint && npm run format:check && ruff check . && ruff format --check .",
+    "quality:public": "npm run quality:static && npm run test:public",
+    "quality": "npm run quality:public && npm test",
     "test": "python tests/run_all_tests.py",
     "test:network": "python tests/12_network_intelligence/test_network_ui_playwright.py",
     "test:public": "python tests/run_public_tests.py"

@@ -56,6 +56,15 @@ for (const companyId of ['empresa1','empresa2']) {
   const mcB = runMonteCarloSimulation({companyId, selectedScenario: scenario, baselineBundle: bundle, deterministicResult: result, iterations: 80, seed: 33, config: { profile: 'balanced', scatter_driver: 'freight_multiplier' }});
   if (!mcA.summary || mcA.samples.length === 0) throw new Error('monte carlo summary missing');
   if (JSON.stringify(mcA.summary) !== JSON.stringify(mcB.summary)) throw new Error('monte carlo not reproducible');
+  for (const sample of mcA.samples) {
+    const inputs = sample.inputs;
+    if (!Number.isFinite(inputs.freight_multiplier) || inputs.freight_multiplier < 0.6 || inputs.freight_multiplier > 1.8) throw new Error('freight sample outside contract bounds');
+    if (!Number.isFinite(inputs.demand_multiplier) || inputs.demand_multiplier < 0.6 || inputs.demand_multiplier > 1.6) throw new Error('demand sample outside contract bounds');
+    if (!Number.isInteger(inputs.inventory_days) || inputs.inventory_days < 0 || inputs.inventory_days > 120) throw new Error('inventory sample outside contract bounds');
+    if (!Number.isFinite(inputs.wacc) || inputs.wacc < 0 || inputs.wacc > 0.5) throw new Error('wacc sample outside contract bounds');
+    if (!Number.isFinite(inputs.tax_multiplier) || inputs.tax_multiplier < 0.7 || inputs.tax_multiplier > 1.35) throw new Error('tax sample outside contract bounds');
+    if (!Number.isFinite(inputs.common_shock)) throw new Error('common shock missing from sample');
+  }
   if (Math.abs(Number(mcA.summary.baseline_total_with_tax) - Number(bundle.costs.costs.total_with_tax)) > 0.1) throw new Error('monte carlo denominator is not the official baseline');
   if (mcA.baseline_scenario_id !== bundle.model.scenario_id) throw new Error('monte carlo baseline id mismatch');
   if (mcA.deterministic_scenario_id !== result.scenario_id) throw new Error('monte carlo deterministic id mismatch');

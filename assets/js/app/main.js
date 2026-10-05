@@ -5,26 +5,29 @@ import {
   createStateStore,
   beginLoading,
   commitProviderSnapshot,
-  clearScenarioResults,
   failLoading,
   resetCompanyScopedState,
+  resolveDecisionStatus,
   setRoute,
   setSelectedScenario,
 } from './state.js';
-import { navigate, parseRoute, replaceCompanyQuery, startRouter } from './router.js';
+import { parseRoute, replaceCompanyQuery, startRouter } from './router.js';
 import { renderShell, setActiveNav, showLoading, showToast, updateGlobalContext } from './shell.js';
 import { installBindings } from './bindings.js';
+import { createOperationGuard } from './operation-guard.js';
+import { createScenarioActions } from './scenario-actions.js';
+import { createAnalysisActions } from './analysis-actions.js';
 import { sanitizeError } from './dev/dev-console.js';
 import { escapeHtml, routeFallback } from './view-helpers.js';
-import { loadOptimizationPresets } from '../core/optimization-config-store.js';
-import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
-import { selectBaseline } from './selectors/business-selectors.js';
 import { ROUTE_RENDERERS } from './route-renderers.js';
-import { comparisonCandidates } from './pages/results.js';
+import { destroyAllCharts } from '../core/chart-renderer.js';
+import { renderOverviewAnalytics } from './charts/overview-analytics.js';
+import { renderDecisionAnalytics } from './charts/decision-analytics.js';
+import { renderTrustAnalytics } from './charts/trust-analytics.js';
 import {
+  bindMapInteraction,
   renderDistanceHistogram,
   renderCostChart,
-  renderComparisonCostChart,
   renderRanking,
   renderRiskCdf,
   renderRiskDrivers,
@@ -36,41 +39,11 @@ import {
   renderSensitivity,
   renderVolumeByCdChart,
 } from './charts/charts.js';
-import {
-  clearCompanyScenarios,
-  deleteScenario,
-  loadSavedScenarios,
-  saveScenario,
-} from '../phase3/scenario-persistence.js';
-import {
-  downloadScenarioJson,
-  parseImportedScenario,
-  validateImportedScenario,
-} from '../phase3/scenario-import-export.js';
+import { loadSavedScenarios } from '../phase3/scenario-persistence.js';
+import { loadOptimizationPresets } from '../core/optimization-config-store.js';
 
 const request = readRuntimeRequest();
-const networkActive =
-  request.network_ui ||
-  window.location.hash.startsWith('#/network/') ||
-  !document.querySelector('#sec-diagnostico-baseline');
-window.__VISAGIO_NETWORK_UI__ = networkActive;
-
-function findScenario(state, scenarioId) {
-  const entry = [
-    ...(state.data.scenarios || []),
-    ...(state.data.saved_scenarios || []),
-    ...(state.data.optimizer?.scored_scenarios || []),
-    ...(state.data.optimizer?.best_scenarios || []),
-  ].find((scenario) => scenario.scenario_id === scenarioId);
-  return entry?.scenario || entry;
-}
-
-function upsertScenario(scenarios, scenario) {
-  return [
-    ...(scenarios || []).filter((item) => item.scenario_id !== scenario.scenario_id),
-    scenario,
-  ];
-}
+window.__VISAGIO_NETWORK_UI__ = true;
 
 function initializeNetworkIntelligence() {
   const stylesheet = document.createElement('link');
@@ -119,45 +92,23 @@ function initializeNetworkIntelligence() {
     const store = createStateStore(createInitialState(config));
     let provider = null;
     let stopRouter = null;
-    let operationId = 0;
     let companySwitchQueue = Promise.resolve();
-    let activeAction = null;
     let exportInFlight = false;
-    let lastScenarioExportAt = 0;
     const packageExportsInFlight = new Set();
     const lastPackageExportAt = new Map();
     let drawerReturnFocus = null;
-    let lastRenderedRoute = null;
-    let decisionOptions = {};
 
-    const nextOperation = () => {
-      operationId += 1;
-      return operationId;
-    };
-
-    const isCurrentOperation = (token, companyId, ownerProvider = null) => {
-      const state = store.getState();
-      return (
-        token === operationId &&
-        state.context.company_id === companyId &&
-        (!ownerProvider || provider === ownerProvider)
-      );
-    };
-
-    const beginAction = (kind, activeProvider, companyId) => {
-      if (activeAction) return null;
-      const action = { kind, activeProvider, companyId, token: operationId };
-      activeAction = action;
-      return action;
-    };
-
-    const isCurrentAction = (action) =>
-      activeAction === action &&
-      isCurrentOperation(action.token, action.companyId, action.activeProvider);
-
-    const finishAction = (action) => {
-      if (activeAction === action) activeAction = null;
-    };
+    const {
+      nextOperation,
+      currentToken,
+      isCurrentToken,
+      isCurrentOperation,
+      beginAction,
+      isCurrentAction,
+      finishAction,
+      cancelActiveAction,
+      hasActiveAction,
+    } = createOperationGuard({ getState: store.getState, getProvider: () => provider });
 
     const render = () => {
       const state = store.getState();
@@ -166,42 +117,15 @@ function initializeNetworkIntelligence() {
       const page = root.querySelector('#networkPage');
       if (!page) return;
       page.dataset.routeCurrent = route.hash;
-      const openDetails =
-        lastRenderedRoute === route.hash
-          ? new Set(
-              [...page.querySelectorAll('details[open] > summary')].map(
-                (summary) => summary.textContent
-              )
-            )
-          : new Set();
-      const needsData = route.path !== '/network/dev/console';
-      const heading =
-        {
-          overview: 'Visão geral',
-          scenarios: 'Simulação',
-          optimizer: 'Recomendações',
-          results: 'Resultados',
-          trust: 'Dados e metodologia',
-        }[route.path.split('/')[2]] || 'Dados';
-      page.innerHTML =
-        needsData && !state.data.baseline
-          ? `<div class="ni-page-heading"><h1>${heading}</h1></div><div class="ni-empty"><p>${state.ui.loading ? 'Carregando dados…' : state.meta.status === 'locked' ? 'Os dados desta empresa estão bloqueados.' : 'Os dados desta empresa não estão disponíveis.'}</p>${state.ui.loading ? '' : '<button type="button" class="ni-button primary" data-action="retry-company">Carregar dados</button>'}</div>`
-          : renderer(state, route);
-      page.querySelectorAll('details').forEach((details) => {
-        if (openDetails.has(details.querySelector('summary')?.textContent)) details.open = true;
-      });
+      destroyAllCharts();
+      page.innerHTML = renderer(state, route);
       setActiveNav(root, route);
       updateGlobalContext(root, state);
       renderCharts(route.path, state);
-      if (lastRenderedRoute !== route.hash) {
-        root.querySelector('#networkRouteAnnouncement').textContent =
-          page.querySelector('h1')?.textContent || 'Página carregada';
-        lastRenderedRoute = route.hash;
-      }
       if (state.ui.error) {
         page.insertAdjacentHTML(
           'afterbegin',
-          `<div class="ni-alert error"><strong>Falha</strong><p>${escapeHtml(sanitizeError(state.ui.error).message)}</p></div>`
+          `<div class="ni-alert error"><strong>Falha</strong><p>${escapeHtml(sanitizeError(state.ui.error).message)}</p>${state.meta.status === 'error' ? '<button type="button" class="ni-button secondary" data-action="retry-company">Tentar novamente</button>' : ''}</div>`
         );
       }
     };
@@ -218,17 +142,8 @@ function initializeNetworkIntelligence() {
       };
       state.data.optimizer =
         packageResult.optimizer || activeProvider.getDomainContext()?.optimizer || null;
-      state.data.analysis_runs ||= { simulation: null, optimization: null };
-      state.data.analysis_runs.optimization = {
-        run_id: `optimization-${Date.now()}`,
-        company_id: state.context.company_id,
-        created_at: new Date().toISOString(),
-        scenario: structuredClone(selectedScenario),
-        result: structuredClone(selectedResult),
-        quality: structuredClone(selected?.quality || null),
-        optimizer: structuredClone(packageResult.optimizer || null),
-      };
       state.data.selected_scenario = selectedScenario;
+      state.meta.result_kind = 'optimization';
       state.data.scenario_result = selectedResult;
       state.data.scenario_quality = selected?.quality || null;
       state.data.comparison = packageResult.comparison || null;
@@ -244,16 +159,13 @@ function initializeNetworkIntelligence() {
       state.data.release = packageResult.release || mockDecision.release || null;
       state.data.export_package = packageResult.export_package || null;
       state.context.selected_scenario_id = selectedScenario?.scenario_id || null;
-      state.meta.status =
-        packageResult.release?.release_status === 'blocked' ? 'decision_blocked' : 'decision_ready';
+      state.meta.status = resolveDecisionStatus(packageResult);
       state.meta.result_kind = 'optimization';
-      state.ui.scenario_draft = selectedScenario;
-      state.ui.scenario_dirty = false;
       state.ui.loading = false;
     };
 
     const loadCompany = async (companyId, token) => {
-      if (token !== operationId) return;
+      if (!isCurrentToken(token)) return;
       const previousProvider = provider;
       const previousCompany = store.getState().context.company_id;
       let nextProvider = null;
@@ -302,8 +214,19 @@ function initializeNetworkIntelligence() {
             ...state.meta.provider_snapshot,
             warnings: [...(baseline.warnings || []), ...(scenarios.warnings || [])],
           };
-          setSelectedScenario(state, null);
+          const first = state.data.scenarios[0];
+          setSelectedScenario(state, first?.scenario_id || null);
         });
+        if (isMockTenant(companyId)) {
+          const packageResult = await nextProvider.buildDecisionPackage({
+            scenarioId: 'mock_consolidation',
+          });
+          if (!isCurrentOperation(token, companyId, nextProvider)) {
+            await nextProvider.dispose({ lock: false });
+            return;
+          }
+          store.update((state) => commitDecisionPackage(state, packageResult, nextProvider));
+        }
         showLoading(root, false);
         if (previousProvider && previousCompany !== companyId) {
           showToast(
@@ -335,7 +258,36 @@ function initializeNetworkIntelligence() {
       if (isCurrentOperation(token, companyId)) render();
     };
 
+    const scenarioActions = createScenarioActions({
+      root,
+      store,
+      getProvider: () => provider,
+      operationGuard: {
+        currentToken,
+        isCurrentOperation,
+        beginAction,
+        isCurrentAction,
+        finishAction,
+        hasActiveAction,
+      },
+      render,
+    });
+    const analysisActions = createAnalysisActions({
+      store,
+      getProvider: () => provider,
+      operationGuard: { beginAction, isCurrentAction, finishAction, hasActiveAction },
+      commitDecisionPackage,
+      render,
+      showLoading: (visible, title, note) => showLoading(root, visible, title, note),
+      showToast: (message, kind) => showToast(root, message, kind),
+      navigate: (route) => {
+        window.location.hash = route;
+      },
+    });
+
     const controller = {
+      ...scenarioActions,
+      ...analysisActions,
       retryCompany() {
         void this.switchCompany(store.getState().context.company_id);
       },
@@ -343,8 +295,7 @@ function initializeNetworkIntelligence() {
         if (!getCompanyDefinition(companyId)) return;
         const current = store.getState();
         if (current.context.company_id === companyId && (provider || current.ui.loading)) return;
-        activeAction = null;
-        decisionOptions = {};
+        cancelActiveAction();
         const token = nextOperation();
         replaceCompanyQuery(companyId);
         companySwitchQueue = companySwitchQueue
@@ -352,406 +303,9 @@ function initializeNetworkIntelligence() {
           .then(() => loadCompany(companyId, token));
         await companySwitchQueue;
       },
-      loadScenarioDraft(scenarioId) {
-        if (!scenarioId) {
-          this.resetScenarioDraft();
-          return;
-        }
-        const taxYearMatch = /^tax-year:(202[6-9]|203[0-3])$/.exec(scenarioId);
-        if (taxYearMatch) {
-          const state = store.getState();
-          const taxYear = Number(taxYearMatch[1]);
-          const activeScenario = state.ui.scenario_draft || state.data.selected_scenario;
-          const changes = activeScenario?.changes || {};
-          const scenario = buildScenarioFromForm({
-            companyId: state.context.company_id,
-            baselineBundle: selectBaseline(state),
-            scenarioId: `${state.context.company_id}_tax_reform_${taxYear}`,
-            formValues: {
-              scenario_name: activeScenario?.scenario_name
-                ? `${activeScenario.scenario_name} · ${taxYear}`
-                : `Reforma tributária ${taxYear}`,
-              scenario_type: taxYear === 2033 ? 'tax_reform_full' : 'tax_reform_transition',
-              active_cds: changes.active_cds,
-              freight_multiplier: changes.freight_multiplier,
-              demand_multiplier: changes.demand_multiplier,
-              inventory_days: changes.inventory_days,
-              wacc: changes.wacc,
-              reallocation_rule: changes.reallocation_rule,
-              tax_mode: `reform_${taxYear}`,
-              tax_year: taxYear,
-            },
-          });
-          store.update((nextState) => {
-            nextState.ui.scenario_draft = scenario;
-            nextState.ui.scenario_dirty = false;
-            nextState.context.selected_scenario_id = scenario.scenario_id;
-            clearScenarioResults(nextState);
-          });
-          navigate('#/network/scenarios/build');
-          return;
-        }
-        const state = store.getState();
-        const scenario = findScenario(state, scenarioId);
-        if (!scenario) {
-          showToast(root, 'Cenário não encontrado na biblioteca ativa.', 'error');
-          return;
-        }
-        store.update((nextState) => {
-          nextState.ui.scenario_draft = structuredClone(scenario);
-          nextState.ui.scenario_dirty = false;
-          nextState.context.selected_scenario_id = scenario.scenario_id;
-          clearScenarioResults(nextState);
-        });
-        navigate('#/network/scenarios/build');
-        showToast(
-          root,
-          `Cenário carregado: ${scenario.scenario_name || scenario.scenario_id}.`,
-          'success'
-        );
-      },
-      resetScenarioDraft() {
-        store.update((nextState) => {
-          nextState.ui.scenario_draft = null;
-          nextState.ui.scenario_dirty = false;
-          nextState.context.selected_scenario_id = null;
-          clearScenarioResults(nextState);
-        });
-        navigate('#/network/scenarios/build');
-        showToast(root, 'Parâmetros da referência restaurados.', 'success');
-      },
-      captureDraft(formId, values) {
-        const state = store.getState();
-        if (formId === 'niScenarioForm') {
-          state.ui.scenario_draft = {
-            ...(state.ui.scenario_draft || {}),
-            company_id: state.context.company_id,
-            scenario_name: values.scenario_name,
-            changes: { ...values },
-          };
-          state.ui.scenario_dirty = true;
-          clearScenarioResults(state);
-        } else if (formId === 'niOptimizerForm') {
-          values.tax_year = Number(values.tax_year) || null;
-          state.ui.optimizer_draft = values;
-          const optimizerDrafts = state.ui.optimizer_drafts || (state.ui.optimizer_drafts = {});
-          optimizerDrafts[String(values.tax_year || 'current')] = values;
-          clearScenarioResults(state);
-        } else if (formId === 'niRiskForm') {
-          state.ui.risk_draft = values;
-          state.data.monte_carlo = null;
-          state.data.stress = null;
-          state.data.sensitivity = null;
-          state.data.sensitivity_matrix = null;
-          state.data.robustness = null;
-          state.data.audit = null;
-          state.data.final_qa = null;
-          state.data.release = null;
-          state.data.export_package = null;
-          state.data.recommendation = null;
-        }
-        updateGlobalContext(root, state);
-      },
-      selectComparedScenario(scenarioId) {
-        const state = store.getState();
-        const candidate = findScenario(state, scenarioId);
-        if (!candidate) {
-          showToast(root, 'Cenário comparado não está disponível para reexecução.', 'error');
-          return;
-        }
-        if (state.data.optimizer) {
-          void this.runDecision({ selectionMode: 'manual', manualScenarioId: scenarioId });
-        } else {
-          void this.runScenario({ scenario: candidate, scenarioId });
-        }
-      },
-      saveCurrentScenario() {
-        const state = store.getState();
-        const scenario = state.data.selected_scenario;
-        if (!scenario || !state.data.scenario_result) {
-          showToast(root, 'Simule um cenário antes de salvar.', 'error');
-          return;
-        }
-        const result = saveScenario(state.context.company_id, scenario);
-        if (!result.saved) {
-          showToast(root, 'Persistência local indisponível.', 'error');
-          return;
-        }
-        const saved = loadSavedScenarios(state.context.company_id);
-        store.update((nextState) => {
-          nextState.data.saved_scenarios = saved;
-          nextState.data.scenarios = upsertScenario(nextState.data.scenarios, scenario);
-        });
-        showToast(
-          root,
-          `Cenário salvo: ${scenario.scenario_name || scenario.scenario_id}.`,
-          'success'
-        );
-      },
-      exportCurrentScenario() {
-        const now = Date.now();
-        if (now - lastScenarioExportAt < 600) return;
-        lastScenarioExportAt = now;
-        const state = store.getState();
-        const scenario = state.data.selected_scenario;
-        if (!scenario) {
-          showToast(root, 'Simule um cenário antes de exportar.', 'error');
-          return;
-        }
-        try {
-          downloadScenarioJson(scenario);
-          showToast(root, `Cenário exportado: ${scenario.scenario_id}.`, 'success');
-        } catch (error) {
-          showToast(root, sanitizeError(error).message, 'error');
-        }
-      },
-      deleteSavedScenario(scenarioId) {
-        const state = store.getState();
-        const result = deleteScenario(state.context.company_id, scenarioId);
-        if (!result.deleted) {
-          showToast(root, 'Não foi possível excluir o cenário salvo.', 'error');
-          return;
-        }
-        store.update((nextState) => {
-          nextState.data.saved_scenarios = loadSavedScenarios(nextState.context.company_id);
-          nextState.data.scenarios = (nextState.data.scenarios || []).filter(
-            (scenario) => scenario.scenario_id !== scenarioId
-          );
-          if (nextState.ui.scenario_draft?.scenario_id === scenarioId) {
-            nextState.ui.scenario_draft = null;
-            nextState.context.selected_scenario_id = null;
-            nextState.ui.scenario_dirty = false;
-            clearScenarioResults(nextState);
-          }
-        });
-        showToast(root, 'Cenário salvo excluído.', 'success');
-      },
-      clearSavedScenarios() {
-        const state = store.getState();
-        const savedIds = new Set(
-          (state.data.saved_scenarios || []).map((item) => item.scenario_id)
-        );
-        const result = clearCompanyScenarios(state.context.company_id);
-        if (!result.cleared) {
-          showToast(root, 'Não foi possível limpar os cenários salvos.', 'error');
-          return;
-        }
-        store.update((nextState) => {
-          nextState.data.saved_scenarios = [];
-          nextState.data.scenarios = (nextState.data.scenarios || []).filter(
-            (scenario) => !savedIds.has(scenario.scenario_id)
-          );
-          if (savedIds.has(nextState.context.selected_scenario_id)) {
-            nextState.context.selected_scenario_id = null;
-            nextState.ui.scenario_draft = null;
-            nextState.ui.scenario_dirty = false;
-            clearScenarioResults(nextState);
-          }
-        });
-        showToast(root, 'Cenários salvos limpos para esta empresa.', 'success');
-      },
-      async importScenario(file) {
-        const state = store.getState();
-        const companyId = state.context.company_id;
-        const activeProvider = provider;
-        const token = operationId;
-        try {
-          const scenario = await parseImportedScenario(file);
-          if (!isCurrentOperation(token, companyId, activeProvider)) return;
-          const validation = validateImportedScenario(companyId, scenario);
-          if (!validation.valid) throw new Error(validation.error);
-          const result = saveScenario(companyId, scenario);
-          if (!result.saved) throw new Error('Persistência local indisponível.');
-          if (!isCurrentOperation(token, companyId, activeProvider)) return;
-          const saved = loadSavedScenarios(companyId);
-          store.update((nextState) => {
-            nextState.data.saved_scenarios = saved;
-            nextState.data.scenarios = upsertScenario(nextState.data.scenarios, scenario);
-            nextState.ui.scenario_draft = scenario;
-            nextState.context.selected_scenario_id = scenario.scenario_id;
-            clearScenarioResults(nextState);
-          });
-          navigate('#/network/scenarios/build');
-          showToast(
-            root,
-            `Cenário importado: ${scenario.scenario_name || scenario.scenario_id}.`,
-            'success'
-          );
-        } catch (error) {
-          if (!isCurrentOperation(token, companyId, activeProvider)) return;
-          showToast(root, sanitizeError(error).message, 'error');
-        }
-      },
-      async runScenario({
-        formValues = {},
-        scenarioId = null,
-        scenario: inputScenario = null,
-      } = {}) {
-        if (!provider) return;
-        const activeProvider = provider;
-        const companyId = store.getState().context.company_id;
-        const action = beginAction('scenario', activeProvider, companyId);
-        if (!action) return;
-        const effectiveScenarioId = Object.keys(formValues).length
-          ? null
-          : scenarioId || inputScenario?.scenario_id || null;
-        store.update((state) => {
-          beginLoading(state, 'Simulando cenário…');
-        });
-        showLoading(
-          root,
-          true,
-          'Simulando cenário',
-          'Calculando custos e comparação com a referência.'
-        );
-        try {
-          const output = await activeProvider.runScenario({
-            formValues,
-            scenarioId: effectiveScenarioId,
-            scenario: inputScenario,
-          });
-          if (!isCurrentAction(action)) return;
-          if (output?.company_id !== companyId)
-            throw new Error('O resultado não pertence à empresa ativa.');
-          const scenario = output.scenario || output;
-          const result = output.result || null;
-          store.update((state) => {
-            clearScenarioResults(state);
-            state.data.analysis_runs ||= { simulation: null, optimization: null };
-            state.data.analysis_runs.simulation = {
-              run_id: `simulation-${Date.now()}`,
-              company_id: state.context.company_id,
-              created_at: new Date().toISOString(),
-              scenario: structuredClone(scenario),
-              result: structuredClone(result),
-              quality: structuredClone(output.quality || null),
-            };
-            state.data.selected_scenario = scenario;
-            state.data.scenario_result = result;
-            state.data.scenario_quality = output.quality || null;
-            state.data.comparison = output.comparison || null;
-            state.data.monte_carlo = null;
-            state.data.stress = null;
-            state.data.sensitivity = null;
-            state.data.sensitivity_matrix = null;
-            state.data.robustness = null;
-            state.data.recommendation = null;
-            state.meta.status = 'scenario_ready';
-            state.meta.result_kind = 'simulation';
-            state.ui.scenario_dirty = false;
-            state.ui.loading = false;
-            state.context.selected_scenario_id = scenario?.scenario_id || null;
-            state.ui.scenario_draft = scenario;
-          });
-          showLoading(root, false);
-          showToast(root, 'Resultado do cenário disponível.', 'success');
-          window.location.hash = '#/network/results/summary';
-        } catch (error) {
-          if (!isCurrentAction(action)) return;
-          store.update((state) => failLoading(state, error));
-          showLoading(root, false);
-          showToast(root, sanitizeError(error).message, 'error');
-        } finally {
-          finishAction(action);
-        }
-        if (isCurrentAction(action) || !activeAction) render();
-      },
-      async runRisk(config = {}) {
-        if (!provider) return;
-        const activeProvider = provider;
-        const current = store.getState();
-        const companyId = current.context.company_id;
-        const selectedScenario = current.data.selected_scenario;
-        const deterministicResult = current.data.scenario_result;
-        if (!selectedScenario || !deterministicResult) {
-          showToast(root, 'Simule um cenário antes de calcular risco.', 'error');
-          return;
-        }
-        const action = beginAction('risk', activeProvider, companyId);
-        if (!action) return;
-        store.update((state) => {
-          beginLoading(state, 'Calculando risco e sensibilidade…');
-        });
-        showLoading(root, true, 'Calculando risco', 'Monte Carlo, stress e sensibilidade.');
-        try {
-          const risk = await activeProvider.runRiskSuite({
-            selectedScenario,
-            deterministicResult,
-            config,
-          });
-          if (!isCurrentAction(action)) return;
-          if (risk?.company_id !== companyId)
-            throw new Error('A análise de risco não pertence à empresa ativa.');
-          store.update((state) => {
-            state.data.monte_carlo = risk?.monte_carlo || null;
-            state.data.stress = risk?.stress || null;
-            state.data.sensitivity = risk?.sensitivity || null;
-            state.data.sensitivity_matrix = risk?.sensitivity_matrix || null;
-            state.data.robustness = risk?.robustness || null;
-            state.meta.status = 'risk_ready';
-            state.ui.loading = false;
-          });
-          showLoading(root, false);
-          showToast(root, 'Análise de risco concluída.', 'success');
-          window.location.hash = '#/network/results/risk';
-        } catch (error) {
-          if (!isCurrentAction(action)) return;
-          store.update((state) => failLoading(state, error));
-          showLoading(root, false);
-          showToast(root, sanitizeError(error).message, 'error');
-        } finally {
-          finishAction(action);
-        }
-        if (isCurrentAction(action) || !activeAction) render();
-      },
-      async runDecision(options = {}) {
-        if (!provider) return;
-        const executionOptions =
-          options.selectionMode === 'manual' ? { ...decisionOptions, ...options } : options;
-        const activeProvider = provider;
-        const companyId = store.getState().context.company_id;
-        const action = beginAction('decision', activeProvider, companyId);
-        if (!action) return;
-        store.update((state) => {
-          beginLoading(state, 'Avaliando alternativas…');
-          clearScenarioResults(state);
-        });
-        showLoading(
-          root,
-          true,
-          'Otimizando a rede',
-          'Comparando configurações e verificando os resultados.'
-        );
-        try {
-          const packageResult = await activeProvider.buildDecisionPackage(executionOptions);
-          if (!isCurrentAction(action)) return;
-          if (packageResult?.company_id !== companyId)
-            throw new Error('A decisão não pertence à empresa ativa.');
-          decisionOptions = executionOptions;
-          store.update((state) => {
-            commitDecisionPackage(state, packageResult, activeProvider);
-          });
-          showLoading(root, false);
-          const blocked = packageResult.release?.release_status === 'blocked';
-          showToast(
-            root,
-            blocked ? 'Não foi possível obter uma alternativa válida.' : 'Recomendações geradas.',
-            blocked ? 'error' : 'success'
-          );
-          window.location.hash = '#/network/results/summary';
-        } catch (error) {
-          if (!isCurrentAction(action)) return;
-          store.update((state) => failLoading(state, error));
-          showLoading(root, false);
-          showToast(root, sanitizeError(error).message, 'error');
-        } finally {
-          finishAction(action);
-        }
-        if (isCurrentAction(action) || !activeAction) render();
-      },
       exportPackage(index = 0) {
         const companyId = store.getState().context.company_id;
-        const token = operationId;
+        const token = currentToken();
         const files = store.getState().data.export_package?.files || [];
         const file = files[index] || files[0];
         if (!file) {
@@ -784,7 +338,7 @@ function initializeNetworkIntelligence() {
       },
       lock() {
         nextOperation();
-        activeAction = null;
+        cancelActiveAction();
         const activeProvider = provider;
         provider = null;
         void activeProvider?.dispose({ lock: true });
@@ -821,23 +375,16 @@ function initializeNetworkIntelligence() {
     };
 
     function renderCharts(path, state) {
-      if (path === '/network/overview/summary' || path === '/network/overview/costs') {
-        const baseline = state.data.baseline;
-        const taxUnavailable =
-          state.context?.provider_kind === 'mock' &&
-          baseline?.tax_results?.tax_results?.tax_coverage?.eligible_flow_count === 0;
-        const chartId = path.endsWith('/costs') ? 'niCostChart' : 'niSummaryCostChart';
-        renderCostChart(chartId, baseline, { taxUnavailable });
-      }
+      renderOverviewAnalytics(state);
+      renderDecisionAnalytics(state);
+      renderTrustAnalytics(state);
+      bindMapInteraction(root);
+      if (path === '/network/overview/costs')
+        renderCostChart('niCostChart', state.data.scenario_result || state.data.baseline);
       if (path === '/network/overview/network') {
         const flows = state.data.baseline?.flows || [];
         renderVolumeByCdChart('niVolumeByCdChart', flows);
         renderDistanceHistogram('niDistanceHistogramChart', flows);
-      }
-      if (path === '/network/overview/costs') {
-        const flows = state.data.baseline?.flows || [];
-        renderVolumeByCdChart('niCostVolumeByCdChart', flows);
-        renderDistanceHistogram('niCostDistanceHistogramChart', flows);
       }
       if (path.includes('/risk')) {
         renderRiskChart('niRiskChart', state.data.monte_carlo);
@@ -850,41 +397,20 @@ function initializeNetworkIntelligence() {
         renderRiskScatter('niRiskScatterChart', monteCarlo);
         renderRiskProbability('niRiskProbabilityChart', monteCarlo);
       }
-      if (path === '/network/results/summary')
+      if (path === '/network/optimizer/results')
         renderRanking('niRankingChart', state.data.optimizer);
-      if (path === '/network/results/comparison') {
-        const baseline = selectBaseline(state);
-        renderComparisonCostChart(
-          'niComparisonCostChart',
-          comparisonCandidates(state),
-          state.context?.selected_scenario_id,
-          baseline?.model?.scenario_id || 'baseline'
-        );
-      }
     }
 
-    window.addEventListener('visagio:crypto-prompt', (event) => {
-      const visible = Boolean(event.detail?.visible);
-      root.querySelector('.network-content').inert = visible;
-      root.querySelector('.network-sidebar').inert = visible;
-      showLoading(root, !visible && store.getState().ui.loading, 'Carregando empresa');
-    });
     store.subscribe(render);
-    let chartResizeFrame = 0;
-    window.addEventListener('resize', () => {
-      window.cancelAnimationFrame(chartResizeFrame);
-      chartResizeFrame = window.requestAnimationFrame(() => {
-        const state = store.getState();
-        const route = parseRoute(state.ui.route || window.location.hash || config.default_route);
-        renderCharts(route.path, state);
-      });
-    });
     stopRouter = startRouter({
       initialRoute: config.default_route,
       onRouteChange(route) {
         root.querySelector('#networkToastRoot')?.replaceChildren();
         store.update((state) => setRoute(state, route.hash));
-        window.requestAnimationFrame(() => window.scrollTo(0, 0));
+        window.requestAnimationFrame(() => {
+          window.scrollTo(0, 0);
+          root.querySelector('#networkPage')?.focus({ preventScroll: true });
+        });
       },
     });
     installBindings({ root, store, controller });
@@ -902,4 +428,4 @@ function initializeNetworkIntelligence() {
   void bootstrap();
 }
 
-if (networkActive) initializeNetworkIntelligence();
+initializeNetworkIntelligence();

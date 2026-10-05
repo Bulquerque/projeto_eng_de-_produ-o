@@ -11,62 +11,6 @@ import {
   validateScenarioValues,
 } from './form-values.js';
 
-const PRESET_SETTINGS = {
-  balanced: {
-    max_candidates: 2000,
-    risk_iterations: 300,
-    risk_profile: 'balanced',
-    max_risk_level: 'high',
-  },
-  cfo: {
-    max_candidates: 3000,
-    risk_iterations: 400,
-    risk_profile: 'balanced',
-    max_risk_level: 'high',
-  },
-  supply: {
-    max_candidates: 3000,
-    risk_iterations: 600,
-    risk_profile: 'conservative',
-    max_risk_level: 'medium',
-  },
-  fiscal: {
-    max_candidates: 5000,
-    risk_iterations: 600,
-    risk_profile: 'broad',
-    max_risk_level: 'high',
-    risk_scatter_driver: 'tax_multiplier',
-  },
-  conservative: {
-    max_candidates: 5000,
-    risk_iterations: 1000,
-    risk_profile: 'conservative',
-    max_risk_level: 'medium',
-  },
-};
-
-function applyOptimizerSettings(form, settings) {
-  if (!form || !settings) return;
-  const fields = {
-    max_candidates: settings.max_candidates,
-    risk_iterations: settings.risk_iterations,
-    risk_profile: settings.risk_profile,
-    risk_scatter_driver: settings.risk_scatter_driver,
-    max_risk_level: settings.max_risk_level,
-  };
-  for (const [name, value] of Object.entries(fields)) {
-    if (value == null) continue;
-    const field = form.elements.namedItem(name);
-    if (field && [...(field.options || [])].some((option) => option.value === String(value))) {
-      field.value = String(value);
-      field.dispatchEvent(new Event('input', { bubbles: true }));
-    } else if (field && !field.options) {
-      field.value = String(value);
-      field.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-  }
-}
-
 export function installBindings({ root, store, controller }) {
   const onClick = (event) => {
     const routeLink = event.target.closest('[data-route]');
@@ -79,7 +23,7 @@ export function installBindings({ root, store, controller }) {
     if (mapState) {
       controller.openDrawer(
         `Estado ${escapeHtml(mapState.dataset.uf || '—')}`,
-        `<p>${escapeHtml(mapState.getAttribute('aria-label') || 'Detalhes do estado indisponíveis.')}</p>`
+        `<p>${escapeHtml(mapState.getAttribute('aria-label') || 'Detalhes do estado indisponíveis.')}</p><p>O valor exibido segue o recorte e a disponibilidade do provider ativo.</p>`
       );
       return;
     }
@@ -92,18 +36,43 @@ export function installBindings({ root, store, controller }) {
     } else if (action === 'open-help') {
       controller.openDrawer(
         'Ajuda',
-        '<ol class="ni-list"><li>Veja a operação atual em Visão geral.</li><li>Escolha um cenário no cabeçalho e ajuste seus parâmetros em Simulação.</li><li>Gere recomendações para comparar alternativas.</li><li>Compare custos e risco em Resultados.</li></ol><p>Dados e metodologia reúne fontes, premissas e validações.</p>'
+        '<ol class="ni-list"><li>Veja a operação atual em Visão geral.</li><li>Escolha ou construa um cenário e simule as alterações.</li><li>Gere recomendações para comparar alternativas.</li><li>Compare custos e risco nos resultados.</li></ol><p>Dados e confiança reúne fontes, premissas e validações.</p><div class="ni-actions"><button type="button" class="ni-button secondary" data-action="open-settings">Configurações</button><button type="button" class="ni-button secondary" data-action="open-styleguide">Style guide</button></div>'
       );
+    } else if (action === 'open-settings') {
+      controller.openDrawer(
+        'Configurações',
+        '<p>As configurações de execução são controladas pelo provider ativo. Para empresas reais, os dados protegidos permanecem isolados e a política fiscal é apresentada sem completar campos ausentes.</p>'
+      );
+    } else if (action === 'open-styleguide') {
+      controller.openDrawer(
+        'Style guide',
+        '<p>Tokens visuais do workspace: azul petróleo para navegação, verde menta para ações positivas, âmbar para alertas e superfícies claras para evidências.</p><div class="ni-styleguide-swatches"><span class="swatch deep">#00363d</span><span class="swatch mint">#a9fdac</span><span class="swatch amber">#f2b84b</span></div>'
+      );
+    } else if (action === 'retry-company') {
+      controller.retryCompany();
     } else if (action === 'open-export') {
       controller.exportPackage();
     } else if (action === 'close-drawer') {
       controller.closeDrawer();
-    } else if (action === 'retry-company') {
-      controller.retryCompany();
     } else if (action === 'lock-crypto') {
       controller.lock();
     } else if (action === 'run-decision') {
-      void controller.runDecision();
+      const state = store.getState();
+      const selectedId = state.context.selected_scenario_id;
+      const ranked = [
+        ...(state.data.optimizer?.scored_scenarios || []),
+        ...(state.data.optimizer?.best_scenarios || []),
+      ].some((candidate) => candidate.scenario_id === selectedId);
+      void controller.runDecision(
+        ranked
+          ? {
+              selectionMode: 'manual',
+              manualScenarioId: selectedId,
+              existingOptimizerResult: state.data.optimizer,
+              riskConfig: state.ui.risk_config || {},
+            }
+          : {}
+      );
     } else if (action === 'run-decision-manual') {
       const manualScenarioId =
         root.querySelector('#niManualScenarioId')?.value.trim() ||
@@ -112,6 +81,8 @@ export function installBindings({ root, store, controller }) {
       void controller.runDecision({
         selectionMode: 'manual',
         manualScenarioId,
+        existingOptimizerResult: store.getState().data.optimizer,
+        riskConfig: store.getState().ui.risk_config || {},
       });
     } else if (action === 'select-compared-scenario') {
       const scenarioId = event.target.closest('[data-scenario-id]')?.dataset.scenarioId;
@@ -133,26 +104,20 @@ export function installBindings({ root, store, controller }) {
       );
     } else if (action === 'clear-saved-scenarios') {
       controller.clearSavedScenarios();
-    } else if (action === 'import-scenario') {
-      root.querySelector('[data-testid="scenario-import"]')?.click();
     } else if (action === 'reset-scenario-draft') {
       controller.resetScenarioDraft();
     } else if (action === 'open-optimizer-preset-save') {
       const editor = root.querySelector('#optimizerPresetEditor');
-      const isOpening = editor?.hidden;
-      if (editor) editor.hidden = !isOpening;
-      event.target
-        .closest('[data-action]')
-        ?.setAttribute('aria-expanded', String(Boolean(isOpening)));
-      if (isOpening) editor?.querySelector('input[name="custom_preset_name"]')?.focus();
+      const opening = Boolean(editor?.hidden);
+      if (editor) editor.hidden = !opening;
+      event.target.closest('[data-action]')?.setAttribute('aria-expanded', String(opening));
+      if (opening) editor?.querySelector('[name="custom_preset_name"]')?.focus();
     } else if (action === 'cancel-optimizer-preset-save') {
       const editor = root.querySelector('#optimizerPresetEditor');
       if (editor) editor.hidden = true;
       root
         .querySelector('[data-action="open-optimizer-preset-save"]')
         ?.setAttribute('aria-expanded', 'false');
-      const nameInput = root.querySelector('#niOptimizerForm [name="custom_preset_name"]');
-      if (nameInput) nameInput.value = '';
     } else if (action === 'save-optimizer-preset') {
       const form = root.querySelector('#niOptimizerForm');
       const name = form?.elements.namedItem('custom_preset_name')?.value.trim();
@@ -170,8 +135,14 @@ export function installBindings({ root, store, controller }) {
         showToast(root, 'Não foi possível salvar o preset nesta sessão.', 'error');
         return;
       }
-      const state = store.getState();
-      state.ui.optimizer_presets = [...(state.ui.optimizer_presets || []), preset];
+      store.update((state) => {
+        state.ui.optimizer_presets = [
+          ...(state.ui.optimizer_presets || []).filter(
+            (item) => item.preset_id !== preset.preset_id
+          ),
+          preset,
+        ];
+      });
       const select = form.elements.namedItem('custom_preset_select');
       const option = document.createElement('option');
       option.value = preset.preset_id;
@@ -191,13 +162,22 @@ export function installBindings({ root, store, controller }) {
     }
   };
 
+  root.addEventListener('network-scenario-select', (event) => {
+    if (!store.getState().ui.loading && event.detail?.scenarioId) {
+      controller.selectComparedScenario(event.detail.scenarioId);
+    }
+  });
   root.addEventListener('click', onClick);
   root.querySelector('#niCompanySelect')?.addEventListener('change', (event) => {
     void controller.switchCompany(event.target.value);
   });
   root.querySelector('#niScenarioSelect')?.addEventListener('change', (event) => {
     if (store.getState().ui.loading) return;
-    controller.loadScenarioDraft(event.target.value || null);
+    const scenarioId = event.target.value || null;
+    if (scenarioId?.startsWith('tax-year:'))
+      controller.selectScenarioTaxYear(scenarioId.slice('tax-year:'.length));
+    else if (scenarioId) controller.loadScenarioDraft(scenarioId);
+    else controller.resetScenarioDraft();
   });
   root.addEventListener('submit', (event) => {
     if (event.target.id === 'niScenarioForm') {
@@ -248,46 +228,22 @@ export function installBindings({ root, store, controller }) {
     }
   });
   root.addEventListener('change', (event) => {
-    if (event.target.matches('input[name="profile_id"]')) {
-      applyOptimizerSettings(
-        root.querySelector('#niOptimizerForm'),
-        PRESET_SETTINGS[event.target.value]
-      );
-      return;
-    }
-    if (event.target.matches('select[name="custom_preset_select"]')) {
-      const preset = (store.getState().ui.optimizer_presets || []).find(
-        (item) => item.preset_id === event.target.value
-      );
-      const form = root.querySelector('#niOptimizerForm');
-      if (preset?.configuration && form) {
-        const profile = [...form.querySelectorAll('input[name="profile_id"]')].find(
-          (input) => input.value === preset.configuration.profile_id
-        );
-        if (profile) profile.checked = true;
-        const settings = preset.configuration;
-        const mapped = {
-          max_candidates: settings.max_candidates,
-          seed: settings.seed,
-          min_active_cds: settings.constraints?.min_active_cds,
-          max_active_cds: settings.constraints?.max_active_cds,
-          max_cd_volume_share: settings.constraints?.max_cd_volume_share,
-          max_risk_level: settings.constraints?.max_risk_level,
-          risk_iterations: settings.risk_config?.iterations,
-          risk_seed: settings.risk_config?.seed,
-          risk_profile: settings.risk_config?.profile,
-          risk_scatter_driver: settings.risk_config?.scatter_driver,
-          stress_profile: settings.risk_config?.stress_profile,
-          sensitivity_variable: settings.risk_config?.sensitivity_variable,
-          sensitivity_x: settings.risk_config?.sensitivity_x,
-          sensitivity_y: settings.risk_config?.sensitivity_y,
-          tax_year: settings.tax_year,
-        };
-        for (const [name, value] of Object.entries(mapped)) {
-          const control = form.elements.namedItem(name);
-          if (control && value != null) control.value = String(value);
-          control?.dispatchEvent(new Event('input', { bubbles: true }));
-        }
+    if (event.target.matches('#niOptimizerForm [name="custom_preset_select"]')) {
+      const preset = store
+        .getState()
+        .ui.optimizer_presets?.find((item) => item.preset_id === event.target.value);
+      const form = event.target.form;
+      if (!preset || !form) return;
+      const values = preset.configuration || {};
+      for (const [name, value] of Object.entries({
+        ...values,
+        ...(values.constraints || {}),
+        ...(values.risk_config || {}),
+        profile_id: preset.profile_id || values.profile_id,
+      })) {
+        const field = form.elements.namedItem(name);
+        if (field && value != null && !field.options) field.value = String(value);
+        else if (field && value != null && field.options?.length) field.value = String(value);
       }
       return;
     }
@@ -300,22 +256,55 @@ export function installBindings({ root, store, controller }) {
   root.addEventListener('input', (event) => {
     const form = event.target.form;
     if (!form || !['niScenarioForm', 'niOptimizerForm', 'niRiskForm'].includes(form.id)) return;
-    if (event.target.name === 'custom_preset_name') return;
+    if (
+      event.target.name === 'custom_preset_name' ||
+      (event.target.type !== 'number' && event.target.name !== 'scenario_name')
+    )
+      return;
     const current = rawInputValues.get(form) || {};
     current[event.target.name] = event.target.value;
     rawInputValues.set(form, current);
-    const data = new FormData(form);
-    const values =
-      form.id === 'niScenarioForm'
-        ? parseScenarioForm(
-            data,
-            form.querySelectorAll('input[name="active_cds"]:checked'),
-            current
-          )
-        : form.id === 'niOptimizerForm'
-          ? parseOptimizerForm(data, current)
-          : parseRiskForm(data, current);
-    controller.captureDraft(form.id, values);
+  });
+  const markDraft = (event) => {
+    const form = event.target.form;
+    if (form?.id !== 'niScenarioForm' || event.target.disabled) return;
+    const state = store.getState();
+    const values = parseScenarioForm(
+      new FormData(form),
+      form.querySelectorAll('input[name="active_cds"]:checked'),
+      rawInputValues.get(form)
+    );
+    state.ui.scenario_draft = {
+      ...(state.ui.scenario_draft || {}),
+      scenario_name: values.scenario_name,
+      changes: { ...values },
+    };
+    state.ui.scenario_draft_dirty = true;
+    const status = root.querySelector('[data-testid="scenario-draft-status"]');
+    if (status) status.textContent = 'Alterações pendentes; execute para atualizar.';
+    for (const control of root.querySelectorAll(
+      '[data-testid="scenario-save"], [data-testid="scenario-export"]'
+    ))
+      control.disabled = true;
+  };
+  root.addEventListener('input', markDraft);
+  root.addEventListener('change', markDraft);
+  root.addEventListener('change', (event) => {
+    if (!event.target.matches('[data-compare-scenario]')) return;
+    const checked = [...root.querySelectorAll('[data-compare-scenario]:checked')];
+    if (checked.length > 4) {
+      event.target.checked = false;
+      showToast(root, 'Selecione até quatro cenários para comparar.', 'neutral');
+      return;
+    }
+    store.update((state) => {
+      state.ui.compared_scenario_ids = checked.map((input) => input.value);
+    });
+    const details = root.querySelector('[data-testid="comparison-choice-details"]');
+    if (details) details.open = true;
+    [...root.querySelectorAll('[data-compare-scenario]')]
+      .find((input) => input.value === event.target.value)
+      ?.focus({ preventScroll: true });
   });
   const onKeyDown = (event) => {
     const drawer = root.querySelector('#networkDrawer');

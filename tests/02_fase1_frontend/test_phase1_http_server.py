@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PATHS = [
-    ('/index.html', 'Simulador Est'),
+    ('/index.html', 'Network Intelligence'),
     ('/assets/styles.css', '--vg-dark'),
     ('/assets/js/phase1/main.js', None),
     ('/data/catalog.json', 'empresa1'),

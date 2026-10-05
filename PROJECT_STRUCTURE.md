@@ -1,12 +1,12 @@
 # Estrutura do projeto
 
-Este mapa descreve a estrutura presente no checkout. O projeto mantém duas superfícies de execução: a interface Network Intelligence e o portal/fluxos das fases. Ambas compartilham engines e utilitários; ainda não houve migração que torne uma delas substituta integral da outra.
+Este mapa descreve a estrutura presente no checkout. `index.html` inicia uma aplicação Network Intelligence com rotas para visão executiva, cenários, otimização, risco e dados/confiança. Módulos por fase continuam no repositório porque a aplicação compartilha vários desses engines; as páginas `fase-*` são atalhos para as rotas atuais.
 
 ## Entry points e navegação
 
-- [`index.html`](index.html) é a entrada do site estático. Sempre carrega `assets/js/app/main.js`; esse módulo só inicializa a shell Network quando a query `ui=network-intelligence` ou a rota `#/network/...` a ativa.
-- No modo de fases, um carregador inline em `index.html` importa os entry points `assets/js/phase1/main.js` a `phase5/main.js` e `assets/js/core/router.js`.
-- [`fase-1-validacao/`](fase-1-validacao/), [`fase-2-baseline/`](fase-2-baseline/), [`fase-3-cenarios/`](fase-3-cenarios/), [`fase-4-score-otimizador/`](fase-4-score-otimizador/) e [`fase-5-entrega-final/`](fase-5-entrega-final/) são páginas de entrada para os fluxos correspondentes; verifique cada `index.html` antes de alterar sua navegação.
+- [`index.html`](index.html) é a entrada do site estático e carrega `assets/js/app/main.js`, que inicia a shell Network Intelligence.
+- `assets/js/phase1/main.js` a `assets/js/phase5/main.js` mantêm os módulos das fases legadas, compartilhando engines e utilitários; as páginas de fase listadas abaixo são fachadas para subrotas do runtime Network.
+- [`fase-1-validacao/`](fase-1-validacao/) redireciona para `#/network/overview/summary`; [`fase-2-baseline/`](fase-2-baseline/) para `#/network/trust/overview`; [`fase-3-cenarios/`](fase-3-cenarios/) para `#/network/scenarios/build`; [`fase-4-score-otimizador/`](fase-4-score-otimizador/) para `#/network/optimizer/configure`; e [`fase-5-entrega-final/`](fase-5-entrega-final/) para `#/network/trust/validation`. O roteador canônico mantém aliases históricos e preserva os parâmetros da query.
 - [`debug/`](debug/) contém a entrada do Debug Center.
 
 ## Mapa de diretórios
@@ -14,8 +14,8 @@ Este mapa descreve a estrutura presente no checkout. O projeto mantém duas supe
 | Caminho | Responsabilidade observada |
 |---|---|
 | `assets/js/app/` | Shell, estado, roteamento, bindings, páginas, providers e visualizações da Network UI. |
-| `assets/js/core/` | Utilitários e serviços compartilhados, incluindo dados e roteamento legado. |
-| `assets/js/phase1/` … `phase5/` | Entry points e módulos das superfícies por fase; alguns engines também são consumidos pela Network UI. |
+| `assets/js/core/` | Utilitários e serviços compartilhados, incluindo carregamento e sessão de dados. |
+| `assets/js/phase1/` … `phase5/` | Engines por domínio e módulos de interface legados; confira imports/provedores antes de mover ou remover. |
 | `assets/styles.css` e folhas específicas | Estilos globais e de cada interface. |
 | `data-demo/empresa_mock/` | Fixture sintética para a demonstração pública da Network UI. |
 | `data/` | Catálogos, contratos e derivados; pode haver arquivos protegidos, criptografados ou locais ignorados pelo Git. |

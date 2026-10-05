@@ -16,6 +16,7 @@ required = [
     'assets/js/phase5/final-qa-checker.js',
     'assets/js/phase5/release-validator.js',
     'assets/js/phase5/phase5-dashboard.js',
+    'assets/js/phase5/phase5-dashboard-view.js',
     'assets/js/phase5/tax-periods-view.js',
     'assets/js/phase5/final-situation-view.js',
     'assets/js/core/analysis-quality.js',
@@ -28,8 +29,20 @@ assert not missing, missing
 html = (ROOT / 'fase-5-entrega-final/index.html').read_text(encoding='utf-8')
 assert '../assets/styles.css' in html
 assert '../assets/js/core/runtime-warning.js' in html
-assert 'index.html#/homologacao-relatorio' in html
+assert 'index.html#/network/trust/validation' in html
 portal = (ROOT / 'index.html').read_text(encoding='utf-8')
-assert 'assets/js/phase5/main.js' in portal
+assert '<script type="module" src="assets/js/app/main.js"></script>' in portal
+route_renderers = (ROOT / 'assets/js/app/route-renderers.js').read_text(encoding='utf-8')
+trust_routes = {
+    "'/network/trust/overview'": 'renderTrustOverview',
+    "'/network/trust/evidence'": 'renderTrustEvidence',
+    "'/network/trust/validation'": 'renderTrustValidation',
+    "'/network/trust/methodology'": 'renderTrustMethodology',
+}
+for route, renderer in trust_routes.items():
+    assert route in route_renderers and renderer in route_renderers, (route, renderer)
+trust_pages = (ROOT / 'assets/js/app/pages/trust.js').read_text(encoding='utf-8')
+for renderer in trust_routes.values():
+    assert f'export function {renderer}(' in trust_pages, renderer
 assert '/mnt/data' not in html and 'C:\\' not in html
 print('PHASE5_FILE_STRUCTURE_OK')

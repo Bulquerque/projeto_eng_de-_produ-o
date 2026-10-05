@@ -4,12 +4,18 @@ export const ROUTES = Object.freeze([
   '#/network/overview/costs',
   '#/network/overview/tax',
   '#/network/scenarios/build',
+  '#/network/scenarios/result',
+  '#/network/scenarios/compare',
+  '#/network/scenarios/risk',
+  '#/network/scenarios/risk/advanced',
   '#/network/results/summary',
   '#/network/results/comparison',
   '#/network/results/tradeoffs',
   '#/network/results/risk',
   '#/network/results/risk/advanced',
   '#/network/optimizer/configure',
+  '#/network/optimizer/results',
+  '#/network/optimizer/tradeoffs',
   '#/network/trust/overview',
   '#/network/trust/evidence',
   '#/network/trust/sources',
@@ -18,13 +24,28 @@ export const ROUTES = Object.freeze([
   '#/network/dev/console',
 ]);
 
-export const ROUTE_ALIASES = Object.freeze({
+const ROUTE_ALIASES = Object.freeze({
+  '#/network/scenarios/result': '#/network/results/summary',
+  '#/network/scenarios/compare': '#/network/results/comparison',
+  '#/network/optimizer/results': '#/network/results/summary',
+  '#/network/optimizer/tradeoffs': '#/network/results/tradeoffs',
+  '#/network/scenarios/risk': '#/network/results/risk',
+  '#/network/scenarios/risk/advanced': '#/network/results/risk/advanced',
   '#/diagnostico-baseline': '#/network/overview/summary',
   '#/simulacao-otimizacao': '#/network/scenarios/build',
   '#/homologacao-relatorio': '#/network/trust/validation',
+  '#/fase-1-validacao': '#/network/overview/summary',
   '#fase-1-validacao': '#/network/overview/summary',
-  '#fase-2-validacao': '#/network/overview/summary',
-  '#dados': '#/network/overview/summary',
+  '#/fase-2-baseline': '#/network/trust/overview',
+  '#fase-2-baseline': '#/network/trust/overview',
+  '#/fase-3-cenarios': '#/network/scenarios/build',
+  '#fase-3-cenarios': '#/network/scenarios/build',
+  '#/fase-4-score-otimizador': '#/network/optimizer/configure',
+  '#fase-4-score-otimizador': '#/network/optimizer/configure',
+  '#/fase-5-entrega-final': '#/network/trust/validation',
+  '#fase-5-entrega-final': '#/network/trust/validation',
+  '#fase-2-validacao': '#/network/trust/overview',
+  '#/dados': '#/network/overview/summary',
   '#qualidade': '#/network/trust/overview',
   '#abas': '#/network/trust/sources',
   '#visao-geral': '#/network/overview/summary',
@@ -38,22 +59,18 @@ export const ROUTE_ALIASES = Object.freeze({
   '#/entrega': '#/network/trust/validation',
   '#/debug': '#/network/dev/console',
   '#erros': '#/network/dev/console?tab=errors',
-  '#/network/scenarios/result': '#/network/results/summary',
-  '#/network/scenarios/compare': '#/network/results/comparison',
-  '#/network/scenarios/risk': '#/network/results/risk',
-  '#/network/scenarios/risk/advanced': '#/network/results/risk/advanced',
-  '#/network/optimizer/results': '#/network/results/summary',
-  '#/network/optimizer/tradeoffs': '#/network/results/tradeoffs',
 });
 
 export function normalizeRoute(route = '') {
   const raw = route.startsWith('#') ? route : `#${route.startsWith('/') ? route : `/${route}`}`;
-  const [path, query = ''] = raw.split('?');
-  return `${ROUTE_ALIASES[path] || path}${query ? `?${query}` : ''}`;
-}
-
-export function resolveLegacyAlias(route = '') {
-  return ROUTE_ALIASES[route] || null;
+  const queryIndex = raw.indexOf('?');
+  const path = queryIndex === -1 ? raw : raw.slice(0, queryIndex);
+  const query = queryIndex === -1 ? '' : raw.slice(queryIndex);
+  const alias = ROUTE_ALIASES[path];
+  if (!alias) return raw;
+  const [aliasPath, aliasQuery = ''] = alias.split('?');
+  const mergedQuery = [aliasQuery, query.slice(1)].filter(Boolean).join('&');
+  return `${aliasPath}${mergedQuery ? `?${mergedQuery}` : ''}`;
 }
 
 export function parseRoute(route = window.location.hash) {
@@ -90,10 +107,9 @@ export function replaceCompanyQuery(companyId) {
 
 export function startRouter({ initialRoute, onRouteChange } = {}) {
   const handle = () => {
-    const parsed = parseRoute(window.location.hash || initialRoute);
-    if (window.location.hash !== parsed.hash && isKnownRoute(parsed.hash)) {
-      window.history.replaceState({}, '', parsed.hash);
-    }
+    const currentHash = window.location.hash || initialRoute || '#/network/overview/summary';
+    const parsed = parseRoute(currentHash);
+    if (parsed.hash !== currentHash) window.history.replaceState({}, '', parsed.hash);
     onRouteChange?.(parsed);
   };
   window.addEventListener('hashchange', handle);

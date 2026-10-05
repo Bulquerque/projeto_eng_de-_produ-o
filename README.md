@@ -17,14 +17,14 @@ python -m http.server 8000
 Rotas principais:
 
 - `/` — visão geral e validação inicial;
-- `/fase-1-validacao/` — dados, caminhos e qualidade;
-- `/fase-2-baseline/` — baseline, custos, tributo e paridade;
-- `/fase-3-cenarios/` — criação, simulação e comparação;
-- `/fase-4-score-otimizador/` — função objetivo e busca discreta;
-- `/fase-5-entrega-final/` — stress test, robustez, recomendação e exportação;
+- `/fase-1-validacao/` → `#/network/overview/summary` — diagnóstico inicial;
+- `/fase-2-baseline/` → `#/network/trust/overview` — visão geral da baseline e de sua evidência;
+- `/fase-3-cenarios/` → `#/network/scenarios/build` — criação de cenários;
+- `/fase-4-score-otimizador/` → `#/network/optimizer/configure` — configuração do otimizador;
+- `/fase-5-entrega-final/` → `#/network/trust/validation` — validação da entrega;
 - `/debug/` — diagnóstico de paths, módulos e carregamento.
 
-O portal e a Network Intelligence coexistem. O `index.html` sempre carrega o bootstrap `assets/js/app/main.js`; a shell Network só inicializa com o parâmetro `ui=network-intelligence` ou uma rota `#/network/...`. Fora desse modo, o carregador inline de `index.html` importa os entry points das cinco fases e o roteador legado. As páginas `/fase-1-validacao/` a `/fase-5-entrega-final/` continuam disponíveis; portanto, o projeto não é um runtime único.
+O `index.html` carrega `assets/js/app/main.js`, que inicia a shell Network Intelligence. Os módulos `assets/js/phase1/` a `assets/js/phase5/` permanecem no projeto para fluxos e engines das fases. As páginas `/fase-1-validacao/` a `/fase-5-entrega-final/` são fachadas que levam às subrotas indicadas acima. O roteador canônico também converte os hashes históricos `#/diagnostico-baseline`, `#/simulacao-otimizacao` e `#/homologacao-relatorio`, além dos aliases de fase, para rotas válidas, preservando os parâmetros da query.
 
 Para abrir a interface Network Intelligence com a fixture sintética pública:
 
@@ -37,13 +37,32 @@ carregadas após o desbloqueio local com a credencial configurada.
 
 ## Qualidade e testes
 
-O comando recomendado para validar a árvore inteira é:
+Prepare as dependências do gate uma vez:
 
 ```bash
-npm run quality
+npm ci
+python -m pip install -r requirements-quality.txt
+python -m playwright install chromium
 ```
 
-Ele executa a suíte canônica, que inclui ESLint, Prettier, Ruff, contratos, engines e E2E.
+O `npm run quality` executa ESLint, Prettier, Ruff, a suíte pública e a suíte completa
+com E2E. A suíte completa também valida dados protegidos: defina
+`VISAGIO_DATA_PASSWORD` no ambiente local antes de executá-la. Nunca grave essa senha
+no repositório ou no histórico do shell.
+
+Para validar somente o que também pode ser executado com segurança em PRs públicos,
+use:
+
+```bash
+npm run quality:public
+```
+
+Esse comando inclui lint, formatação, Ruff e testes públicos sem solicitar credenciais.
+O GitHub Actions roda `quality:public` para todos os PRs. A suíte protegida roda em
+pushes/workflow_dispatch e em PRs do mesmo repositório, onde os secrets estão
+disponíveis; PRs de forks recebem explicitamente a cobertura pública, sem execução
+de código não confiável com credenciais.
+
 Os comandos individuais são:
 
 ```bash

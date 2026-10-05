@@ -13,8 +13,9 @@ def find_project_root() -> Path:
 ROOT = find_project_root()
 required = [
     'index.html',
-    'assets/styles.css',
-    'assets/js/phase1/main.js',
+    'assets/js/app/main.js',
+    'assets/js/app/main.css',
+    'assets/js/app/shell.js',
     'data/catalog.json',
     'data/encrypted_manifest.json',
     'data/validation/full_workbook_path_audit.json',

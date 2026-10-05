@@ -21,11 +21,3 @@ export function clearCompanyScenarios(companyId) {
   const cleared = removeStorageKey('local', key(companyId));
   return { cleared, storage_key: key(companyId) };
 }
-export function validateStoredScenario(companyId, scenario) {
-  return (
-    !!scenario &&
-    scenario.company_id === companyId &&
-    !!scenario.scenario_id &&
-    !!scenario.base_scenario_id
-  );
-}

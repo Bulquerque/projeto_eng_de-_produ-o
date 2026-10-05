@@ -732,7 +732,13 @@ export async function createMockProvider() {
     },
     async buildDecisionPackage(input = {}) {
       const { runDecisionPipeline } = await import('../services/decision-service.js');
-      const packageResult = await runDecisionPipeline({ provider: this, ...input });
+      const packageResult = await runDecisionPipeline({
+        provider: this,
+        ...input,
+        existingOptimizerResult:
+          input.existingOptimizerResult ||
+          (input.selectionMode === 'manual' ? this.lastOptimization : null),
+      });
       return {
         ...packageResult,
         company_id: COMPANY_ID,

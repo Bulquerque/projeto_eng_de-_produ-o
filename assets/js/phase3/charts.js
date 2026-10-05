@@ -29,8 +29,8 @@ export function renderScenarioComparisonChart(baselineCosts, scenarioCosts) {
 
   const labels = keys.map((k) => labelsMap[k]);
 
-  const baselineData = keys.map((k) => baselineCosts[k] || 0);
-  const scenarioData = keys.map((k) => scenarioCosts[k] || 0);
+  const baselineData = keys.map((k) => baselineCosts[k] ?? null);
+  const scenarioData = keys.map((k) => scenarioCosts[k] ?? null);
 
   const datasets = [
     {
@@ -81,6 +81,7 @@ export function renderMonteCarloPercentileCurve(percentileCurve) {
 
   renderLineChart('monteCarloCdfChart', {
     labels: percentileCurve.map((point) => `P${point.percentile}`),
+    xValues: percentileCurve.map((point) => Number(point.percentile)),
     datasets: [
       {
         label: 'Saving (%)',
@@ -104,10 +105,19 @@ export function renderMonteCarloScatter(samples, driverKey, driverLabel) {
     datasets: [
       {
         label: driverLabel || driverKey,
-        data: samples.map((sample) => ({
-          x: Number(sample.inputs?.[driverKey] || 0),
-          y: Number(sample.saving_pct || 0),
-        })),
+        data: samples
+          .filter(
+            (sample) =>
+              sample.inputs?.[driverKey] != null &&
+              sample.saving_pct != null &&
+              Number.isFinite(Number(sample.inputs[driverKey])) &&
+              Number.isFinite(Number(sample.saving_pct))
+          )
+          .map((sample, index) => ({
+            x: Number(sample.inputs[driverKey]),
+            y: Number(sample.saving_pct),
+            label: `Simulação ${index + 1}`,
+          })),
         borderColor: '#92400e',
         backgroundColor: '#92400e',
       },
@@ -150,6 +160,7 @@ export function renderMonteCarloTotalCurve(totalPercentileCurve) {
 
   renderLineChart('monteCarloTotalChart', {
     labels: totalPercentileCurve.map((point) => `P${point.percentile}`),
+    xValues: totalPercentileCurve.map((point) => Number(point.percentile)),
     datasets: [
       {
         label: 'Total com tributo',
@@ -178,8 +189,10 @@ export function renderMonteCarloDriverImportance(driverImportance) {
     labels: topDrivers.map((item) => item.label || item.driver),
     datasets: [
       {
-        label: 'Correlação absoluta',
-        data: topDrivers.map((item) => Math.abs(item.correlation || 0) * 100),
+        label: 'Correlação com o saving (%)',
+        data: topDrivers.map((item) =>
+          item.correlation == null ? null : Number(item.correlation) * 100
+        ),
         backgroundColor: '#0C7878',
       },
     ],

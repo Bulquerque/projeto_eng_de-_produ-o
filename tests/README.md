@@ -26,6 +26,32 @@ Para rodar o gate canônico completo:
 python tests/run_all_tests.py
 ```
 
+## Cobertura pública sem credenciais
+
+`npm run test:public` (incluído em `npm run quality:public`) executa a lista explícita
+de testes em `run_public_tests.py`. Além das verificações estáticas/estruturais, ela
+inclui testes unitários de parsing CSV, renderização de tabelas e previews, valores de
+formulário da Network Intelligence e contratos da aplicação com a fixture sintética
+`empresa_mock`.
+
+Os testes adicionais incluídos nessa fronteira são `02_fase1_frontend/test_phase1_csv_parser.py`,
+`02_fase1_frontend/test_phase1_table_view.py`,
+`06_fase3_cenarios/test_phase3_library_view.py`,
+`07_fase4_score_otimizador/test_phase4_objective_preview_view.py`,
+`08_fase5_entrega_final/test_phase5_dashboard_view.py`,
+`08_fase5_entrega_final/test_phase5_tax_periods_view.py`,
+`08_fase5_entrega_final/test_phase5_final_situation_view.py`,
+`12_network_intelligence/test_app_contracts.py` e
+`12_network_intelligence/test_form_values.py`. A lista também inclui
+`12_network_intelligence/test_decision_optimizer_flow.py`, que usa providers e bundles
+construídos no próprio teste e não lê dados de empresa protegidos.
+
+Essa suíte não descriptografa nem carrega bundles de `empresa1`/`empresa2`, não lê
+`.env.local` e não precisa de `VISAGIO_DATA_PASSWORD`. Os testes de reconciliação,
+cenários, otimização e decisão que dependem dos dados protegidos permanecem apenas no gate
+completo. A lista pública é explícita para revisão; ao adicionar um teste nela, confira
+que seus imports, fixtures e processos filhos não leem dados protegidos ou credenciais.
+
 O teste visual legado da Fase 1 (`tests/04_e2e_visual_opcional/`) é separado do gate
 porque depende de navegador e cobre somente a Fase 1. O gate canônico inclui os
 fluxos de apresentação e regressão E2E; quando esses testes falham, o comando falha.

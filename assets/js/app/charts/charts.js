@@ -6,74 +6,27 @@ import {
 } from '../../core/chart-renderer.js';
 import { escapeHtml, formatBRL, formatPct } from '../view-helpers.js';
 import { BRAZIL_MAP } from './brazil-map-data.js';
+import { isDistributionFlow } from './overview-analytics.js';
 
-export function renderCostChart(canvasId, result, { taxUnavailable = false } = {}) {
+export function renderCostChart(canvasId, result) {
   const costs = result?.costs?.costs || result?.costs || {};
-  const labels = ['Transferência', 'Distribuição', 'Armazenagem', 'Estoque'];
-  const data = [
-    costs.transfer_cost,
-    costs.distribution_cost,
-    costs.storage_cost,
-    costs.inventory_cost,
-  ];
-  if (!taxUnavailable) {
-    labels.push('Tributos');
-    data.push(costs.tax_impact);
-  }
   return renderBarChart(canvasId, {
-    title: taxUnavailable ? 'Composição do custo logístico · R$' : 'Composição do custo · R$',
-    labels,
+    title: 'Composição do custo',
+    labels: ['Transferência', 'Distribuição', 'Armazenagem', 'Estoque', 'Tributos'],
     datasets: [
       {
         label: 'R$',
-        data,
+        data: [
+          costs.transfer_cost,
+          costs.distribution_cost,
+          costs.storage_cost,
+          costs.inventory_cost,
+          costs.tax_impact,
+        ],
         backgroundColor: '#0c7878',
       },
     ],
     yFormat: 'money',
-    indexAxis: 'y',
-    showLegend: false,
-  });
-}
-
-export function renderComparisonCostChart(canvasId, rows, activeId, baselineId) {
-  const comparable = (rows || [])
-    .filter(
-      (row) =>
-        row?.scenario_id &&
-        row.total_with_tax != null &&
-        Number.isFinite(Number(row.total_with_tax))
-    )
-    .map((row) => ({ ...row, total_with_tax: Number(row.total_with_tax) }));
-  if (comparable.length < 2) return null;
-
-  const baseline = comparable.find((row) => row.scenario_id === baselineId);
-  const alternatives = comparable
-    .filter((row) => row.scenario_id !== baselineId)
-    .sort((a, b) => a.total_with_tax - b.total_with_tax);
-  const keepIds = new Set([
-    ...(baseline ? [baseline.scenario_id] : []),
-    ...alternatives.slice(0, 7).map((row) => row.scenario_id),
-    ...(alternatives.some((row) => row.scenario_id === activeId) ? [activeId] : []),
-  ]);
-  const visible = comparable.filter((row) => keepIds.has(row.scenario_id)).slice(0, 9);
-  return renderBarChart(canvasId, {
-    title: 'Custo total (R$)',
-    labels: visible.map((row) => {
-      if (row.scenario_id === baselineId) return 'Referência';
-      const name = row.scenario_name || 'Alternativa';
-      return name.length > 18 ? `${name.slice(0, 17)}…` : name;
-    }),
-    datasets: [
-      {
-        label: 'Custo total',
-        data: visible.map((row) => row.total_with_tax),
-        backgroundColor: '#0c7878',
-      },
-    ],
-    yFormat: 'money',
-    indexAxis: 'y',
-    showLegend: false,
   });
 }
 
@@ -96,7 +49,13 @@ export function renderRiskChart(canvasId, monteCarlo) {
 
 export function renderSensitivity(canvasId, sensitivity) {
   const rows = (sensitivity?.sensitivity_results || [])
-    .filter((row) => Number.isFinite(Number(row.value)) && Number.isFinite(Number(row.saving_pct)))
+    .filter(
+      (row) =>
+        row.value != null &&
+        row.saving_pct != null &&
+        Number.isFinite(Number(row.value)) &&
+        Number.isFinite(Number(row.saving_pct))
+    )
     .slice()
     .sort((a, b) => Number(a.value) - Number(b.value));
   if (!rows.length) return null;
@@ -121,42 +80,40 @@ export function renderSensitivity(canvasId, sensitivity) {
 }
 
 function flowVolume(flow) {
-  return (
-    Number(flow?.annual_weight_kg ?? flow?.weight_kg ?? flow?.volume ?? flow?.demand ?? 0) || 0
-  );
+  return observedNumber(flow?.annual_weight_kg ?? flow?.weight_kg);
 }
 
 function flowDistance(flow) {
-  return Number(flow?.distance_km ?? flow?.distance ?? 0) || 0;
+  return observedNumber(flow?.distance_km);
 }
 
-export function renderVolumeByCdChart(canvasId, flows = []) {
-  if (!flows.length) return null;
+function observedNumber(value) {
+  if (value == null || value === '') return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+export function aggregateDistributionWeightByCd(flows = []) {
+  const eligible = flows.filter(isDistributionFlow);
   const byCd = new Map();
-  flows.forEach((flow) => {
+  let included = 0;
+  eligible.forEach((flow) => {
+    const weight = flowVolume(flow);
+    if (weight == null || weight <= 0) return;
     const cd = flow?.cd || flow?.assigned_cd || flow?.cd_name || 'CD não informado';
-    byCd.set(cd, (byCd.get(cd) || 0) + flowVolume(flow));
+    byCd.set(cd, (byCd.get(cd) || 0) + weight);
+    included += 1;
   });
-  const rows = [...byCd.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-  if (!rows.length || !rows.some(([, value]) => value > 0)) return null;
-  renderBarChart(canvasId, {
-    labels: rows.map(([label]) => String(label).slice(0, 18)),
-    datasets: [
-      {
-        label: 'Volume (t)',
-        data: rows.map(([, value]) => value / 1000),
-        backgroundColor: '#0c7878',
-      },
-    ],
-    title: 'Concentração de volume por CD',
-    indexAxis: 'y',
-    yFormat: 'number',
-  });
+  return {
+    rows: [...byCd.entries()].sort((a, b) => b[1] - a[1]),
+    eligible: eligible.length,
+    included,
+  };
 }
 
-export function renderDistanceHistogram(canvasId, flows = []) {
-  const distances = flows.map(flowDistance).filter((value) => value > 0);
-  if (!distances.length) return null;
+export function aggregateDistributionDistances(flows = []) {
+  const eligible = flows.filter(isDistributionFlow);
+  const distances = eligible.map(flowDistance).filter((value) => value > 0);
   const buckets = [0, 0, 0, 0];
   distances.forEach((distance) => {
     if (distance <= 100) buckets[0] += 1;
@@ -164,6 +121,52 @@ export function renderDistanceHistogram(canvasId, flows = []) {
     else if (distance <= 600) buckets[2] += 1;
     else buckets[3] += 1;
   });
+  return { distances, buckets, eligible: eligible.length };
+}
+
+export function renderVolumeByCdChart(canvasId, flows = []) {
+  const canvas = document.getElementById(canvasId);
+  if (canvas) canvas.hidden = true;
+  const aggregate = aggregateDistributionWeightByCd(flows);
+  const { rows, eligible, included } = aggregate;
+  const summary = document.querySelector(`[data-chart-summary="${canvasId}"]`);
+  const caption = document.querySelector(`[data-chart-caption="${canvasId}"]`);
+  if (summary)
+    summary.textContent = rows.length
+      ? `${included}/${eligible} fluxos com peso informado · toneladas`
+      : 'Peso em kg não informado';
+  if (caption)
+    caption.textContent = `Peso explícito em kg, convertido para toneladas. ${included}/${eligible} fluxos de distribuição têm peso positivo; fluxos sem peso não entram.`;
+  if (!rows.length) return null;
+  if (canvas) canvas.hidden = false;
+  renderBarChart(canvasId, {
+    labels: rows.map(([label]) => String(label)),
+    datasets: [
+      {
+        label: 'Peso (t)',
+        data: rows.map(([, value]) => value / 1000),
+        backgroundColor: '#0c7878',
+      },
+    ],
+    title: 'Peso informado por CD (t)',
+    indexAxis: 'y',
+    xFormat: 'number',
+    yFormat: 'number',
+  });
+}
+
+export function renderDistanceHistogram(canvasId, flows = []) {
+  const canvas = document.getElementById(canvasId);
+  if (canvas) canvas.hidden = true;
+  const aggregate = aggregateDistributionDistances(flows);
+  const { distances, buckets, eligible } = aggregate;
+  const summary = document.querySelector(`[data-chart-summary="${canvasId}"]`);
+  const caption = document.querySelector(`[data-chart-caption="${canvasId}"]`);
+  if (summary) summary.textContent = `${distances.length}/${eligible} fluxos com distância`;
+  if (caption)
+    caption.textContent = `Contagem dos fluxos de distribuição com distância positiva informada: ${distances.length}/${eligible}. Os demais não entram nas faixas.`;
+  if (!distances.length) return null;
+  if (canvas) canvas.hidden = false;
   renderBarChart(canvasId, {
     labels: ['0–100 km', '100–300 km', '300–600 km', '600+ km'],
     datasets: [{ label: 'Fluxos', data: buckets, backgroundColor: '#00a189' }],
@@ -176,6 +179,7 @@ function renderRiskSeries(canvasId, title, label, points, yFormat = 'percent', c
   if (!points?.length) return null;
   renderLineChart(canvasId, {
     labels: points.map((point) => `P${point.percentile}`),
+    xValues: points.map((point) => Number(point.percentile)),
     datasets: [{ label, data: points.map((point) => point.value), borderColor: color }],
     title,
     yFormat,
@@ -185,9 +189,7 @@ function renderRiskSeries(canvasId, title, label, points, yFormat = 'percent', c
 export function renderRiskHistogram(canvasId, monteCarlo) {
   const histogram = monteCarlo?.summary?.histogram || [];
   if (!histogram.length) return null;
-  const tickStep = Math.max(1, Math.ceil(histogram.length / 5));
-  const labels = histogram.map((bin, index) => {
-    if (index % tickStep !== 0 && index !== histogram.length - 1) return '';
+  const labels = histogram.map((bin) => {
     const bounds = String(bin.label || '').match(/-?\d+(?:[.,]\d+)?/g) || [];
     return bounds.length > 1 ? `${bounds[0]}–${bounds[1]}%` : String(bin.label || '');
   });
@@ -233,29 +235,40 @@ export function renderRiskDrivers(canvasId, monteCarlo) {
     wacc: 'WACC',
     tax_multiplier: 'Tributo',
   };
-  const rows = [...drivers]
-    .sort((a, b) => Math.abs(Number(b.correlation) || 0) - Math.abs(Number(a.correlation) || 0))
-    .slice(0, 6)
+  const rows = drivers
+    .filter((row) => observedNumber(row.correlation) != null)
+    .sort((a, b) => Math.abs(Number(b.correlation)) - Math.abs(Number(a.correlation)))
     .reverse();
+  if (!rows.length) return null;
   renderBarChart(canvasId, {
     labels: rows.map((row) => labels[row.driver] || row.driver || 'Driver'),
     datasets: [
       {
-        label: 'Correlação absoluta (%)',
-        data: rows.map((row) => Math.abs(Number(row.correlation) || 0) * 100),
+        label: 'Correlação com o saving (%)',
+        data: rows.map((row) =>
+          Number.isFinite(Number(row.correlation)) && row.correlation != null
+            ? Number(row.correlation) * 100
+            : null
+        ),
         backgroundColor: '#0c7878',
       },
     ],
     title: 'Drivers mais influentes',
     indexAxis: 'y',
+    xFormat: 'percent',
     yFormat: 'percent',
   });
 }
 
 export function renderRiskScatter(canvasId, monteCarlo) {
   const samples = monteCarlo?.samples || [];
-  const driver = monteCarlo?.summary?.scatter_driver || 'freight_multiplier';
-  if (!samples.length) return null;
+  const driver =
+    monteCarlo?.summary?.scatter_driver ||
+    monteCarlo?.config?.scatter_driver ||
+    Object.keys(samples.find((sample) => sample.inputs)?.inputs || {}).find((key) =>
+      samples.some((sample) => observedNumber(sample.inputs?.[key]) != null)
+    );
+  if (!samples.length || !driver) return null;
   const labels = {
     freight_multiplier: 'Frete',
     demand_multiplier: 'Demanda',
@@ -267,10 +280,19 @@ export function renderRiskScatter(canvasId, monteCarlo) {
     datasets: [
       {
         label: labels[driver] || driver,
-        data: samples.slice(0, 500).map((sample) => ({
-          x: Number(sample.inputs?.[driver]) || 0,
-          y: Number(sample.saving_pct) || 0,
-        })),
+        data: samples
+          .filter(
+            (sample) =>
+              sample.inputs?.[driver] != null &&
+              sample.saving_pct != null &&
+              Number.isFinite(Number(sample.inputs[driver])) &&
+              Number.isFinite(Number(sample.saving_pct))
+          )
+          .map((sample, index) => ({
+            x: Number(sample.inputs[driver]),
+            y: Number(sample.saving_pct),
+            label: `Simulação ${index + 1}`,
+          })),
         borderColor: '#92400e',
         backgroundColor: '#92400e',
       },
@@ -286,11 +308,14 @@ export function renderRiskScatter(canvasId, monteCarlo) {
 export function renderRiskProbability(canvasId, monteCarlo) {
   const summary = monteCarlo?.summary;
   if (!summary || summary.probability_saving_positive == null) return null;
-  const positive = Math.max(0, Math.min(100, Number(summary.probability_saving_positive) * 100));
+  const probability = observedNumber(summary.probability_saving_positive);
+  if (probability == null || probability < 0 || probability > 1) return null;
+  const positive = probability * 100;
   renderDonutChart(canvasId, {
     labels: ['Saving positivo', 'Sem saving'],
     datasets: [{ data: [positive, 100 - positive], backgroundColor: ['#00a189', '#b42318'] }],
     title: 'Probabilidade de saving positivo',
+    yFormat: 'percent',
     isHalf: true,
     centerText: `${positive.toFixed(0)}%`,
   });
@@ -300,7 +325,7 @@ export function renderRanking(canvasId, optimizer) {
   const rows = (optimizer?.best_scenarios || []).slice(0, 8);
   if (!rows.length) return null;
   return renderBarChart(canvasId, {
-    title: 'Ranking',
+    title: `Ranking · ${rows.length} de ${optimizer.best_scenarios.length} cenários`,
     labels: rows.map((row) => row.scenario_id),
     datasets: [
       { label: 'Score', data: rows.map((row) => row.final_score), backgroundColor: '#00a189' },
@@ -311,31 +336,40 @@ export function renderRanking(canvasId, optimizer) {
 }
 
 export function renderNetworkSvg(flows = []) {
-  const limited = flows.slice(0, 12);
-  const origins = [...new Set(limited.map((flow) => flow.origin).filter(Boolean))].slice(0, 4);
-  const cds = [...new Set(limited.map((flow) => flow.cd).filter(Boolean))].slice(0, 4);
-  const destinations = [...new Set(limited.map((flow) => flow.destination).filter(Boolean))].slice(
-    0,
-    6
-  );
-  const node = (x, y, label, className) =>
-    `<g><circle cx="${x}" cy="${y}" r="18" class="${className}"/><text x="${x}" y="${y + 34}" text-anchor="middle">${escapeHtml(String(label).slice(0, 18))}</text></g>`;
+  const limited = flows.filter((flow) => flow && typeof flow === 'object').slice(0, 12);
+  const origins = [...new Set(limited.map((flow) => flow.origin).filter(Boolean))];
+  const cds = [...new Set(limited.map((flow) => flow.cd).filter(Boolean))];
+  const destinations = [...new Set(limited.map((flow) => flow.destination).filter(Boolean))];
+  const height = Math.max(370, Math.max(origins.length, cds.length, destinations.length) * 48 + 70);
+  const y = (index, count) => 40 + index * ((height - 100) / Math.max(1, count - 1));
+  const node = (x, labels, role, field, className) =>
+    labels
+      .map((label, index) => {
+        const count = limited.filter((flow) => flow[field] === label).length;
+        const description = `${label}: ${count} registro(s) no recorte exibido`;
+        return `<g data-network-node="${role}${index}" data-network-detail="${escapeHtml(description)}" tabindex="0" role="button" aria-label="${escapeHtml(description)}"><title>${escapeHtml(description)}</title><circle cx="${x}" cy="${y(index, labels.length)}" r="16" class="${className}"/><text x="${x}" y="${y(index, labels.length) + 30}" text-anchor="middle">${escapeHtml(String(label).slice(0, 20))}</text></g>`;
+      })
+      .join('');
   const edges = limited
     .map((flow) => {
-      const originIndex = Math.max(0, origins.indexOf(flow.origin));
-      const cdIndex = Math.max(0, cds.indexOf(flow.cd));
-      const destinationIndex = Math.max(0, destinations.indexOf(flow.destination));
-      const y1 = 52 + originIndex * 75;
-      const y2 = 52 + cdIndex * 75;
-      const y3 = 52 + destinationIndex * 58;
-      return `<path d="M 105 ${y1} C 185 ${y1}, 225 ${y2}, 295 ${y2}"/><path d="M 335 ${y2} C 410 ${y2}, 465 ${y3}, 565 ${y3}" opacity="0.55"/>`;
+      const oi = origins.indexOf(flow.origin),
+        ci = cds.indexOf(flow.cd),
+        di = destinations.indexOf(flow.destination);
+      const inbound =
+        oi >= 0 && ci >= 0
+          ? `<path data-network-edge="o${oi} c${ci}" d="M 116 ${y(oi, origins.length)} C 185 ${y(oi, origins.length)}, 225 ${y(ci, cds.length)}, 299 ${y(ci, cds.length)}"/>`
+          : '';
+      const outbound =
+        ci >= 0 && di >= 0
+          ? `<path data-network-edge="c${ci} d${di}" d="M 331 ${y(ci, cds.length)} C 410 ${y(ci, cds.length)}, 465 ${y(di, destinations.length)}, 549 ${y(di, destinations.length)}"/>`
+          : '';
+      return inbound + outbound;
     })
     .join('');
-  return `<svg class="ni-network-svg" viewBox="0 0 680 370" role="img" aria-label="Visão topológica resumida dos fluxos"><g class="ni-network-edges">${edges}</g><g>${origins.map((label, index) => node(105, 52 + index * 75, label, 'origin')).join('')}</g><g>${cds.map((label, index) => node(315, 52 + index * 75, label, 'cd')).join('')}</g><g>${destinations.map((label, index) => node(565, 52 + index * 58, label, 'destination')).join('')}</g></svg>`;
+  return `<svg class="ni-network-svg" viewBox="0 0 680 ${height}" role="group" aria-label="Topologia dos ${limited.length} registros de fluxo exibidos"><g class="ni-network-edges">${edges}</g><g>${node(100, origins, 'o', 'origin', 'origin')}${node(315, cds, 'c', 'cd', 'cd')}${node(565, destinations, 'd', 'destination', 'destination')}</g></svg><p class="ni-network-detail ni-note" role="status">Topologia dos primeiros ${limited.length}/${flows.length} registros. Selecione um nó para destacar suas ligações; posições são esquemáticas.</p>`;
 }
 
 const MAP_BOUNDS = Object.freeze({ west: -74, east: -34, north: 6.5, south: -34 });
-const DEMO_UFS = ['SP', 'MG', 'PR', 'BA', 'PE'];
 
 function projectMapPoint([longitude, latitude]) {
   const x = ((longitude - MAP_BOUNDS.west) / (MAP_BOUNDS.east - MAP_BOUNDS.west)) * 520;
@@ -363,44 +397,83 @@ function geometryPath(geometry) {
 }
 
 function flowUF(flow) {
-  const candidates = [
-    flow?.uf,
-    flow?.state,
-    flow?.origin_uf,
-    flow?.originUf,
-    flow?.destination_uf,
-    flow?.destinationUf,
-  ];
-  const candidate = candidates.find((value) => typeof value === 'string' && value.trim());
-  return candidate ? candidate.trim().toUpperCase().slice(0, 2) : null;
+  const valid = new Set(
+    BRAZIL_MAP.features.map((feature) => feature.properties?.sigla || feature.properties?.uf)
+  );
+  const candidates = [flow?.destination_uf, flow?.destinationUf, flow?.uf, flow?.state];
+  return (
+    candidates
+      .filter((value) => typeof value === 'string')
+      .map((value) => value.trim().toUpperCase())
+      .find((value) => valid.has(value)) || null
+  );
 }
 
-function mapMetrics(flows = []) {
+export function mapMetrics(flows = []) {
   const metrics = new Map();
-  const explicit = flows.some((flow) => flowUF(flow));
-  flows.forEach((flow, index) => {
-    const uf = flowUF(flow) || (explicit ? null : DEMO_UFS[index % DEMO_UFS.length]);
-    if (!uf) return;
-    const value = Number(flow.volume ?? flow.demand ?? flow.value ?? 1);
-    metrics.set(uf, (metrics.get(uf) || 0) + (Number.isFinite(value) ? value : 1));
+  flows.forEach((flow) => {
+    const uf = flowUF(flow);
+    if (uf) metrics.set(uf, (metrics.get(uf) || 0) + 1);
   });
-  return { explicit, metrics };
+  return { metrics, covered: [...metrics.values()].reduce((sum, value) => sum + value, 0) };
 }
 
 export function renderBrazilMap(flows = []) {
-  const { explicit, metrics } = mapMetrics(flows);
+  const { metrics, covered } = mapMetrics(flows);
   const maxValue = Math.max(...metrics.values(), 1);
   const features = BRAZIL_MAP.features
     .map((feature) => {
       const uf = feature.properties?.sigla || feature.properties?.uf || '';
       const value = metrics.get(uf) || 0;
       const intensity = value ? 0.24 + (value / maxValue) * 0.68 : 0.08;
-      const path = geometryPath(feature.geometry);
-      return `<path class="ni-map-state" data-uf="${escapeHtml(uf)}" d="${path}" fill="rgba(0,161,137,${intensity.toFixed(2)})" tabindex="0" role="img" aria-label="${escapeHtml(feature.properties?.name || uf)}: ${value ? `${value} unidades` : 'sem fluxo no recorte'}"><title>${escapeHtml(feature.properties?.name || uf)} · ${value ? `${value} unidades` : 'sem fluxo no recorte'}</title></path>`;
+      const description = `${feature.properties?.name || uf}: ${value} fluxo(s) com UF de destino identificada`;
+      return `<path class="ni-map-state" data-uf="${escapeHtml(uf)}" data-map-detail="${escapeHtml(description)}" d="${geometryPath(feature.geometry)}" fill="rgba(0,161,137,${intensity.toFixed(2)})" tabindex="0" role="button" aria-label="${escapeHtml(description)}"><title>${escapeHtml(description)}</title></path>`;
     })
     .join('');
-  const dataLabel = explicit ? 'Dados por UF do provider' : 'Cobertura demonstrativa por fluxo';
-  return `<div class="ni-brazil-map" data-testid="brazil-map"><div class="ni-brazil-map-heading"><div><p class="ni-eyebrow">Geografia da rede</p><h2>Brasil · cobertura de fluxos</h2></div><span class="ni-map-status">${escapeHtml(dataLabel)}</span></div><svg viewBox="0 0 520 500" role="img" aria-label="Mapa do Brasil com intensidade de fluxos por estado"><g class="ni-map-states">${features}</g></svg><div class="ni-map-footnote">${explicit ? 'Intensidade calculada a partir das UFs disponíveis no bundle.' : 'A fixture atual não informa UF; a distribuição é apenas demonstrativa e não representa demanda observada.'}</div></div>`;
+  const rows = [...metrics.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([uf, count]) => `<tr><th scope="row">${escapeHtml(uf)}</th><td>${count}</td></tr>`)
+    .join('');
+  return `<div class="ni-brazil-map" data-testid="brazil-map"><div class="ni-brazil-map-heading"><div><p class="ni-eyebrow">Geografia da rede</p><h2>Brasil · destinos dos fluxos</h2></div><span class="ni-map-status">${covered}/${flows.length} fluxos com UF</span></div><svg viewBox="0 0 520 500" role="group" aria-label="Mapa do Brasil: quantidade de fluxos por UF de destino"><g class="ni-map-states">${features}</g></svg><div class="ni-map-detail" role="status" aria-live="polite">Passe sobre um estado ou use Tab para consultar seus fluxos.</div><div class="ni-map-footnote">Intensidade representa contagem de fluxos por destino, não volume ou demanda. ${flows.length - covered} fluxo(s) sem UF válida. ${covered ? '' : 'Não há dados de UF para colorir o mapa.'}</div><details class="vg-chart-data"><summary>Ver dados por UF</summary><table><thead><tr><th>UF de destino</th><th>Fluxos</th></tr></thead><tbody>${rows}</tbody></table></details></div>`;
+}
+
+export function bindMapInteraction(root) {
+  root.querySelectorAll('[data-network-node]').forEach((node) => {
+    const show = () => {
+      const svg = node.closest('svg');
+      svg.querySelectorAll('[data-network-edge]').forEach((edge) => {
+        const connected = edge.dataset.networkEdge.split(' ').includes(node.dataset.networkNode);
+        edge.classList.toggle('is-highlighted', connected);
+        edge.classList.toggle('is-dimmed', !connected);
+      });
+      const detail = svg.parentElement.querySelector('.ni-network-detail');
+      if (detail) detail.textContent = node.dataset.networkDetail;
+    };
+    node.addEventListener('pointerenter', show);
+    node.addEventListener('focus', show);
+    node.addEventListener('click', show);
+    node.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        show();
+      }
+    });
+  });
+  root.querySelectorAll('[data-map-detail]').forEach((node) => {
+    const show = () => {
+      const detail = node.closest('.ni-brazil-map')?.querySelector('.ni-map-detail');
+      if (detail) detail.textContent = node.dataset.mapDetail;
+    };
+    node.addEventListener('pointerenter', show);
+    node.addEventListener('focus', show);
+    node.addEventListener('click', show);
+    node.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        show();
+      }
+    });
+  });
 }
 
 export function renderChartFallback(label, value) {

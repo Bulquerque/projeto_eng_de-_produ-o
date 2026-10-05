@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "generated_by": "python scripts/manage_validation_evidence_manifest.py --write",
+  "generated_from_commit": "481ee7b6216fbd2ec58a2b8ecb9732b84b309bd2",
+  "freshness_policy": "Hashes identify these bytes only. A current commit association does not mean the report was produced by that commit or that its checks passed there. Use embedded run metadata or rerun the documented command.",
+  "count": 42,
+  "files": [
+    {
+      "path": "data/validation/PROVAS_INTEGRIDADE.md",
+      "size_bytes": 952,
+      "sha256": "bd5e61190e7cf0fd46aa95dc1ea2e0bff765f645bed06dedd0ee5cd6395c1105",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/README.md",
+      "size_bytes": 2457,
+      "sha256": "03b6aef27c9f6d1e571cda8eb7de03665192ad3209cc471ab3aea66054e84f64",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/audit-summary.json",
+      "size_bytes": 22006,
+      "sha256": "62ad4f83078c04098586a1e81cc5c37870809bb273848960473f85bc38d51a6a",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/data_presence_proof.json",
+      "size_bytes": 15505,
+      "sha256": "ee4d64ce5eb65d63c567a0f0351dcce5f61cd06df92bc4f82f7060c545c51ac6",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/folder_organization_report.json",
+      "size_bytes": 883,
+      "sha256": "8ea1fa23b47c9c4d425614fd55cf6dbaf4cae25c1faa823cd3066613b93e0fb5",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/full_workbook_path_audit.json",
+      "size_bytes": 83423,
+      "sha256": "afe77206972223d7f974020e424015958f17152272371543553e1444f67791a0",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/module_contract_documentation_report.json",
+      "size_bytes": 528,
+      "sha256": "91f894556eff30685381f8619a52aacc6cdbba4cbbda9fe1e42405c2c6e0acdf",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/path_resolution_report.json",
+      "size_bytes": 23973,
+      "sha256": "d8f102441f2e2d5d8fdd53a0760059403c22c99b9447c3267d9faaf678033b51",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase1_implementation_report.json",
+      "size_bytes": 1694,
+      "sha256": "0147dfeb0f37f182b08ef3de37081adebc17047a73c4a20e06290587d40210bc",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase1_test_results.json",
+      "size_bytes": 1480,
+      "sha256": "1d165b45a8fe7f1a2a562fd0ea8023c7f80d04fb29f15536b8264b0d89b82b25",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase2_implementation_report.json",
+      "size_bytes": 1063,
+      "sha256": "b04285b0edcdfe5e70c60685dba10f641632ace39c28007246eab9e7646d9a86",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase2_path_resolution_report.json",
+      "size_bytes": 5695,
+      "sha256": "b7e56daff8f8f60581fa36733585cf0055479597e81825fd1e312b2e9815b81b",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase2_playwright_exploration.json",
+      "size_bytes": 10186,
+      "sha256": "6f7f7dbb93440bb5755dea3419d18ecf60f98a6322f4db28b1b961ca6b7883ca",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase2_test_results.json",
+      "size_bytes": 582,
+      "sha256": "092c8de91a65aa4db9ab3f0f9b39ba6d65c202235d86e479145a09b2ca41db00",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase3_implementation_report.json",
+      "size_bytes": 927,
+      "sha256": "b111374ed82d2e5d1d1eff5f3b0822a9201e6a1c6b35ab90a3dafcdaecc98eb4",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase3_test_results.json",
+      "size_bytes": 1053,
+      "sha256": "4f0e46864acd1bbd0906ced6eb60ca35ae4bc8d42a51b885b47b5ede74f2ea85",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase4_implementation_report.json",
+      "size_bytes": 790,
+      "sha256": "8cea44d615b99d3906386a4dc9ac1a276ee2cb953892f39c9741ff135625c4c3",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase4_test_results.json",
+      "size_bytes": 247,
+      "sha256": "346bd38ed40d1b7514b8324121c5b4884d452f21e3984f015babcaa9e0908d0b",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase5_implementation_report.json",
+      "size_bytes": 718,
+      "sha256": "6e9f88aa036fbd330235575866e7879ec4d3a613180df3b517f0c86ea7ce8bd3",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase5_test_results.json",
+      "size_bytes": 284,
+      "sha256": "7c56f8ded5a5f8a1eba00eaf5ea02328b07126cc6b61c31123bd6401ea18485b",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/phase_tests.json",
+      "size_bytes": 1678,
+      "sha256": "b22ba31befaaaddebc5d32d06bb6511c6b756898d40255bafafa074ea0f9968a",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/01_home_desktop.png",
+      "size_bytes": 1668575,
+      "sha256": "343d413490d5427886ea7aa888d4d5e7cb6c516165966d82dc3f928f236b56e7",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/02_baseline_desktop.png",
+      "size_bytes": 2768547,
+      "sha256": "9da3f961cc83712cc0564e441942fb0960bd2485bba13b2b95402b2f7e9b5566",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/03_scenario_desktop.png",
+      "size_bytes": 2470089,
+      "sha256": "35c044236b6b4c7e7c7faf7f474e1bb1d13157791f98200f94dee5e6f8a85952",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/04_optimizer_desktop.png",
+      "size_bytes": 2079905,
+      "sha256": "87125a69e681d8b0079abbffd42a6a522199476e197569949803c3738820143a",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/05_final_delivery_desktop.png",
+      "size_bytes": 2016246,
+      "sha256": "676c68e4618f2fef60522a333bc4a6d0b49e0e29e56d2c1107919b812e3eb216",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/mobile_baseline.png",
+      "size_bytes": 2303308,
+      "sha256": "6a8fa9b6619bd0179c7c81c579e4b70626f4f14d1149d413accc2589c3b513c2",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/mobile_final_delivery.png",
+      "size_bytes": 1205985,
+      "sha256": "b0ba75a918511a672181e86190326332f1f7add6109c6ab69e6504d408802eaf",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/mobile_home.png",
+      "size_bytes": 2303168,
+      "sha256": "0db4b58d4bf5ee900e88043faf050e3e1ae2e3e00822a2ccd5431f93cbf4bfae",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/mobile_optimizer.png",
+      "size_bytes": 1567624,
+      "sha256": "0171e701d179a711fba3e310c1abeadea924609d487ee42c7c294b8a082cbf4c",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/mobile_scenario.png",
+      "size_bytes": 1921570,
+      "sha256": "2814bc405207adde8131ce186809ca79e1e5b50908d2fd506396398c85b8f173",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/presentation_e2e/presentation_e2e_report.json",
+      "size_bytes": 635,
+      "sha256": "2fe834fa2fc3839073979325397c9eac5eaa9293f180c75e17676eec30104c8f",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/protected-data-integrity.json",
+      "size_bytes": 413,
+      "sha256": "db58be348f8ae952e85d952da44191f2e35aac1ce30812eb0a76eb72ff5e9151",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/regeneration_compare_report.json",
+      "size_bytes": 520,
+      "sha256": "f8fe7dcfca8185c63a4f5e79e2792b7500161d1c409b435c30be9f769f38b322",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/regression_evidence/logic_report.json",
+      "size_bytes": 13611,
+      "sha256": "b23dd97f2a42fe1585397c2b10d8f9b4431e7a4dd61ab29dc37c225ce3b8a9b6",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/regression_evidence/regression_report.json",
+      "size_bytes": 15150,
+      "sha256": "7934731be0da07d15f6e7b3185d0a0badb621ae0f061d916392f4e07dc5480b6",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/regression_evidence/ui_corrupted_storage_baseline_desktop.png",
+      "size_bytes": 2768547,
+      "sha256": "9da3f961cc83712cc0564e441942fb0960bd2485bba13b2b95402b2f7e9b5566",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/regression_evidence/ui_final_delivery_mobile.png",
+      "size_bytes": 1206323,
+      "sha256": "a8a5baceb68c2d358a2428953829864d13f333915838a47b8c7f5ff6ce4d44fc",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/regression_evidence/ui_invalid_route_fallback_desktop.png",
+      "size_bytes": 1668575,
+      "sha256": "343d413490d5427886ea7aa888d4d5e7cb6c516165966d82dc3f928f236b56e7",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/regression_evidence/ui_report.json",
+      "size_bytes": 452,
+      "sha256": "62571123a7d0d786ad5856b872b464a20e1ab5a79b6b10a96a601fa3ecc916cc",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/release-report.json",
+      "size_bytes": 1839,
+      "sha256": "62d20e62a14fe69b6b9fdea7a3fa463afadf50fa7681c6bf397025c67bb8a7d5",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    },
+    {
+      "path": "data/validation/workbook_sheet_inventory.csv",
+      "size_bytes": 15689,
+      "sha256": "1e2ab06540fe0cd68e3d2cb329e52a9c7b3a3622edf17b427c247ecfba88d63a",
+      "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
+    }
+  ]
+}

@@ -8,7 +8,6 @@ export function createEmptyData() {
     baseline: null,
     scenarios: [],
     saved_scenarios: [],
-    analysis_runs: { simulation: null, optimization: null },
     selected_scenario: null,
     scenario_result: null,
     scenario_quality: null,
@@ -19,6 +18,7 @@ export function createEmptyData() {
     sensitivity_matrix: null,
     robustness: null,
     optimizer: null,
+    analysis_runs: { simulation: null, optimization: null },
     recommendation: null,
     audit: null,
     final_qa: null,
@@ -28,7 +28,6 @@ export function createEmptyData() {
 }
 
 export function clearScenarioResults(state) {
-  // Keep the latest successful execution of each kind for side-by-side comparison.
   Object.assign(state.data, {
     selected_scenario: null,
     scenario_result: null,
@@ -39,8 +38,8 @@ export function clearScenarioResults(state) {
     sensitivity: null,
     sensitivity_matrix: null,
     robustness: null,
-    recommendation: null,
     optimizer: null,
+    recommendation: null,
     audit: null,
     final_qa: null,
     release: null,
@@ -48,6 +47,13 @@ export function clearScenarioResults(state) {
   });
   state.meta.result_kind = null;
   return state;
+}
+
+export function resolveDecisionStatus(packageResult = {}) {
+  return packageResult.release?.release_status === 'blocked' ||
+    packageResult.final_qa?.final_qa_status === 'failed'
+    ? 'decision_blocked'
+    : 'decision_ready';
 }
 
 export function createInitialState(config = {}) {
@@ -70,11 +76,11 @@ export function createInitialState(config = {}) {
       selected_metric: null,
       selected_tradeoff: null,
       scenario_draft: null,
-      scenario_dirty: false,
-      optimizer_draft: null,
-      optimizer_drafts: {},
+      scenario_draft_dirty: false,
       optimizer_presets: [],
-      risk_draft: null,
+      optimizer_config: null,
+      risk_config: null,
+      compared_scenario_ids: null,
     },
     dev: {
       enabled: Boolean(config.debug_enabled),
@@ -86,9 +92,9 @@ export function createInitialState(config = {}) {
     },
     meta: {
       status: 'idle',
+      result_kind: null,
       last_updated: null,
       provider_snapshot: null,
-      result_kind: null,
     },
   };
 }
@@ -102,12 +108,11 @@ export function resetCompanyScopedState(state, companyId) {
   state.meta.status = 'switching_company';
   state.ui.error = null;
   state.ui.scenario_draft = null;
-  state.ui.scenario_dirty = false;
-  state.ui.optimizer_draft = null;
-  state.ui.optimizer_drafts = {};
+  state.ui.scenario_draft_dirty = false;
   state.ui.optimizer_presets = [];
-  state.ui.risk_draft = null;
-  state.meta.result_kind = null;
+  state.ui.optimizer_config = null;
+  state.ui.risk_config = null;
+  state.ui.compared_scenario_ids = null;
   return state.context.generation;
 }
 

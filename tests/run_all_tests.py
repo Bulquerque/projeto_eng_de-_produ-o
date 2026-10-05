@@ -22,6 +22,7 @@ TESTS = [
     'tests/05_fase2_baseline/test_phase2_static_site.py',
     'tests/05_fase2_baseline/test_phase2_http_server.py',
     'tests/06_fase3_cenarios/test_phase3_file_structure.py',
+    'tests/06_fase3_cenarios/test_phase3_library_view.py',
     'tests/06_fase3_cenarios/test_phase3_contracts.py',
     'tests/06_fase3_cenarios/test_phase3_js_syntax.py',
     'tests/06_fase3_cenarios/test_phase3_logic.py',
@@ -34,6 +35,7 @@ TESTS = [
     'tests/07_fase4_score_otimizador/test_phase4_optimizer_logic.py',
     'tests/07_fase4_score_otimizador/test_phase4_http_server.py',
     'tests/08_fase5_entrega_final/test_phase5_file_structure.py',
+    'tests/08_fase5_entrega_final/test_phase5_dashboard_view.py',
     'tests/08_fase5_entrega_final/test_phase5_tax_periods_view.py',
     'tests/08_fase5_entrega_final/test_phase5_final_situation_view.py',
     'tests/08_fase5_entrega_final/test_phase5_js_syntax.py',
@@ -56,11 +58,14 @@ TESTS = [
     'tests/12_network_intelligence/test_app_contracts.py',
     'tests/12_network_intelligence/test_form_values.py',
     'tests/12_network_intelligence/test_mock_provider_engines.py',
+    'tests/12_network_intelligence/test_decision_optimizer_flow.py',
     'tests/12_network_intelligence/test_network_ui_playwright.py',
+    'tests/12_network_intelligence/test_chart_interactions.py',
 ]
 
 OPTIONAL_TESTS = {
     'tests/04_e2e_visual_opcional/test_phase1_playwright.py',
+    'tests/04_e2e_visual_opcional/test_portal_phase12_demo_playwright.py',
 }
 
 

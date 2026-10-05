@@ -7,9 +7,10 @@ import { validateRelease } from '../../phase5/release-validator.js';
 import { buildExportPackage } from '../../phase5/export-center.js';
 import { runRiskAnalysis } from './risk-service.js';
 
-function buildBlockedPackage(companyId, message) {
+function buildBlockedPackage(companyId, message, optimizer = null) {
   return {
     company_id: companyId,
+    ...(optimizer ? { optimizer } : {}),
     selected_scenario: null,
     recommendation: {
       company_id: companyId,
@@ -36,28 +37,106 @@ function buildBlockedPackage(companyId, message) {
   };
 }
 
+export async function resolveDecisionOptimizer({
+  provider,
+  companyId,
+  selectionMode = 'best_by_score',
+  existingOptimizerResult = null,
+  manualScenarioId = null,
+  profileId = 'balanced',
+  constraints = {},
+  optimizerConfig = {},
+  taxYear = null,
+} = {}) {
+  if (selectionMode !== 'manual') {
+    return {
+      optimizer: await provider.runOptimization({
+        profileId,
+        constraints,
+        config: optimizerConfig,
+        taxYear,
+      }),
+      error: null,
+    };
+  }
+
+  if (!existingOptimizerResult) {
+    return {
+      optimizer: null,
+      error: 'Execute uma busca antes de selecionar um cenário manualmente.',
+    };
+  }
+  if (existingOptimizerResult.company_id && existingOptimizerResult.company_id !== companyId) {
+    return { optimizer: null, error: 'O ranking informado não pertence à empresa ativa.' };
+  }
+  const candidates = existingOptimizerResult.scored_scenarios?.length
+    ? existingOptimizerResult.scored_scenarios
+    : existingOptimizerResult.best_scenarios || [];
+  const candidate = candidates.find(
+    (item) =>
+      item.scenario_id === manualScenarioId ||
+      item.scenario?.scenario_id === manualScenarioId ||
+      item.result?.scenario_id === manualScenarioId
+  );
+  if (!candidate) {
+    return {
+      optimizer: existingOptimizerResult,
+      error: 'Cenário não encontrado: o ID escolhido não pertence ao ranking desta empresa.',
+    };
+  }
+  const candidateCompanies = [
+    candidate.company_id,
+    candidate.scenario?.company_id,
+    candidate.result?.company_id,
+  ].filter(Boolean);
+  if (candidateCompanies.some((candidateCompany) => candidateCompany !== companyId)) {
+    return {
+      optimizer: existingOptimizerResult,
+      error: 'O cenário escolhido não pertence à empresa ativa.',
+    };
+  }
+  return { optimizer: existingOptimizerResult, error: null };
+}
+
 export async function runDecisionPipeline({
   provider,
   profileId = 'balanced',
   selectionMode = 'best_by_score',
   manualScenarioId = null,
-  taxYear = null,
+  existingOptimizerResult = null,
   optimizerConfig = {},
+  taxYear = null,
   constraints = {},
   riskConfig = {},
 } = {}) {
   const context = provider.getDomainContext();
   const companyId = context.company_id;
-  const optimizer = await provider.runOptimization({
+  const resolved = await resolveDecisionOptimizer({
+    provider,
+    companyId,
+    selectionMode,
+    existingOptimizerResult,
+    manualScenarioId,
     profileId,
-    taxYear,
     constraints,
-    config: optimizerConfig,
+    optimizerConfig,
+    taxYear,
   });
+  const optimizer = resolved.optimizer
+    ? {
+        ...resolved.optimizer,
+        requested_config: {
+          ...(resolved.optimizer.requested_config || {}),
+          risk_config: { ...riskConfig },
+        },
+      }
+    : null;
+  if (resolved.error) return buildBlockedPackage(companyId, resolved.error, optimizer);
   if (!String(optimizer?.optimizer_status || '').startsWith('success')) {
     return buildBlockedPackage(
       companyId,
-      (optimizer?.errors || ['Falha na busca discreta de cenários.']).join('; ')
+      (optimizer?.errors || ['Falha na busca discreta de cenários.']).join('; '),
+      optimizer
     );
   }
   const selection = selectFinalScenario({
@@ -69,7 +148,8 @@ export async function runDecisionPipeline({
   if (!selection.selected_scenario) {
     return buildBlockedPackage(
       companyId,
-      (selection.errors || ['Nenhum cenário pôde ser selecionado.']).join('; ')
+      (selection.errors || ['Nenhum cenário pôde ser selecionado.']).join('; '),
+      optimizer
     );
   }
   const selected = selection.selected_scenario;
@@ -126,9 +206,8 @@ export async function runDecisionPipeline({
     recommendation,
     audit,
   });
-  const preReleasePackage = buildExportPackage({
+  const exportContext = {
     companyId,
-    decisionPackage: { ...decisionPackage, final_qa: finalQA },
     stress: risk.stress,
     sensitivity: risk.sensitivity,
     sensitivityMatrix: risk.sensitivity_matrix,
@@ -140,6 +219,10 @@ export async function runDecisionPipeline({
     workbookParity: context.baselineBundle?.workbook_parity || null,
     rankingSensitivity: optimizer.ranking_sensitivity,
     finalQA,
+  };
+  const preReleasePackage = buildExportPackage({
+    ...exportContext,
+    decisionPackage: { ...decisionPackage, final_qa: finalQA },
   });
   const release = validateRelease({
     finalQA,
@@ -147,19 +230,8 @@ export async function runDecisionPipeline({
     decisionPackage: { ...decisionPackage, final_qa: finalQA },
   });
   const exportPackage = buildExportPackage({
-    companyId,
+    ...exportContext,
     decisionPackage: { ...decisionPackage, final_qa: finalQA, release },
-    stress: risk.stress,
-    sensitivity: risk.sensitivity,
-    sensitivityMatrix: risk.sensitivity_matrix,
-    audit,
-    recommendation,
-    selectedScenario: selectedWithRisk,
-    comparison,
-    robustness: risk.robustness,
-    workbookParity: context.baselineBundle?.workbook_parity || null,
-    rankingSensitivity: optimizer.ranking_sensitivity,
-    finalQA,
     release,
   });
   return {

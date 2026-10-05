@@ -15,7 +15,7 @@ export function emptyState(message = 'Dados ainda não disponíveis.') {
 }
 
 export function routeFallback(route = '') {
-  return `<div class="ni-page-heading" data-testid="page-route-fallback"><p class="ni-eyebrow">Navegação</p><h1>Rota não encontrada</h1><p>A rota <code>${escapeHtml(route || '—')}</code> não está disponível no sistema.</p><div class="ni-actions"><a class="ni-button primary" href="#/network/overview/summary" data-route="#/network/overview/summary">Voltar à visão geral</a></div></div>`;
+  return `<div class="ni-page-heading" data-testid="page-route-fallback"><p class="ni-eyebrow">Network Intelligence</p><h1>Rota não encontrada</h1><p>A rota <code>${escapeHtml(route || '—')}</code> não está disponível nesta versão do workspace.</p><div class="ni-actions"><a class="ni-button primary" href="#/network/overview/summary" data-route="#/network/overview/summary">Voltar à visão executiva</a></div></div>`;
 }
 
 export function card(title, body, { eyebrow = '', testId = '' } = {}) {
@@ -46,13 +46,22 @@ export function sectionTabs(section, currentPath) {
         ['Custos', '#/network/overview/costs'],
         ['Tributário', '#/network/overview/tax'],
       ],
-      scenarios: [],
-      optimizer: [],
+      scenarios: [
+        ['Construir', '#/network/scenarios/build'],
+        ['Resultado', '#/network/scenarios/result'],
+        ['Comparar', '#/network/scenarios/compare'],
+        ['Risco & sensibilidade', '#/network/scenarios/risk'],
+      ],
       results: [
         ['Resumo', '#/network/results/summary'],
         ['Comparação', '#/network/results/comparison'],
-        ['Alternativas', '#/network/results/tradeoffs'],
+        ['Trade-offs', '#/network/results/tradeoffs'],
         ['Risco', '#/network/results/risk'],
+      ],
+      optimizer: [
+        ['Configurar', '#/network/optimizer/configure'],
+        ['Resultados', '#/network/optimizer/results'],
+        ['Trade-offs', '#/network/optimizer/tradeoffs'],
       ],
       trust: [
         ['Visão geral', '#/network/trust/overview'],
@@ -63,9 +72,9 @@ export function sectionTabs(section, currentPath) {
       ],
     }[section] || [];
   const normalizedPath = String(currentPath || '').split('?')[0];
-  if (!tabs.length) return '';
   const activeRoute = (route) =>
     route === normalizedPath ||
+    (route === '#/network/scenarios/risk' && normalizedPath.startsWith(`${route}/`)) ||
     (route === '#/network/results/risk' && normalizedPath.startsWith(`${route}/`));
   return `<nav class="ni-section-tabs" aria-label="Navegação da seção">${tabs
     .map(
