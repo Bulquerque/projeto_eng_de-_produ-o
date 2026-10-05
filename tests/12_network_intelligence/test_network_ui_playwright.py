@@ -8,7 +8,7 @@ import socketserver
 import threading
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get('VISAGIO_NETWORK_QA_DIR', '/tmp/visagio-network-qa'))
@@ -256,8 +256,7 @@ def test_demo_journey(base, browser):
     page.locator('[data-testid="scenario-import"]').set_input_files(
         {'name': 'scenario.json', 'mimeType': 'application/json', 'buffer': json.dumps(imported).encode()}
     )
-    page.locator('input[name="scenario_name"]').wait_for()
-    assert page.locator('input[name="scenario_name"]').input_value() == 'Importação de teste'
+    expect(page.locator('input[name="scenario_name"]')).to_have_value('Importação de teste')
     wrong = {**imported, 'company_id': 'empresa1'}
     open_details(page, '[data-testid="scenario-import"]')
     page.locator('[data-testid="scenario-import"]').set_input_files(
