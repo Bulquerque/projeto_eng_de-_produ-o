@@ -17,7 +17,7 @@ automatizado ou a captura atual não prova aquele caso específico.
 
 - `[x]` Código: lint, formatação, auditoria de dependências e `git diff --check` aprovados.
 - `[x]` Dados: build criptografado verificado com 144 arquivos; segredo não encontrado no repositório.
-- `[x]` Cálculos: suíte completa, invariantes, regressão, contratos de dados, reconciliação, otimização e Monte Carlo aprovados.
+- `[x]` Cálculos: suíte completa, invariantes, regressão, contratos de dados, reconciliação, busca e classificação de alternativas e Monte Carlo aprovados.
 - `[x]` Navegador: fluxo de apresentação desktop/mobile e regressão E2E aprovados; Fase 5 exercitada no Google Chrome local via automação CUA.
 - `[x]` Rotas diretas: Fase 3/4/5 carregam a empresa ativa ao entrar pelo hash, sem depender de clique prévio no seletor.
 - `[x]` Entrega sem bloqueio por cobertura: Empresa 2 recebe saving, custo final, robustez, ranking, stress e Monte Carlo com status `exploratory_only` e limitações visíveis.
@@ -57,8 +57,8 @@ entrega.
 - [ ] Empresa 2 — selecionar a aba da Empresa 2 no cabeçalho.
 - [ ] Empresa 1 — navegar para `Diagnóstico & Baseline`.
 - [ ] Empresa 2 — navegar para `Diagnóstico & Baseline`.
-- [ ] Empresa 1 — navegar para `Cenários & Otimização`.
-- [ ] Empresa 2 — navegar para `Cenários & Otimização`.
+- [ ] Empresa 1 — navegar para `Cenários & Recomendações`.
+- [ ] Empresa 2 — navegar para `Cenários & Recomendações`.
 - [ ] Empresa 1 — navegar para `Decisão & Entrega`.
 - [ ] Empresa 2 — navegar para `Decisão & Entrega`.
 - [ ] Empresa 1 — confirmar que a empresa selecionada permanece correta ao trocar de fase.
@@ -219,7 +219,7 @@ entrega.
 - [ ] Empresa 1 — testar histórico customizado somente com proveniência completa.
 - [ ] Empresa 2 — testar histórico customizado somente com proveniência completa.
 
-## 6 Fase 4 Score e otimização
+## 6 Fase 4 Score e recomendações
 
 ### Objetivo e restrições
 
@@ -385,7 +385,7 @@ entrega.
 - [ ] Empresa 2 — registrar que fluxos fábrica → CD e distribuição CD → destino têm tratamentos diferentes.
 - [ ] Empresa 2 — registrar que os cenários 2 e N exigem adaptador de participação para reprodução like-for-like.
 - [ ] Empresa 1 — registrar que Monte Carlo é exploratório e condicional às premissas/proxies.
-- [ ] Empresa 2 — registrar que Monte Carlo/otimização são entregues em modo exploratório quando o resultado numérico é utilizável.
+- [ ] Empresa 2 — registrar que Monte Carlo e classificação de alternativas são entregues em modo exploratório quando o resultado numérico é utilizável.
 - [ ] Global — registrar que reconciliação não equivale a validação fiscal oficial.
 - [ ] Global — registrar commit e relatório de validação junto à versão entregue.
 

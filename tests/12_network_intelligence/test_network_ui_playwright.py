@@ -77,6 +77,9 @@ def simulate(page):
 
 def optimize(page):
     route(page, 'optimizer/configure')
+    assert page.locator('#networkPage h1').inner_text() == 'Recomendações de rede'
+    assert page.locator('[data-testid="optimizer-run"]').inner_text() == 'Gerar recomendações'
+    assert 'otimiza' not in page.locator('#networkPage').inner_text().casefold()
     page.locator('[data-testid="optimizer-run"]').click()
     page.locator('#networkLoadingOverlay').wait_for(state='hidden', timeout=90000)
     assert page.url.endswith('/network/results/summary'), page.locator('.network-toast').all_text_contents()
@@ -89,7 +92,7 @@ def assert_shell(page):
     assert page.locator('.network-nav > a').all_text_contents() == [
         '01Visão geral',
         '02Simulação',
-        '03Otimização',
+        '03Recomendações',
         '04Resultados',
     ]
     assert page.locator('#networkPage h1').count() == 1
@@ -220,7 +223,7 @@ def test_demo_journey(base, browser):
     route(page, 'scenarios/build')
     simulate(page)
     assert page.locator('[data-testid="result-total"]').inner_text() != cost_a
-    # Run one optimization after a simulation and compare both saved executions together.
+    # Run one recommendation search after a simulation and compare both saved executions together.
     route(page, 'optimizer/configure')
     open_details(page, 'input[name="max_candidates"]')
     page.locator('input[name="max_candidates"]').fill('100')
@@ -231,12 +234,12 @@ def test_demo_journey(base, browser):
     comparison_text = page.locator('#networkPage').inner_text()
     assert 'Referência' in comparison_text
     assert 'Simulação ·' in comparison_text
-    assert 'Otimização ·' in comparison_text
+    assert 'Recomendação ·' in comparison_text
     assert page.locator('#niComparisonCostChart').is_visible()
     column_headers = page.locator('.ni-workspace-matrix thead th').all_text_contents()
     assert column_headers[1].startswith('Referência')
     assert column_headers[2].startswith('Simulação ·')
-    assert column_headers[3].startswith('Otimização ·')
+    assert column_headers[3].startswith('Recomendação ·')
     assert page.locator('[data-action="select-compared-scenario"][data-scenario-id^="saved-"]').count() == 0
     route(page, 'results/summary')
     assert page.locator('[data-testid="decision-blocked"]').count() == 0

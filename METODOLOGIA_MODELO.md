@@ -317,7 +317,7 @@ operacional ou pooling de risco.
 
 ## 8. Stress, reconciliação e recomendação
 
-Stress cases sujeitos a uma política de otimização não podem desligar tributos
+Stress cases sujeitos a uma política de seleção de cenários não podem desligar tributos
 apenas para aumentar artificialmente o saving. A biblioteca padrão usa choques
 de frete, demanda, WACC, dias de estoque e regimes tributários permitidos.
 

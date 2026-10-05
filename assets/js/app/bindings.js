@@ -92,7 +92,7 @@ export function installBindings({ root, store, controller }) {
     } else if (action === 'open-help') {
       controller.openDrawer(
         'Ajuda',
-        '<ol class="ni-list"><li>Veja a operação atual em Visão geral.</li><li>Escolha um cenário no cabeçalho e ajuste seus parâmetros em Simulação.</li><li>Use Otimização para buscar alternativas.</li><li>Compare custos e risco em Resultados.</li></ol><p>Dados e metodologia reúne fontes, premissas e validações.</p>'
+        '<ol class="ni-list"><li>Veja a operação atual em Visão geral.</li><li>Escolha um cenário no cabeçalho e ajuste seus parâmetros em Simulação.</li><li>Gere recomendações para comparar alternativas.</li><li>Compare custos e risco em Resultados.</li></ol><p>Dados e metodologia reúne fontes, premissas e validações.</p>'
       );
     } else if (action === 'open-export') {
       controller.exportPackage();

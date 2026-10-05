@@ -200,7 +200,7 @@ export function runOptimization({
   }
 
   if (requestedMethod !== SUPPORTED_METHOD) {
-    const message = `Método de otimização "${requestedMethod}" não é suportado. Use "${SUPPORTED_METHOD}".`;
+    const message = `Método de busca "${requestedMethod}" não é suportado. Use "${SUPPORTED_METHOD}".`;
     return buildFailureResult({
       companyId,
       searchLog: buildSearchLog({
@@ -217,7 +217,7 @@ export function runOptimization({
   }
 
   if (generated.generation_summary?.limited_by_max_candidates) {
-    const message = `Espaço discreto truncado pelo limite de segurança (${maxCandidates}). Aumente o limite para rodar a otimização exata.`;
+    const message = `Espaço discreto truncado pelo limite de segurança (${maxCandidates}). Aumente o limite para avaliar todas as alternativas.`;
     return buildFailureResult({
       companyId,
       searchLog: buildSearchLog({
@@ -484,7 +484,7 @@ export function runOptimization({
       ...(rankingSensitivity.warnings || []),
       ...(limitedFiscalRecords.length
         ? [
-            `A otimização entregou ${limitedFiscalRecords.length} cenário(s) com cobertura fiscal parcial; o ranking é exploratório e os campos ausentes não foram inventados.`,
+            `A busca encontrou ${limitedFiscalRecords.length} cenário(s) com cobertura fiscal parcial; a classificação é exploratória e os campos ausentes não foram inventados.`,
           ]
         : []),
     ],

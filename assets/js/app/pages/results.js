@@ -25,7 +25,7 @@ const COST_COMPONENTS = [
 ];
 
 function resultKind(state) {
-  return state.meta?.result_kind === 'optimization' ? 'Otimização' : 'Simulação';
+  return state.meta?.result_kind === 'optimization' ? 'Recomendação' : 'Simulação';
 }
 
 function baselineValues(state) {
@@ -81,8 +81,8 @@ export function renderResultsSummary(state) {
     const blocked =
       state.meta?.status === 'decision_blocked' || decision.final_qa?.final_qa_status === 'failed';
     const message = blocked
-      ? `<section class="ni-workspace-alert ni-workspace-alert--negative" role="alert" data-testid="decision-blocked"><h2>Não foi possível concluir a otimização</h2>${issues.length ? `<ul>${issues.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : `<p>${escapeHtml(decision.recommendation?.executive_summary || 'Revise as restrições e execute novamente.')}</p>`}<a href="#/network/trust/validation" data-route="#/network/trust/validation">Ver verificações</a></section>`
-      : emptyState('Simule um cenário ou execute uma otimização para gerar resultados.');
+      ? `<section class="ni-workspace-alert ni-workspace-alert--negative" role="alert" data-testid="decision-blocked"><h2>Não foi possível gerar recomendações</h2>${issues.length ? `<ul>${issues.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : `<p>${escapeHtml(decision.recommendation?.executive_summary || 'Revise as restrições e execute novamente.')}</p>`}<a href="#/network/trust/validation" data-route="#/network/trust/validation">Ver verificações</a></section>`
+      : emptyState('Simule um cenário ou gere recomendações para comparar resultados.');
     return `<section class="ni-workspace ni-workspace-page ni-results" data-testid="page-results-summary"><header class="ni-page-heading"><h1>Resultados</h1></header>${sectionTabs('results', state.ui?.route)}${message}</section>`;
   }
 
@@ -109,7 +109,7 @@ export function renderResultsSummary(state) {
   });
   const ranked = candidateRows(state);
   const ranking = state.data?.optimizer
-    ? `<section class="ni-results-ranking ni-workspace-ranking" data-testid="optimizer-ranking"><header class="ni-workspace-section-heading"><h2>Alternativas da otimização</h2></header>${table(['Posição', 'Alternativa', 'Custo total', 'CDs ativos', 'Score', 'Risco', 'Ação'], ranked.rows, 'Nenhuma alternativa elegível.')}<details class="ni-workspace-advanced"><summary>Avaliar seleção manual</summary><div class="ni-results-decision">${ranked.select}${ranked.action}</div></details></section>`
+    ? `<section class="ni-results-ranking ni-workspace-ranking" data-testid="optimizer-ranking"><header class="ni-workspace-section-heading"><h2>Alternativas recomendadas</h2></header>${table(['Posição', 'Alternativa', 'Custo total', 'CDs ativos', 'Score', 'Risco', 'Ação'], ranked.rows, 'Nenhuma alternativa elegível.')}<details class="ni-workspace-advanced"><summary>Avaliar seleção manual</summary><div class="ni-results-decision">${ranked.select}${ranked.action}</div></details></section>`
     : '';
   const blocked =
     ['blocked', 'failed', 'not_recommended'].includes(
@@ -149,7 +149,7 @@ export function comparisonCandidates(state) {
     const taxResults = run.result.tax_results || {};
     byId.set(runId, {
       scenario_id: runId,
-      scenario_name: `${kind === 'simulation' ? 'Simulação' : 'Otimização'} · ${run.scenario.scenario_name || 'Última execução'}`,
+      scenario_name: `${kind === 'simulation' ? 'Simulação' : 'Recomendação'} · ${run.scenario.scenario_name || 'Última execução'}`,
       total_with_tax: run.result.total_with_tax ?? run.result.costs?.total_with_tax,
       active_cds_count: run.scenario.changes?.active_cds?.length,
       risk_level: run.quality?.risk_level || run.result.risk_level,
@@ -246,7 +246,7 @@ export function renderResultsComparison(state) {
   ];
   const body = rows.length
     ? `<div class="ni-workspace-matrix-wrap"><table class="ni-workspace-matrix"><thead><tr><th scope="col">Indicador</th>${headings}</tr></thead><tbody>${metrics.map(([label, render]) => `<tr><th scope="row">${label}</th>${rows.map((row) => `<td class="${row.scenario_id === activeId ? 'is-selected' : ''}">${render(row)}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="ni-comparison-cards">${rows.map((row) => `<article class="ni-comparison-card${row.scenario_id === activeId ? ' is-selected' : ''}"><h2>${escapeHtml(row.scenario_id === baseline.id ? 'Referência' : row.scenario_name || 'Alternativa')}</h2><dl>${metrics.map(([label, render]) => `<div><dt>${label}</dt><dd>${render(row)}</dd></div>`).join('')}</dl></article>`).join('')}</div>`
-    : emptyState('Execute uma simulação ou otimização para comparar alternativas.');
+    : emptyState('Execute uma simulação ou gere recomendações para comparar alternativas.');
   const selectActions = candidates
     .filter((row) => row.scenario_id !== activeId)
     .map(
@@ -323,7 +323,7 @@ export function renderResultsTradeoffs(state) {
     (row, index) =>
       `<tr><td>${formatNumber(index + 1)}</td><th scope="row">${escapeHtml(row.scenario_name || `Alternativa ${index + 1}`)}</th><td>${row.result?.total_with_tax == null ? '—' : escapeHtml(formatBRL(row.result.total_with_tax, true))}</td><td>${row.final_score == null ? '—' : escapeHtml(formatNumber(row.final_score, 2))}</td><td>${escapeHtml(businessLabel(row.quality?.risk_level))}</td><td>${row.scenario_id && row.scenario_id !== selected ? `<button type="button" class="ni-button secondary" data-action="select-compared-scenario" data-scenario-id="${escapeHtml(row.scenario_id)}">Selecionar</button>` : row.scenario_id === selected ? 'Selecionada' : '—'}</td></tr>`
   );
-  return `<section class="ni-workspace ni-workspace-page ni-results-tradeoffs" data-testid="page-results-tradeoffs"><header class="ni-page-heading"><h1>Alternativas e compromissos</h1></header>${sectionTabs('results', state.ui?.route)}${optimizer ? `<section class="ni-workspace-panel"><h2>Custo total e score</h2>${renderTradeoffScatter(candidates)}</section>${table(['Posição', 'Alternativa', 'Custo total', 'Score', 'Risco', 'Ação'], rows, 'Nenhuma alternativa disponível.')}` : emptyState('Execute uma otimização para comparar os compromissos entre as alternativas.')}</section>`;
+  return `<section class="ni-workspace ni-workspace-page ni-results-tradeoffs" data-testid="page-results-tradeoffs"><header class="ni-page-heading"><h1>Alternativas e compromissos</h1></header>${sectionTabs('results', state.ui?.route)}${optimizer ? `<section class="ni-workspace-panel"><h2>Custo total e score</h2>${renderTradeoffScatter(candidates)}</section>${table(['Posição', 'Alternativa', 'Custo total', 'Score', 'Risco', 'Ação'], rows, 'Nenhuma alternativa disponível.')}` : emptyState('Gere recomendações para comparar os compromissos entre as alternativas.')}</section>`;
 }
 
 function renderSensitivityMatrix(matrix = {}) {
@@ -424,7 +424,7 @@ export function renderRiskAnalysis(state, advanced = false) {
     'demand_multiplier'
   )}</select></label><button type="submit" class="ni-button primary" data-testid="risk-run">Recalcular risco</button></form></details>`;
   if (noRisk) {
-    return `${emptyState(decision.result ? 'Calcule o risco com as premissas abaixo.' : 'Execute uma simulação ou otimização para consultar a análise de risco.')}${decision.result ? controls : ''}`;
+    return `${emptyState(decision.result ? 'Calcule o risco com as premissas abaixo.' : 'Execute uma simulação ou gere recomendações para consultar a análise de risco.')}${decision.result ? controls : ''}`;
   }
   const kpis = `<div class="ni-workspace-kpis">${kpi('Probabilidade de economia', summary.probability_saving_positive == null ? '—' : formatPct(summary.probability_saving_positive * 100))}${kpi('Robustez', risk.robustness?.robustness_score == null ? '—' : `${formatNumber(risk.robustness.robustness_score, 0)}/100`)}${kpi('Economia · P10', summary.p10_saving_pct == null ? '—' : formatPct(summary.p10_saving_pct))}${kpi('Economia · mediana', summary.median_saving_pct == null ? '—' : formatPct(summary.median_saving_pct))}</div>`;
   const stressTable = advanced

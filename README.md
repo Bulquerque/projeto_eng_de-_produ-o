@@ -1,6 +1,6 @@
 # Visagio Static Simulator
 
-Simulador estático de malha logística com validação de dados, baseline, cenários, análise tributária parametrizada, otimização e entrega executiva. O runtime roda no navegador com JavaScript modular e carrega os dados protegidos somente após desbloqueio local.
+Simulador estático de malha logística com validação de dados, baseline, cenários, análise tributária parametrizada, busca discreta e classificação de alternativas para apoiar decisões executivas. O runtime roda no navegador com JavaScript modular e carrega os dados protegidos somente após desbloqueio local.
 
 ## Comece aqui
 
@@ -98,7 +98,7 @@ Os arquivos derivados ficam em `entregaveis/`, ignorado pelo Git. Antes de entre
 
 ## Documentação para o relatório
 
-- [`METODOLOGIA_MODELO.md`](METODOLOGIA_MODELO.md) — limites metodológicos, custos, cenários e otimização;
+- [`METODOLOGIA_MODELO.md`](METODOLOGIA_MODELO.md) — limites metodológicos, custos, cenários e busca de alternativas;
 - [`RELATORIO_FINAL_ACADEMICO.md`](RELATORIO_FINAL_ACADEMICO.md) — parecer técnico e evidências para a defesa;
 - [`ESTUDO_PROPRIO_TRIBUTACAO.md`](ESTUDO_PROPRIO_TRIBUTACAO.md) — parâmetros, cobertura e fontes da camada tributária;
 - [`CHECKLIST_ENTREGA_EMPRESAS.md`](CHECKLIST_ENTREGA_EMPRESAS.md) — roteiro de homologação por empresa;

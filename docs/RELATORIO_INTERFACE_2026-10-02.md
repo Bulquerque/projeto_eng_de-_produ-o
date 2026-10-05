@@ -1,6 +1,6 @@
 # Interface Visagio — implementação e validação de 02/10/2026
 
-A interface mantém a paleta e os motores existentes. A jornada principal usa **Visão geral → Simulação → Otimização → Resultados**; dados, evidências, validação e metodologia ficam em acesso secundário. As referências visuais anyLogistix e Cosmic Frog orientaram a hierarquia e a redução de texto, conforme o plano inicial.
+A interface mantém a paleta e os motores existentes. A jornada principal usa **Visão geral → Simulação → Recomendações → Resultados**; dados, evidências, validação e metodologia ficam em acesso secundário. As referências visuais anyLogistix e Cosmic Frog orientaram a hierarquia e a redução de texto, conforme o plano inicial.
 
 ## Comportamento entregue
 
@@ -9,7 +9,7 @@ A interface mantém a paleta e os motores existentes. A jornada principal usa **
 | Navegação | Quatro áreas, contexto único de empresa e cenário, aliases antigos normalizados | Contratos do app e Playwright |
 | Visão geral | Referência operacional, malha, custos e contexto fiscal; recomendações aparecem somente após cálculo | Playwright e renderizadores de overview |
 | Simulação | Presets editáveis, todos os CDs disponíveis, campos validados, nome do cenário, salvar/importar/exportar | Jornada demo e jornadas Empresa 1/2 |
-| Otimização | Objetivo e limites operacionais visíveis; parâmetros técnicos e de risco recolhidos | Execução do pipeline e seleção manual |
+| Recomendações | Perfil e limites operacionais visíveis; parâmetros técnicos e de risco recolhidos | Busca discreta, classificação das alternativas e seleção manual |
 | Resultados | Custo, diferença, ranking com CDs e risco, comparação, alternativas e análise de risco | Engines existentes, testes de render e Playwright |
 | Risco | Rascunho preservado ao navegar; matriz lê o formato real do engine; análise detalhada em segundo nível | Regressão do provider e Playwright |
 | Estado | Edição invalida cálculos dependentes e exportações; troca de empresa descarta o contexto anterior | Contratos de estado, corrida assíncrona e E2E |
@@ -18,7 +18,7 @@ A interface mantém a paleta e os motores existentes. A jornada principal usa **
 
 ## Correções que afetam a interpretação
 
-- O provider demonstrativo executa os motores de cenários, otimização, risco e decisão. Não devolve um resultado pré-calculado para um formulário alterado.
+- O provider demonstrativo executa os motores de cenários, busca de alternativas, risco e decisão. Não devolve um resultado pré-calculado para um formulário alterado.
 - Uma edição recebe nova identidade e não sobrescreve o preset. Salvar, importar e alternar cenários respeita a empresa ativa.
 - A amostra demonstrativa não possui receita fiscal elegível. Quando o engine confirma essa ausência, sua referência é normalizada em memória para **R$ 290.000 de custo logístico**, com componente fiscal excluído da comparação. A economia não inclui o desaparecimento de um tributo fictício. As fixtures originais permanecem intactas; cobertura fiscal incompleta e uso exploratório estão registrados nos metadados e na interface.
 - Arquivos JSON, HTML e CSV demonstrativos carregam identificação no próprio conteúdo. Empresas reais mantêm exportação agregada e passam pela proteção contra mistura de dados demonstrativos.
@@ -29,7 +29,7 @@ A interface mantém a paleta e os motores existentes. A jornada principal usa **
 - `npm run quality`: **51 scripts**, final `ALL_PHASE5_PACKAGE_TESTS_OK`. Inclui Ruff, ESLint, Prettier, contratos, reconciliação, invariantes, engines, criptografia, apresentação e regressões de navegador.
 - `VISAGIO_NETWORK_SERVE_DIR=/tmp/visagio-site-refactor/dist npm run test:public`: **29 scripts**, final `PUBLIC_SUITE_OK`. O teste Network Intelligence desse gate serviu o pacote público real.
 - Últimos ajustes de rótulos fiscais: Playwright contra o pacote exato **`NETWORK_INTELLIGENCE_E2E_OK`** e padrões de código **`CODE_STANDARDS_CHECK_OK`**, ambos aprovados após esses ajustes.
-- A jornada de navegador cobre demo, Empresa 1 e Empresa 2: frase incorreta, desbloqueio, execução, otimização, seleção manual, exportação, mudança de empresa, rascunhos, invalidação, aliases, refresh, envio repetido, falha de carregamento, foco e dispositivos menores.
+- A jornada de navegador cobre demo, Empresa 1 e Empresa 2: frase incorreta, desbloqueio, execução, recomendações, seleção manual, exportação, mudança de empresa, rascunhos, invalidação, aliases, refresh, envio repetido, falha de carregamento, foco e dispositivos menores.
 - A rotação verifica todos os envelopes antes de escrever. O teste sintético cobre falha sem alterações, integridade de bytes/AAD/SHA, rejeição das frases antigas e reexecução sem recriptografar. No acervo desta branch, **162 envelopes** já usam a frase escolhida. Os **11 inputs criptografados** do runtime Sites foram recriptografados com preservação dos bytes decifrados.
 - A busca pelas frases nas fontes versionáveis não encontrou ocorrências. `.env.local` permanece ignorado e com permissão `0600`.
 

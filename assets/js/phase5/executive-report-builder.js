@@ -136,14 +136,14 @@ function optimizationCoverageSection(audit = {}) {
   const optimization = audit?.optimization;
   if (!optimization) return '';
   return `
-    <h3>Cobertura da otimização</h3>
+    <h3>Cobertura da busca de alternativas</h3>
     <table class="executive-table-premium"><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>
       <tr><td>Método</td><td>${esc(optimization.method_applied || optimization.method_requested || '—')}</td></tr>
       <tr><td>Seed</td><td>${esc(optimization.seed ?? '—')}</td></tr>
       <tr><td>Candidatos gerados / simulados / válidos</td><td>${esc(`${optimization.generated_candidates ?? '—'} / ${optimization.simulated_candidates ?? '—'} / ${optimization.valid_candidates ?? '—'}`)}</td></tr>
       <tr><td>Espaço declarado</td><td>${esc(optimization.candidate_space_size ?? '—')}</td></tr>
       <tr><td>Cobertura</td><td>${esc(optimization.coverage_ratio == null ? '—' : `${(Number(optimization.coverage_ratio) * 100).toFixed(2)}%`)}</td></tr>
-      <tr><td>Ótimo global no espaço</td><td>${esc(optimization.exact_search_space ? 'sim' : 'não')}</td></tr>
+      <tr><td>Espaço avaliado por completo</td><td>${esc(optimization.exact_search_space ? 'sim' : 'não')}</td></tr>
       <tr><td>Limitação</td><td>${esc(optimization.exactness_reason || '—')}</td></tr>
     </tbody></table>
   `;

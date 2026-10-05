@@ -179,7 +179,7 @@ function initializeNetworkIntelligence() {
         {
           overview: 'Visão geral',
           scenarios: 'Simulação',
-          optimizer: 'Otimização',
+          optimizer: 'Recomendações',
           results: 'Resultados',
           trust: 'Dados e metodologia',
         }[route.path.split('/')[2]] || 'Dados';
@@ -735,9 +735,7 @@ function initializeNetworkIntelligence() {
           const blocked = packageResult.release?.release_status === 'blocked';
           showToast(
             root,
-            blocked
-              ? 'Não foi possível obter uma alternativa válida.'
-              : 'Resultados da otimização disponíveis.',
+            blocked ? 'Não foi possível obter uma alternativa válida.' : 'Recomendações geradas.',
             blocked ? 'error' : 'success'
           );
           window.location.hash = '#/network/results/summary';

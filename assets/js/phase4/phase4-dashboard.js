@@ -225,7 +225,7 @@ function runOpt() {
       renderOptimizer();
       if (!String(state.optimizer.optimizer_status || '').startsWith('success')) {
         log('Otimizador bloqueado', state.optimizer.errors || []);
-        alert((state.optimizer.errors || ['Falha na otimização']).join('; '));
+        alert((state.optimizer.errors || ['Falha ao gerar recomendações']).join('; '));
         return;
       }
       log('Busca discreta executada', state.optimizer.search_log);

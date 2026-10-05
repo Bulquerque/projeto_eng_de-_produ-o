@@ -1,7 +1,7 @@
 # Relatório técnico final — Visagio Static Simulator
 
 Data da auditoria: 2026-09-10
-Escopo: código, dados protegidos, cálculos, arquitetura, otimização, Monte
+Escopo: código, dados protegidos, cálculos, arquitetura, busca e classificação de alternativas, Monte
 Carlo, tributação, interface, documentação, testes e pacote de entrega.
 
 ## Parecer executivo
@@ -17,7 +17,7 @@ de validade fiscal ou previsão operacional. Para a Empresa 1, o baseline de
 decisão é derivado por proxy e permanece exploratório. Para a Empresa 2, a
 divergência tributária bruta permanece visível; fluxos sem receita explícita não
 são tratados como faturamento por inferência física. Quando a cobertura fiscal
-é insuficiente, otimização/Monte Carlo/stress continuam sendo executados sempre
+é insuficiente, busca de alternativas/Monte Carlo/stress continuam sendo executados sempre
 que o resultado determinístico é numericamente utilizável, com
 `decision_use: exploratory_only`, alertas e proveniência explícita. Somente
 erros técnicos reais bloqueiam a execução.
@@ -43,7 +43,7 @@ sem inventar campos fiscais ausentes.
 | Fallbacks e números mágicos | Fallbacks têm diagnóstico, contagem, taxa, hipótese e alerta; parâmetros canônicos ficam centralizados na configuração do modelo. |
 | Tributação e proxies | NCM/CFOP/CST, cobertura, períodos, origem/destino, categorias proxy e limitações são transportados no resultado, relatório e export. |
 | Reconciliação tributária ajustada | Diferença bruta define o status; ponte ajustada fica em campos separados e é descrita como sensibilidade. |
-| Otimização parcial/MILP | Método, seed, espaço declarado, cobertura e `exact_search_space` são exportados; o projeto não declara MILP nem ótimo global sem enumeração completa. |
+| Busca parcial/MILP | Método, seed, espaço declarado, cobertura e `exact_search_space` são exportados; o projeto não declara MILP nem ótimo global sem enumeração completa. |
 | Seleção final enviesada pelo top-10 | Seleção automática usa `scored_scenarios` completo quando disponível; `best_scenarios` é apenas resumo. |
 | Configuração divergente entre Fase 4 e Fase 5 | Objetivo, restrições, método, seed e limite são herdados via store de sessão e exibidos na Fase 5. |
 | Código morto, warnings e segurança | Imports/formatação/lint revisados, vulnerabilidades de dependências corrigidas, senha e `CryptoKey` mantidas somente em memória durante a aba atual, dados continuam criptografados e o segredo não entra no Git. Após recarregar, o desbloqueio é solicitado novamente. |

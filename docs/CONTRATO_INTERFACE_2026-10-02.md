@@ -6,7 +6,7 @@ Decisão do agente principal, anterior à implementação delegada.
 
 - Visão geral: `/network/overview/{summary,network,costs,tax}`. Retrato da operação de referência, sem recomendação ou resultado futuro.
 - Simulação: `/network/scenarios/build`. Editar parâmetros; resultado somente após executar.
-- Otimização: `/network/optimizer/configure`. Objetivo e restrições essenciais; opções técnicas em `details` fechado.
+- Recomendações: `/network/optimizer/configure`. Perfil e limites essenciais; opções técnicas em `details` fechado.
 - Resultados: `/network/results/{summary,comparison,tradeoffs,risk,risk/advanced}`. Casa única de simulação, ranking, seleção e risco. Links antigos são aliases.
 - Dados e metodologia: `/network/trust/*`. Acesso secundário, com cobertura fiscal, evidência, método e validações distintas.
 

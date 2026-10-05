@@ -43,7 +43,7 @@ assets/js/phase1/table-view.js         builder de tabelas com escaping e formata
 assets/js/phase2/manual-checklist.js  checklist reutilizado pelo portal
 assets/js/phase3/scenario-arena/      views de Monte Carlo/comparação e builder de linhas
 assets/js/phase3/                    engines e coordenação do fluxo de cenários
-assets/js/phase4/                    objetivos, busca e otimização
+assets/js/phase4/                    objetivos, busca e classificação de alternativas
 assets/js/phase5/                    decisão, controles, views e exportação de entrega
 data-demo/empresa_mock/              dados sintéticos de demonstração
 tests/12_network_intelligence/       contratos e E2E dessa interface
