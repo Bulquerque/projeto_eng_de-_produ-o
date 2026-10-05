@@ -317,6 +317,9 @@ def test_demo_journey(base, browser):
     rows = page.locator('[data-testid="optimizer-ranking"] tbody tr')
     assert rows.count() >= 1
     assert 'Economia ante a referência' in page.locator('.ni-results-impact').inner_text()
+    assert page.locator('.ni-results-decision p').count() == 0
+    assert page.locator('.ni-results-metrics').inner_text().count('Estado') == 0
+    assert page.locator('.ni-results-trust-link').count() == 0
     assert 'Tributos' in page.locator('.ni-results-reference').inner_text()
     for text in rows.all_text_contents():
         assert 'R$' in text, text
