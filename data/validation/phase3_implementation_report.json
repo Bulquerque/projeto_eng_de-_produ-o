@@ -28,7 +28,7 @@
     }
   },
   "notes": [
-    "Fase 3 usa bundles da Fase 2 como baseline canônico; cenários são manuais e não otimizados.",
+    "Fase 3 usa bundles da Fase 2 como baseline canônico; cenários são construídos manualmente e ainda não passam pelo mecanismo de avaliação da Fase 4.",
     "Realocação padrão usa nearest_available_cd com heurística auditável, não solver ótimo."
   ]
 }

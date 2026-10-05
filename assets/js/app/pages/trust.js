@@ -110,7 +110,7 @@ export function renderTrustOverview(state) {
   else if (!coverageIsReported)
     limitations.push('A proporção de cobertura fiscal não foi informada pela fonte.');
   if (decision.optimizer?.result_scope === 'conditional_declared_catalog')
-    limitations.push('A busca do otimizador está limitada ao catálogo declarado.');
+    limitations.push('A busca do mecanismo de avaliação está limitada ao catálogo declarado.');
   if (use === 'demo_only') limitations.push('Resultados disponíveis apenas para demonstração.');
   const qaStatus = userStatusLabel(decision.final_qa?.final_qa_status, 'Não calculada');
   const releaseStatus = userStatusLabel(decision.release?.release_status, 'Não avaliada');

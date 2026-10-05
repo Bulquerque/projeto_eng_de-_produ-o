@@ -299,7 +299,7 @@ for (const name of [
   'Reconciliação',
   'Estoque teste',
   'Monte Carlo',
-  'Otimizador',
+  'Mecanismo de avaliação',
   'Plano',
   'Fontes',
 ])
@@ -527,7 +527,7 @@ for (const [cid, c] of [
     ]);
   }
 header(
-  sheets.Otimizador,
+  sheets['Mecanismo de avaliação'],
   'Sensibilidade da recomendação aos pesos',
   optRows,
   [20, 18, 24, 26, 30, 14, 18, 14, 12]
@@ -569,9 +569,9 @@ sheets['Reconciliação'].getRange('E4:E12').format.numberFormat = '0.00"%"';
 sheets['Estoque teste'].getRange('F4:F7').format.numberFormat = '0.00%';
 sheets['Estoque teste'].getRange('G4:G7').format.numberFormat = '"R$" #,##0.00';
 sheets['Monte Carlo'].getRange('F4:I5').format.numberFormat = '0.00"%"';
-sheets.Otimizador.getRange('F4:F11').format.numberFormat = '0.00';
-sheets.Otimizador.getRange('G4:G11').format.numberFormat = '"R$" #,##0.00';
-sheets.Otimizador.getRange('H4:H11').format.numberFormat = '0.00"%"';
+sheets['Mecanismo de avaliação'].getRange('F4:F11').format.numberFormat = '0.00';
+sheets['Mecanismo de avaliação'].getRange('G4:G11').format.numberFormat = '"R$" #,##0.00';
+sheets['Mecanismo de avaliação'].getRange('H4:H11').format.numberFormat = '0.00"%"';
 const xlsx = await SpreadsheetFile.exportXlsx(wb);
 await xlsx.save(path.join(outDir, 'pacote_dados_corrigidos.xlsx'));
 console.log(outDir);

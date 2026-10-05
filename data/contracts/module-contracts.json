@@ -1894,7 +1894,7 @@
       "status": "implemented_phase_4",
       "page": "/fase-4-score-otimizador/",
       "file": "assets/js/phase4/phase4-dashboard.js",
-      "purpose": "Renderiza a página /fase-4-score-otimizador/ com objective builder, ranking, otimizador e validação.",
+      "purpose": "Renderiza a página /fase-4-score-otimizador/ com objective builder, ranking, mecanismo de avaliação e validação.",
       "inputs": {
         "company_id": "empresa1|empresa2",
         "objective": "{}",

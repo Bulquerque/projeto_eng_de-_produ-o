@@ -224,13 +224,13 @@ function runOpt() {
       }
       renderOptimizer();
       if (!String(state.optimizer.optimizer_status || '').startsWith('success')) {
-        log('Otimizador bloqueado', state.optimizer.errors || []);
+        log('Mecanismo de avaliação bloqueado', state.optimizer.errors || []);
         alert((state.optimizer.errors || ['Falha ao gerar recomendações']).join('; '));
         return;
       }
       log('Busca discreta executada', state.optimizer.search_log);
     } catch (e) {
-      logError('Erro no otimizador', e.message);
+      logError('Erro no mecanismo de avaliação', e.message);
       alert(e.message);
     } finally {
       $('runOptimizer').disabled = false;

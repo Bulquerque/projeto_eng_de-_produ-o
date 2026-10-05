@@ -113,4 +113,4 @@ Eles verificam:
 
 ## Limitação assumida de forma explícita
 
-A Fase 2 ainda não é otimizador nem comparador de cenários. Ela é a camada de baseline. A criação de cenários alternativos fica para a Fase 3.
+A Fase 2 ainda não é mecanismo de avaliação nem comparador de cenários. Ela é a camada de baseline. A criação de cenários alternativos fica para a Fase 3.

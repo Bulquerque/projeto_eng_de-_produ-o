@@ -67,7 +67,7 @@ O teste Playwright ficou disponível no pacote, mas o Chromium do ambiente bloqu
 
 ## Limite da Fase 1
 
-A Fase 1 ainda não implementa CostEngine, cenário base, otimizador ou stress test. Ela implementa a fundação visual e técnica para validar que os dados certos estão carregados e separados.
+A Fase 1 ainda não implementa CostEngine, cenário base, mecanismo de avaliação ou stress test. Ela implementa a fundação visual e técnica para validar que os dados certos estão carregados e separados.
 ## Documentação expandida adicionada
 
 Além deste registro original, a documentação detalhada da Fase 1 agora está separada em guias:

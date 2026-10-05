@@ -20,9 +20,15 @@ Rotas principais:
 - `/fase-1-validacao/` → `#/network/overview/summary` — diagnóstico inicial;
 - `/fase-2-baseline/` → `#/network/trust/overview` — visão geral da baseline e de sua evidência;
 - `/fase-3-cenarios/` → `#/network/scenarios/build` — criação de cenários;
-- `/fase-4-score-otimizador/` → `#/network/optimizer/configure` — configuração do otimizador;
+- `/fase-4-score-otimizador/` → `#/network/optimizer/configure` — configuração da avaliação de alternativas;
 - `/fase-5-entrega-final/` → `#/network/trust/validation` — validação da entrega;
 - `/debug/` — diagnóstico de paths, módulos e carregamento.
+
+Na interface e na documentação metodológica, a antiga área de busca é chamada
+**Avaliação de alternativas**: ela classifica os cenários gerados segundo os
+critérios e limites configurados. Esse nome evita sugerir que o sistema prova
+uma solução ótima para o problema logístico completo. O endereço antigo da Fase
+4 permanece como alias para não quebrar links existentes.
 
 O `index.html` carrega `assets/js/app/main.js`, que inicia a shell Network Intelligence. Os módulos `assets/js/phase1/` a `assets/js/phase5/` permanecem no projeto para fluxos e engines das fases. As páginas `/fase-1-validacao/` a `/fase-5-entrega-final/` são fachadas que levam às subrotas indicadas acima. O roteador canônico também converte os hashes históricos `#/diagnostico-baseline`, `#/simulacao-otimizacao` e `#/homologacao-relatorio`, além dos aliases de fase, para rotas válidas, preservando os parâmetros da query.
 
@@ -126,4 +132,4 @@ Os arquivos derivados ficam em `entregaveis/`, ignorado pelo Git. Antes de entre
 
 ## Escopo dos resultados
 
-O simulador é uma ferramenta de análise exploratória de cenários. Monte Carlo não é previsão histórica; o otimizador só pode ser chamado de ótimo global quando o espaço modelado for exato; proxies e fallbacks precisam permanecer identificados; e a camada tributária parametrizada não substitui apuração fiscal oficial.
+O simulador é uma ferramenta de análise exploratória de cenários. Monte Carlo não é previsão histórica; a avaliação classifica apenas as alternativas encontradas dentro do catálogo e dos limites informados, e só representa todo o espaço declarado quando a cobertura for completa; proxies e fallbacks precisam permanecer identificados; e a camada tributária parametrizada não substitui apuração fiscal oficial.

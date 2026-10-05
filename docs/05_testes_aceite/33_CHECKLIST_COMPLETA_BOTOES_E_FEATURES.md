@@ -30,7 +30,7 @@ Use uma cópia deste arquivo por rodada de exploração. Marque os itens verific
 - [ ] Usar **Pular para o conteúdo**.
 - [ ] Usar a marca V / **Voltar ao topo**.
 - [ ] Abrir **1. Diagnóstico & Baseline**.
-- [ ] Abrir **2. Cenários & Otimização**.
+- [ ] Abrir **2. Cenários & Avaliação de alternativas**.
 - [ ] Abrir **3. Decisão & Entrega**.
 - [ ] Confirmar o hash/rota e o pilar ativo depois de cada navegação.
 - [ ] Abrir os aliases do portal: #fase-1-validacao, #fase-2-validacao, #dados, #qualidade, #abas, #visao-geral, #baseline, #/validacao, #/baseline, #/arena, #arena4, #/simulacao, #/otimizacao e #/entrega.
@@ -215,7 +215,7 @@ Registro do grupo:
 - Evidência/download:
 - Falha ou observação:
 
-## 6. Portal — fase 4: score e otimizador
+## 6. Portal — fase 4: score e mecanismo de avaliação
 
 ### Objetivos e perfil
 
@@ -285,7 +285,7 @@ Registro do grupo:
 
 ### Execução e resultados
 
-- [ ] Trocar empresa e confirmar otimização, seleção final, risco, stress, sensibilidade/matriz, robustez, recomendação, audit trail, QA/release e montagem do pacote.
+- [ ] Trocar empresa e confirmar avaliação de alternativas, seleção final, risco, stress, sensibilidade/matriz, robustez, recomendação, audit trail, QA/release e montagem do pacote.
 - [ ] Acionar **Reexecutar análise final** (#rerunPhase5).
 - [ ] Conferir cards de cenário, custo total, saving, robustez, recomendação e release.
 - [ ] Conferir paridade com workbook.
@@ -323,7 +323,7 @@ Registro do grupo:
 - [ ] Abrir Network Intelligence diretamente por cada rota #/network/.
 - [ ] Conferir que o portal e Network são runtimes de interface distintos.
 - [ ] Acionar **Pular para o conteúdo** e verificar foco em #networkPage.
-- [ ] Navegar **Visão executiva**, **Cenários**, **Otimizador** e **Dados & confiança**.
+- [ ] Navegar **Visão executiva**, **Cenários**, **Mecanismo de avaliação** e **Dados & confiança**.
 - [ ] Conferir rota ativa e seção pai ativa em cada subrota.
 - [ ] Conferir as subnavs: Resumo, Malha, Custos, Tributário; Construir, Resultado, Comparar, Risco & sensibilidade; Configurar, Resultados, Trade-offs; Visão geral, Evidências, Fontes, Validação, Metodologia.
 - [ ] Trocar #niCompanySelect e conferir provider/contexto, query company e descarte dos dados anteriores.
@@ -361,7 +361,7 @@ Registro do grupo:
 - [ ] Acionar **Abrir cenário**.
 - [ ] Acionar **Executar análise**.
 - [ ] Acionar **Construir cenário**.
-- [ ] Acionar **Abrir otimizador**.
+- [ ] Acionar **Abrir mecanismo de avaliação**.
 - [ ] Conferir destino de cada link e grupo pai ativo.
 
 ### Malha — #/network/overview/network
@@ -462,7 +462,7 @@ Registro do grupo:
 - Evidência:
 - Falha ou observação:
 
-## 11. Network Intelligence — otimizador (3 rotas)
+## 11. Network Intelligence — mecanismo de avaliação (3 rotas)
 
 ### Configurar — #/network/optimizer/configure
 
@@ -478,7 +478,7 @@ Registro do grupo:
 - [ ] Selecionar risk_scatter_driver: freight, demand, inventory, WACC, tax.
 - [ ] Selecionar stress_profile.
 - [ ] Selecionar sensitivity_variable, sensitivity_x e sensitivity_y.
-- [ ] Conferir campos required e validação final pelo validador do otimizador.
+- [ ] Conferir campos required e validação final pelo validador do mecanismo de avaliação.
 - [ ] Conferir baseline usado e resumo de configuração.
 - [ ] Acionar **Rodar busca** com entrada válida.
 - [ ] Acionar busca com limites inválidos e registrar erros/toast.
@@ -502,7 +502,7 @@ Registro do grupo:
 
 ### Trade-offs — #/network/optimizer/tradeoffs
 
-- [ ] Conferir estado vazio sem otimizador.
+- [ ] Conferir estado vazio sem mecanismo de avaliação.
 - [ ] Conferir candidatos comparáveis depois da busca.
 - [ ] Confirmar se página é tabela de trade-offs e não fronteira Pareto completa.
 - [ ] Conferir que página não oferece filtros/ações extras, salvo navegação.

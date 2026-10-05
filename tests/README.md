@@ -11,7 +11,7 @@ tests/
 ├── 04_e2e_visual_opcional/      # Playwright opcional da Fase 1
 ├── 05_fase2_baseline/           # baseline, reconciliação e HTTP
 ├── 06_fase3_cenarios/           # cenários e Monte Carlo
-├── 07_fase4_score_otimizador/   # scoring e otimização
+├── 07_fase4_score_otimizador/   # scoring e avaliação de alternativas
 ├── 08_fase5_entrega_final/      # stress, recomendação e exportação
 ├── 09_quality_checks/           # contratos, invariantes e integridade
 ├── 10_presentation_e2e/         # fluxo completo de apresentação
@@ -48,7 +48,7 @@ construídos no próprio teste e não lê dados de empresa protegidos.
 
 Essa suíte não descriptografa nem carrega bundles de `empresa1`/`empresa2`, não lê
 `.env.local` e não precisa de `VISAGIO_DATA_PASSWORD`. Os testes de reconciliação,
-cenários, otimização e decisão que dependem dos dados protegidos permanecem apenas no gate
+cenários, avaliação de alternativas e decisão que dependem dos dados protegidos permanecem apenas no gate
 completo. A lista pública é explícita para revisão; ao adicionar um teste nela, confira
 que seus imports, fixtures e processos filhos não leem dados protegidos ou credenciais.
 

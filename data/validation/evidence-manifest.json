@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generated_by": "python scripts/manage_validation_evidence_manifest.py --write",
-  "generated_from_commit": "481ee7b6216fbd2ec58a2b8ecb9732b84b309bd2",
+  "generated_from_commit": "24b4f54b8871e3210c1940bebefc03d89bd5a9e9",
   "freshness_policy": "Hashes identify these bytes only. A current commit association does not mean the report was produced by that commit or that its checks passed there. Use embedded run metadata or rerun the documented command.",
   "count": 42,
   "files": [
@@ -55,8 +55,8 @@
     },
     {
       "path": "data/validation/phase1_implementation_report.json",
-      "size_bytes": 1694,
-      "sha256": "0147dfeb0f37f182b08ef3de37081adebc17047a73c4a20e06290587d40210bc",
+      "size_bytes": 1724,
+      "sha256": "24aec32fdfae8cd87159318ce59f5499811c21d817f68c3a3b2b233e089d59b4",
       "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
     },
     {
@@ -91,8 +91,8 @@
     },
     {
       "path": "data/validation/phase3_implementation_report.json",
-      "size_bytes": 927,
-      "sha256": "b111374ed82d2e5d1d1eff5f3b0822a9201e6a1c6b35ab90a3dafcdaecc98eb4",
+      "size_bytes": 986,
+      "sha256": "a60ef342c89bfa7f662e35420a52c29f88a3c95a4df23372323d2b1ab9aebd57",
       "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
     },
     {
@@ -103,8 +103,8 @@
     },
     {
       "path": "data/validation/phase4_implementation_report.json",
-      "size_bytes": 790,
-      "sha256": "8cea44d615b99d3906386a4dc9ac1a276ee2cb953892f39c9741ff135625c4c3",
+      "size_bytes": 859,
+      "sha256": "e10ebd2dfa0c4ad4185631debfeb9b0c3823a7bf6979976e4ce341675f20c8f2",
       "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
     },
     {
@@ -127,8 +127,8 @@
     },
     {
       "path": "data/validation/phase_tests.json",
-      "size_bytes": 1678,
-      "sha256": "b22ba31befaaaddebc5d32d06bb6511c6b756898d40255bafafa074ea0f9968a",
+      "size_bytes": 1694,
+      "sha256": "bc570249c66b41fdfe9562808fca9643a9092c09fb11b5f9a2777aea3447268c",
       "execution_metadata": "not_verified_from_inventory; inspect the artifact itself"
     },
     {

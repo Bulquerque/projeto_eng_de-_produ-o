@@ -391,8 +391,8 @@ entrega.
 
 ## 11 Evidências anexadas
 
-- [ ] Capturas desktop da home, baseline, cenário, otimizador e entrega para Empresa 1.
-- [ ] Capturas desktop da home, baseline, cenário, otimizador e entrega para Empresa 2.
+- [ ] Capturas desktop da home, baseline, cenário, mecanismo de avaliação e entrega para Empresa 1.
+- [ ] Capturas desktop da home, baseline, cenário, mecanismo de avaliação e entrega para Empresa 2.
 - [ ] Capturas mobile das mesmas jornadas para Empresa 1.
 - [ ] Capturas mobile das mesmas jornadas para Empresa 2.
 - [ ] JSON exportado de cenário para cada empresa.

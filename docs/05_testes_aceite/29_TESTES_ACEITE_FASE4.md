@@ -29,6 +29,6 @@ ALL_PHASE5_PACKAGE_TESTS_OK
 - Métricas são normalizadas de 0 a 100.
 - Score final é soma ponderada.
 - Ranking ordena maior score primeiro.
-- Otimizador gera e simula candidatos.
+- Mecanismo de avaliação gera e simula candidatos.
 - Restrições filtram cenários inválidos.
 - Empresa 1 e Empresa 2 continuam separadas.

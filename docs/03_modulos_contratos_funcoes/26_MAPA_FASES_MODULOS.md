@@ -38,13 +38,13 @@ Este documento mostra a arquitetura em 5 fases e quais módulos pertencem a cada
 | ScenarioQualityCheck | planned_phase_3 | /fase-3-cenarios e /fase-4-score-otimizador | Avalia plausibilidade operacional do cenário, separando cenário barato de cenário realmente executável. |
 | ScenarioPersistence | planned_phase_3 | /fase-3-cenarios | Salva cenários criados pelo usuário no navegador e permite exportar/importar JSON de cenário. |
 
-# Fase 4 — Função objetivo customizada, score, restrições e otimização exata discreta.
+# Fase 4 — Critérios e pesos customizados, score, restrições e comparação de alternativas.
 
 | Módulo | Status | Página | Responsabilidade |
 |---|---|---|---|
 | ObjectiveBuilder | planned_phase_4 | /fase-4-score-otimizador | Permite ao usuário criar sua própria função objetivo com pesos de custo, serviço, risco, tributo e estoque. |
 | ScenarioScoring | planned_phase_4 | /fase-4-score-otimizador | Normaliza métricas heterogêneas e calcula o score final de cada cenário conforme função objetivo escolhida. |
-| ConstraintEngine | planned_phase_4 | /fase-4-score-otimizador | Define e valida restrições usadas pelo otimizador: mínimo/máximo de CDs, capacidade, concentração, cobertura e lead time. |
+| ConstraintEngine | planned_phase_4 | /fase-4-score-otimizador | Define e valida restrições usadas pelo mecanismo de avaliação: mínimo/máximo de CDs, capacidade, concentração, cobertura e lead time. |
 | ScenarioOptimizer | planned_phase_4 | /fase-4-score-otimizador | Enumera o espaço discreto modelado, aplica restrições, calcula score e retorna o melhor cenário viável com desempate determinístico. |
 | SearchLogPanel | planned_phase_4 | /fase-4-score-otimizador | Mostra rastreabilidade da busca: método, seed, candidatos testados, rejeições e top cenários. |
 

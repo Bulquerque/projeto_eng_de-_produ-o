@@ -14,9 +14,9 @@ Os nomes são transcritos da interface sempre que existe rótulo textual; quando
 
 O runtime atual é a **Network Intelligence**: [index.html](../../index.html) inicia a shell, que possui 18 rotas e reaproveita serviços/engines do projeto por meio de providers. As páginas `/fase-*` são fachadas para rotas atuais. O catálogo do portal de fases abaixo descreve um fluxo legado preservado como referência; seus controles não estão expostos como uma segunda interface ativa.
 
-Fluxo típico no portal legado (referência histórica): entrar → escolher Empresa 1 ou Empresa 2 → inspecionar diagnóstico e baseline → construir/simular cenário → comparar e rodar otimizador → selecionar a decisão → recalcular análise final → revisar QA, release, evidências e baixar artefatos.
+Fluxo típico no portal legado (referência histórica): entrar → escolher Empresa 1 ou Empresa 2 → inspecionar diagnóstico e baseline → construir/simular cenário → comparar e rodar mecanismo de avaliação → selecionar a decisão → recalcular análise final → revisar QA, release, evidências e baixar artefatos.
 
-Fluxo típico em Network Intelligence: escolher empresa → construir e simular cenário → revisar resultado/comparação/risco → configurar busca e rodar otimização → selecionar ou executar a decisão → revisar dados, confiança e validação → exportar artefatos.
+Fluxo típico em Network Intelligence: escolher empresa → construir e simular cenário → revisar resultado/comparação/risco → configurar busca e rodar avaliação de alternativas → selecionar ou executar a decisão → revisar dados, confiança e validação → exportar artefatos.
 
 Empresa Falsa/demo é uma fixture de demonstração. Não representa uma empresa real. Empresas protegidas seguem o fluxo criptográfico do carregador e dos providers; a interface não deve apresentar fixture como dado real.
 
@@ -27,7 +27,7 @@ Empresa Falsa/demo é uma fixture de demonstração. Não representa uma empresa
 | Pular para o conteúdo | Link de salto, destino main | Move a navegação ao conteúdo principal. | Navegação nativa de âncora; não há atalho customizado identificado. |
 | Marca V / voltar ao topo | Link, destino topo | Retorna ao início do documento. | Navegação por âncora. |
 | 1. Diagnóstico & Baseline | Link/hash da rota diagnostico-baseline | Abre o pilar inicial. | SPA atualiza conteúdo e estado do menu. |
-| 2. Cenários & Otimização | Link/hash simulacao-otimizacao | Abre a área das fases 3–4. | SPA; F3 e F4 compartilham o pilar. |
+| 2. Cenários & Avaliação de alternativas | Link/hash simulacao-otimizacao | Abre a área das fases 3–4. | SPA; F3 e F4 compartilham o pilar. |
 | 3. Decisão & Entrega | Link/hash homologacao-relatorio | Abre a fase 5. | SPA atualiza conteúdo e estado do menu. |
 | Empresa 1 / Empresa 2 | Duas duplas de botões button[data-company], uma no shell e outra na área de dados | Atualiza o diagnóstico da fase 1 e inicia também o carregamento de baseline da fase 2. | Os controladores F1/F2 se inscrevem nos mesmos botões. Enquanto F2 carrega, os botões globais ficam desativados e tentativas concorrentes podem ser ignoradas. Fases 3–5 também se inscrevem nos mesmos elementos. |
 | Abrir Empresa 1 / Abrir Empresa 2 | Botões de hero, seletores selectEmpresa1 e selectEmpresa2 | Desbloqueiam/carregam a empresa e definem o hash legado #dados; o roteador normaliza para diagnóstico e volta ao topo. | Empresa protegida pode abrir o formulário de senha; Empresa Falsa é demonstração. |
@@ -40,7 +40,7 @@ Empresa Falsa/demo é uma fixture de demonstração. Não representa uma empresa
 | Salvar cenário | Botão #saveScenario | Persiste o cenário atual localmente e vinculado à empresa corrente. | Sem cenário atual, o handler encerra sem salvar. |
 | Exportar cenário | Botão #exportScenario | Baixa o cenário atual como JSON. | Sem cenário atual, o handler encerra sem exportar. |
 | Limpar salvos | Botão #clearSavedScenarios | Apaga todos os cenários salvos da empresa atual. | Sem confirmação identificada no binding estático. Efeito destrutivo limitado ao armazenamento local de cenários da empresa selecionada. |
-| Rodar busca discreta | Botão #runOptimizer | Valida objetivo/restrições e executa a busca do otimizador. | Alerta quando inválido; desabilita durante execução; resultado inclui ranking, explicações e trade-offs. |
+| Rodar busca discreta | Botão #runOptimizer | Valida objetivo/restrições e executa a busca do mecanismo de avaliação. | Alerta quando inválido; desabilita durante execução; resultado inclui ranking, explicações e trade-offs. |
 | Reexecutar análise final | Botão #rerunPhase5 | Reexecuta o pipeline final da fase 5. | Requer contexto de empresa/dados. |
 
 ### Roteamento e aliases do portal
@@ -168,7 +168,7 @@ Baseline e parâmetros vigentes, alertas, comparação de cenário, custo e delt
 
 Testes: [suíte da fase 3](../../tests/06_fase3_cenarios/), incluindo lógica, estrutura, comparação da biblioteca e renderização/escape da nova view. O teste de view cobre markup dos cards e banner, checkboxes gerados, baseline/tabela e escape; não cobre clique delegado, mudança de checkbox, persistência ou fluxos de import/export no navegador.
 
-## Portal: fase 4 — score e otimizador
+## Portal: fase 4 — score e mecanismo de avaliação
 
 Implementação: [dashboard de fase 4](../../assets/js/phase4/phase4-dashboard.js) e motores/templates sob assets/js/phase4/.
 
@@ -224,7 +224,7 @@ Implementação: [dashboard de fase 5](../../assets/js/phase5/phase5-dashboard.j
 
 ### Pipeline e ações
 
-- Trocar empresa prepara contexto, herda objetivo da fase 4 e inicia automaticamente otimização final, seleção, risco com parâmetros predefinidos, stress, sensibilidade, matriz, robustez, recomendação, audit trail, Final QA/release e exportação.
+- Trocar empresa prepara contexto, herda objetivo da fase 4 e inicia automaticamente avaliação de alternativas final, seleção, risco com parâmetros predefinidos, stress, sensibilidade, matriz, robustez, recomendação, audit trail, Final QA/release e exportação.
 - Ao ocorrer evento change em modo, ID manual, stress, variável/eixos de sensibilidade ou limite de candidatos, o controlador reexecuta o pipeline e atualiza a view; digitação sem change ainda não dispara. A troca para modo manual também mostra o campo de ID.
 - A nota de configuração mostra objetivo/seed herdados e limite de enumeração; sem configuração da fase 4, usa política canônica e mostra a observação correspondente.
 - **Reexecutar análise final**, #rerunPhase5, roda o pipeline novamente com a configuração atual.
@@ -245,7 +245,7 @@ Roteamento canônico é definido em [assets/js/app/router.js](../../assets/js/ap
 
 | Rota | Conteúdo/features | Navegação e ações específicas |
 |---|---|---|
-| #/network/overview/summary | KPIs de saving, robustez, Evidence e risco; recomendação, empresa/cenário ativo e alertas de interpretação. | Subnav Resumo/Malha/Custos/Tributário; **Abrir cenário**, **Executar análise**, **Construir cenário**, **Abrir otimizador** levam ao fluxo de construção/otimização. |
+| #/network/overview/summary | KPIs de saving, robustez, Evidence e risco; recomendação, empresa/cenário ativo e alertas de interpretação. | Subnav Resumo/Malha/Custos/Tributário; **Abrir cenário**, **Executar análise**, **Construir cenário**, **Avaliar alternativas** levam ao fluxo de construção e classificação de cenários. |
 | #/network/overview/network | Síntese topológica, mapa do Brasil, volume por CD e distribuição de distância. | Subnav Overview; cada UF no SVG é item interativo e abre drawer de informação. |
 | #/network/overview/costs | Decomposição dos custos do baseline, logística, tributos e total. | Subnav Overview; página de leitura, sem formulário. |
 | #/network/overview/tax | Regime/modo tributário, cobertura, período, referência e transição; ausências permanecem explícitas. | Subnav Overview; página de leitura, sem formulário. |
@@ -254,9 +254,9 @@ Roteamento canônico é definido em [assets/js/app/router.js](../../assets/js/ap
 | #/network/scenarios/compare | Compara cenários existentes, baseline, savings, total e status. | Botões dinâmicos **Selecionar** por cenário; não há classificação/filtro identificado e baseline não é escolha manual. |
 | #/network/scenarios/risk | Monte Carlo, distribuição, chance de saving, percentis, stress, drivers e sensibilidade. | **Recalcular risco**, **Abrir risco avançado**, formulário detalhado descrito abaixo. |
 | #/network/scenarios/risk/advanced | Vista avançada do mesmo conjunto de risco/sensibilidade. | Mesmos controles do risco; **Recalcular risco**, **Voltar ao risco resumido**. |
-| #/network/optimizer/configure | Configuração de perfis, limites, seed, risco, stress e sensibilidade; baseline usado. | Formulário de otimizador e **Rodar busca**. |
+| #/network/optimizer/configure | Configuração de perfis, limites, seed, risco, stress e sensibilidade; baseline usado. | Formulário de mecanismo de avaliação e **Rodar busca**. |
 | #/network/optimizer/results | Status, cobertura, escopo exato, candidatos, gráfico e ranking. | Seletor/campo de decisão manual; **Executar decisão deste cenário**, **Ver trade-offs**, **Executar decisão final**. |
-| #/network/optimizer/tradeoffs | Trade-offs entre candidatos dentro do ranking/escopo calculado. | Subnav Otimizador. Não equivale à fronteira Pareto completa do portal de fases. |
+| #/network/optimizer/tradeoffs | Trade-offs entre candidatos dentro do ranking/escopo calculado. | Subnav Mecanismo de avaliação. Não equivale à fronteira Pareto completa do portal de fases. |
 | #/network/trust/overview | Evidence, robustez, QA, release, recomendação e limitações como dimensões separadas. | Subnav Evidence/Fontes/Validação/Metodologia. |
 | #/network/trust/evidence | Score/status, componentes e blockers do relatório; estado vazio sem resultado. | Subnav de confiança; leitura. |
 | #/network/trust/sources | Lineage e fontes consumidas, sem apresentar paths protegidos como arquivos públicos. | Subnav de confiança; leitura. |
@@ -271,7 +271,7 @@ Roteamento canônico é definido em [assets/js/app/router.js](../../assets/js/ap
 | Pular para o conteúdo | button[data-action=skip-to-content] | Move foco para #networkPage. |
 | Visão executiva | Link data-route para Overview | Navega na SPA; subrotas mantêm seção pai ativa. |
 | Cenários | Link data-route | Abre grupo de telas de cenário. |
-| Otimizador | Link data-route | Abre configuração/resultados/trade-offs. |
+| Mecanismo de avaliação | Link data-route | Abre configuração/resultados/trade-offs. |
 | Dados & confiança | Link data-route | Abre overview/evidence/sources/validation/methodology. |
 | Debug / Dev | Links/botões condicionais | Só aparecem com configuração de debug habilitada. |
 | Empresa, #niCompanySelect | Select/change | Troca provider, limpa dados/contexto específico da empresa anterior e atualiza query/URL. Empresa protegida mantém bloqueio criptográfico. |
@@ -327,7 +327,7 @@ Formulário #niRiskForm:
 
 Resultado é gerado para cenários elegíveis; cada item dinâmico data-action=select-compared-scenario seleciona o cenário para comparação. Comparador informa baseline, saving, total e status. Não foram localizados botões de ordenação, filtros ou seleção do baseline na tela.
 
-### Otimizador
+### Mecanismo de avaliação
 
 Formulário #niOptimizerForm:
 
@@ -385,7 +385,7 @@ Estas são áreas com baixa ou incompleta cobertura visível nos testes lidos; n
 6. **Fase 5**: ID manual válido/desconhecido, mudança de seleção, pipeline/reexecução, conteúdo e download de todos os arquivos dinâmicos; renderização nova não equivale a teste de download.
 7. **Network shell**: drawer por ajuda/configurações/style guide, fechamento por backdrop/Escape, restauração de foco e trapping por Tab.
 8. **Mapa**: Enter/Space nos elementos de UF; tabindex/aria-label existem, binding de teclado não foi achado.
-9. **Network forms**: testar individualmente valores de cada campo de risco e otimizador, stress avançado, seleção/ID manual, remoção de um item e export de itens além do primeiro.
+9. **Network forms**: testar individualmente valores de cada campo de risco e mecanismo de avaliação, stress avançado, seleção/ID manual, remoção de um item e export de itens além do primeiro.
 10. **Rotas de confiança**: verificação visual específica de Evidências, Fontes, Metodologia, Trade-offs, Custos e Tributário é menor que a cobertura de contratos/engines.
 11. **Network locking**: há binding para data-action=lock-crypto, mas nenhum botão com esse atributo foi localizado no shell; o botão dinâmico do carregador criptográfico é um controle separado.
 12. **Tela de custos**: existe possível desencontro estático entre o ID do chart referenciado pelo renderizador e a marcação da rota; verificar no runtime antes de registrar como defeito.
@@ -401,7 +401,7 @@ Estas são áreas com baixa ou incompleta cobertura visível nos testes lidos; n
 6. Fase 4: selecionar cada perfil, alterar individualmente todos pesos/limites, executar com entradas válidas e inválidas, verificar ranking e seleção de limites/seed.
 7. Fase 5: testar cada modo de seleção, ID válido/inválido, stress/sensibilidade/eixos, reexecução e botão de download de cada artefato.
 8. Em Network, navegar todas as 18 rotas e os submenus; alternar empresa/cenário, revisar estados vazios e carregando, testar os drawers com mouse e teclado.
-9. Simular e comparar; testar remoção individual e limpeza de salvos; verificar import/export por tenant; variar todos os campos de risco e de otimização, executar decisão manual e abrir trade-offs.
+9. Simular e comparar; testar remoção individual e limpeza de salvos; verificar import/export por tenant; variar todos os campos de risco e de avaliação de alternativas, executar decisão manual e abrir trade-offs.
 10. Em Trust/Validation, abrir cada seção, conferir fontes sem paths protegidos e baixar todos os itens, incluindo uma segunda exportação global quando houver mais de um arquivo.
 11. No console do navegador, observar erros e rede durante as jornadas; classificar fixture/demo separadamente de empresa protegida e de dado ausente.
 12. Registrar resultado por controle: **passou**, **falhou**, **não aplicável**, **bloqueado por dado/credencial**, com rota, estado inicial, passo, resultado observado e evidência sem segredo.

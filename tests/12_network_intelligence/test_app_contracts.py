@@ -326,6 +326,8 @@ def test_network_ui_entrypoint_and_e2e_hooks():
     ]
     for test_id in expected_ids:
         assert f'data-testid="{test_id}"' in shell
+    assert '<span>Avaliação de alternativas</span>' in shell
+    assert 'Otimizador' not in shell
 
     page_sources = '\n'.join(
         (APP / 'pages' / filename).read_text(encoding='utf-8')
@@ -349,6 +351,8 @@ def test_network_ui_entrypoint_and_e2e_hooks():
         'scenario-clear-saved',
     ):
         assert f'data-testid="{test_id}"' in page_sources
+    assert 'Avaliação de alternativas' in page_sources
+    assert 'otimização' not in page_sources.lower()
 
     assert 'niFlowCountByCdChart' in page_sources
 

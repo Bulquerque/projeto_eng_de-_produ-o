@@ -20,4 +20,4 @@ A Fase 3 transforma o baseline da Fase 2 em uma arena de cenários. A página pr
 
 ## Limites metodológicos
 
-A Fase 3 ainda não é otimizador. A realocação usa heurística auditável (`nearest_available_cd`) e não deve ser vendida como ótimo global. O otimizador entra na Fase 4.
+A Fase 3 ainda não é mecanismo de avaliação. A realocação usa heurística auditável (`nearest_available_cd`) e não deve ser vendida como ótimo global. O mecanismo de avaliação entra na Fase 4.

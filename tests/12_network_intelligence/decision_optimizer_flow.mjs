@@ -182,8 +182,10 @@ const resultHtml = renderOptimizerResults({
   ui: { ...configState.ui, route: '#/network/optimizer/results' },
 });
 assert.match(resultHtml, /<dt>CDs ativos<\/dt><dd>—<\/dd>/);
-assert.match(resultHtml, /<dt>Score<\/dt><dd>—<\/dd>/);
-assert.match(resultHtml, /Espaço exato[\s\S]*?—/);
-assert.match(resultHtml, /Candidatos simulados[\s\S]*?—/);
+assert.match(resultHtml, /<dt>Pontuação<\/dt><dd>—<\/dd>/);
+assert.match(resultHtml, /Catálogo completo[\s\S]*?—/);
+assert.match(resultHtml, /Alternativas avaliadas[\s\S]*?—/);
+assert.match(resultHtml, /Resultados da avaliação/);
+assert.doesNotMatch(resultHtml, /otimização/i);
 
 console.log('DECISION_OPTIMIZER_FLOW_OK');

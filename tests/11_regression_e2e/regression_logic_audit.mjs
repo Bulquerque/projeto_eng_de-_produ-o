@@ -848,7 +848,7 @@ async function runPhaseCompanyAudit(companyId) {
         optimization1.scored_scenarios.length > 0 &&
         optimization1.decision_use === 'exploratory_only' &&
         optimization1.data_quality_status === 'limited_fiscal_coverage',
-      'empresa2 deve entregar otimização exploratória quando a cobertura fiscal é insuficiente',
+      'empresa2 deve entregar uma avaliação exploratória de alternativas quando a cobertura fiscal é insuficiente',
       {
         companyId,
         optimizer_status: optimization1.optimizer_status,
@@ -861,7 +861,7 @@ async function runPhaseCompanyAudit(companyId) {
   ensure(
     String(optimization1.optimizer_status || '').startsWith('success') &&
       optimization1.scored_scenarios.length > 0,
-    'otimização válida deveria encontrar cenários',
+    'uma avaliação válida deveria encontrar cenários',
     {
       companyId,
       optimizer_status: optimization1.optimizer_status,
@@ -870,7 +870,7 @@ async function runPhaseCompanyAudit(companyId) {
   );
   ensure(
     optimization1.best_scenarios[0]?.scenario_id === optimization2.best_scenarios[0]?.scenario_id,
-    'otimização deveria ser determinística com seed fixa',
+    'avaliação de alternativas deveria ser determinística com seed fixa',
     {
       companyId,
       best1: optimization1.best_scenarios[0]?.scenario_id,
@@ -898,12 +898,12 @@ async function runPhaseCompanyAudit(companyId) {
   });
   ensure(
     invalidOptimization.optimizer_status === 'error',
-    'otimização com constraints inválidas deveria bloquear',
+    'a avaliação com restrições inválidas deveria bloquear',
     invalidOptimization
   );
   ensure(
     (invalidOptimization.errors || []).length > 0,
-    'otimização bloqueada deveria reportar erro',
+    'a avaliação bloqueada deveria reportar erro',
     invalidOptimization
   );
 

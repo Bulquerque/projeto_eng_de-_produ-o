@@ -27,6 +27,6 @@
   ],
   "notes": [
     "Fase 4 usa baseline da Fase 2 e simulador da Fase 3.",
-    "Otimizador é leve e roda no navegador, não é garantia de ótimo global."
+    "O mecanismo de avaliação classifica os candidatos gerados no navegador; não demonstra um ótimo matemático para o problema logístico real."
   ]
 }

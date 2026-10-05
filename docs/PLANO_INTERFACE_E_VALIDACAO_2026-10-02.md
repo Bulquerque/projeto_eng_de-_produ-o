@@ -24,8 +24,8 @@ Site analisado: https://visagio-logistica.gptgrupo-especial.chatgpt.site
 |---|---|---|---|
 | 1 | Visão executiva da Empresa Falsa | Carrega; excesso de termos e blocos técnicos; apresenta números demonstrativos | `../.playwright-mcp/01-resumo.png` |
 | 2 | Construção de cenário demonstrativo | Campos desabilitados e aviso de somente leitura; não prova simulação interativa | `../.playwright-mcp/02-cenarios.png` |
-| 3 | Configuração do otimizador | Carrega e possui seção avançada recolhida; parâmetros técnicos ainda dominam a configuração | `../.playwright-mcp/03-otimizador.png` |
-| 4 | Clique em Executar otimização na Empresa Falsa | Desvio confirmado para `#/network/trust/validation` | `../.playwright-mcp/04-desvio-validacao.png` |
+| 3 | Avaliação de alternativas | Carrega e possui seção avançada recolhida; parâmetros técnicos ainda dominam a configuração | `../.playwright-mcp/03-otimizador.png` |
+| 4 | Clique em Executar avaliação de alternativas na Empresa Falsa | Desvio confirmado para `#/network/trust/validation` | `../.playwright-mcp/04-desvio-validacao.png` |
 | 5 | Resultados acessados diretamente | Ranking visível, mas custo e risco ausentes; melhor candidato mostra zero CDs; nomes internos expostos | `../.playwright-mcp/05-resultados.png` e `10-resultados-desktop.png` |
 | 6 | Seleção da Empresa 1 | Exige frase de acesso; exploração interna não realizada | `../.playwright-mcp/06-empresa1.png` |
 | 7 | Seleção da Empresa 2 | Exige frase de acesso; exploração interna não realizada | `../.playwright-mcp/07-empresa2-acesso.png` |
@@ -37,9 +37,9 @@ As capturas foram abertas e inspecionadas nesta execução. As primeiras foram o
 ### Achados prioritários
 
 1. **P0 — contexto de versão:** recuperar e comparar a fonte exata da interface publicada com `main` e integração antes de editar. O plano deve preservar correções posteriores de criptografia.
-2. **P1 — destino após otimização:** o usuário deve chegar a Resultados. Na referência de integração lida, `assets/js/app/main.js`, ação `runDecision`, termina em `#/network/trust/validation`. Tratar isto como pista concreta, sem assumir que toda a fonte da v18 é idêntica a essa referência.
+2. **P1 — destino após avaliação de alternativas:** o usuário deve chegar a Resultados. Na referência de integração lida, `assets/js/app/main.js`, ação `runDecision`, termina em `#/network/trust/validation`. Tratar isto como pista concreta, sem assumir que toda a fonte da v18 é idêntica a essa referência.
 3. **P1 — inconsistência entre telas:** a consolidação demonstrativa mostra custo de R$ 312.500 e três CDs na construção, mas custo ausente e zero CDs no destaque do ranking. Investigar contrato do provider, campos dos candidatos e seletores antes de corrigir. Ausência de dado deve continuar ausente; jamais preencher com um zero de fallback.
-4. **P1 — demonstração funcional:** a Empresa Falsa usa fixtures e campos somente leitura. A afirmação do texto anexado de que dados falsos permitem testar o otimizador não está comprovada para o motor real no fluxo publicado. Criar ou validar uma base sintética executável, separada das fixtures de apresentação, ou descrever claramente a demonstração estática.
+4. **P1 — demonstração funcional:** a Empresa Falsa usa fixtures e campos somente leitura. A afirmação do texto anexado de que dados falsos permitem testar o mecanismo de avaliação não está comprovada para o motor real no fluxo publicado. Criar ou validar uma base sintética executável, separada das fixtures de apresentação, ou descrever claramente a demonstração estática.
 5. **P1 — revisão editorial:** `demo_fixture`, `success_with_limited_space`, `mock_consolidation`, `PROJECT`, `Evidence`, `provider`, `QA` e `release_policy` aparecem na experiência. Traduzir o significado útil e recolher identificadores de engenharia.
 6. **P1 — apresentação em telas menores:** compactar o cabeçalho e rever navegação, tabela, formulário e modal. Há risco visual de contraste baixo nos estados ativos observado em capturas; medir contraste na implementação.
 7. **P2 — confiança:** a navegação dá protagonismo à auditoria e o resultado começa com cobertura e status da busca. Priorizar custo, diferença frente ao baseline e consequências operacionais.
@@ -48,9 +48,9 @@ As capturas foram abertas e inspecionadas nesta execução. As primeiras foram o
 
 Uma tarefa principal por etapa. A interface deve explicar a operação e levar até um resultado compreensível.
 
-Jornada: **Empresa → Visão da rede → Construir cenário → Simular → Otimizar → Resultados**.
+Jornada: **Empresa → Visão da rede → Construir cenário → Simular → Avaliar alternativas → Resultados**.
 
-Usar a seleção de empresa, a navegação e as páginas existentes para representar essa sequência. A visão executiva reúne resumo e rede; Cenários conduz da configuração à simulação; Otimização conduz da configuração aos resultados consolidados. Recolher Dados & confiança em acesso secundário. Mostrar etapa e próxima ação com os componentes atuais; não criar cinco novos destinos apenas para reproduzir a lista. Simular é uma ação explícita dentro de Cenários, seguida de comparação. Otimizar é continuação opcional: uma simulação válida pode ser apresentada e exportada sem otimização. Preservar retorno às etapas concluídas e acesso direto com estados vazios orientativos.
+Usar a seleção de empresa, a navegação e as páginas existentes para representar essa sequência. A visão executiva reúne resumo e rede; Cenários conduz da configuração à simulação; Avaliação de alternativas conduz da configuração aos resultados consolidados. Recolher Dados & confiança em acesso secundário. Mostrar etapa e próxima ação com os componentes atuais; não criar cinco novos destinos apenas para reproduzir a lista. Simular é uma ação explícita dentro de Cenários, seguida de comparação. Avaliar alternativas é continuação opcional: uma simulação válida pode ser apresentada e exportada sem avaliação de alternativas. Preservar retorno às etapas concluídas e acesso direto com estados vazios orientativos.
 
 | Informação | Local proposto | Regra |
 |---|---|---|
@@ -74,7 +74,7 @@ Preservar todas as cores e o estilo existentes. Usar o mapa e os gráficos da op
 - Hierarquia de texto clara: título, breve instrução, resultado e ação. Uma frase para introduzir cada tarefa, sem parágrafos sobre a arquitetura interna.
 - Reutilizar a escala de espaçamento e os componentes existentes; remover caixas que ficam sem função após a limpeza do texto.
 - Contraste medido, estados ativos legíveis, foco visível e leitura em projetor. Corrigir combinações de cores usando a própria paleta, sem substituí-la.
-- Uma ação primária por etapa: “Ver rede”, “Simular cenário”, “Otimizar alternativas” ou “Exportar resumo”. Outras ações como links ou menu secundário.
+- Uma ação primária por etapa: “Ver rede”, “Simular cenário”, “Avaliar alternativas” ou “Exportar resumo”. Outras ações como links ou menu secundário.
 - Números com moeda, unidade, período e formato pt-BR; uma legenda curta explica a comparação.
 - Gráficos de custo e comparação com baseline próximos dos KPIs. Trade-offs, sensibilidade e risco como detalhes da mesma área de resultados.
 - No celular, cabeçalho sem alturas que criem grandes vazios; controles empilhados; tabela rolável ou alternativa em cartões; menu acessível. Testar 390, 768, 1366 e 1440 px, além de zoom a 200%.
@@ -87,13 +87,13 @@ Registrar antes/depois de Visão executiva/Rede, Cenários e Resultados nas mesm
 
 Recuperar fonte da v18 pelo fluxo do Sites, comparar com GitHub, preservar criptografia e criar branch `codex/interface-guiada` na base escolhida. Não substituir o Site existente.
 
-Criar matriz **pedido do professor → função antiga → interface atual → módulo → teste → evidência → estado**. Incluir seleção/carregamento, baseline, rede, custos, tributos, parâmetros, simulação, comparação, presets, persistência, importação/exportação, otimização, ranking, trade-offs, sensibilidade, risco, decisão e resumo exportável. Registrar lacunas como implementadas, parciais, pendentes ou bloqueadas.
+Criar matriz **pedido do professor → função antiga → interface atual → módulo → teste → evidência → estado**. Incluir seleção/carregamento, baseline, rede, custos, tributos, parâmetros, simulação, comparação, presets, persistência, importação/exportação, avaliação de alternativas, ranking, trade-offs, sensibilidade, risco, decisão e resumo exportável. Registrar lacunas como implementadas, parciais, pendentes ou bloqueadas.
 
 Aceite: cada item do anexo rastreado e a base de implementação identificada. Funções do frontend antigo não desaparecem silenciosamente.
 
 ### Etapa B — corrigir comportamento e contratos
 
-- Separar o encaminhamento de “Executar otimização” e da decisão final quando necessário. O término bem-sucedido da otimização abre Resultados, preservando o candidato e o contexto.
+- Separar o encaminhamento de “Executar avaliação de alternativas” e da decisão final quando necessário. O término bem-sucedido da avaliação de alternativas abre Resultados, preservando o candidato e o contexto.
 - Resolver os campos discrepantes entre cenário, ranking, gráficos e exportação com seletores compartilhados.
 - Reconciliar cenários e status: nunca mostrar baseline carregado ou resultado calculado antes da carga efetiva.
 - Invalidar ou marcar resultados desatualizados após mudança de empresa ou parâmetros.
@@ -126,7 +126,7 @@ Matriz mínima:
 |---|---|
 | Empresas | Sintética executável, Empresa 1 e Empresa 2; troca repetida, carga, desbloqueio/cancelamento e reload |
 | Cenários | Baseline, preset e cenário manual; mudança de frete/demanda/estoque; validação; simulação; persistência e reabertura |
-| Otimização | Simples e avançado; pesos e restrições; sem candidato elegível; falha; conclusão; seleção de candidato; destino correto |
+| Avaliação de alternativas | Simples e avançado; pesos e restrições; sem candidato elegível; falha; conclusão; seleção de candidato; destino correto |
 | Resultados | Custo, componentes, economia e unidades; nulo/zero; igualdade com gráfico e exportação; resultado desatualizado |
 | Navegação | Voltar/avançar, links diretos, rota inválida, etapas sem dados, contexto preservado |
 | Visual | 390/768/1366/1440 px; zoom 200%; texto longo; tabelas; gráfico sem dados; foco e teclado |
@@ -134,7 +134,7 @@ Matriz mínima:
 
 Chrome será usado quando conectado, além do Playwright MCP autorizado. Usar dados sintéticos nas capturas públicas. Evidência de teste deve registrar base/commit, empresa, cenário, ação, resultado esperado/obtido e captura ou relatório. Credenciais nunca entram em relatórios ou logs.
 
-Ensaio: abrir sessão limpa, selecionar empresa, explicar rede e baseline, modificar um cenário, simular, comparar, otimizar, explicar a alternativa escolhida e exportar resumo. Executar também caminhos de erro e cancelamento. Reservar uma demonstração sintética validada para o caso de indisponibilidade do acesso aos dados reais.
+Ensaio: abrir sessão limpa, selecionar empresa, explicar rede e baseline, modificar um cenário, simular, comparar, avaliar alternativas, explicar a alternativa escolhida e exportar resumo. Executar também caminhos de erro e cancelamento. Reservar uma demonstração sintética validada para o caso de indisponibilidade do acesso aos dados reais.
 
 Aceite: nenhum defeito bloqueador aberto no caminho da apresentação; todos os critérios definidos têm evidência. Empresa não acessada fica como não verificada, jamais aprovada por inferência.
 
@@ -178,7 +178,7 @@ O texto anexado orienta o backlog, mas não é prova de que funcionalidades já 
 
 - [anyLogistix Sandbox](https://www.anylogistix.com/resources/blog/anylogistix-sandbox-supply-chain-optimization-in-minutes/): captura oficial inspecionada pelo Playwright MCP. Mapa central, navegação lateral, tabelas e comandos curtos; a área de trabalho tem pouco texto corrido. Referência para a sensação de manipular uma rede e seus dados. Não copiar sua densidade de controles, badges comerciais ou detalhes avançados de modelagem.
 - [anyLogistix — KPIs e visualizações](https://www.anylogistix.com/resources/blog/anylogistix-3-3-data-grouping-in-tables-kpi-metrics-and-advanced-visualization/): painel de métricas e comparação entre execuções, gráficos e tabelas configuráveis. A captura de tabela/dashboard foi inspecionada. Usar comparações compactas e dados em destaque.
-- [anyLogistix — resultados da otimização](https://anylogistix.help/experiments/network-optimization-results.html): documentação de resultado com alternativas em cartões de métricas e seleção refletida no mapa. Conteúdo recuperado pela pesquisa; abertura direta da documentação encontrou bloqueio HTTP. Referência de organização, sem teste do aplicativo autenticado.
+- [anyLogistix — resultados da avaliação de alternativas](https://anylogistix.help/experiments/network-optimization-results.html): documentação de resultado com alternativas em cartões de métricas e seleção refletida no mapa. Conteúdo recuperado pela pesquisa; abertura direta da documentação encontrou bloqueio HTTP. Referência de organização, sem teste do aplicativo autenticado.
 - [Cosmic Frog — Analytics](https://optilogic.com/resources/help-center/docs/getting-started-with-analytics): documentação oficial com dashboards de comparação, filtros, mapas e detalhes sob demanda. Referência documental complementar; nenhuma execução de modelo ou experiência autenticada foi testada.
 
 Captura da interface publicada pelo fabricante, inspecionada nesta pesquisa:
@@ -190,7 +190,7 @@ Captura da interface publicada pelo fabricante, inspecionada nesta pesquisa:
 A referência é uma **área de trabalho logística compacta, construída sobre a interface atual**. A pessoa seleciona uma empresa, vê a rede, ajusta parâmetros e compara resultados. A tela deve parecer um instrumento de análise operável. Preservar as cores e os componentes do Visagio em todas as correções.
 
 - Cabeçalho de uma linha no desktop: empresa, cenário e ação disponível.
-- Navegação com rótulos curtos: Rede, Cenários, Otimização e Resultados. Seleção de empresa acessível no cabeçalho e no início da jornada. Dados e metodologia em acesso secundário.
+- Navegação com rótulos curtos: Rede, Cenários, Avaliação de alternativas e Resultados. Seleção de empresa acessível no cabeçalho e no início da jornada. Dados e metodologia em acesso secundário.
 - Rede: aproveitar mapa e topologia existentes; corrigir área útil, legendas e distribuição dos indicadores, sem uma caixa explicativa para cada número. Não criar um novo painel lateral sem necessidade demonstrada.
 - Cenário: aproveitar o formulário existente, agrupar campos relacionados quando necessário e manter instruções somente nos campos que precisarem delas. Não mover o resultado para outra coluna apenas como mudança estética.
 - Resultados: comparação com baseline, gráfico e tabela de alternativas. Selecionar uma alternativa atualiza o detalhe no mesmo contexto, sem levar o usuário para outra seção de auditoria.
@@ -217,7 +217,7 @@ Regra editorial: cada texto visível deve nomear algo, orientar uma ação, apre
 ### Comportamento ágil
 
 - Seletores, abas e expansores dão retorno visual imediato e preservam contexto; não reconstroem toda a jornada por uma ação local.
-- Simulação e otimização apresentam estado de execução e conclusão. Operações longas não deixam um botão aparentemente inerte.
+- Simulação e avaliação de alternativas apresentam estado de execução e conclusão. Operações longas não deixam um botão aparentemente inerte.
 - Evitar animações decorativas e movimentos de cartões não interativos. Respeitar preferência por movimento reduzido.
 - Validar junto ao campo; abrir resultado após concluir; preservar formulário ao voltar.
 - Medir tempo e fluidez na implementação antes de prometer desempenho. Esta pesquisa não fez benchmark.
@@ -243,8 +243,8 @@ O segundo anexo repete os 18 pedidos técnicos. A tabela traduz cada pedido em u
 | 3. Executivo + rede | Reunir resumo e malha na área já existente | P2 | Contexto e seleção preservados entre resumo e rede |
 | 4. Construção no momento certo | Orientar configuração após carga válida | P1 | Sem execução com empresa ou baseline indisponíveis |
 | 5. Simulação após configuração | Evidenciar Simular e comparação com baseline | P1 | Parâmetro alterado produz novo resultado do motor |
-| 6. Otimização após simulação | Próxima ação clara; permitir otimizar baseline válido | P1 | Não exigir cenário manual sem necessidade do motor |
-| 7. Destino da otimização | Abrir Resultados ao terminar | P1 | E2E verifica rota e candidato após execução |
+| 6. Avaliação de alternativas após simulação | Próxima ação clara; permitir avaliar alternativas a partir de uma baseline válida | P1 | Não exigir cenário manual sem necessidade do motor |
+| 7. Destino da avaliação de alternativas | Abrir Resultados ao terminar | P1 | E2E verifica rota e candidato após execução |
 | 8. Dados & confiança | Acesso secundário “Detalhes dos dados” | P2 | Detalhes encontrados por nome e acessíveis por teclado |
 | 9. Confiança visual | Síntese dos indicadores existentes com rótulos claros | P1 | Qualidade, robustez e cobertura não confundidas |
 | 10. Gráficos consolidados | Reunir os gráficos pertinentes na área de resultados | P2 | Mesmos cenário, unidade e período em todos |

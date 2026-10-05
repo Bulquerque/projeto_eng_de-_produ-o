@@ -8,7 +8,7 @@ O simulador está pronto para apresentação técnica de ponta a ponta:
 - Baseline por empresa.
 - Criação e comparação de cenários.
 - Reforma tributária parametrizada por regime/ano.
-- Otimização por objetivo.
+- Avaliação de alternativas por objetivo.
 - Entrega final com stress test, sensibilidade, recomendação, relatório executivo, audit trail e exportação.
 - Evidência Playwright desktop/mobile do fluxo completo.
 
@@ -44,7 +44,7 @@ http://localhost:8000
 - Validação: mostrar integridade, paths, dados por empresa e checklists.
 - Baseline: desbloquear dados, mostrar custos, fluxos, tributo básico e Base Fit.
 - Simulação: carregar cenário exemplo, simular, comparar contra baseline e explicar deltas.
-- Otimização: rodar otimizador, mostrar ranking, score e fronteira custo vs qualidade.
+- Avaliação de alternativas: rodar mecanismo de avaliação, mostrar ranking, score e fronteira custo vs qualidade.
 - Entrega: mostrar cenário final, stress test, sensibilidade, recomendação, relatório executivo, audit trail e export center.
 
 ## Frase de defesa técnica
@@ -55,7 +55,7 @@ http://localhost:8000
 
 - O fluxo web foi validado com Playwright em desktop e mobile.
 - A suíte automatizada executa o roteiro completo de apresentação.
-- Os cálculos de cenário, comparação, otimização, stress test e exportação rodam no navegador.
+- Os cálculos de cenário, comparação, avaliação de alternativas, stress test e exportação rodam no navegador.
 - A reforma tributária é considerada por configuração de regimes, alíquotas, transição e modo de cálculo.
 - O sistema não mistura Empresa 1 e Empresa 2.
 - O simulador mostra avisos quando usa proxy ou quando falta referência histórica consolidada.
@@ -64,7 +64,7 @@ http://localhost:8000
 
 - Não prometer paridade contábil total com workbook quando o próprio painel marcar Base Fit ou reconciliação como pendente.
 - Não dizer que a legislação tributária está juridicamente validada; dizer que os parâmetros estão explícitos e auditáveis.
-- Não vender o otimizador como solver matemático global irrestrito; ele enumera espaço discreto modelado sob restrições configuradas.
+- Não vender o mecanismo de avaliação como solver matemático global irrestrito; ele enumera espaço discreto modelado sob restrições configuradas.
 - Não esconder avisos de proxy fiscal, benchmark pendente ou recomendação “não recomendado”.
 
 ## Alertas esperados e como explicar

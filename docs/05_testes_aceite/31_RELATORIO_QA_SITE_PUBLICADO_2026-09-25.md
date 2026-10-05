@@ -26,7 +26,7 @@ O projeto GitHub e o repositório de fonte do Sites são históricos separados; 
 | Menu em `scenarios/build` | A página abriu e o item **Cenários** apareceu com o fundo verde claro de seleção. |
 | Subrota `scenarios/compare` | Conteúdo e subnavegação abriram; a captura do Site publicado confirmou **Cenários** ainda selecionado em verde claro e **Comparar** selecionado na navegação interna. |
 | Subrota `trust/methodology` | Conteúdo e subnavegação abriram; a captura confirmou **Dados & confiança** ainda selecionado em verde claro e **Metodologia** selecionada na navegação interna. |
-| Otimizador | `optimizer/configure` abriu com formulário, valores e ação **Rodar busca** visíveis. Não executei essa ação no deploy nesta rodada. |
+| Avaliação de alternativas | `optimizer/configure` abriu com formulário, valores e ação **Avaliar alternativas** visíveis. Não executei essa ação no deploy nesta rodada. |
 | Dados de demonstração | O Site carregou como `Empresa Falsa · MOCK`; o cenário e os valores exibidos estavam identificados como demonstrativos. |
 | Pacote público | Archive inspecionado antes de salvar a versão; contém `dist/.openai/hosting.json`, `dist/index.html` e fixtures demo, sem caminhos ou extensões de dados protegidos na lista de bloqueio. |
 

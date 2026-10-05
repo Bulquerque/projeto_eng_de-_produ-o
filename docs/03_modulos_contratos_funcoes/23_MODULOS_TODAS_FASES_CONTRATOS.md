@@ -33,7 +33,7 @@ Regra central: Empresa 1 e Empresa 2 são empresas diferentes. Nenhum módulo po
 | 3 | ScenarioPersistence | planned_phase_3 | Salva cenários criados pelo usuário no navegador e permite exportar/importar JSON de cenário. |
 | 4 | ObjectiveBuilder | planned_phase_4 | Permite ao usuário criar sua própria função objetivo com pesos de custo, serviço, risco, tributo e estoque. |
 | 4 | ScenarioScoring | planned_phase_4 | Normaliza métricas heterogêneas e calcula o score final de cada cenário conforme função objetivo escolhida. |
-| 4 | ConstraintEngine | planned_phase_4 | Define e valida restrições usadas pelo otimizador: mínimo/máximo de CDs, capacidade, concentração, cobertura e lead... |
+| 4 | ConstraintEngine | planned_phase_4 | Define e valida restrições usadas pelo mecanismo de avaliação: mínimo/máximo de CDs, capacidade, concentração, cobertura e lead... |
 | 4 | ScenarioOptimizer | planned_phase_4 | Enumera o espaço discreto modelado, aplica restrições, calcula score e retorna o melhor cenário viável com desempate determinístico. |
 | 4 | SearchLogPanel | planned_phase_4 | Mostra rastreabilidade da busca: método, seed, candidatos testados, rejeições e top cenários. |
 | 5 | StressTestEngine | planned_phase_5 | Aplica choques de frete, demanda, WACC, armazenagem, capacidade e tributo para testar robustez do cenário. |
@@ -1651,7 +1651,7 @@ Os chamadores diretos são `ScenarioArenaDashboard` (validação antes de atuali
 **Página/tela:** `/fase-4-score-otimizador`
 
 
-**O que faz:** Define e valida restrições usadas pelo otimizador: mínimo/máximo de CDs, capacidade, concentração, cobertura e lead time.
+**O que faz:** Define e valida restrições usadas pelo mecanismo de avaliação: mínimo/máximo de CDs, capacidade, concentração, cobertura e lead time.
 
 
 ### Input JSON
@@ -1703,7 +1703,7 @@ Os chamadores diretos são `ScenarioArenaDashboard` (validação antes de atuali
 |---|---|
 | unit | minCds > maxCds é inválido |
 | unit | maxConcentration fora de 0-1 é inválido |
-| integration | otimizador rejeita candidato inválido |
+| integration | mecanismo de avaliação rejeita candidato inválido |
 | manual | limitar max CDs e conferir busca |
 | acceptance | cenário que viola hard constraint não entra no top |
 
@@ -1784,7 +1784,7 @@ Os chamadores diretos são `ScenarioArenaDashboard` (validação antes de atuali
 | unit | não gera cenário sem CD |
 | integration | top 5 aparecem na tela |
 | manual | rodar busca e conferir log |
-| acceptance | otimizador sempre informa quantos cenários testou |
+| acceptance | mecanismo de avaliação sempre informa quantos cenários testou |
 
 
 ## SearchLogPanel
@@ -1846,7 +1846,7 @@ Os chamadores diretos são `ScenarioArenaDashboard` (validação antes de atuali
 |---|---|
 | unit | valid+invalid = tested |
 | unit | rejection summary agrupa corretamente |
-| integration | log aparece após otimização |
+| integration | log aparece após avaliação de alternativas |
 | manual | verificar método e seed usados |
 | acceptance | busca sem log não é aceita |
 

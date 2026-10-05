@@ -42,7 +42,7 @@
     ]
   },
   "phase_4": {
-    "label": "Otimização",
+    "label": "Avaliação de alternativas",
     "page": "/fase-4-score-otimizador",
     "manual_checks": [
       "mudar pesos do score",

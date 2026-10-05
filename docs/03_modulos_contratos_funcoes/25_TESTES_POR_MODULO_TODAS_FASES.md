@@ -256,7 +256,7 @@ Este documento organiza os testes por fase, módulo e tipo. A matriz estruturada
 |---|---|
 | unit | minCds > maxCds é inválido |
 | unit | maxConcentration fora de 0-1 é inválido |
-| integration | otimizador rejeita candidato inválido |
+| integration | mecanismo de avaliação rejeita candidato inválido |
 | manual | limitar max CDs e conferir busca |
 | acceptance | cenário que viola hard constraint não entra no top |
 
@@ -268,7 +268,7 @@ Este documento organiza os testes por fase, módulo e tipo. A matriz estruturada
 | unit | não gera cenário sem CD |
 | integration | top 5 aparecem na tela |
 | manual | rodar busca e conferir log |
-| acceptance | otimizador sempre informa quantos cenários testou |
+| acceptance | mecanismo de avaliação sempre informa quantos cenários testou |
 
 ## SearchLogPanel
 
@@ -276,7 +276,7 @@ Este documento organiza os testes por fase, módulo e tipo. A matriz estruturada
 |---|---|
 | unit | valid+invalid = tested |
 | unit | rejection summary agrupa corretamente |
-| integration | log aparece após otimização |
+| integration | log aparece após avaliação de alternativas |
 | manual | verificar método e seed usados |
 | acceptance | busca sem log não é aceita |
 

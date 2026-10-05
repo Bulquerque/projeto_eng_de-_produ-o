@@ -1,6 +1,6 @@
 # Estrutura do projeto
 
-Este mapa descreve a estrutura presente no checkout. `index.html` inicia uma aplicação Network Intelligence com rotas para visão executiva, cenários, otimização, risco e dados/confiança. Módulos por fase continuam no repositório porque a aplicação compartilha vários desses engines; as páginas `fase-*` são atalhos para as rotas atuais.
+Este mapa descreve a estrutura presente no checkout. `index.html` inicia uma aplicação Network Intelligence com rotas para visão executiva, cenários, avaliação de alternativas, risco e dados/confiança. Módulos por fase continuam no repositório porque a aplicação compartilha vários desses engines; as páginas `fase-*` são atalhos para as rotas atuais.
 
 ## Entry points e navegação
 

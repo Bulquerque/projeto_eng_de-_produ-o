@@ -36,7 +36,7 @@ Playwright legado da Fase 1 permanece opcional.
 - `/fase-1-validacao/` — dados e auditoria
 - `/fase-2-baseline/` — baseline e paridade
 - `/fase-3-cenarios/` — criação/comparação de cenários
-- `/fase-4-score-otimizador/` — scoring e otimização exata discreta
+- `/fase-4-score-otimizador/` — critérios, restrições, classificação e comparação de alternativas
 - `/fase-5-entrega-final/` — stress, relatório, auditoria e export
 - `/debug/` — Debug Center
 

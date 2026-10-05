@@ -34,7 +34,7 @@
     "cenários Empresa 2 aparecem como blocos especiais"
   ],
   "known_limitations": [
-    "Fase 1 não implementa CostEngine, cenário base, otimizador ou stress test.",
+    "Fase 1 não implementa CostEngine, cenário base, mecanismo de avaliação de alternativas ou stress test.",
     "Playwright pode ser bloqueado por política do ambiente; o script registra skip nesse caso."
   ],
   "path_report": "data/validation/path_resolution_report.json",
