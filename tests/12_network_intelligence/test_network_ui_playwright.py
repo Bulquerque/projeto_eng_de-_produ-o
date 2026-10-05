@@ -213,6 +213,10 @@ def test_demo_journey(base, browser):
     assert 'Simulação ·' in comparison_text
     assert 'Otimização ·' in comparison_text
     assert page.locator('#niComparisonCostChart').is_visible()
+    column_headers = page.locator('.ni-workspace-matrix thead th').all_text_contents()
+    assert column_headers[1].startswith('Referência')
+    assert column_headers[2].startswith('Simulação ·')
+    assert column_headers[3].startswith('Otimização ·')
     assert page.locator('[data-action="select-compared-scenario"][data-scenario-id^="saved-"]').count() == 0
     route(page, 'results/summary')
     assert page.locator('[data-testid="decision-blocked"]').count() == 0

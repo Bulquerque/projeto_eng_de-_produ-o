@@ -142,18 +142,6 @@ export function comparisonCandidates(state) {
       status: 'baseline',
     });
   }
-  for (const row of comparison) if (row.scenario_id) byId.set(row.scenario_id, row);
-  for (const row of candidates) {
-    if (!row.scenario_id || byId.has(row.scenario_id)) continue;
-    const cost = row.result?.total_with_tax ?? row.total_with_tax;
-    byId.set(row.scenario_id, {
-      ...row,
-      scenario_name: row.scenario_name || row.scenario?.scenario_name,
-      total_with_tax: cost,
-      active_cds_count: row.scenario?.changes?.active_cds?.length ?? row.active_cds?.length,
-      risk_level: row.quality?.risk_level,
-    });
-  }
   for (const kind of ['simulation', 'optimization']) {
     const run = state.data?.analysis_runs?.[kind];
     if (!run?.scenario || !run?.result || run.company_id !== state.context?.company_id) continue;
@@ -170,6 +158,18 @@ export function comparisonCandidates(state) {
       tax_coverage: taxResults.tax_coverage,
       preserved_execution: true,
       execution_kind: kind,
+    });
+  }
+  for (const row of comparison) if (row.scenario_id) byId.set(row.scenario_id, row);
+  for (const row of candidates) {
+    if (!row.scenario_id || byId.has(row.scenario_id)) continue;
+    const cost = row.result?.total_with_tax ?? row.total_with_tax;
+    byId.set(row.scenario_id, {
+      ...row,
+      scenario_name: row.scenario_name || row.scenario?.scenario_name,
+      total_with_tax: cost,
+      active_cds_count: row.scenario?.changes?.active_cds?.length ?? row.active_cds?.length,
+      risk_level: row.quality?.risk_level,
     });
   }
   const selected = decision.scenario;
