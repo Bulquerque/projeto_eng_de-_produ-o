@@ -260,15 +260,39 @@ def test_mock_monetary_percentiles_are_derived_from_fixture_costs():
           const provider = await createMockProvider();
           await provider.init({company_id:'empresa_mock',runtime_mode:'project'});
           const {baseline} = await provider.loadBaseline();
-          const risk = await provider.runRiskSuite();
+          const scenarioLibrary = await provider.loadScenarioLibrary();
+          const fixtureScenario = scenarioLibrary.scenarios.find(
+            scenario => scenario.scenario_id === baseline.model.scenario_id
+          );
+          if (!fixtureScenario) throw new Error('Cenário baseline ausente na fixture mock.');
+          const scenarioRun = await provider.runScenario({scenario:fixtureScenario});
+          const risk = await provider.runRiskSuite({
+            selectedScenario:scenarioRun.scenario,
+            deterministicResult:scenarioRun.result
+          });
           const summary = risk.monte_carlo.summary;
-          const curve = summary.total_percentile_curve;
-          return summary.total_percentile_source === 'derived_from_saving_fixture'
-            && curve.length === summary.percentile_curve.length
-            && curve.every((point,i) => {
-              const saving = summary.percentile_curve.find(s => Number(s.percentile) === 100-point.percentile);
-              const expected = baseline.costs.costs.total_with_tax * (1-saving.value/100);
-              return Math.abs(point.value-expected)<0.001 && (!i || point.value>=curve[i-1].value);
+          const samples = risk.monte_carlo.samples;
+          const baselineTotal = Number(baseline.costs.costs.total_with_tax);
+          const quantile = (values, percentile) => {
+            const sorted = [...values].sort((a,b) => a-b);
+            const position = (sorted.length-1) * percentile / 100;
+            const lower = Math.floor(position);
+            const upper = Math.ceil(position);
+            return sorted[lower] + (sorted[upper]-sorted[lower]) * (position-lower);
+          };
+          return Number(summary.baseline_total_with_tax) === baselineTotal
+            && samples.length === Number(summary.iterations_valid)
+            && samples.every(sample => {
+              const expectedSaving = (baselineTotal-Number(sample.total_with_tax))/baselineTotal*100;
+              return Math.abs(Number(sample.saving_pct)-expectedSaving)<0.001;
+            })
+            && summary.percentile_curve.every(point => {
+              const expected = quantile(samples.map(sample => Number(sample.saving_pct)), point.percentile);
+              return Math.abs(Number(point.value)-expected)<0.001;
+            })
+            && summary.total_percentile_curve.every(point => {
+              const expected = quantile(samples.map(sample => Number(sample.total_with_tax)), point.percentile);
+              return Math.abs(Number(point.value)-expected)<0.001;
             });
         }""")
         assert matches, 'Percentis monetários não reconciliam com baseline e saving da fixture'
