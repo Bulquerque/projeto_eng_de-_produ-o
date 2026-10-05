@@ -112,6 +112,8 @@ def test_demo_journey(base, browser):
     assert_shell(page)
     assert 'Recomendado' not in page.locator('#networkPage').inner_text()
     assert '10/10 fluxos' not in page.locator('#networkPage').inner_text()
+    assert '10 fluxos · base sintética' not in page.locator('#networkPage').inner_text()
+    assert 'Estimativa · R$' in page.locator('.ni-tax-summary-list').inner_text()
     assert page.locator('#niDemoBadge').count() == 0
     assert page.locator('#niLockButton').is_hidden()
     assert page.locator('#networkPage').get_by_text('Nível de serviço', exact=True).count() == 0

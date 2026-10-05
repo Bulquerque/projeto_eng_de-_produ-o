@@ -49,12 +49,12 @@ export function renderOverviewSummary(state) {
   const costsSummary = `<section class="ni-workspace-panel"><h2>Composição do custo</h2><canvas id="niSummaryCostChart" class="ni-chart" role="img" aria-label="Gráfico da composição do custo de referência"></canvas>${costTable(costs, taxUnavailable)}</section>`;
   const taxCoverage = isDemo
     ? taxUnavailable
-      ? 'Sem base fiscal elegível'
-      : `${formatNumber(tax.tax_coverage?.eligible_flow_count || 0)} fluxos · base sintética`
+      ? 'Sem estimativa tributária'
+      : `Estimativa · ${formatBRL(costs.tax_impact, true)}`
     : tax.tax_coverage?.complete_fiscal_coverage_ratio == null
       ? '—'
       : formatPct(tax.tax_coverage.complete_fiscal_coverage_ratio * 100);
-  const taxSummary = `<section class="ni-workspace-panel"><h2>Contexto tributário</h2><dl class="ni-workspace-scope-list ni-tax-summary-list"><div><dt>Regime</dt><dd>${escapeHtml(businessLabel(tax.tax_regime))}</dd></div><div><dt>Modo de cálculo</dt><dd>${escapeHtml(businessLabel(tax.tax_mode))}</dd></div><div><dt>Cobertura fiscal</dt><dd>${escapeHtml(taxCoverage)}</dd></div></dl><a class="ni-button secondary" href="#/network/overview/tax" data-route="#/network/overview/tax">Ver contexto tributário</a></section>`;
+  const taxSummary = `<section class="ni-workspace-panel"><h2>Contexto tributário</h2><dl class="ni-workspace-scope-list ni-tax-summary-list"><div><dt>Regime</dt><dd>${escapeHtml(businessLabel(tax.tax_regime))}</dd></div><div><dt>Modo de cálculo</dt><dd>${escapeHtml(businessLabel(tax.tax_mode))}</dd></div><div><dt>${isDemo ? 'Tributos estimados' : 'Cobertura fiscal'}</dt><dd>${escapeHtml(taxCoverage)}</dd></div></dl><a class="ni-button secondary" href="#/network/overview/tax" data-route="#/network/overview/tax">Ver contexto tributário</a></section>`;
   const body = `${metrics}<div class="ni-workspace-grid ni-overview-summary-grid">${costsSummary}${taxSummary}</div><div class="ni-actions"><a class="ni-button primary" href="#/network/scenarios/build" data-route="#/network/scenarios/build">Criar simulação</a></div>`;
   return page('Visão geral', 'page-overview-summary', body, state);
 }
