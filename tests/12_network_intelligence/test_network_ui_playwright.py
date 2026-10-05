@@ -236,6 +236,7 @@ def test_demo_journey(base, browser):
     assert 'Simulação ·' in comparison_text
     assert 'Recomendação ·' in comparison_text
     assert page.locator('#niComparisonCostChart').is_visible()
+    assert page.locator('.ni-results-comparison-chart .ni-note').count() == 0
     column_headers = page.locator('.ni-workspace-matrix thead th').all_text_contents()
     assert column_headers[1].startswith('Referência')
     assert column_headers[2].startswith('Simulação ·')
