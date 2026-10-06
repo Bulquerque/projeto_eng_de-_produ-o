@@ -141,7 +141,7 @@ def run_ui_audit() -> dict:
         )
         page.reload(wait_until='networkidle', timeout=30000)
         page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible', timeout=10000)
-        assert page.locator('[data-testid="overview-recommendation"]').is_visible()
+        assert page.locator('[data-testid="overview-metrics"]').is_visible()
         persisted_sensitive_keys = page.evaluate(
             """() => [...Object.keys(localStorage), ...Object.keys(sessionStorage)]
                 .filter((key) => /password|secret|crypto_key/i.test(key))"""
