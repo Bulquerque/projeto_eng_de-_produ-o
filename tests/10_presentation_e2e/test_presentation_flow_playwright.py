@@ -82,7 +82,7 @@ def test_presentation_flow_playwright():
         )
         page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
         assert 'Visão executiva' in page.locator('#networkPage h1').inner_text()
-        assert page.locator('[data-testid="overview-recommendation"]').is_visible()
+        assert page.locator('[data-testid="overview-metrics"]').is_visible()
         save_screenshot(page, '01_home_desktop')
         report.append({'step': 'home', 'status': 'ok'})
 
@@ -97,11 +97,12 @@ def test_presentation_flow_playwright():
 
         page.goto(f'{base_url}{DEMO}#/network/scenarios/build', wait_until='networkidle')
         page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible')
+        page.locator('[data-testid="scenario-library"] > summary').click()
         page.locator('[data-testid="scenario-load-mock_consolidation"]').click()
         page.locator('[data-testid="scenario-run"]').click()
         page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=15000)
         page.wait_for_function("location.hash === '#/network/results/summary'")
-        assert page.locator('#networkPage h1').inner_text() == 'Resultados'
+        assert page.locator('#networkPage h1').inner_text() == 'Resultados do cenário'
         summary_content = page.locator('[data-testid="page-results-summary"]').inner_text()
         page.evaluate("window.location.hash = '#/network/scenarios/result'")
         page.wait_for_function("location.hash === '#/network/results/summary'")
@@ -138,7 +139,7 @@ def test_presentation_flow_playwright():
         page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=30000)
         assert page.locator('[data-testid="qa-status"]').is_visible()
         assert page.locator('[data-testid="release-status"]').is_visible()
-        assert page.locator('#niCompanyBadge').inner_text().endswith('· MOCK')
+        assert page.locator('#niCompanySelect').input_value() == 'empresa_mock'
         save_screenshot(page, '05_validation_desktop')
         report.append({'step': 'validation', 'status': 'ok'})
 
@@ -151,7 +152,9 @@ def test_presentation_flow_playwright():
         page.locator('[data-testid="page-optimizer-tradeoffs"]').wait_for(state='visible')
         assert page.locator('#niDecisionOptimizerFrontierChart').is_visible()
         assert 'Custo total' in page.locator('.ni-workspace-chart-card').inner_text()
-        assert page.locator('.ni-workspace-tradeoff-table h2', has_text='Melhores cenários').is_visible()
+        assert page.locator(
+            '.ni-workspace-tradeoff-table h2', has_text='Alternativas mais bem classificadas'
+        ).is_visible()
         save_screenshot(page, '06_optimizer_tradeoffs_desktop')
         report.append({'step': 'optimizer_tradeoffs', 'status': 'ok'})
         page.close()
@@ -166,6 +169,7 @@ def test_presentation_flow_playwright():
             console_errors,
             page_errors,
         )
+        page.locator('[data-testid="scenario-library"] > summary').click()
         page.locator('[data-testid="scenario-load-mock_consolidation"]').click()
         page.locator('[data-testid="scenario-run"]').click()
         page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=15000)

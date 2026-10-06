@@ -27,7 +27,7 @@ def test_phase2_html_references_assets():
     ]:
         assert token in html, token
     portal = read('index.html')
-    assert '<script type="module" src="assets/js/app/main.js"></script>' in portal
+    assert '<script type="module" src="assets/js/app/main.js' in portal
     route_renderers = read('assets/js/app/route-renderers.js')
     for route, renderer in [
         ("'/network/overview/costs'", 'renderOverviewCosts'),

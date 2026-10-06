@@ -12,6 +12,8 @@ import {
   validateRiskValues,
   validateScenarioValues,
 } from './assets/js/app/form-values.js';
+import { createInitialState } from './assets/js/app/state.js';
+import { renderScenarioBuild } from './assets/js/app/pages/scenarios.js';
 
 const form = (values) => ({ get: (name) => values[name] ?? null });
 const validScenarioData = form({ scenario_name: 'Cenário A', tax_mode: 'current' });
@@ -57,7 +59,28 @@ assert.equal(parseOptimizerForm(form({ max_candidates: '' }), { max_candidates: 
 assert.equal(parseScenarioForm(form({ scenario_name: 'Cenário' }), [], { scenario_name: '  ' }).scenario_name, '  ');
 const taxYearScenario = parseScenarioForm(form({ scenario_name: 'Reforma 2031', tax_year: '2031', tax_regime: 'transition_2031' }), [{ value: 'CD-1' }]);
 assert.equal(taxYearScenario.tax_year, 2031);
+assert.equal(taxYearScenario.tax_regime, 'transition_2031');
+assert.equal(taxYearScenario.tax_mode, 'reform_2031');
 assert.deepEqual(validateScenarioValues(taxYearScenario), { valid: true, message: '' });
+const taxYearWithoutExplicitMode = parseScenarioForm(form({ scenario_name: 'Reforma 2031', tax_year: '2031' }), [{ value: 'CD-1' }]);
+assert.equal(taxYearWithoutExplicitMode.tax_regime, 'transition_2031');
+assert.equal(taxYearWithoutExplicitMode.tax_mode, 'reform_2031');
+const currentModeWithYear = parseScenarioForm(form({ scenario_name: 'Atual', tax_year: '2031', tax_mode: 'current' }), [{ value: 'CD-1' }]);
+assert.equal(currentModeWithYear.tax_regime, 'current');
+assert.equal(currentModeWithYear.tax_mode, 'current');
+const disabledModeWithYear = parseScenarioForm(form({ scenario_name: 'Desligado', tax_year: '2031', tax_mode: 'disabled' }), [{ value: 'CD-1' }]);
+assert.equal(disabledModeWithYear.tax_regime, 'disabled');
+assert.equal(disabledModeWithYear.tax_mode, 'disabled');
+const scenarioUiState = createInitialState({ company_id: 'empresa1' });
+scenarioUiState.data.baseline = { model: { scenario_id: 'base', active_cds: ['CD-1'] } };
+scenarioUiState.ui.scenario_draft = {
+  scenario_name: 'Reforma 2031',
+  changes: { tax_year: 2031, tax_mode: 'reform_2031', tax_regime: 'transition_2031' },
+};
+const scenarioUi = renderScenarioBuild(scenarioUiState);
+assert.match(scenarioUi, /name="tax_year" value="2031"/);
+assert.match(scenarioUi, /<option value="reform_2031" selected>Transição 2031/);
+assert.doesNotMatch(scenarioUi, /<option value="current" selected>/);
 
 const risk = parseRiskForm(form({}), {});
 assert.deepEqual(risk, {

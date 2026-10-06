@@ -319,8 +319,6 @@ def test_network_ui_entrypoint_and_e2e_hooks():
     expected_ids = [
         'company-selector',
         'scenario-selector',
-        'evidence-topbar',
-        'company-badge',
         'export-center',
         'dev-console',
     ]
@@ -414,23 +412,12 @@ def test_error_output_is_escaped_and_blocked_decisions_keep_status():
     assert 'resolveDecisionStatus(packageResult)' in main
 
 
-if __name__ == '__main__':
-    test_app_foundation_contracts()
-    test_mock_fixture_isolation_contract()
-    test_network_ui_entrypoint_and_e2e_hooks()
-    test_scenario_actions_controller_contract()
-    test_analysis_actions_ignore_stale_work_and_report_failures()
-    test_overview_analytics_aggregation()
-    test_draft_reactivation_and_risk_configuration()
-    test_error_output_is_escaped_and_blocked_decisions_keep_status()
-    print('NETWORK_INTELLIGENCE_APP_CONTRACTS_OK')
-
-
 def test_annual_tax_scenario_builder_uses_supported_regimes():
     output = run_node(
         """
         import assert from 'node:assert/strict';
         import { buildScenarioFromForm } from './assets/js/phase3/scenario-builder.js';
+        import { resolveTaxModeForRegime } from './assets/js/core/tax-reform-config.js';
         const baseline = { model: { scenario_id: 'base', active_cds: ['CD A'] } };
         const regimes = new Map([
           [2026, 'reform_2026'], [2027, 'reform_2027_2028'], [2028, 'reform_2027_2028'],
@@ -445,8 +432,27 @@ def test_annual_tax_scenario_builder_uses_supported_regimes():
           });
           assert.equal(scenario.changes.tax_year, year);
           assert.equal(scenario.changes.tax_regime, expected);
+          assert.equal(scenario.changes.tax_mode, resolveTaxModeForRegime(expected));
           assert.deepEqual(scenario.changes.active_cds, ['CD A']);
         }
+        const currentByDefault = buildScenarioFromForm({
+          companyId: 'empresa1', baselineBundle: baseline,
+          formValues: { scenario_name: 'Sistema atual' },
+        });
+        assert.equal(currentByDefault.changes.tax_mode, 'current');
+        assert.equal(currentByDefault.changes.tax_regime, 'current');
+        const explicitCurrent = buildScenarioFromForm({
+          companyId: 'empresa1', baselineBundle: baseline,
+          formValues: { scenario_name: 'Atual explícito', tax_mode: 'current', tax_year: 2026 },
+        });
+        assert.equal(explicitCurrent.changes.tax_mode, 'current');
+        assert.equal(explicitCurrent.changes.tax_regime, 'current');
+        const disabled = buildScenarioFromForm({
+          companyId: 'empresa1', baselineBundle: baseline,
+          formValues: { scenario_name: 'Desligado', tax_mode: 'disabled', tax_year: 2026 },
+        });
+        assert.equal(disabled.changes.tax_mode, 'disabled');
+        assert.equal(disabled.changes.tax_regime, 'disabled');
         console.log('ANNUAL_TAX_SCENARIOS_OK');
         """
     )
@@ -473,3 +479,17 @@ def test_optimizer_preset_and_tax_year_controls_render():
         """
     )
     assert output.endswith('OPTIMIZER_PRESET_YEAR_CONTROLS_OK')
+
+
+if __name__ == '__main__':
+    test_app_foundation_contracts()
+    test_mock_fixture_isolation_contract()
+    test_network_ui_entrypoint_and_e2e_hooks()
+    test_scenario_actions_controller_contract()
+    test_analysis_actions_ignore_stale_work_and_report_failures()
+    test_overview_analytics_aggregation()
+    test_draft_reactivation_and_risk_configuration()
+    test_error_output_is_escaped_and_blocked_decisions_keep_status()
+    test_annual_tax_scenario_builder_uses_supported_regimes()
+    test_optimizer_preset_and_tax_year_controls_render()
+    print('NETWORK_INTELLIGENCE_APP_CONTRACTS_OK')

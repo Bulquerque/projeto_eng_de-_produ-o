@@ -31,7 +31,7 @@ assert '../assets/styles.css' in html
 assert '../assets/js/core/runtime-warning.js' in html
 assert 'index.html#/network/scenarios/build' in html
 portal = (ROOT / 'index.html').read_text(encoding='utf-8')
-assert '<script type="module" src="assets/js/app/main.js"></script>' in portal
+assert '<script type="module" src="assets/js/app/main.js' in portal
 route_renderers = (ROOT / 'assets/js/app/route-renderers.js').read_text(encoding='utf-8')
 scenario_routes = {
     "'/network/scenarios/build'": 'renderScenarioBuild',
