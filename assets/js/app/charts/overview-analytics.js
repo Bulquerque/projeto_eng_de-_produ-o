@@ -1,5 +1,9 @@
 import { renderBarChart } from '../../core/chart-renderer.js';
-import { selectActiveScenario, selectBaseline } from '../selectors/business-selectors.js';
+import {
+  selectActiveCompany,
+  selectActiveScenario,
+  selectBaseline,
+} from '../selectors/business-selectors.js';
 
 const COST_COMPONENTS = [
   ['Transferência', 'transfer_cost'],
@@ -29,7 +33,7 @@ const NON_DISTRIBUTION_TYPES = new Set([
 ]);
 
 function finite(value) {
-  if (value == null || value === '') return null;
+  if (!['string', 'number'].includes(typeof value) || value === '') return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
@@ -323,14 +327,24 @@ function finiteRatio(value) {
   return number != null && number >= 0 && number <= 1 ? number : null;
 }
 
+function scalarText(value) {
+  return ['string', 'number'].includes(typeof value) && value !== '' ? String(value) : '';
+}
+
+function baselineBelongsToActiveCompany(state, baseline) {
+  const activeCompany = selectActiveCompany(state);
+  const baselineCompany =
+    baseline?.company_id || baseline?.model?.company_id || baseline?.provenance?.company_id;
+  return Boolean(activeCompany && baselineCompany === activeCompany);
+}
+
 function buildTaxCoverageSeries(tax = {}) {
   const contract = tax.tax_period_contract || tax.metadata?.tax_period_contract || {};
   const periods = Array.isArray(contract.available_periods) ? contract.available_periods : [];
   const rows = periods
+    .filter((period) => period && typeof period === 'object' && !Array.isArray(period))
     .map((period) => ({
-      label: [period.year, period.phase]
-        .filter((value) => value != null && value !== '')
-        .join(' · '),
+      label: [scalarText(period.year), scalarText(period.phase)].filter(Boolean).join(' · '),
       current: finiteRatio(period.current_tax_weight),
       reform: finiteRatio(period.reform_tax_weight),
     }))
@@ -383,7 +397,7 @@ function renderTaxCoverageChart(tax) {
   }
   const caption = available
     ? `${result.pairedCount}/${result.rows.length} períodos têm pesos publicados para os dois regimes; atual informado em ${result.currentCount} e reforma em ${result.reformCount}. Campos ausentes não são estimados.`
-    : 'Sem pesos tributários por período no contrato selecionado; a comparação não é calculada.';
+    : 'Sem pesos tributários por período no contrato da empresa ativa; a comparação não é calculada.';
   chartCaption(
     canvasId,
     caption,
@@ -448,7 +462,27 @@ export function renderOverviewAnalytics(state) {
     renderCdDistributionCost(state, baseline);
     renderFlowCountByCd(state, baseline);
   }
-  if (hasTaxCanvas) renderTaxCoverageChart(baseline?.tax_results?.tax_results || {});
+  if (hasTaxCanvas) {
+    if (!baselineBelongsToActiveCompany(state, baseline)) {
+      setCanvasVisible('niOverviewTaxCoverageChart', false);
+      chartCaption(
+        'niOverviewTaxCoverageChart',
+        'Baseline pertence a outra empresa. Recarregue a empresa ativa para consultar seus dados fiscais.',
+        'Empresa ativa indisponível'
+      );
+    } else {
+      renderTaxCoverageChart(baseline?.tax_results?.tax_results || {});
+      const prefix =
+        state?.context?.provider_kind === 'mock' || selectActiveCompany(state) === 'empresa_mock'
+          ? 'Demonstração · empresa fictícia.'
+          : 'Empresa ativa.';
+      const canvas = document.getElementById('niOverviewTaxCoverageChart');
+      const caption = canvas?.parentElement?.querySelector(
+        '[data-chart-caption="niOverviewTaxCoverageChart"]'
+      );
+      if (caption) caption.textContent = `${prefix} ${caption.textContent}`;
+    }
+  }
 }
 
 export const overviewAnalyticsInternals = Object.freeze({

@@ -18,15 +18,17 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
         <a href="#/network/scenarios/build" data-route="#/network/scenarios/build" data-section="scenarios"><span class="network-nav-number" aria-hidden="true">02</span><span>Cenários</span></a>
         <a href="#/network/optimizer/configure" data-route="#/network/optimizer/configure" data-section="optimizer"><span class="network-nav-number" aria-hidden="true">03</span><span>Avaliação de alternativas</span></a>
         <a href="#/network/results/summary" data-route="#/network/results/summary" data-section="results"><span class="network-nav-number" aria-hidden="true">04</span><span>Resultados</span></a>
-        <a href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust"><span class="network-nav-number" aria-hidden="true">05</span><span>Dados & confiança</span></a>
         ${debugEnabled ? '<a href="#/network/dev/console" data-route="#/network/dev/console" data-section="dev"><img class="network-nav-icon" src="assets/icons/bootstrap-icons/gear.svg" alt="" aria-hidden="true"><span>Debug</span></a>' : ''}
       </nav>
-      <div class="network-sidebar-tools"><button type="button" data-action="open-help"><img class="network-tool-icon" src="assets/icons/bootstrap-icons/question-circle.svg" alt="" aria-hidden="true">Ajuda</button></div>
+      <div class="network-sidebar-tools">
+        <a class="network-trust-shortcut" href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust"><img class="network-tool-icon" src="assets/icons/bootstrap-icons/shield-check.svg" alt="" aria-hidden="true">Dados & confiança</a>
+        <button type="button" data-action="open-help"><img class="network-tool-icon" src="assets/icons/bootstrap-icons/question-circle.svg" alt="" aria-hidden="true">Ajuda</button>
+      </div>
       <div class="network-sidebar-foot"><small>Decision workspace</small><span data-testid="mode-badge">runtime</span></div>
     </aside>
     <div class="network-content">
       <header class="network-topbar" data-testid="network-topbar">
-        <div class="network-product"><strong>Network Intelligence</strong><small>Decision Workspace</small></div>
+        <div class="network-product"><strong>Network Intelligence</strong></div>
         <div class="network-context">
           <label><span class="ni-workspace-sr-only">Empresa</span><select id="niCompanySelect" data-testid="company-selector" aria-label="Selecionar empresa">${companies}</select></label>
           <label><span class="ni-workspace-sr-only">Cenário</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário"><option value="">Baseline</option></select></label>
@@ -55,14 +57,17 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
 export function setActiveNav(root, route) {
   const currentPath = route?.path || route?.hash?.split('?')[0];
   const currentSection = currentPath?.match(/^\/network\/([^/]+)/)?.[1];
-  root.querySelectorAll('.network-nav [data-route]').forEach((link) => {
-    const linkPath = link.getAttribute('data-route')?.split('?')[0].replace(/^#/, '');
-    const active =
-      linkPath === currentPath || (link.dataset.section && link.dataset.section === currentSection);
-    link.classList.toggle('active', active);
-    if (active) link.setAttribute('aria-current', 'page');
-    else link.removeAttribute('aria-current');
-  });
+  root
+    .querySelectorAll('.network-nav [data-route], .network-sidebar-tools [data-route]')
+    .forEach((link) => {
+      const linkPath = link.getAttribute('data-route')?.split('?')[0].replace(/^#/, '');
+      const active =
+        linkPath === currentPath ||
+        (link.dataset.section && link.dataset.section === currentSection);
+      link.classList.toggle('active', active);
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
 }
 
 function taxYearOptions() {

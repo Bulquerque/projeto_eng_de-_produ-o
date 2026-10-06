@@ -27,8 +27,6 @@ export const ROUTES = Object.freeze([
 const ROUTE_ALIASES = Object.freeze({
   '#/network/scenarios/result': '#/network/results/summary',
   '#/network/scenarios/compare': '#/network/results/comparison',
-  '#/network/optimizer/results': '#/network/results/summary',
-  '#/network/optimizer/tradeoffs': '#/network/results/tradeoffs',
   '#/network/scenarios/risk': '#/network/results/risk',
   '#/network/scenarios/risk/advanced': '#/network/results/risk/advanced',
   '#/diagnostico-baseline': '#/network/overview/summary',

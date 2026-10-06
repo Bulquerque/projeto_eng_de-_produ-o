@@ -6,7 +6,11 @@ import {
   renderOverviewTax,
 } from './pages/overview.js';
 import { renderScenarioBuild } from './pages/scenarios.js';
-import { renderOptimizerConfigure } from './pages/optimizer.js';
+import {
+  renderOptimizerConfigure,
+  renderOptimizerResults,
+  renderOptimizerTradeoffs,
+} from './pages/optimizer.js';
 import {
   renderResultsComparison,
   renderResultsRisk,
@@ -29,6 +33,8 @@ export const ROUTE_RENDERERS = {
   '/network/overview/tax': renderOverviewTax,
   '/network/scenarios/build': renderScenarioBuild,
   '/network/optimizer/configure': renderOptimizerConfigure,
+  '/network/optimizer/results': renderOptimizerResults,
+  '/network/optimizer/tradeoffs': renderOptimizerTradeoffs,
   '/network/results/summary': renderResultsSummary,
   '/network/results/comparison': renderResultsComparison,
   '/network/results/tradeoffs': renderResultsTradeoffs,
