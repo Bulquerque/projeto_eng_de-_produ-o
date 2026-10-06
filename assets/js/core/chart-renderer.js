@@ -270,11 +270,17 @@ function mount(
   canvas.addEventListener('focus', focusTip);
   canvas.addEventListener('keydown', key);
   const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(drawNow) : null;
+  const beforePrint = () => drawNow();
+  const afterPrint = () => window.requestAnimationFrame(drawNow);
+  window.addEventListener('beforeprint', beforePrint);
+  window.addEventListener('afterprint', afterPrint);
   observer?.observe(canvas);
   drawNow();
   const instance = {
     destroy() {
       observer?.disconnect();
+      window.removeEventListener('beforeprint', beforePrint);
+      window.removeEventListener('afterprint', afterPrint);
       canvas.removeEventListener('click', activate);
       document.removeEventListener('pointerdown', hideOutside);
       canvas.removeEventListener('pointermove', pointer);
