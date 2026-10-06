@@ -65,7 +65,7 @@ export function createScenarioActions({ root, store, getProvider, operationGuard
     );
   }
 
-  function selectScenarioTaxYear(yearValue) {
+  async function selectScenarioTaxYear(yearValue) {
     const year = Number(yearValue);
     const state = store.getState();
     const provider = getProvider();
@@ -87,18 +87,10 @@ export function createScenarioActions({ root, store, getProvider, operationGuard
         scenario_name: prior.scenario_name || `Cenário fiscal ${year}`,
       },
     });
-    store.update((nextState) => {
-      nextState.ui.scenario_draft = scenario;
-      nextState.ui.scenario_draft_dirty = true;
-      nextState.context.selected_scenario_id = scenario.scenario_id;
-      clearScenarioResults(nextState);
-    });
-    // A fiscal year selected in the global context is a draft change. Move to
-    // the same build surface used by a regular scenario selection so charts
-    // cannot continue showing the previous result under a new year.
-    navigate('#/network/scenarios/build');
-    render();
-    showToast(root, `Rascunho fiscal ${year} atualizado.`, 'success');
+    // Commit the fiscal context only with its calculated result. Until then,
+    // the loading overlay protects the previous analysis; a failure retains
+    // the previous context instead of presenting baseline under a new year.
+    await runScenario({ scenario, returnRoute: state.ui.route });
   }
 
   function resetScenarioDraft() {
@@ -233,6 +225,7 @@ export function createScenarioActions({ root, store, getProvider, operationGuard
     formValues = {},
     scenarioId = null,
     scenario: inputScenario = null,
+    returnRoute = '#/network/results/summary',
   } = {}) {
     const activeProvider = getProvider();
     if (!activeProvider) return;
@@ -293,7 +286,7 @@ export function createScenarioActions({ root, store, getProvider, operationGuard
       });
       showLoading(root, false);
       showToast(root, 'Cenário simulado pelo provider ativo.', 'success');
-      window.location.hash = '#/network/results/summary';
+      navigate(returnRoute);
     } catch (error) {
       if (!isCurrentAction(action)) return;
       store.update((state) => failLoading(state, error));
