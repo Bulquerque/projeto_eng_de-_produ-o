@@ -121,7 +121,21 @@ const executiveState = {
   },
   ui: { route: '#/network/overview/summary' },
   data: {
-    baseline: { model: { scenario_id: 'baseline' }, costs: { costs: { total_with_tax: 144000 } } },
+    baseline: {
+      model: { scenario_id: 'baseline' },
+      flows,
+      costs: {
+        costs: {
+          total_with_tax: 144000,
+          total_logistics_cost: 120000,
+          tax_impact: 24000,
+          transfer_cost: 30000,
+          distribution_cost: 40000,
+          storage_cost: 20000,
+          inventory_cost: 30000,
+        },
+      },
+    },
     selected_scenario: {
       scenario_id: 'candidate-1',
       scenario_type: 'scenario',
@@ -129,18 +143,53 @@ const executiveState = {
     },
     scenarios: [],
     robustness: { conditional_robustness_score: 9.200000000000001 },
-    scenario_result: { total_with_tax: 137000 },
+    scenario_result: {
+      total_with_tax: 137000,
+      costs: {
+        total_logistics_cost: 110000,
+        tax_impact: 27000,
+        transfer_cost: 28000,
+        distribution_cost: 37000,
+        storage_cost: 18000,
+        inventory_cost: 27000,
+      },
+    },
   },
 };
 const executiveHtml = renderOverviewSummary(executiveState);
 assert.match(executiveHtml, /R\$\s?137\.000/);
-assert.match(executiveHtml, /9,2\/100/);
-assert.doesNotMatch(executiveHtml, /9\.200000/);
+assert.match(executiveHtml, /R\$\s?110\.000/);
+assert.match(executiveHtml, /R\$\s?27\.000/);
+assert.match(executiveHtml, /R\$\s?7\.000/);
+assert.match(executiveHtml, /id="niOverviewCostCompositionChart"/);
+assert.match(executiveHtml, /id="niOverviewCostComparisonChart"/);
+assert.match(executiveHtml, /id="niFlowCountByCdChart"/);
+assert.match(executiveHtml, /data-testid="overview-metrics"/);
+assert.doesNotMatch(
+  executiveHtml,
+  /robustness|robustez|evidence|evidência|confiabilidade|confiança|recomendação|recomendado/i
+);
 assert.doesNotMatch(executiveHtml, /R\$\s?144\.000/);
 executiveState.data.scenario_result = null;
 const pendingScenarioHtml = renderOverviewSummary(executiveState);
 assert.match(pendingScenarioHtml, /—/);
 assert.doesNotMatch(pendingScenarioHtml, /R\$\s?144\.000/);
+assert.doesNotMatch(pendingScenarioHtml, /R\$\s?0(?:,00)?/);
+executiveState.data.selected_scenario.result = {
+  total_with_tax: 137000,
+  costs: {
+    total_logistics_cost: 110000,
+    tax_impact: 27000,
+    transfer_cost: 28000,
+    distribution_cost: 37000,
+    storage_cost: 18000,
+    inventory_cost: 27000,
+  },
+};
+const selectedResultFallbackHtml = renderOverviewSummary(executiveState);
+assert.match(selectedResultFallbackHtml, /R\$\s?137\.000/);
+assert.match(selectedResultFallbackHtml, /R\$\s?110\.000/);
+assert.match(selectedResultFallbackHtml, /R\$\s?27\.000/);
 executiveState.data.selected_scenario = null;
 executiveState.context.selected_scenario_id = null;
 const baselineHtml = renderOverviewSummary(executiveState);
@@ -152,9 +201,11 @@ const taxState = {
   data: {
     baseline: {
       company_id: 'empresa_mock',
+      costs: { costs: { tax_impact: 44000 } },
       tax_results: {
         tax_results: {
           tax_regime: 'current',
+          total_tax_impact: 46000,
           explanation: { unexpected: 'must not stringify as an object' },
           tax_period_contract: {
             available_periods: [
@@ -169,6 +220,8 @@ const taxState = {
 const taxHtml = renderOverviewTax(taxState);
 assert.match(taxHtml, /Demonstração · empresa fictícia/);
 assert.match(taxHtml, /<span>Regime<\/span><strong>Atual<\/strong>/);
+assert.match(taxHtml, /R\$\s?44\.000/);
+assert.match(taxHtml, /id="niOverviewTaxImpactChart"/);
 assert.match(taxHtml, /<td>2026<\/td>/);
 assert.match(taxHtml, /70,0%/);
 assert.doesNotMatch(taxHtml, /\[object Object\]/);
@@ -177,6 +230,14 @@ taxState.data.baseline.company_id = 'empresa1';
 const mismatchedTaxHtml = renderOverviewTax(taxState);
 assert.match(mismatchedTaxHtml, /não correspondem à empresa ativa/i);
 assert.doesNotMatch(mismatchedTaxHtml, /niOverviewTaxCoverageChart/);
+assert.doesNotMatch(mismatchedTaxHtml, /niOverviewTaxImpactChart/);
+taxState.data.baseline.company_id = 'empresa_mock';
+taxState.data.baseline.costs.costs.tax_impact = null;
+const taxTotalFallbackHtml = renderOverviewTax(taxState);
+assert.match(taxTotalFallbackHtml, /R\$\s?46\.000/);
+taxState.data.baseline.tax_results.tax_results.total_tax_impact = null;
+const missingImpactHtml = renderOverviewTax(taxState);
+assert.match(missingImpactHtml, /Impacto tributário registrado[\s\S]*?—/);
 
 const missingCd = analytics.buildFlowCountByCd([
   { flow_type: 'cd_to_destination', destination: 'Loja sem CD' },

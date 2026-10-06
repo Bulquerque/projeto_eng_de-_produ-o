@@ -183,9 +183,9 @@ const resultHtml = renderOptimizerResults({
 });
 assert.match(resultHtml, /<dt>CDs ativos<\/dt><dd>—<\/dd>/);
 assert.match(resultHtml, /<dt>Pontuação<\/dt><dd>—<\/dd>/);
-assert.match(resultHtml, /Catálogo completo[\s\S]*?—/);
+assert.doesNotMatch(resultHtml, /Catálogo completo|Confiabilidade|Cobertura/i);
 assert.match(resultHtml, /Alternativas avaliadas[\s\S]*?—/);
-assert.match(resultHtml, /Resultados da avaliação/);
+assert.match(resultHtml, /Ranking da avaliação/);
 assert.doesNotMatch(resultHtml, /otimização/i);
 
 console.log('DECISION_OPTIMIZER_FLOW_OK');

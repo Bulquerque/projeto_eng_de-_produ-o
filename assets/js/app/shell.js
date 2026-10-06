@@ -24,7 +24,6 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
         <a class="network-trust-shortcut" href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust"><img class="network-tool-icon" src="assets/icons/bootstrap-icons/shield-check.svg" alt="" aria-hidden="true">Dados & confiança</a>
         <button type="button" data-action="open-help"><img class="network-tool-icon" src="assets/icons/bootstrap-icons/question-circle.svg" alt="" aria-hidden="true">Ajuda</button>
       </div>
-      <div class="network-sidebar-foot"><small>Decision workspace</small><span data-testid="mode-badge">runtime</span></div>
     </aside>
     <div class="network-content">
       <header class="network-topbar" data-testid="network-topbar">
@@ -34,9 +33,6 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
           <label><span class="ni-workspace-sr-only">Cenário</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário"><option value="">Baseline</option></select></label>
         </div>
         <div class="network-topbar-actions">
-          <span id="niEvidenceTopbar" data-testid="evidence-topbar" class="ni-status status-neutral">Evidence —</span>
-          <span id="niCompanyBadge" data-testid="company-badge" class="ni-context-badge">${escapeHtml(companyId || '—')}</span>
-          <span class="ni-runtime-badge" data-testid="runtime-badge">RUNTIME</span>
           <button id="niLockButton" type="button" class="ni-button secondary" data-action="lock-crypto" aria-label="Bloquear sessão protegida" hidden>Bloquear dados</button>
           <button type="button" class="ni-button secondary" data-action="open-export" data-testid="export-center">Exportar</button>
           ${debugEnabled ? '<button type="button" class="ni-button primary" data-action="open-dev" data-testid="dev-console">&lt;/&gt; Dev</button>' : ''}
@@ -85,17 +81,7 @@ function taxYearOptions() {
 export function updateGlobalContext(root, state) {
   const companySelect = root.querySelector('#niCompanySelect');
   const scenarioSelect = root.querySelector('#niScenarioSelect');
-  const companyBadge = root.querySelector('#niCompanyBadge');
-  const runtimeBadge = root.querySelector('[data-testid="runtime-badge"]');
-  const evidence = root.querySelector('#niEvidenceTopbar');
   if (companySelect) companySelect.value = state.context.company_id || '';
-  const company = COMPANY_REGISTRY[state.context.company_id];
-  if (companyBadge)
-    companyBadge.textContent = company
-      ? `${company.label} · ${company.kind === 'mock' ? 'MOCK' : 'PROTECTED'}`
-      : state.context.company_id || '—';
-  if (runtimeBadge)
-    runtimeBadge.textContent = String(state.context.runtime_mode || 'project').toUpperCase();
   if (scenarioSelect) {
     scenarioSelect.disabled = Boolean(state.ui.loading);
     const selected = state.context.selected_scenario_id || '';
@@ -124,9 +110,6 @@ export function updateGlobalContext(root, state) {
   }
   const lockButton = root.querySelector('#niLockButton');
   if (lockButton) lockButton.hidden = state.context.provider_kind !== 'project';
-  const evidenceScore = state.data.scenario_result?.evidence?.evidence_score;
-  if (evidence)
-    evidence.textContent = `Evidence ${evidenceScore == null ? '—' : `${evidenceScore}/100`}`;
 }
 
 export function showLoading(root, visible, title = 'Carregando', note = 'Aguarde.') {

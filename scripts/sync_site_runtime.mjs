@@ -16,6 +16,11 @@ for (const directory of ['assets', 'data-demo']) {
   fs.rmSync(path.join(dist, directory), { recursive: true, force: true });
   fs.cpSync(path.join(root, directory), path.join(dist, directory), { recursive: true });
 }
+// Keep the public entrypoint current while omitting private complement discovery.
+const entrypoint = fs
+  .readFileSync(path.join(root, 'index.html'), 'utf8')
+  .replace('content="included"', 'content="omitted"');
+fs.writeFileSync(path.join(dist, 'index.html'), entrypoint);
 const protectedManifest = JSON.parse(
   fs.readFileSync(path.join(dist, 'data/encrypted_manifest.json'), 'utf8')
 );

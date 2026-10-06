@@ -81,6 +81,8 @@ export function createScenarioActions({ root, store, getProvider, operationGuard
       scenarioId: prior.scenario_id || null,
       formValues: {
         ...(prior.changes || {}),
+        tax_mode: null,
+        tax_regime: null,
         tax_year: year,
         scenario_name: prior.scenario_name || `Cenário fiscal ${year}`,
       },
@@ -286,7 +288,7 @@ export function createScenarioActions({ root, store, getProvider, operationGuard
       });
       showLoading(root, false);
       showToast(root, 'Cenário simulado pelo provider ativo.', 'success');
-      window.location.hash = '#/network/scenarios/result';
+      window.location.hash = '#/network/results/summary';
     } catch (error) {
       if (!isCurrentAction(action)) return;
       store.update((state) => failLoading(state, error));

@@ -133,6 +133,7 @@ def test_results_comparison_chart_has_state_backed_data_and_pixels():
         page.locator('[data-testid="network-flow-analytics"]').wait_for(state='visible')
         page.evaluate("window.location.hash = '#/network/scenarios/build'")
         page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible')
+        page.locator('[data-testid="scenario-library"] > summary').click()
         page.locator('[data-testid="scenario-load-mock_consolidation"]').click()
         page.locator('[data-testid="scenario-run"]').click()
         page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=20000)

@@ -48,7 +48,7 @@ def run_server():
 
 
 def open_details(page, selector):
-    page.locator(selector).evaluate(
+    page.locator(selector).first.evaluate(
         "el => { for (let parent = el.parentElement; parent; parent = parent.parentElement) { if (parent.tagName === 'DETAILS') parent.open = true; } }"
     )
 
@@ -108,12 +108,12 @@ def test_network_ui_mock_flow():
         page.locator('#networkAppRoot').wait_for(state='visible')
         page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
         assert page.locator('[data-testid="company-selector"]').input_value() == 'empresa_mock'
-        recommendation_text = page.locator('[data-testid="overview-recommendation"]').inner_text()
-        assert 'Não recomendado' in recommendation_text or 'Recomendado' in recommendation_text
-        assert 'baseline' in recommendation_text.casefold() or 'saving' in recommendation_text.casefold()
-        evidence_text = page.locator('[data-testid="evidence-topbar"]').inner_text()
-        assert evidence_text.casefold().startswith('evidence ')
-        assert evidence_text.split()[-1] in {'—', *(f'{score}/100' for score in range(101))}
+        summary = page.locator('[data-testid="page-overview-summary"]')
+        assert summary.is_visible()
+        assert page.locator('[data-testid="overview-metrics"]').is_visible()
+        assert page.locator('[data-testid="evidence-topbar"]').count() == 0
+        assert page.locator('[data-testid="company-badge"]').count() == 0
+        assert page.locator('[data-testid="runtime-badge"]').count() == 0
         assert page.locator('#sec-diagnostico-baseline').is_hidden()
         assert not any(f'/assets/js/phase{phase}/main.js' in url for phase in range(1, 6) for url in request_urls)
         assert not any('/data/empresa' in url for url in request_urls)
@@ -121,13 +121,15 @@ def test_network_ui_mock_flow():
         page.locator('a[data-route="#/network/scenarios/build"]').first.click()
         page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible')
         assert page.locator('[data-testid="scenario-library"]').is_visible()
+        open_details(page, '[data-testid="scenario-load-mock_consolidation"]')
         assert page.locator('[data-testid="scenario-load-mock_consolidation"]').is_visible()
+        open_details(page, '[data-testid="scenario-load-mock_consolidation"]')
         page.locator('[data-testid="scenario-load-mock_consolidation"]').click()
         assert page.locator('input[name="scenario_name"]').input_value() == 'Consolidação demonstrativa'
         page.locator('[data-testid="scenario-run"]').click()
         page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=10000)
         assert 'R$' in page.locator('#networkPage').inner_text()
-        assert page.locator('#networkPage h1').inner_text() == 'Resultados'
+        assert page.locator('#networkPage h1').inner_text() == 'Resultados do cenário'
         assert page.locator('a[data-section="results"]').get_attribute('aria-current') == 'page'
         assert page.locator('[data-testid="return-to-demo"]').count() == 0
         page.evaluate("window.location.hash = '#/network/overview/summary'")
@@ -142,12 +144,15 @@ def test_network_ui_mock_flow():
         open_details(page, '[data-testid="risk-controls"]')
         page.locator('[data-testid="risk-run"]').click()
         page.locator('[data-testid="page-results-risk"]').wait_for(state='visible', timeout=10000)
-        assert page.locator('#networkPage h1').inner_text() == 'Resultados · Risco'
+        assert page.locator('#networkPage h1').inner_text() == 'Risco operacional'
         assert page.locator('[data-testid="risk-controls"] input[name="iterations"]').input_value()
         page.evaluate("window.location.hash = '#/network/scenarios/build'")
+        open_details(page, '[data-testid="scenario-save"]')
         page.locator('[data-testid="scenario-save"]').click()
         assert page.locator('[data-testid^="saved-scenario-load-"]').count() == 1
+        open_details(page, '[data-testid="scenario-export"]')
         page.locator('[data-testid="scenario-export"]').wait_for(state='visible')
+        open_details(page, '[data-testid="scenario-clear-saved"]')
         page.locator('[data-testid="scenario-clear-saved"]').click()
         assert page.locator('[data-testid^="saved-scenario-load-"]').count() == 0
         page.locator('[data-testid="scenario-import"]').set_input_files(
@@ -157,6 +162,7 @@ def test_network_ui_mock_flow():
                 'buffer': b'{"scenario_id":"empresa_mock_imported_e2e","scenario_name":"Importado E2E","company_id":"empresa_mock","base_scenario_id":"mock_baseline","changes":{"active_cds":["CD Demo Norte"],"freight_multiplier":1,"demand_multiplier":1,"inventory_days":45,"wacc":0.15,"tax_mode":"current"}}',
             }
         )
+        open_details(page, '[data-testid="saved-scenario-load-empresa_mock_imported_e2e"]')
         page.locator('[data-testid="saved-scenario-load-empresa_mock_imported_e2e"]').wait_for(
             state='visible', timeout=5000
         )
@@ -169,6 +175,7 @@ def test_network_ui_mock_flow():
             }
         )
         page.locator('.network-toast.error', has_text='outra empresa').wait_for(state='visible', timeout=5000)
+        open_details(page, '[data-testid="scenario-clear-saved"]')
         page.locator('[data-testid="scenario-clear-saved"]').click()
         assert page.locator('[data-testid^="saved-scenario-load-"]').count() == 0
 
@@ -189,7 +196,7 @@ def test_network_ui_mock_flow():
         page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=20000)
         assert page.locator('[data-testid="qa-status"]').is_visible()
         assert page.locator('[data-testid="release-status"]').is_visible()
-        assert 'MOCK' in page.locator('[data-testid="company-badge"]').inner_text()
+        assert page.locator('#niCompanySelect').input_value() == 'empresa_mock'
         assert page.locator('[data-testid="export-center-panel"]').is_visible()
         with page.expect_download(timeout=10000) as download_info:
             page.locator('[data-testid="export-center"]').click()
@@ -242,16 +249,9 @@ def test_network_ui_reference_shell_overview_and_scenario_contracts():
         shell.wait_for(state='visible', timeout=5000)
         assert shell.get_attribute('data-runtime') == 'network-intelligence'
 
-        runtime_badge = shell.locator('[data-testid="runtime-badge"]')
-        evidence_badge = shell.locator('[data-testid="evidence-topbar"]')
-        assert runtime_badge.is_visible()
-        assert runtime_badge.inner_text().strip().lower() in {'runtime', 'project', 'standalone'}
-        assert evidence_badge.is_visible()
-        assert evidence_badge.inner_text().strip().lower().startswith('evidence')
-        evidence_label = evidence_badge.inner_text().strip()
-        assert evidence_label.casefold().startswith('evidence ')
-        evidence_value = evidence_label.split(maxsplit=1)[1]
-        assert evidence_value == '—' or int(evidence_value.removesuffix('/100')) in range(101)
+        assert shell.locator('[data-testid="runtime-badge"]').count() == 0
+        assert shell.locator('[data-testid="evidence-topbar"]').count() == 0
+        assert shell.locator('[data-testid="company-badge"]').count() == 0
 
         page.locator('[data-action="open-help"]').click()
         page.locator('#networkDrawer [data-action="open-styleguide"]').click()
@@ -276,16 +276,17 @@ def test_network_ui_reference_shell_overview_and_scenario_contracts():
         scenario_preview.wait_for(state='visible', timeout=5000)
         assert scenario_preview.inner_text().strip()
 
+        open_details(page, '[data-testid="scenario-load-mock_consolidation"]')
         page.locator('[data-testid="scenario-load-mock_consolidation"]').click()
         page.locator('[data-testid="scenario-run"]').click()
         page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=10000)
         page.evaluate("window.location.hash = '#/network/overview/summary'")
         page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
 
-        recommendation = page.locator('[data-testid="overview-recommendation"]')
+        recommendation = page.locator('[data-testid="overview-metrics"]')
         recommendation.wait_for(state='visible', timeout=5000)
         assert recommendation.inner_text().strip()
-        assert evidence_badge.inner_text().strip().lower() != 'evidence —'
+        assert page.locator('#niOverviewCostCompositionChart').is_visible()
 
         browser.close()
 
@@ -335,13 +336,18 @@ def test_network_ui_fallback_debug_drawer_and_manual_decision():
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-optimizer-configure"]').wait_for(state='visible')
+        open_details(page, 'input[name="max_candidates"]')
         page.locator('input[name="max_candidates"]').fill('0')
         page.locator('[data-testid="optimizer-run"]').click()
         page.locator('[data-testid="page-optimizer-configure"]').wait_for(state='visible')
         assert page.locator('.network-toast.error', has_text='Máximo de candidatos').is_visible()
+        open_details(page, 'input[name="max_candidates"]')
         page.locator('input[name="max_candidates"]').fill('1000')
+        open_details(page, 'input[name="seed"]')
         page.locator('input[name="seed"]').fill('0')
+        open_details(page, 'input[name="min_active_cds"]')
         page.locator('input[name="min_active_cds"]').fill('1')
+        open_details(page, 'input[name="max_active_cds"]')
         page.locator('input[name="max_active_cds"]').fill('10')
         page.locator('[data-testid="optimizer-run"]').click()
         page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=20000)
@@ -397,6 +403,7 @@ def test_network_ui_parity_extensions():
             assert page.locator(f'[name="{name}"]').count() == 1
 
         page.goto(f'{base}#/network/scenarios/build', wait_until='networkidle')
+        open_details(page, '[data-testid="scenario-load-mock_consolidation"]')
         page.locator('[data-testid="scenario-load-mock_consolidation"]').click()
         page.locator('[data-testid="scenario-run"]').click()
         page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=10000)
@@ -447,9 +454,8 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
         page.locator('#networkAppRoot').wait_for(state='visible')
         page.locator('#cryptoPasswordPrompt').wait_for(state='visible', timeout=10000)
         assert page.locator('#cryptoPasswordPrompt').is_visible()
-        company_badge = page.locator('[data-testid="company-badge"]').inner_text()
-        assert 'Empresa 1' in company_badge
-        assert 'PROTECTED' in company_badge
+        assert page.locator('#niCompanySelect').input_value() == 'empresa1'
+        assert page.locator('[data-testid="company-badge"]').count() == 0
         password = read_optional_password()
         if not password:
             print('NETWORK_UI_REAL_TENANT_SKIPPED: VISAGIO_DATA_PASSWORD ausente')
@@ -464,6 +470,7 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
             page.evaluate("window.location.hash = '#/network/scenarios/build'")
             page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible', timeout=20000)
             page.locator('#networkLoadingOverlay').wait_for(state='hidden', timeout=20000)
+            open_details(page, 'input[name="freight_multiplier"]')
             page.locator('input[name="freight_multiplier"]').fill('0')
             page.locator('[data-testid="scenario-run"]').click()
             page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible', timeout=5000)
@@ -567,6 +574,7 @@ def test_network_ui_reentrant_submissions_and_export_deduplication():
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible')
+        open_details(page, '[data-testid="scenario-load-mock_consolidation"]')
         page.locator('[data-testid="scenario-load-mock_consolidation"]').click()
         page.locator('[data-testid="scenario-form"]').evaluate(
             """form => {
@@ -637,6 +645,7 @@ def test_audit_configuration_identity_and_all_mobile_routes():
             f'http://127.0.0.1:{port}/?company=empresa_mock#/network/optimizer/configure', wait_until='networkidle'
         )
         page.locator('input[name="profile_id"][value="cfo"]').check()
+        open_details(page, 'input[name="seed"]')
         page.locator('input[name="seed"]').fill('73')
         page.locator('[data-testid="optimizer-run"]').click()
         page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=30000)
@@ -721,7 +730,84 @@ def test_company_load_retry_action():
         browser.close()
 
 
+def test_operational_dashboard_and_disclosed_configuration():
+    errors = []
+    with run_server() as port, sync_playwright() as playwright:
+        browser = playwright.chromium.launch(headless=True)
+        for width in (1592, 960, 390):
+            context = browser.new_context(viewport={'width': width, 'height': 900})
+            page = context.new_page()
+            page.on('pageerror', lambda error: errors.append(str(error)))
+            base = f'http://127.0.0.1:{port}/?company=empresa_mock'
+            page.goto(base + '#/network/overview/summary', wait_until='networkidle')
+            page.locator('[data-testid="overview-metrics"]').wait_for(state='visible')
+            assert page.locator('#niEvidenceTopbar, #niCompanyBadge, .ni-runtime-badge').count() == 0
+            for chart in ('niOverviewCostCompositionChart', 'niOverviewCostComparisonChart', 'niFlowCountByCdChart'):
+                assert page.locator(f'#{chart}').is_visible()
+                panel = page.locator(f'#{chart}').locator('..')
+                panel.locator('.vg-chart-data > summary').click()
+                assert panel.locator('.vg-chart-data tbody tr').count() > 0
+            executive_text = page.locator('#networkPage').inner_text().casefold()
+            assert all(
+                word not in executive_text
+                for word in ('confiabilidade', 'robustez', 'evidência', 'evidence', 'não recomendado')
+            )
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
+
+            page.goto(base + '#/network/overview/tax', wait_until='networkidle')
+            page.locator('#niOverviewTaxImpactChart').wait_for(state='visible')
+            tax_data = page.locator('#niOverviewTaxImpactChart').locator('..').locator('.vg-chart-data')
+            tax_data.locator('summary').click()
+            assert tax_data.locator('tbody tr').count() == 2
+            assert '46.000' in tax_data.inner_text()
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
+
+            page.goto(base + '#/network/scenarios/build', wait_until='networkidle')
+            assert page.locator('#networkPage .ni-section-tabs').count() == 0
+            assert page.locator('#niScenarioForm details[open]').count() == 0
+            assert page.locator('[data-testid="scenario-library"]').get_attribute('open') is None
+            page.locator('#niScenarioSelect').select_option('mock_regional_balance')
+            page.wait_for_function(
+                "document.querySelector('[data-testid=\"scenario-preview\"] h2')?.textContent.includes('Balanceamento regional')"
+            )
+            open_details(page, 'input[name="active_cds"]')
+            assert page.locator('input[name="active_cds"]:checked').count() == 2
+            page.locator('[data-action="reset-scenario-draft"]').click()
+            open_details(page, 'input[name="active_cds"]')
+            assert page.locator('input[name="active_cds"]:checked').count() == 3
+            assert page.locator('input[name="active_cds"]').first.is_visible()
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
+
+            page.goto(base + '#/network/optimizer/configure', wait_until='networkidle')
+            assert page.locator('#niOptimizerForm details[open]').count() == 0
+            page.locator('input[name="profile_id"][value="cfo"]').check()
+            page.locator('[data-testid="optimizer-run"]').click()
+            page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible')
+            assert page.locator('.network-nav [data-section="optimizer"]').get_attribute('aria-current') == 'page'
+            page.get_by_role('link', name='Custo × pontuação', exact=True).click()
+            assert page.locator('#niDecisionOptimizerFrontierChart').is_visible()
+            assert (
+                page.locator('#niDecisionOptimizerFrontierChart').get_attribute('aria-label')
+                == 'Custo total × pontuação'
+            )
+            page.get_by_role('link', name='Resultados', exact=True).click()
+            page.locator('[data-testid="page-results-summary"]').wait_for(state='visible')
+            assert page.locator('#networkPage [data-testid="optimizer-ranking"]').count() == 0
+            assert page.locator('#networkPage [data-route="#/network/results/tradeoffs"]').count() == 0
+            page.wait_for_function(
+                "() => { const impact = document.querySelector('.ni-results-impact'); return impact && getComputedStyle(impact).display === 'grid'; }"
+            )
+            impact = page.locator('.ni-results-impact')
+            assert impact.evaluate('el => getComputedStyle(el).display') == 'grid'
+            assert page.locator('#niDecisionComponentDeltaChart').is_visible()
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
+            context.close()
+        assert not errors, errors
+        browser.close()
+
+
 if __name__ == '__main__':
+    test_operational_dashboard_and_disclosed_configuration()
     test_network_ui_is_the_default_public_entrypoint()
     test_network_ui_mock_flow()
     test_network_ui_reference_shell_overview_and_scenario_contracts()

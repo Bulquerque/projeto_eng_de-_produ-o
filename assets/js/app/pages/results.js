@@ -24,10 +24,6 @@ const COST_COMPONENTS = [
   ['total_with_tax', 'Total com tributos'],
 ];
 
-function resultKind(state) {
-  return state.meta?.result_kind === 'optimization' ? 'Recomendação' : 'Simulação';
-}
-
 function baselineValues(state) {
   const baseline = selectBaseline(state);
   return {
@@ -38,31 +34,8 @@ function baselineValues(state) {
   };
 }
 
-function candidateRows(state) {
-  const optimizer = state.data?.optimizer;
-  const ranked = optimizer?.best_scenarios || [];
-  const candidates = ranked.length ? ranked : optimizer?.scored_scenarios || [];
-  const select = `<label class="ni-workspace-field"><span>Alternativa</span><select id="niManualScenarioSelect" data-testid="manual-scenario-selector">${candidates
-    .slice(0, 200)
-    .map(
-      (candidate, index) =>
-        `<option value="${escapeHtml(candidate.scenario_id)}">${escapeHtml(candidate.scenario_name || candidate.scenario?.scenario_name || `Alternativa ${index + 1}`)}</option>`
-    )
-    .join('')}</select></label>`;
-  const action = candidates.length
-    ? `<div class="ni-actions"><button type="button" class="ni-button primary" data-action="run-decision-manual">Avaliar alternativa selecionada</button></div>`
-    : '';
-  const rows = candidates.map((candidate, index) => {
-    const scenarioId = candidate.scenario_id;
-    const scenarioName =
-      candidate.scenario_name || candidate.scenario?.scenario_name || `Alternativa ${index + 1}`;
-    const cost = candidate.result?.total_with_tax ?? candidate.total_with_tax;
-    const risk = candidate.quality?.risk_level || candidate.risk_level;
-    const cdCount = candidate.scenario?.changes?.active_cds?.length ?? candidate.active_cds?.length;
-    const selected = scenarioId && scenarioId === state.context?.selected_scenario_id;
-    return `<tr${selected ? ' aria-current="true"' : ''}><td>${formatNumber(index + 1)}</td><th scope="row">${escapeHtml(scenarioName)}</th><td>${cost == null ? '—' : escapeHtml(formatBRL(cost, true))}</td><td>${cdCount == null ? '—' : escapeHtml(formatNumber(cdCount))}</td><td>${candidate.final_score == null ? '—' : escapeHtml(formatNumber(candidate.final_score, 2))}</td><td>${escapeHtml(businessLabel(risk))}</td><td>${scenarioId && !selected ? `<button type="button" class="ni-button secondary" data-action="select-compared-scenario" data-scenario-id="${escapeHtml(scenarioId)}">Selecionar</button>` : selected ? 'Selecionada' : '—'}</td></tr>`;
-  });
-  return { candidates, select, action, rows };
+function resultsTabs(state) {
+  return sectionTabs('results', state.ui?.route);
 }
 
 export function renderResultsSummary(state) {
@@ -70,7 +43,6 @@ export function renderResultsSummary(state) {
   const result = decision.result;
   const scenario = decision.scenario || selectActiveScenario(state);
   const baseline = baselineValues(state);
-  const kind = resultKind(state);
   if (!result || !scenario) {
     const issues = [
       ...new Set([
@@ -81,15 +53,12 @@ export function renderResultsSummary(state) {
     const blocked =
       state.meta?.status === 'decision_blocked' || decision.final_qa?.final_qa_status === 'failed';
     const message = blocked
-      ? `<section class="ni-workspace-alert ni-workspace-alert--negative" role="alert" data-testid="decision-blocked"><h2>Não foi possível gerar recomendações</h2>${issues.length ? `<ul>${issues.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : `<p>${escapeHtml(decision.recommendation?.executive_summary || 'Revise as restrições e execute novamente.')}</p>`}<a href="#/network/trust/validation" data-route="#/network/trust/validation">Ver verificações</a></section>`
-      : emptyState('Simule um cenário ou gere recomendações para comparar resultados.');
-    return `<section class="ni-workspace ni-workspace-page ni-results" data-testid="page-results-summary"><header class="ni-page-heading"><h1>Resultados</h1></header>${sectionTabs('results', state.ui?.route)}${message}</section>`;
+      ? `<section class="ni-workspace-alert ni-workspace-alert--negative" role="alert" data-testid="decision-blocked"><h2>Não foi possível calcular o cenário</h2>${issues.length ? `<ul>${issues.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : '<p>Revise o cenário e tente novamente.</p>'}<a href="#/network/trust/validation" data-route="#/network/trust/validation">Ver detalhes da execução</a></section>`
+      : emptyState('Selecione e simule um cenário para consultar seus resultados.');
+    return `<section class="ni-workspace ni-workspace-page ni-results" data-testid="page-results-summary"><header class="ni-page-heading"><h1>Resultados do cenário</h1></header>${resultsTabs(state)}${message}</section>`;
   }
 
   const currentCosts = result.costs || {};
-  const taxUnavailable =
-    state.context?.provider_kind === 'mock' &&
-    selectBaseline(state)?.tax_results?.tax_results?.tax_coverage?.eligible_flow_count === 0;
   const total = result.total_with_tax ?? currentCosts.total_with_tax;
   const referenceTotal = baseline.costs.total_with_tax;
   const totalDelta =
@@ -99,62 +68,43 @@ export function renderResultsSummary(state) {
     saving == null || Number(referenceTotal) === 0 ? null : (saving / Number(referenceTotal)) * 100;
   const activeCdCount = scenario?.changes?.active_cds?.length;
   const rows = COST_COMPONENTS.map(([key, label]) => {
-    if (taxUnavailable && key === 'tax_impact')
-      return '<tr><th scope="row">Tributos · sem base elegível</th><td>—</td><td>—</td><td>—</td></tr>';
-    if (taxUnavailable && key === 'total_with_tax') label = 'Total logístico';
     const value = currentCosts[key];
     const reference = baseline.costs[key];
     const delta = value == null || reference == null ? null : Number(value) - Number(reference);
     return `<tr><th scope="row">${label}</th><td>${value == null ? '—' : escapeHtml(formatBRL(value))}</td><td>${reference == null ? '—' : escapeHtml(formatBRL(reference))}</td><td>${delta == null ? '—' : escapeHtml(formatBRL(delta))}</td></tr>`;
   });
-  const ranked = candidateRows(state);
-  const ranking = state.data?.optimizer
-    ? `<section class="ni-results-ranking ni-workspace-ranking" data-testid="optimizer-ranking"><header class="ni-workspace-section-heading"><h2>Alternativas recomendadas</h2></header>${table(['Posição', 'Alternativa', 'Custo total', 'CDs ativos', 'Score', 'Risco', 'Ação'], ranked.rows, 'Nenhuma alternativa elegível.')}<details class="ni-workspace-advanced"><summary>Avaliar seleção manual</summary><div class="ni-results-decision">${ranked.select}${ranked.action}</div></details></section>`
-    : '';
-  const blocked =
-    ['blocked', 'failed', 'not_recommended'].includes(
-      decision.recommendation?.recommendation_status
-    ) || decision.final_qa?.final_qa_status === 'failed';
-  const alert =
-    blocked && state.context?.provider_kind !== 'mock'
-      ? `<section class="ni-workspace-alert ni-workspace-alert--negative" role="status"><strong>${escapeHtml(businessLabel(decision.recommendation?.recommendation_status || decision.final_qa?.final_qa_status))}</strong><a class="ni-text-link" href="#/network/trust/overview" data-route="#/network/trust/overview">Ver decisão e confiabilidade →</a></section>`
-      : '';
   const exportFiles = decision.export_package?.files || [];
-  const actions = `<details class="ni-workspace-secondary-analytics"><summary>Salvar, exportar e verificar</summary><div class="ni-actions">${state.data?.selected_scenario && result ? '<button type="button" class="ni-button secondary" data-action="save-current-scenario" data-testid="scenario-save">Salvar cenário</button><button type="button" class="ni-button secondary" data-action="export-current-scenario" data-testid="scenario-export">Exportar cenário JSON</button>' : ''}${exportFiles.length ? '<button type="button" class="ni-button secondary" data-action="open-export">Abrir pacote de entrega</button>' : ''}<a class="ni-button secondary" href="#/network/trust/validation" data-route="#/network/trust/validation">Ver verificações</a></div></details>`;
-  const summary = `<section class="ni-results-summary"><div class="ni-results-decision"><div><span class="ni-results-kind">${kind}</span><h2>${escapeHtml(scenario.scenario_name || 'Cenário avaliado')}</h2></div><div class="ni-results-impact"><span>${taxUnavailable ? 'Economia logística' : 'Economia ante a referência'}</span><strong>${saving == null ? '—' : escapeHtml(formatBRL(saving, true))}</strong><small>${savingPct == null ? '—' : escapeHtml(formatPct(savingPct))}</small></div></div><div class="ni-workspace-kpis ni-results-metrics">${kpi(taxUnavailable ? 'Custo logístico' : 'Custo total', total == null ? '—' : formatBRL(total, true), '', 'result-total')}${kpi('Referência', referenceTotal == null ? '—' : formatBRL(referenceTotal, true))}${kpi('CDs ativos', activeCdCount == null ? '—' : formatNumber(activeCdCount))}</div></section>`;
-  return `<section class="ni-workspace ni-workspace-page ni-results" data-testid="page-results-summary"><header class="ni-page-heading"><h1>Resultados</h1></header>${sectionTabs('results', state.ui?.route)}${summary}${blocked ? alert : ''}<section class="ni-workspace-panel ni-results-reference"><h2>Custos e comparação</h2>${table(['Componente', 'Resultado', 'Referência', 'Diferença'], rows)}</section>${ranking}${actions}</section>`;
+  const actions = `<details class="ni-workspace-secondary-analytics"><summary>Salvar e exportar</summary><div class="ni-actions">${state.data?.selected_scenario && result ? '<button type="button" class="ni-button secondary" data-action="save-current-scenario" data-testid="scenario-save">Salvar cenário</button><button type="button" class="ni-button secondary" data-action="export-current-scenario" data-testid="scenario-export">Exportar cenário JSON</button>' : ''}${exportFiles.length ? '<button type="button" class="ni-button secondary" data-action="open-export">Abrir pacote de entrega</button>' : ''}</div></details>`;
+  const summary = `<section class="ni-results-summary"><div class="ni-results-decision"><div><span class="ni-results-kind">Resultado do cenário</span><h2>${escapeHtml(scenario.scenario_name || 'Cenário avaliado')}</h2></div><div class="ni-results-impact ni-results-saving${saving != null && saving < 0 ? ' ni-results-impact--negative' : ''}"><span class="ni-results-impact-label">Economia ante a referência</span><strong class="ni-results-impact-value">${saving == null ? '—' : escapeHtml(formatBRL(saving, true))}</strong><small class="ni-results-impact-percent">${savingPct == null ? '—' : escapeHtml(formatPct(savingPct))}</small></div></div><div class="ni-workspace-kpis ni-results-metrics">${kpi('Custo total', total == null ? '—' : formatBRL(total, true), '', 'result-total')}${kpi('Referência', referenceTotal == null ? '—' : formatBRL(referenceTotal, true))}${kpi('CDs ativos', activeCdCount == null ? '—' : formatNumber(activeCdCount))}</div></section>`;
+  return `<section class="ni-workspace ni-workspace-page ni-results" data-testid="page-results-summary"><header class="ni-page-heading"><h1>Resultados do cenário</h1></header>${resultsTabs(state)}${summary}<section class="ni-workspace-panel ni-results-reference"><h2>Economia por componente</h2><canvas id="niDecisionComponentDeltaChart" class="ni-chart" role="img" aria-label="Economia ou aumento de custo por componente"></canvas><details class="ni-workspace-secondary-analytics"><summary>Comparação detalhada de custos</summary>${table(['Componente', 'Resultado', 'Referência', 'Diferença'], rows)}</details></section>${actions}</section>`;
 }
 
 export function comparisonCandidates(state) {
   const decision = selectDecision(state);
   const baseline = baselineValues(state);
   const comparison = decision.comparison?.comparison || [];
-  const candidates =
-    state.data?.optimizer?.best_scenarios || state.data?.optimizer?.scored_scenarios || [];
+  const candidates = [];
   const byId = new Map();
   if (baseline.id && baseline.costs.total_with_tax != null) {
     byId.set(baseline.id, {
       scenario_id: baseline.id,
       scenario_name: 'Referência',
       total_with_tax: baseline.costs.total_with_tax,
+      costs: baseline.costs,
       active_cds_count: baseline.model.active_cds?.length,
       status: 'baseline',
     });
   }
-  for (const kind of ['simulation', 'optimization']) {
+  for (const kind of ['simulation']) {
     const run = state.data?.analysis_runs?.[kind];
     if (!run?.scenario || !run?.result || run.company_id !== state.context?.company_id) continue;
     const runId = `saved-${kind}:${run.run_id}`;
-    const taxResults = run.result.tax_results || {};
     byId.set(runId, {
       scenario_id: runId,
-      scenario_name: `${kind === 'simulation' ? 'Simulação' : 'Recomendação'} · ${run.scenario.scenario_name || 'Última execução'}`,
+      scenario_name: `Simulação · ${run.scenario.scenario_name || 'Última execução'}`,
       total_with_tax: run.result.total_with_tax ?? run.result.costs?.total_with_tax,
+      costs: run.result.costs || {},
       active_cds_count: run.scenario.changes?.active_cds?.length,
-      risk_level: run.quality?.risk_level || run.result.risk_level,
-      robustness_score: run.quality?.robustness_score,
-      complete_fiscal_coverage_ratio: taxResults.tax_coverage?.complete_fiscal_coverage_ratio,
-      tax_coverage: taxResults.tax_coverage,
       preserved_execution: true,
       execution_kind: kind,
     });
@@ -167,8 +117,8 @@ export function comparisonCandidates(state) {
       ...row,
       scenario_name: row.scenario_name || row.scenario?.scenario_name,
       total_with_tax: cost,
+      costs: row.result?.costs || row.costs || {},
       active_cds_count: row.scenario?.changes?.active_cds?.length ?? row.active_cds?.length,
-      risk_level: row.quality?.risk_level,
     });
   }
   const selected = decision.scenario;
@@ -177,8 +127,8 @@ export function comparisonCandidates(state) {
       scenario_id: selected.scenario_id,
       scenario_name: selected.scenario_name,
       total_with_tax: decision.result?.total_with_tax,
+      costs: decision.result?.costs || {},
       active_cds_count: selected.changes?.active_cds?.length,
-      risk_level: decision.quality?.risk_level,
     });
   }
   return [...byId.values()];
@@ -190,6 +140,7 @@ export function renderResultsComparison(state) {
   const activeId = state.context?.selected_scenario_id;
   const metric = (candidate, key) =>
     candidate[key] == null ? '—' : escapeHtml(formatBRL(candidate[key], true));
+  const componentMetric = (candidate, key) => metric(candidate.costs || {}, key);
   const candidates = rows.filter(
     (row) => row.scenario_id !== baseline.id && !row.preserved_execution
   );
@@ -222,26 +173,10 @@ export function renderResultsComparison(state) {
       (row) =>
         row.active_cds_count == null ? '—' : escapeHtml(formatNumber(row.active_cds_count)),
     ],
-    ['Risco', (row) => escapeHtml(businessLabel(row.risk_level || row.quality?.risk_level))],
-    [
-      'Robustez',
-      (row) => {
-        const value = row.robustness_score ?? row.robustness?.robustness_score;
-        return value == null ? '—' : `${escapeHtml(formatNumber(value, 0))}/100`;
-      },
-    ],
-    [
-      'Cobertura fiscal',
-      (row) => {
-        const value =
-          row.complete_fiscal_coverage_ratio ??
-          row.tax_coverage?.complete_fiscal_coverage_ratio ??
-          row.result?.tax_results?.tax_coverage?.complete_fiscal_coverage_ratio;
-        return value == null
-          ? '—'
-          : escapeHtml(formatPct(Number(value) > 1 ? Number(value) : Number(value) * 100));
-      },
-    ],
+    ['Transferência', (row) => componentMetric(row, 'transfer_cost')],
+    ['Distribuição', (row) => componentMetric(row, 'distribution_cost')],
+    ['Armazenagem', (row) => componentMetric(row, 'storage_cost')],
+    ['Estoque', (row) => componentMetric(row, 'inventory_cost')],
   ];
   const body = rows.length
     ? `<div class="ni-workspace-matrix-wrap"><table class="ni-workspace-matrix"><thead><tr><th scope="col">Indicador</th>${headings}</tr></thead><tbody>${metrics.map(([label, render]) => `<tr><th scope="row">${label}</th>${rows.map((row) => `<td class="${row.scenario_id === activeId ? 'is-selected' : ''}">${render(row)}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="ni-comparison-cards">${rows.map((row) => `<article class="ni-comparison-card${row.scenario_id === activeId ? ' is-selected' : ''}"><h2>${escapeHtml(row.scenario_id === baseline.id ? 'Referência' : row.scenario_name || 'Alternativa')}</h2><dl>${metrics.map(([label, render]) => `<div><dt>${label}</dt><dd>${render(row)}</dd></div>`).join('')}</dl></article>`).join('')}</div>`
@@ -260,69 +195,11 @@ export function renderResultsComparison(state) {
     chartRows.length > 1
       ? `<section class="ni-workspace-panel ni-results-comparison-chart"><h2>Custo total por alternativa</h2><canvas id="niComparisonCostChart" class="ni-chart" role="img" aria-label="Gráfico de barras comparando o custo total da referência e das alternativas disponíveis"></canvas></section>`
       : '';
-  return `<section class="ni-workspace ni-workspace-page ni-results-comparison" data-testid="page-results-comparison"><header class="ni-page-heading"><h1>Comparação</h1></header>${sectionTabs('results', state.ui?.route)}${chart}<section class="ni-workspace-panel">${body}${selectActions ? `<div class="ni-actions">${selectActions}</div>` : ''}</section></section>`;
-}
-
-function renderTradeoffScatter(candidates) {
-  const points = candidates
-    .map((row, index) => ({
-      position: index + 1,
-      id: row.scenario_id,
-      name: row.scenario_name || row.scenario_id,
-      cost: row.result?.total_with_tax ?? row.total_with_tax,
-      score: row.final_score,
-    }))
-    .filter(
-      (point) =>
-        point.id &&
-        point.cost != null &&
-        point.score != null &&
-        Number.isFinite(Number(point.cost)) &&
-        Number.isFinite(Number(point.score))
-    )
-    .map((point) => ({ ...point, cost: Number(point.cost), score: Number(point.score) }));
-  if (!points.length) return emptyState('Não há alternativas com custo e score disponíveis.');
-  const width = 640;
-  const height = 330;
-  const left = 84;
-  const right = 20;
-  const top = 24;
-  const bottom = 58;
-  const minX = Math.min(...points.map((point) => point.cost));
-  const maxX = Math.max(...points.map((point) => point.cost));
-  const minY = Math.min(...points.map((point) => point.score));
-  const maxY = Math.max(...points.map((point) => point.score));
-  const xRange = maxX - minX || Math.max(Math.abs(maxX) * 0.08, 1);
-  const yRange = maxY - minY || 1;
-  const x = (value) =>
-    left + ((value - (minX - xRange * 0.06)) / (xRange * 1.12)) * (width - left - right);
-  const y = (value) =>
-    top + (1 - (value - (minY - yRange * 0.08)) / (yRange * 1.16)) * (height - top - bottom);
-  const ticks = Array.from({ length: 5 }, (_, i) => {
-    const cost = minX + ((maxX - minX) * i) / 4;
-    const score = minY + ((maxY - minY) * i) / 4;
-    return `<text class="ni-workspace-scatter-tick" x="${x(cost)}" y="${height - bottom + 20}" text-anchor="middle">${escapeHtml(formatBRL(cost, true))}</text><text class="ni-workspace-scatter-tick" x="${left - 12}" y="${y(score) + 4}" text-anchor="end">${escapeHtml(formatNumber(score, 1))}</text>`;
-  }).join('');
-  const circles = points
-    .map(
-      (point) =>
-        `<g class="ni-workspace-scatter-point"><title>${escapeHtml(point.name)} · ${escapeHtml(formatBRL(point.cost))} · Score ${escapeHtml(formatNumber(point.score, 2))}</title><circle cx="${x(point.cost)}" cy="${y(point.score)}" r="8"/><text x="${x(point.cost)}" y="${y(point.score) - 12}" text-anchor="middle">${point.position}</text></g>`
-    )
-    .join('');
-  return `<svg class="ni-workspace-scatter" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="resultsTradeoffTitle"><title id="resultsTradeoffTitle">Custo total comparado ao score; números correspondem às alternativas da tabela</title><line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}"/><line x1="${left}" y1="${top}" x2="${left}" y2="${height - bottom}"/>${ticks}${circles}<text x="${(left + width - right) / 2}" y="${height - 10}" text-anchor="middle">Custo total (R$)</text><text transform="translate(18 ${(top + height - bottom) / 2}) rotate(-90)" text-anchor="middle">Score</text></svg>`;
+  return `<section class="ni-workspace ni-workspace-page ni-results-comparison" data-testid="page-results-comparison"><header class="ni-page-heading"><h1>Comparação</h1></header>${resultsTabs(state)}${chart}<section class="ni-workspace-panel">${body}${selectActions ? `<div class="ni-actions">${selectActions}</div>` : ''}</section></section>`;
 }
 
 export function renderResultsTradeoffs(state) {
-  const optimizer = state.data?.optimizer;
-  const candidates = optimizer?.scored_scenarios?.length
-    ? optimizer.scored_scenarios
-    : optimizer?.best_scenarios || [];
-  const selected = state.data?.selected_scenario?.scenario_id;
-  const rows = candidates.map(
-    (row, index) =>
-      `<tr><td>${formatNumber(index + 1)}</td><th scope="row">${escapeHtml(row.scenario_name || `Alternativa ${index + 1}`)}</th><td>${row.result?.total_with_tax == null ? '—' : escapeHtml(formatBRL(row.result.total_with_tax, true))}</td><td>${row.final_score == null ? '—' : escapeHtml(formatNumber(row.final_score, 2))}</td><td>${escapeHtml(businessLabel(row.quality?.risk_level))}</td><td>${row.scenario_id && row.scenario_id !== selected ? `<button type="button" class="ni-button secondary" data-action="select-compared-scenario" data-scenario-id="${escapeHtml(row.scenario_id)}">Selecionar</button>` : row.scenario_id === selected ? 'Selecionada' : '—'}</td></tr>`
-  );
-  return `<section class="ni-workspace ni-workspace-page ni-results-tradeoffs" data-testid="page-results-tradeoffs"><header class="ni-page-heading"><h1>Alternativas e compromissos</h1></header>${sectionTabs('results', state.ui?.route)}${optimizer ? `<section class="ni-workspace-panel"><h2>Custo total e score</h2>${renderTradeoffScatter(candidates)}</section>${table(['Posição', 'Alternativa', 'Custo total', 'Score', 'Risco', 'Ação'], rows, 'Nenhuma alternativa disponível.')}` : emptyState('Gere recomendações para comparar os compromissos entre as alternativas.')}</section>`;
+  return `<section class="ni-workspace ni-workspace-page ni-results-tradeoffs" data-testid="page-results-tradeoffs"><header class="ni-page-heading"><h1>Avaliação de alternativas</h1></header>${resultsTabs(state)}<section class="ni-workspace-panel"><p>Ranking, score e trade-offs pertencem à avaliação de alternativas.</p><a class="ni-button primary" href="#/network/optimizer/results" data-route="#/network/optimizer/results">Abrir avaliação de alternativas</a></section></section>`;
 }
 
 function renderSensitivityMatrix(matrix = {}) {
@@ -374,9 +251,9 @@ export function renderRiskAnalysis(state, advanced = false) {
   const stressSummary = negative
     ? `<p class="ni-workspace-alert ni-workspace-alert--negative">${escapeHtml(negative.case_name || 'Um cenário de estresse')} apresentou economia de ${escapeHtml(formatPct(negative.saving_pct))}.</p>`
     : validStress.length
-      ? `<p class="ni-workspace-alert ni-workspace-alert--positive">${formatNumber(risk.stress?.summary?.cases_positive ?? validStress.length)} de ${formatNumber(validStress.length)} casos válidos mantiveram economia.</p>`
+      ? `<p class="ni-workspace-alert ni-workspace-alert--positive">${formatNumber(risk.stress?.summary?.cases_positive ?? validStress.length)} de ${formatNumber(validStress.length)} casos avaliados mantiveram economia.</p>`
       : `<p class="ni-note">Casos de estresse indisponíveis.</p>`;
-  const noRisk = !monteCarlo.summary && !risk.stress && !risk.robustness;
+  const noRisk = !monteCarlo.summary && !risk.stress && !risk.sensitivity_matrix;
   const chart = (title, id, label) =>
     `<section class="ni-workspace-panel"><h2>${title}</h2><canvas id="${id}" class="ni-chart" role="img" aria-label="${label}"></canvas></section>`;
   const controls = `<details class="ni-workspace-advanced"><summary>Ajustar análise de risco</summary><form id="niRiskForm" class="ni-workspace-field-grid" data-testid="risk-controls" novalidate><label class="ni-workspace-field"><span>Iterações</span><input type="number" name="iterations" min="50" max="5000" step="50" value="${escapeHtml(riskConfig.iterations ?? summary.iterations ?? 300)}"></label><label class="ni-workspace-field"><span>Seed</span><input type="number" name="seed" step="1" value="${escapeHtml(riskConfig.seed ?? summary.seed ?? 42)}"></label><label class="ni-workspace-field"><span>Perfil de incerteza</span><select name="profile">${options(
@@ -423,21 +300,21 @@ export function renderRiskAnalysis(state, advanced = false) {
     'demand_multiplier'
   )}</select></label><button type="submit" class="ni-button primary" data-testid="risk-run">Recalcular risco</button></form></details>`;
   if (noRisk) {
-    return `${emptyState(decision.result ? 'Calcule o risco com as premissas abaixo.' : 'Execute uma simulação ou gere recomendações para consultar a análise de risco.')}${decision.result ? controls : ''}`;
+    return `${emptyState(decision.result ? 'Calcule o risco com as premissas abaixo.' : 'Simule um cenário para consultar o risco operacional.')}${decision.result ? controls : ''}`;
   }
-  const kpis = `<div class="ni-workspace-kpis">${kpi('Probabilidade de economia', summary.probability_saving_positive == null ? '—' : formatPct(summary.probability_saving_positive * 100))}${kpi('Robustez', risk.robustness?.robustness_score == null ? '—' : `${formatNumber(risk.robustness.robustness_score, 0)}/100`)}${kpi('Economia · P10', summary.p10_saving_pct == null ? '—' : formatPct(summary.p10_saving_pct))}${kpi('Economia · mediana', summary.median_saving_pct == null ? '—' : formatPct(summary.median_saving_pct))}</div>`;
+  const kpis = `<div class="ni-workspace-kpis">${kpi('Probabilidade de economia', summary.probability_saving_positive == null ? '—' : formatPct(summary.probability_saving_positive * 100))}${kpi('Economia · P10', summary.p10_saving_pct == null ? '—' : formatPct(summary.p10_saving_pct))}${kpi('Economia · mediana', summary.median_saving_pct == null ? '—' : formatPct(summary.median_saving_pct))}${kpi('Economia · P90', summary.p90_saving_pct == null ? '—' : formatPct(summary.p90_saving_pct))}</div>`;
   const stressTable = advanced
     ? table(
-        ['Caso', 'Custo total', 'Economia', 'Estado', 'Uso'],
+        ['Caso', 'Custo total', 'Economia', 'Estado'],
         stress.map(
           (row) =>
-            `<tr><td>${escapeHtml(row.case_name || '—')}</td><td>${row.total_with_tax == null ? '—' : escapeHtml(formatBRL(row.total_with_tax, true))}</td><td>${row.saving_pct == null ? '—' : escapeHtml(formatPct(row.saving_pct))}</td><td>${escapeHtml(businessLabel(row.status))}</td><td>${escapeHtml(businessLabel(row.decision_use || row.data_quality_status))}</td></tr>`
+            `<tr><td>${escapeHtml(row.case_name || '—')}</td><td>${row.total_with_tax == null ? '—' : escapeHtml(formatBRL(row.total_with_tax, true))}</td><td>${row.saving_pct == null ? '—' : escapeHtml(formatPct(row.saving_pct))}</td><td>${escapeHtml(businessLabel(row.status))}</td></tr>`
         ),
         'Resultados de estresse indisponíveis.'
       )
     : '';
   const metadata = advanced
-    ? `<details class="ni-workspace-secondary-analytics"><summary>Detalhes do cálculo</summary><dl class="ni-workspace-metadata"><div><dt>Iterações válidas</dt><dd>${escapeHtml(formatNumber(summary.iterations_valid ?? summary.iterations))}</dd></div><div><dt>Perfil</dt><dd>${escapeHtml(businessLabel(summary.profile || monteCarlo.config?.profile))}</dd></div><div><dt>Fonte da incerteza</dt><dd>${escapeHtml(businessLabel(monteCarlo.uncertainty_source || summary.uncertainty_source))}</dd></div><div><dt>Uso</dt><dd>${escapeHtml(businessLabel(monteCarlo.decision_use || summary.decision_use))}</dd></div></dl></details>`
+    ? `<details class="ni-workspace-secondary-analytics"><summary>Detalhes do cálculo</summary><dl class="ni-workspace-metadata"><div><dt>Iterações válidas</dt><dd>${escapeHtml(formatNumber(summary.iterations_valid ?? summary.iterations))}</dd></div><div><dt>Perfil</dt><dd>${escapeHtml(businessLabel(summary.profile || monteCarlo.config?.profile))}</dd></div><div><dt>Seed</dt><dd>${escapeHtml(formatNumber(summary.seed ?? monteCarlo.config?.seed))}</dd></div></dl></details>`
     : '';
   const summaryCharts = `<div class="ni-workspace-grid">${chart('Distribuição da economia', 'niRiskHistogramChart', 'Distribuição da economia simulada')}${chart('Principais fatores', 'niRiskDriversChart', 'Principais fatores de risco')}</div>`;
   const advancedCharts = advanced
@@ -449,5 +326,5 @@ export function renderRiskAnalysis(state, advanced = false) {
 export function renderResultsRisk(state, advanced = false) {
   const decision = selectDecision(state);
   const scenario = decision.scenario;
-  return `<section class="ni-workspace ni-workspace-page ni-results-risk" data-testid="page-results-risk"><header class="ni-page-heading"><h1>Resultados · Risco</h1>${scenario ? `<p>${escapeHtml(scenario.scenario_name || 'Cenário analisado')}</p>` : ''}</header>${sectionTabs('results', state.ui?.route)}${renderRiskAnalysis(state, advanced)}${advanced ? '' : '<a class="ni-button secondary" href="#/network/results/risk/advanced" data-route="#/network/results/risk/advanced">Ver análise detalhada</a>'}</section>`;
+  return `<section class="ni-workspace ni-workspace-page ni-results-risk" data-testid="page-results-risk"><header class="ni-page-heading"><h1>Risco operacional</h1>${scenario ? `<p>${escapeHtml(scenario.scenario_name || 'Cenário analisado')}</p>` : ''}</header>${resultsTabs(state)}${renderRiskAnalysis(state, advanced)}${advanced ? '' : '<a class="ni-button secondary" href="#/network/results/risk/advanced" data-route="#/network/results/risk/advanced">Ver análise detalhada</a>'}</section>`;
 }

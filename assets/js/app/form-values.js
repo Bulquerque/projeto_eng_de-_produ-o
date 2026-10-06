@@ -1,4 +1,4 @@
-import { resolveTaxModeForRegime } from '../core/tax-reform-config.js';
+import { resolveTaxModeForRegime, resolveTaxRegime } from '../core/tax-reform-config.js';
 
 function readFormValue(data, rawValues, name) {
   return Object.prototype.hasOwnProperty.call(rawValues, name) ? rawValues[name] : data.get(name);
@@ -14,6 +14,14 @@ function validationError(message) {
 }
 
 export function parseScenarioForm(data, checkedActiveCds, rawValues = {}) {
+  const requestedTaxMode = data.get('tax_mode');
+  const requestedTaxRegime = data.get('tax_regime');
+  const taxYear = Number(data.get('tax_year')) || null;
+  const taxRegime = resolveTaxRegime({
+    taxMode: requestedTaxMode,
+    taxRegime: requestedTaxRegime,
+    year: taxYear,
+  });
   return {
     scenario_name: String(readFormValue(data, rawValues, 'scenario_name') ?? 'Cenário manual'),
     active_cds: [...checkedActiveCds].map((input) => input.value),
@@ -21,9 +29,9 @@ export function parseScenarioForm(data, checkedActiveCds, rawValues = {}) {
     demand_multiplier: readFormNumber(data, rawValues, 'demand_multiplier', 1),
     inventory_days: readFormNumber(data, rawValues, 'inventory_days', 45),
     wacc: readFormNumber(data, rawValues, 'wacc', 0.15),
-    tax_mode: data.get('tax_mode') || resolveTaxModeForRegime(data.get('tax_regime') || 'current'),
-    tax_regime: data.get('tax_regime') || 'current',
-    tax_year: Number(data.get('tax_year')) || null,
+    tax_mode: requestedTaxMode || resolveTaxModeForRegime(taxRegime),
+    tax_regime: taxRegime,
+    tax_year: taxYear,
     reallocation_rule: data.get('reallocation_rule') || 'nearest_available_cd',
   };
 }

@@ -65,7 +65,7 @@ def test_public_navigation_uses_the_network_workspace():
         shell = page.locator('#networkAppRoot')
         shell.wait_for(state='visible', timeout=10000)
         assert page.locator('#niCompanySelect').input_value() == 'empresa_mock'
-        assert 'MOCK' in page.locator('#niCompanyBadge').inner_text()
+        assert page.locator('#niCompanyBadge').count() == 0
         assert page.locator('#networkPage').get_attribute('data-route-current') == '#/network/overview/summary'
 
         for route, section, test_id in routes:

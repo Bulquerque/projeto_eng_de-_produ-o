@@ -46,22 +46,16 @@ export function sectionTabs(section, currentPath) {
         ['Custos', '#/network/overview/costs'],
         ['Tributário', '#/network/overview/tax'],
       ],
-      scenarios: [
-        ['Construir', '#/network/scenarios/build'],
-        ['Resultado', '#/network/scenarios/result'],
-        ['Comparar', '#/network/scenarios/compare'],
-        ['Risco & sensibilidade', '#/network/scenarios/risk'],
-      ],
+      scenarios: [['Construir', '#/network/scenarios/build']],
       results: [
         ['Resumo', '#/network/results/summary'],
         ['Comparação', '#/network/results/comparison'],
-        ['Trade-offs', '#/network/results/tradeoffs'],
-        ['Risco', '#/network/results/risk'],
+        ['Risco e sensibilidade', '#/network/results/risk'],
       ],
       optimizer: [
         ['Configurar', '#/network/optimizer/configure'],
-        ['Resultados', '#/network/optimizer/results'],
-        ['Trade-offs', '#/network/optimizer/tradeoffs'],
+        ['Ranking', '#/network/optimizer/results'],
+        ['Custo × pontuação', '#/network/optimizer/tradeoffs'],
       ],
       trust: [
         ['Visão geral', '#/network/trust/overview'],

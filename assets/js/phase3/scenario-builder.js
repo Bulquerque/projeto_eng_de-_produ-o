@@ -42,12 +42,13 @@ export function buildScenarioFromForm({
   const baseCds = base.active_cds || [];
   const requested = unique(formValues.active_cds || baseCds);
   const scenarioName = sanitizeScenarioName(formValues.scenario_name);
-  const taxMode = String(formValues.tax_mode || 'current');
+  const requestedTaxMode = String(formValues.tax_mode ?? '').trim();
   const taxRegime = resolveTaxRegime({
-    taxMode,
+    taxMode: requestedTaxMode,
     taxRegime: formValues.tax_regime,
     year: formValues.tax_year,
   });
+  const taxMode = requestedTaxMode || resolveTaxModeForRegime(taxRegime);
   const changes = {
     active_cds: requested,
     closed_cds: deriveClosedCds(baseCds, requested),

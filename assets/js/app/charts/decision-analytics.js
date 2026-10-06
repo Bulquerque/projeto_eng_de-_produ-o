@@ -1,6 +1,5 @@
 import { renderBarChart, renderScatterChart } from '../../core/chart-renderer.js';
 import { calculateSaving } from '../../core/model-configuration.js';
-import { buildTradeoffFrontier } from '../../phase4/tradeoff-frontier.js';
 import {
   selectActiveScenario,
   selectBaseline,
@@ -178,55 +177,47 @@ function renderOptimizer(state) {
       .filter((scenario) => scenario.company_id === companyId)
       .map((scenario) => [scenario.scenario_id, scenario])
   );
-  const candidates = sourceCandidates.map((candidate) => {
-    const scenario = scenarioById.get(candidate.scenario_id);
-    const scenarioResult =
-      scenario?.company_id === companyId && scenario.result?.company_id === companyId
-        ? scenario.result
-        : scenario?.company_id === companyId && scenario.result?.company_id == null
+  const candidates = sourceCandidates
+    .filter((candidate) => !candidate.company_id || candidate.company_id === companyId)
+    .map((candidate) => {
+      const scenario = scenarioById.get(candidate.scenario_id);
+      const scenarioResult =
+        scenario?.company_id === companyId && scenario.result?.company_id === companyId
           ? scenario.result
-          : null;
-    return {
-      ...candidate,
-      result: finite(candidate.result?.total_with_tax) != null ? candidate.result : scenarioResult,
-      quality:
-        finite(candidate.quality?.quality_score) != null ? candidate.quality : scenario?.quality,
-    };
-  });
-  const hasQuality = candidates.some((item) => finite(item.quality?.quality_score) != null);
+          : scenario?.company_id === companyId && scenario.result?.company_id == null
+            ? scenario.result
+            : null;
+      return {
+        ...candidate,
+        result:
+          finite(candidate.result?.total_with_tax) != null ? candidate.result : scenarioResult,
+        quality:
+          finite(candidate.quality?.quality_score) != null ? candidate.quality : scenario?.quality,
+      };
+    });
   const points = candidates
     .map((item) => ({
       x: finite(item.result?.total_with_tax),
-      y: hasQuality ? finite(item.quality?.quality_score) : finite(item.final_score),
+      y: finite(item.final_score),
       id: item.scenario_id,
       label: item.scenario_name || item.scenario_id,
     }))
     .filter((point) => point.x != null && point.y != null);
   if (!points.length) return;
 
-  const frontierIds = new Set();
-  if (hasQuality) {
-    const frontier = buildTradeoffFrontier({
-      companyId: state.context?.company_id,
-      scenarioRecords: candidates
-        .filter(
-          (item) =>
-            finite(item.result?.total_with_tax) != null &&
-            finite(item.quality?.quality_score) != null
-        )
-        .map((item) => ({ result: item.result, quality: item.quality })),
-      scoredScenarios: candidates,
-    });
-    frontier.frontier_points
-      .filter((point) => point.is_frontier_candidate)
-      .forEach((point) => frontierIds.add(point.scenario_id));
-  }
-  const frontierPoints = points.filter((point) => frontierIds.has(point.id));
+  // Use the same score as the ranking: minimize cost and maximize final score.
+  const frontierPoints = points.filter(
+    (point) =>
+      !points.some(
+        (other) =>
+          other.x <= point.x && other.y >= point.y && (other.x < point.x || other.y > point.y)
+      )
+  );
   renderScatterChart('niDecisionOptimizerFrontierChart', {
-    title: hasQuality ? 'Custo total × score de qualidade' : 'Custo total × score final',
+    title: 'Custo total × pontuação',
     datasets: [
       {
-        label: hasQuality ? 'Qualidade do cenário' : 'Score final do ranking',
+        label: 'Pontuação do ranking',
         data: points.map(({ x, y, label, id }) => ({ x, y, label, id })),
         backgroundColor: '#0c7878',
         borderColor: '#0c7878',
@@ -243,7 +234,7 @@ function renderOptimizer(state) {
         : []),
     ],
     xLabel: 'Custo total com tributos (R$)',
-    yLabel: hasQuality ? 'Qualidade (0–100)' : 'Score final',
+    yLabel: 'Pontuação do ranking',
     xFormat: 'money',
     yFormat: 'number',
     onActivate(point) {
