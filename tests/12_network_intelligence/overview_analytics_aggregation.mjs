@@ -201,9 +201,11 @@ const taxState = {
   data: {
     baseline: {
       company_id: 'empresa_mock',
+      costs: { costs: { tax_impact: 44000 } },
       tax_results: {
         tax_results: {
           tax_regime: 'current',
+          total_tax_impact: 46000,
           explanation: { unexpected: 'must not stringify as an object' },
           tax_period_contract: {
             available_periods: [
@@ -218,6 +220,8 @@ const taxState = {
 const taxHtml = renderOverviewTax(taxState);
 assert.match(taxHtml, /Demonstração · empresa fictícia/);
 assert.match(taxHtml, /<span>Regime<\/span><strong>Atual<\/strong>/);
+assert.match(taxHtml, /R\$\s?44\.000/);
+assert.match(taxHtml, /id="niOverviewTaxImpactChart"/);
 assert.match(taxHtml, /<td>2026<\/td>/);
 assert.match(taxHtml, /70,0%/);
 assert.doesNotMatch(taxHtml, /\[object Object\]/);
@@ -226,6 +230,14 @@ taxState.data.baseline.company_id = 'empresa1';
 const mismatchedTaxHtml = renderOverviewTax(taxState);
 assert.match(mismatchedTaxHtml, /não correspondem à empresa ativa/i);
 assert.doesNotMatch(mismatchedTaxHtml, /niOverviewTaxCoverageChart/);
+assert.doesNotMatch(mismatchedTaxHtml, /niOverviewTaxImpactChart/);
+taxState.data.baseline.company_id = 'empresa_mock';
+taxState.data.baseline.costs.costs.tax_impact = null;
+const taxTotalFallbackHtml = renderOverviewTax(taxState);
+assert.match(taxTotalFallbackHtml, /R\$\s?46\.000/);
+taxState.data.baseline.tax_results.tax_results.total_tax_impact = null;
+const missingImpactHtml = renderOverviewTax(taxState);
+assert.match(missingImpactHtml, /Impacto tributário registrado[\s\S]*?—/);
 
 const missingCd = analytics.buildFlowCountByCd([
   { flow_type: 'cd_to_destination', destination: 'Loja sem CD' },

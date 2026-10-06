@@ -409,6 +409,59 @@ function renderTaxCoverageChart(tax) {
   );
 }
 
+function renderTaxImpactChart(state, baseline) {
+  const canvasId = 'niOverviewTaxImpactChart';
+  const selected = selectActiveScenario(state);
+  const baselineTax = baseline?.tax_results?.tax_results || {};
+  const baselineCosts = getCosts(baseline) || {};
+  const baselineValue =
+    finite(baselineCosts.tax_impact) ??
+    finite(baselineTax.tax_impact) ??
+    finite(baselineTax.total_tax_impact);
+  const scenarioResult =
+    state?.data?.scenario_result ||
+    (selected?.scenario_type === 'baseline' ? null : selected?.result);
+  const companyId = selectActiveCompany(state);
+  const scenarioMatchesCompany =
+    (!selected?.company_id || selected.company_id === companyId) &&
+    (!scenarioResult?.company_id || scenarioResult.company_id === companyId);
+  const scenarioCosts = getCosts(scenarioResult) || {};
+  const scenarioTax = scenarioResult?.tax_results?.tax_results || scenarioResult?.tax_results || {};
+  const scenarioValue =
+    selected && selected.scenario_type !== 'baseline' && scenarioMatchesCompany
+      ? (finite(scenarioCosts.tax_impact) ??
+        finite(scenarioTax.tax_impact) ??
+        finite(scenarioTax.total_tax_impact))
+      : null;
+  const rows = [
+    ...(baselineValue == null ? [] : [['Baseline', baselineValue]]),
+    ...(scenarioValue == null ? [] : [[selected?.scenario_name || 'Cenário ativo', scenarioValue]]),
+  ];
+  const available = rows.length > 0;
+  setCanvasVisible(canvasId, available);
+  if (available) {
+    renderBarChart(canvasId, {
+      title: 'Impacto tributário publicado',
+      labels: rows.map(([label]) => label),
+      datasets: [{ label: 'R$', data: rows.map(([, value]) => value), backgroundColor: '#0c7878' }],
+      xFormat: 'money',
+      yFormat: 'money',
+      indexAxis: 'y',
+    });
+  }
+  chartCaption(
+    canvasId,
+    available
+      ? 'Impacto tributário registrado no baseline e no cenário ativo.'
+      : 'Sem valor tributário publicado no baseline ou no cenário ativo.',
+    rows.length === 2
+      ? 'Baseline × cenário'
+      : rows.length === 1
+        ? `${rows[0][0]} · R$`
+        : 'Sem valor publicado'
+  );
+}
+
 function renderFlowCountByCd(state, baseline) {
   const flows = Array.isArray(baseline?.flows) ? baseline.flows : [];
   const result = buildFlowCountByCd(flows);
@@ -451,9 +504,10 @@ export function renderOverviewAnalytics(state) {
     'niFlowCountByCdChart',
   ];
   const hasTaxCanvas = Boolean(document.getElementById('niOverviewTaxCoverageChart'));
+  const hasTaxImpactCanvas = Boolean(document.getElementById('niOverviewTaxImpactChart'));
   const hasCostCanvases = costChartIds.some((id) => document.getElementById(id));
   const hasNetworkCanvases = networkChartIds.some((id) => document.getElementById(id));
-  if (!hasCostCanvases && !hasNetworkCanvases && !hasTaxCanvas) return;
+  if (!hasCostCanvases && !hasNetworkCanvases && !hasTaxCanvas && !hasTaxImpactCanvas) return;
   const baseline = selectBaseline(state);
   if (!baseline) return;
   if (hasCostCanvases) renderCostCharts(state, baseline);
@@ -462,16 +516,19 @@ export function renderOverviewAnalytics(state) {
     renderCdDistributionCost(state, baseline);
     renderFlowCountByCd(state, baseline);
   }
-  if (hasTaxCanvas) {
+  if (hasTaxCanvas || hasTaxImpactCanvas) {
     if (!baselineBelongsToActiveCompany(state, baseline)) {
-      setCanvasVisible('niOverviewTaxCoverageChart', false);
-      chartCaption(
-        'niOverviewTaxCoverageChart',
-        'Baseline pertence a outra empresa. Recarregue a empresa ativa para consultar seus dados fiscais.',
-        'Empresa ativa indisponível'
-      );
+      for (const canvasId of ['niOverviewTaxCoverageChart', 'niOverviewTaxImpactChart']) {
+        setCanvasVisible(canvasId, false);
+        chartCaption(
+          canvasId,
+          'Baseline pertence a outra empresa. Recarregue a empresa ativa para consultar seus dados fiscais.',
+          'Empresa ativa indisponível'
+        );
+      }
     } else {
-      renderTaxCoverageChart(baseline?.tax_results?.tax_results || {});
+      if (hasTaxCanvas) renderTaxCoverageChart(baseline?.tax_results?.tax_results || {});
+      if (hasTaxImpactCanvas) renderTaxImpactChart(state, baseline);
       const prefix =
         state?.context?.provider_kind === 'mock' || selectActiveCompany(state) === 'empresa_mock'
           ? 'Demonstração · empresa fictícia.'

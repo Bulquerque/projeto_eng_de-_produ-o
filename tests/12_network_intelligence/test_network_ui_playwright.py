@@ -754,6 +754,14 @@ def test_operational_dashboard_and_disclosed_configuration():
             )
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
 
+            page.goto(base + '#/network/overview/tax', wait_until='networkidle')
+            page.locator('#niOverviewTaxImpactChart').wait_for(state='visible')
+            tax_data = page.locator('#niOverviewTaxImpactChart').locator('..').locator('.vg-chart-data')
+            tax_data.locator('summary').click()
+            assert tax_data.locator('tbody tr').count() == 2
+            assert '46.000' in tax_data.inner_text()
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
+
             page.goto(base + '#/network/scenarios/build', wait_until='networkidle')
             assert page.locator('#networkPage .ni-section-tabs').count() == 0
             assert page.locator('#niScenarioForm details[open]').count() == 0
@@ -786,6 +794,9 @@ def test_operational_dashboard_and_disclosed_configuration():
             page.locator('[data-testid="page-results-summary"]').wait_for(state='visible')
             assert page.locator('#networkPage [data-testid="optimizer-ranking"]').count() == 0
             assert page.locator('#networkPage [data-route="#/network/results/tradeoffs"]').count() == 0
+            page.wait_for_function(
+                "() => { const impact = document.querySelector('.ni-results-impact'); return impact && getComputedStyle(impact).display === 'grid'; }"
+            )
             impact = page.locator('.ni-results-impact')
             assert impact.evaluate('el => getComputedStyle(el).display') == 'grid'
             assert page.locator('#niDecisionComponentDeltaChart').is_visible()
