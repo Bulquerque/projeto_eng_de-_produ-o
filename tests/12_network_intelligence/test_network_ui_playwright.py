@@ -118,6 +118,22 @@ def test_network_ui_mock_flow():
         assert not any(f'/assets/js/phase{phase}/main.js' in url for phase in range(1, 6) for url in request_urls)
         assert not any('/data/empresa' in url for url in request_urls)
 
+        # The fiscal context in the top selector must open the same draft
+        # surface as a regular scenario and must not leave overview charts
+        # showing the previous scenario under a different tax year.
+        page.locator('[data-testid="scenario-selector"]').select_option('tax-year:2027')
+        page.wait_for_function("location.hash === '#/network/scenarios/build'")
+        page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible')
+        assert page.locator('[data-testid="scenario-selector"]').input_value() == 'tax-year:2027'
+        assert page.locator('input[name="tax_year"]').input_value() == '2027'
+        assert 'Alterações pendentes' in page.locator('[data-testid="scenario-draft-status"]').inner_text()
+        page.locator('[data-testid="scenario-run"]').click()
+        page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=10000)
+        assert page.locator('[data-testid="scenario-selector"]').input_value() == 'tax-year:2027'
+        page.evaluate("window.location.hash = '#/network/overview/tax'")
+        page.locator('[data-testid="page-overview-tax"]').wait_for(state='visible')
+        assert 'ano fiscal 2027' in page.locator('#networkPage').inner_text()
+
         page.locator('a[data-route="#/network/scenarios/build"]').first.click()
         page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible')
         assert page.locator('[data-testid="scenario-library"]').is_visible()
@@ -387,6 +403,7 @@ def test_network_ui_parity_extensions():
         assert page.locator('#niDistanceHistogramChart').count() == 1
         page.goto(f'{base}#/network/overview/tax', wait_until='networkidle')
         page.locator('[data-testid="tax-periods-panel"]').wait_for(state='visible')
+        page.locator('#niOverviewTaxCoverageChart').wait_for(state='visible')
 
         page.goto(f'{base}#/network/optimizer/configure', wait_until='networkidle')
         page.locator('[data-testid="page-optimizer-configure"]').wait_for(state='visible')

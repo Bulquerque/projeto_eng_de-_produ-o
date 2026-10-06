@@ -30,7 +30,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
         <div class="network-product"><strong>Network Intelligence</strong></div>
         <div class="network-context">
           <label><span class="ni-workspace-sr-only">Empresa</span><select id="niCompanySelect" data-testid="company-selector" aria-label="Selecionar empresa">${companies}</select></label>
-          <label><span class="ni-workspace-sr-only">Cenário</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário"><option value="">Baseline</option></select></label>
+          <label><span class="ni-workspace-sr-only">Cenário ou ano fiscal</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário ou ano fiscal"><option value="">Baseline</option></select></label>
         </div>
         <div class="network-topbar-actions">
           <button id="niLockButton" type="button" class="ni-button secondary" data-action="lock-crypto" aria-label="Bloquear sessão protegida" hidden>Bloquear dados</button>
@@ -97,14 +97,13 @@ export function updateGlobalContext(root, state) {
     const taxOptions = taxYearOptions()
       .map((year) => `<option value="tax-year:${year}">Ano fiscal · ${year}</option>`)
       .join('');
-    scenarioSelect.innerHTML = `<option value="">Baseline</option>${taxOptions}${[
-      ...scenarios.values(),
-    ]
+    const scenarioOptions = [...scenarios.values()]
       .map(
         (scenario) =>
           `<option value="${escapeHtml(scenario.scenario_id)}">${escapeHtml(scenario.scenario_name || scenario.scenario_id)}</option>`
       )
-      .join('')}`;
+      .join('');
+    scenarioSelect.innerHTML = `<option value="">Baseline</option>${taxOptions ? `<optgroup label="Ano fiscal">${taxOptions}</optgroup>` : ''}<optgroup label="Cenários">${scenarioOptions}</optgroup>`;
     const draftYear = state.ui.scenario_draft?.changes?.tax_year;
     scenarioSelect.value = draftYear ? `tax-year:${draftYear}` : selected;
   }

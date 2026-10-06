@@ -38,6 +38,15 @@ assert.equal(
   baselineEnvelope.baseline.tax_results.tax_results.tax_source_label,
   'Parâmetros tributários sintéticos demonstrativos'
 );
+assert.equal(
+  baselineEnvelope.baseline.tax_results.tax_results.tax_period_contract.available_periods.length,
+  8
+);
+assert.equal(
+  baselineEnvelope.baseline.tax_results.tax_results.tax_period_contract.available_periods[1]
+    .reform_tax_weight,
+  0.28
+);
 const baselineRun = await provider.runScenario({ scenarioId: 'mock_baseline' });
 assert.equal(baselineRun.result.simulation_status, 'success');
 assert.equal(baselineRun.result.decision_use, 'demo_only');
@@ -47,6 +56,43 @@ assert.equal(provider.fixtures.baseline.costs.costs.tax_impact, 46000);
 assert.equal(provider.fixtures.baseline.costs.costs.total_with_tax, 336000);
 assert.equal(baselineRun.result.costs.tax_impact, 46000);
 assert.equal(baselineRun.result.total_with_tax, 336000);
+const demoFlows = provider.fixtures.baseline.flows;
+assert.equal(demoFlows.length, 10);
+assert.equal(new Set(demoFlows.map((flow) => flow.flow_id)).size, demoFlows.length);
+assert.equal(
+  demoFlows.reduce((total, flow) => total + flow.annual_revenue, 0),
+  provider.fixtures.baseline.flow_summary.total_annual_revenue
+);
+for (const flow of demoFlows) {
+  assert.equal(flow.annual_revenue, flow.annual_weight_kg * 600);
+  assert.equal(flow.uf, flow.destination_uf);
+  assert.ok(flow.origin.includes('·') && flow.destination.includes('·'));
+}
+for (const scenarioId of [
+  'mock_baseline',
+  'mock_consolidation',
+  'mock_regional_balance',
+  'mock_service_resilience',
+]) {
+  const fixture = provider.fixtures.scenarios.scenarios.find(
+    (scenario) => scenario.scenario_id === scenarioId
+  );
+  const calculated = await provider.runScenario({ scenarioId });
+  for (const key of [
+    'transfer_cost',
+    'distribution_cost',
+    'storage_cost',
+    'inventory_cost',
+    'tax_impact',
+    'total_logistics_cost',
+    'total_with_tax',
+  ]) {
+    assert.ok(
+      Math.abs(fixture.result.costs[key] - calculated.result.costs[key]) < 1e-6,
+      `${scenarioId}.${key} must match the scenario engine`
+    );
+  }
+}
 assert.equal(baselineRun.result.tax_results.tax_coverage.eligible_flow_count, 10);
 assert.equal(baselineRun.result.tax_results.tax_coverage.complete_fiscal_coverage_ratio, 0);
 assert.equal(baselineRun.result.tax_results.tax_coverage.coverage_limited, true);

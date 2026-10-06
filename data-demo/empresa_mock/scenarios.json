@@ -37,11 +37,19 @@
           "inventory_cost": 31000,
           "tax_impact": 46000
         },
-        "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
+        "data_quality": {
+          "status": "synthetic_fixture",
+          "decision_use": "demo_only"
+        },
         "evidence": {
           "evidence_score": 100,
           "evidence_status": "synthetic_fixture",
-          "components": [{ "id": "demo_source", "status": "synthetic" }],
+          "components": [
+            {
+              "id": "demo_source",
+              "status": "synthetic"
+            }
+          ],
           "blockers": ["Resultado demonstrativo; não é evidência empresarial."]
         }
       }
@@ -66,21 +74,29 @@
         "company_id": "empresa_mock",
         "simulation_status": "success",
         "calculation_status": "success",
-        "total_with_tax": 312500,
+        "total_with_tax": 313133.3333333333,
         "costs": {
-          "total_with_tax": 312500,
-          "total_logistics_cost": 270000,
-          "transfer_cost": 105000,
-          "distribution_cost": 79000,
-          "storage_cost": 51000,
-          "inventory_cost": 35000,
-          "tax_impact": 42500
+          "total_with_tax": 313133.3333333333,
+          "total_logistics_cost": 267133.3333333333,
+          "transfer_cost": 113280,
+          "distribution_cost": 83520,
+          "storage_cost": 41400,
+          "inventory_cost": 28933.333333333332,
+          "tax_impact": 46000
         },
-        "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
+        "data_quality": {
+          "status": "synthetic_fixture",
+          "decision_use": "demo_only"
+        },
         "evidence": {
           "evidence_score": 100,
           "evidence_status": "synthetic_fixture",
-          "components": [{ "id": "demo_source", "status": "synthetic" }],
+          "components": [
+            {
+              "id": "demo_source",
+              "status": "synthetic"
+            }
+          ],
           "blockers": ["Resultado demonstrativo; não é evidência empresarial."]
         }
       }
@@ -105,21 +121,29 @@
         "company_id": "empresa_mock",
         "simulation_status": "success",
         "calculation_status": "success",
-        "total_with_tax": 304800,
+        "total_with_tax": 316052.6666666667,
         "costs": {
-          "total_with_tax": 304800,
-          "total_logistics_cost": 263400,
-          "transfer_cost": 101500,
-          "distribution_cost": 77000,
-          "storage_cost": 49000,
-          "inventory_cost": 35900,
-          "tax_impact": 41400
+          "total_with_tax": 316052.6666666667,
+          "total_logistics_cost": 269132.6666666667,
+          "transfer_cost": 110731.2,
+          "distribution_cost": 81640.8,
+          "storage_cost": 48654,
+          "inventory_cost": 28106.666666666664,
+          "tax_impact": 46920
         },
-        "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
+        "data_quality": {
+          "status": "synthetic_fixture",
+          "decision_use": "demo_only"
+        },
         "evidence": {
           "evidence_score": 100,
           "evidence_status": "synthetic_fixture",
-          "components": [{ "id": "demo_source", "status": "synthetic" }],
+          "components": [
+            {
+              "id": "demo_source",
+              "status": "synthetic"
+            }
+          ],
           "blockers": ["Resultado demonstrativo; não é evidência empresarial."]
         }
       }
@@ -144,21 +168,29 @@
         "company_id": "empresa_mock",
         "simulation_status": "success",
         "calculation_status": "success",
-        "total_with_tax": 351600,
+        "total_with_tax": 375456,
         "costs": {
-          "total_with_tax": 351600,
-          "total_logistics_cost": 303200,
-          "transfer_cost": 128000,
-          "distribution_cost": 91000,
-          "storage_cost": 50000,
-          "inventory_cost": 34200,
-          "tax_impact": 48400
+          "total_with_tax": 375456,
+          "total_logistics_cost": 325776,
+          "transfer_cost": 132537.6,
+          "distribution_cost": 97718.40000000001,
+          "storage_cost": 58320.00000000001,
+          "inventory_cost": 37200,
+          "tax_impact": 49680
         },
-        "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
+        "data_quality": {
+          "status": "synthetic_fixture",
+          "decision_use": "demo_only"
+        },
         "evidence": {
           "evidence_score": 100,
           "evidence_status": "synthetic_fixture",
-          "components": [{ "id": "demo_source", "status": "synthetic" }],
+          "components": [
+            {
+              "id": "demo_source",
+              "status": "synthetic"
+            }
+          ],
           "blockers": ["Resultado demonstrativo; não é evidência empresarial."]
         }
       }
@@ -193,11 +225,19 @@
           "inventory_cost": 35000,
           "tax_impact": 49900
         },
-        "data_quality": { "status": "synthetic_fixture", "decision_use": "demo_only" },
+        "data_quality": {
+          "status": "synthetic_fixture",
+          "decision_use": "demo_only"
+        },
         "evidence": {
           "evidence_score": 100,
           "evidence_status": "synthetic_fixture",
-          "components": [{ "id": "demo_source", "status": "synthetic" }],
+          "components": [
+            {
+              "id": "demo_source",
+              "status": "synthetic"
+            }
+          ],
           "blockers": ["Resultado demonstrativo; não é evidência empresarial."]
         }
       }

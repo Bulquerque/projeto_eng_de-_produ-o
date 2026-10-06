@@ -93,6 +93,10 @@ export function createScenarioActions({ root, store, getProvider, operationGuard
       nextState.context.selected_scenario_id = scenario.scenario_id;
       clearScenarioResults(nextState);
     });
+    // A fiscal year selected in the global context is a draft change. Move to
+    // the same build surface used by a regular scenario selection so charts
+    // cannot continue showing the previous result under a new year.
+    navigate('#/network/scenarios/build');
     render();
     showToast(root, `Rascunho fiscal ${year} atualizado.`, 'success');
   }
@@ -236,10 +240,11 @@ export function createScenarioActions({ root, store, getProvider, operationGuard
     const action = beginAction('scenario', activeProvider, companyId);
     if (!action) return;
     const currentState = store.getState();
+    const hasFormValues = Object.keys(formValues || {}).length > 0;
     const effectiveScenarioId =
       scenarioId ||
       inputScenario?.scenario_id ||
-      (currentState.context.provider_kind === 'mock'
+      (!hasFormValues && currentState.context.provider_kind === 'mock'
         ? currentState.ui.scenario_draft?.scenario_id
         : null);
     store.update((state) => {
