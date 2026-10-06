@@ -132,6 +132,20 @@ function formatOptionalNumber(value, digits = 0) {
   return value == null ? '—' : escapeHtml(formatNumber(value, digits));
 }
 
+function optimizerLabel(value) {
+  const labels = {
+    success: 'Concluído',
+    success_with_limited_space: 'Concluído · busca limitada',
+    exact_declared_space: 'Espaço declarado integralmente',
+    conditional_declared_catalog: 'Catálogo declarado sob condições',
+    exploratory_only: 'Exploratório',
+    low: 'Baixo',
+    medium: 'Médio',
+    high: 'Alto',
+  };
+  return labels[value] || value || '—';
+}
+
 function enrichOptimizerCandidates(state, candidates = []) {
   const companyId = state.context?.company_id;
   const scenarioById = new Map(
@@ -181,7 +195,7 @@ function renderAppliedOptimizerConfig(state, optimizer) {
         ? null
         : `${constraints.min_active_cds ?? '—'} a ${constraints.max_active_cds ?? '—'}`,
     ],
-    ['Risco máximo', constraints.max_risk_level],
+    ['Risco máximo', optimizerLabel(constraints.max_risk_level)],
   ].filter(([, value]) => value != null && value !== '');
   if (!details.length) return '';
   return `<section class="ni-workspace-detail-card ni-workspace-config-summary" aria-label="Configuração aplicada"><p class="ni-eyebrow">Contexto da busca</p><dl class="ni-workspace-detail-metrics">${details
@@ -299,7 +313,7 @@ export function renderOptimizerResults(state) {
   const preferredScenario = rankedScenarios[0] || null;
   const rows = rankedScenarios.map(
     (row, index) =>
-      `<tr><td><span class="ni-workspace-rank">${formatNumber(index + 1)}</span> ${escapeHtml(row.scenario_id)}</td><td>${escapeHtml(formatBRL(row.result?.total_with_tax))}</td><td>${formatOptionalNumber(row.final_score, 2)}</td><td>${escapeHtml(row.quality?.risk_level || '—')}</td></tr>`
+      `<tr><td><span class="ni-workspace-rank">${formatNumber(index + 1)}</span> ${escapeHtml(row.scenario_id)}</td><td>${escapeHtml(formatBRL(row.result?.total_with_tax))}</td><td>${formatOptionalNumber(row.final_score, 2)}</td><td>${escapeHtml(optimizerLabel(row.quality?.risk_level))}</td></tr>`
   );
   const candidates = enrichOptimizerCandidates(
     state,
@@ -317,13 +331,13 @@ export function renderOptimizerResults(state) {
     : '';
 
   const preferredSummary = preferredScenario
-    ? `<section class="ni-workspace-best" aria-labelledby="niOptimizerBestTitle"><div class="ni-workspace-best-main"><p class="ni-eyebrow">Alternativa mais bem classificada</p><h2 id="niOptimizerBestTitle">${escapeHtml(preferredScenario.scenario_name || preferredScenario.scenario_id || 'Cenário')}</h2><span class="ni-workspace-status">${escapeHtml(preferredScenario.scenario_id || '—')}</span></div><dl class="ni-workspace-best-metrics"><div><dt>Custo total</dt><dd>${escapeHtml(formatBRL(preferredScenario.result?.total_with_tax))}</dd></div><div><dt>Pontuação</dt><dd>${formatOptionalNumber(preferredScenario.final_score, 2)}</dd></div><div><dt>CDs ativos</dt><dd>${formatOptionalNumber(getScenarioCdCount(preferredScenario))}</dd></div><div><dt>Risco</dt><dd>${escapeHtml(preferredScenario.quality?.risk_level || '—')}</dd></div></dl></section>`
+    ? `<section class="ni-workspace-best" aria-labelledby="niOptimizerBestTitle"><div class="ni-workspace-best-main"><p class="ni-eyebrow">Alternativa mais bem classificada</p><h2 id="niOptimizerBestTitle">${escapeHtml(preferredScenario.scenario_name || preferredScenario.scenario_id || 'Cenário')}</h2><span class="ni-workspace-status">${escapeHtml(preferredScenario.scenario_id || '—')}</span></div><dl class="ni-workspace-best-metrics"><div><dt>Custo total</dt><dd>${escapeHtml(formatBRL(preferredScenario.result?.total_with_tax))}</dd></div><div><dt>Pontuação</dt><dd>${formatOptionalNumber(preferredScenario.final_score, 2)}</dd></div><div><dt>CDs ativos</dt><dd>${formatOptionalNumber(getScenarioCdCount(preferredScenario))}</dd></div><div><dt>Risco</dt><dd>${escapeHtml(optimizerLabel(preferredScenario.quality?.risk_level))}</dd></div></dl></section>`
     : `<section class="ni-workspace-best ni-workspace-best-empty"><p class="ni-eyebrow">Alternativa mais bem classificada</p><h2>Nenhum cenário elegível</h2><p>Revise as restrições e os dados de entrada antes de executar uma nova busca.</p></section>`;
-  const whyWinner = `<section class="ni-workspace-explanation"><p class="ni-eyebrow">Interpretação dos critérios</p><h2>Por que este resultado merece atenção</h2><div class="ni-workspace-reason-grid"><article><span class="ni-workspace-reason-index">01</span><strong>Critérios aplicados</strong><p>A classificação aplica o perfil e os pesos definidos para esta avaliação.</p></article><article><span class="ni-workspace-reason-index">02</span><strong>Cobertura observada</strong><p>${log.coverage_ratio == null ? 'A cobertura não foi informada pelo mecanismo de busca.' : `A avaliação informa cobertura de ${escapeHtml(formatPct(log.coverage_ratio * 100))}.`}</p></article><article><span class="ni-workspace-reason-index">03</span><strong>Escopo da evidência</strong><p>${escapeHtml(optimizer.result_scope || 'O escopo não foi informado pelo mecanismo de busca.')}</p></article></div></section>`;
+  const whyWinner = `<section class="ni-workspace-explanation"><p class="ni-eyebrow">Interpretação dos critérios</p><h2>Por que este resultado merece atenção</h2><div class="ni-workspace-reason-grid"><article><span class="ni-workspace-reason-index">01</span><strong>Critérios aplicados</strong><p>A classificação aplica o perfil e os pesos definidos para esta avaliação.</p></article><article><span class="ni-workspace-reason-index">02</span><strong>Cobertura observada</strong><p>${log.coverage_ratio == null ? 'A cobertura não foi informada pelo mecanismo de busca.' : `A avaliação informa cobertura de ${escapeHtml(formatPct(log.coverage_ratio * 100))}.`}</p></article><article><span class="ni-workspace-reason-index">03</span><strong>Escopo da evidência</strong><p>${escapeHtml(optimizerLabel(optimizer.result_scope) || 'O escopo não foi informado pelo mecanismo de busca.')}</p></article></div></section>`;
 
   const exactSearchValue =
     log.exact_search_space == null ? '—' : log.exact_search_space ? 'Sim' : 'Não';
-  return `<div class="ni-workspace ni-workspace-results"><div class="ni-page-heading ni-workspace-heading" data-testid="page-optimizer-results"><p class="ni-eyebrow">Avaliação de alternativas · Resultados</p><h1>Resultados da avaliação</h1><p>${escapeHtml(optimizer.result_scope || 'Compare as alternativas avaliadas e confirme os limites da busca.')}</p></div>${sectionTabs('optimizer', state.ui.route)}<div class="ni-workspace-status-strip">${kpi('Status da avaliação', optimizer.optimizer_status || '—')}${kpi('Cobertura', log.coverage_ratio == null ? '—' : formatPct(log.coverage_ratio * 100))}${kpi('Catálogo completo', exactSearchValue)}${kpi('Alternativas avaliadas', formatOptionalNumber(log.simulated_candidates))}</div>${renderAppliedOptimizerConfig(state, optimizer)}${preferredSummary}${whyWinner}<section class="ni-workspace-chart-card ni-workspace-ranking-chart"><h2>Score das melhores alternativas</h2><canvas id="niRankingChart" class="ni-chart" role="img" aria-label="Gráfico de pontuação das melhores alternativas avaliadas"></canvas></section><section class="ni-workspace-ranking" data-testid="optimizer-ranking"><div class="ni-workspace-section-heading"><div><p class="ni-eyebrow">Classificação · ${formatNumber(rankedScenarios.length)} ${rankedScenarios.length === 1 ? 'alternativa' : 'alternativas'}</p><h2>Cenários mais bem classificados</h2><p>Compare custos, pontuação e risco antes de encaminhar uma decisão.</p></div></div>${table(['Cenário', 'Custo total', 'Pontuação', 'Risco'], rows, 'Nenhum cenário elegível.')}</section>${manualSelection}<div class="ni-actions ni-workspace-actions"><a class="ni-button secondary" href="#/network/optimizer/tradeoffs" data-route="#/network/optimizer/tradeoffs">Explorar compromissos</a><a class="ni-button primary" href="#/network/trust/validation" data-route="#/network/trust/validation">Ver validação da decisão</a></div></div>`;
+  return `<div class="ni-workspace ni-workspace-results"><div class="ni-page-heading ni-workspace-heading" data-testid="page-optimizer-results"><p class="ni-eyebrow">Avaliação de alternativas · Resultados</p><h1>Resultados da avaliação</h1><p>${escapeHtml(optimizerLabel(optimizer.result_scope) || 'Compare as alternativas avaliadas e confirme os limites da busca.')}</p></div>${sectionTabs('optimizer', state.ui.route)}<div class="ni-workspace-status-strip">${kpi('Status da avaliação', optimizerLabel(optimizer.optimizer_status))}${kpi('Cobertura', log.coverage_ratio == null ? '—' : formatPct(log.coverage_ratio * 100))}${kpi('Catálogo completo', exactSearchValue)}${kpi('Alternativas avaliadas', formatOptionalNumber(log.simulated_candidates))}</div>${renderAppliedOptimizerConfig(state, optimizer)}${preferredSummary}${whyWinner}<section class="ni-workspace-chart-card ni-workspace-ranking-chart"><h2>Score das melhores alternativas</h2><canvas id="niRankingChart" class="ni-chart" role="img" aria-label="Gráfico de pontuação das melhores alternativas avaliadas"></canvas></section><section class="ni-workspace-ranking" data-testid="optimizer-ranking"><div class="ni-workspace-section-heading"><div><p class="ni-eyebrow">Classificação · ${formatNumber(rankedScenarios.length)} ${rankedScenarios.length === 1 ? 'alternativa' : 'alternativas'}</p><h2>Cenários mais bem classificados</h2><p>Compare custos, pontuação e risco antes de encaminhar uma decisão.</p></div></div>${table(['Cenário', 'Custo total', 'Pontuação', 'Risco'], rows, 'Nenhum cenário elegível.')}</section>${manualSelection}<div class="ni-actions ni-workspace-actions"><a class="ni-button secondary" href="#/network/optimizer/tradeoffs" data-route="#/network/optimizer/tradeoffs">Explorar compromissos</a><a class="ni-button primary" href="#/network/trust/validation" data-route="#/network/trust/validation">Ver validação da decisão</a></div></div>`;
 }
 
 export function renderOptimizerTradeoffs(state) {
@@ -339,11 +353,11 @@ export function renderOptimizerTradeoffs(state) {
   const preferredScenario = rankedScenarios[0] || null;
   const rows = rankedScenarios.map(
     (row) =>
-      `<tr><td>${escapeHtml(row.scenario_id)}</td><td>${escapeHtml(formatBRL(row.result?.total_with_tax))}</td><td>${formatOptionalNumber(row.final_score, 2)}</td><td>${escapeHtml(row.data_quality?.decision_use || '—')}</td></tr>`
+      `<tr><td>${escapeHtml(row.scenario_id)}</td><td>${escapeHtml(formatBRL(row.result?.total_with_tax))}</td><td>${formatOptionalNumber(row.final_score, 2)}</td><td>${escapeHtml(optimizerLabel(row.data_quality?.decision_use))}</td></tr>`
   );
   const activeCdCount = getScenarioCdCount(preferredScenario);
   const scenarioDetails = preferredScenario
-    ? `<aside class="ni-workspace-detail-card"><div class="ni-workspace-section-heading"><div><p class="ni-eyebrow">Cenário em destaque</p><h2>${escapeHtml(preferredScenario.scenario_name || preferredScenario.scenario_id || '—')}</h2></div><span class="ni-workspace-status">${escapeHtml(preferredScenario.scenario_id || '—')}</span></div><dl class="ni-workspace-detail-metrics"><div><dt>Custo total</dt><dd>${escapeHtml(formatBRL(preferredScenario.result?.total_with_tax))}</dd></div><div><dt>Qualidade</dt><dd>${preferredScenario.quality?.quality_score == null ? '—' : escapeHtml(formatNumber(preferredScenario.quality.quality_score, 1))}</dd></div><div><dt>Risco</dt><dd>${escapeHtml(preferredScenario.quality?.risk_level || '—')}</dd></div><div><dt>CDs ativos</dt><dd>${activeCdCount == null ? '—' : escapeHtml(formatNumber(activeCdCount))}</dd></div><div><dt>Uso dos dados</dt><dd>${escapeHtml(preferredScenario.data_quality?.decision_use || '—')}</dd></div></dl></aside>`
+    ? `<aside class="ni-workspace-detail-card"><div class="ni-workspace-section-heading"><div><p class="ni-eyebrow">Cenário em destaque</p><h2>${escapeHtml(preferredScenario.scenario_name || preferredScenario.scenario_id || '—')}</h2></div><span class="ni-workspace-status">${escapeHtml(preferredScenario.scenario_id || '—')}</span></div><dl class="ni-workspace-detail-metrics"><div><dt>Custo total</dt><dd>${escapeHtml(formatBRL(preferredScenario.result?.total_with_tax))}</dd></div><div><dt>Qualidade</dt><dd>${preferredScenario.quality?.quality_score == null ? '—' : escapeHtml(formatNumber(preferredScenario.quality.quality_score, 1))}</dd></div><div><dt>Risco</dt><dd>${escapeHtml(optimizerLabel(preferredScenario.quality?.risk_level))}</dd></div><div><dt>CDs ativos</dt><dd>${activeCdCount == null ? '—' : escapeHtml(formatNumber(activeCdCount))}</dd></div><div><dt>Uso dos dados</dt><dd>${escapeHtml(optimizerLabel(preferredScenario.data_quality?.decision_use))}</dd></div></dl></aside>`
     : `<aside class="ni-workspace-detail-card"><p class="ni-eyebrow">Cenário em destaque</p><h2>Sem cenário recomendado</h2><p>Não há uma alternativa classificada para detalhar.</p></aside>`;
 
   const hasQuality = candidates.some(

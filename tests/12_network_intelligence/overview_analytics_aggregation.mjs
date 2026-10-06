@@ -168,9 +168,11 @@ const taxState = {
 };
 const taxHtml = renderOverviewTax(taxState);
 assert.match(taxHtml, /Demonstração · empresa fictícia/);
+assert.match(taxHtml, /<span>Regime<\/span><strong>Atual<\/strong>/);
 assert.match(taxHtml, /<td>2026<\/td>/);
 assert.match(taxHtml, /70,0%/);
 assert.doesNotMatch(taxHtml, /\[object Object\]/);
+assert.equal(taxState.data.baseline.tax_results.tax_results.tax_regime, 'current');
 taxState.data.baseline.company_id = 'empresa1';
 const mismatchedTaxHtml = renderOverviewTax(taxState);
 assert.match(mismatchedTaxHtml, /não correspondem à empresa ativa/i);
