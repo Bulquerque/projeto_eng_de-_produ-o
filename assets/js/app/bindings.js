@@ -175,7 +175,7 @@ export function installBindings({ root, store, controller }) {
     if (store.getState().ui.loading) return;
     const scenarioId = event.target.value || null;
     if (scenarioId?.startsWith('tax-year:'))
-      controller.selectScenarioTaxYear(scenarioId.slice('tax-year:'.length));
+      void controller.selectScenarioTaxYear(scenarioId.slice('tax-year:'.length));
     else if (scenarioId) controller.loadScenarioDraft(scenarioId);
     else controller.resetScenarioDraft();
   });

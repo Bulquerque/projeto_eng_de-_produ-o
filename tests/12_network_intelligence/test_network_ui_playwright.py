@@ -118,21 +118,32 @@ def test_network_ui_mock_flow():
         assert not any(f'/assets/js/phase{phase}/main.js' in url for phase in range(1, 6) for url in request_urls)
         assert not any('/data/empresa' in url for url in request_urls)
 
-        # The fiscal context in the top selector must open the same draft
-        # surface as a regular scenario and must not leave overview charts
-        # showing the previous scenario under a different tax year.
+        # The global fiscal selector recalculates without leaving the analysis.
         page.locator('[data-testid="scenario-selector"]').select_option('tax-year:2027')
-        page.wait_for_function("location.hash === '#/network/scenarios/build'")
-        page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible')
+        page.locator('#networkLoadingOverlay').wait_for(state='hidden', timeout=20000)
+        page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
         assert page.locator('[data-testid="scenario-selector"]').input_value() == 'tax-year:2027'
-        assert page.locator('input[name="tax_year"]').input_value() == '2027'
-        assert 'Alterações pendentes' in page.locator('[data-testid="scenario-draft-status"]').inner_text()
-        page.locator('[data-testid="scenario-run"]').click()
-        page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=10000)
-        assert page.locator('[data-testid="scenario-selector"]').input_value() == 'tax-year:2027'
+        assert page.url.endswith('#/network/overview/summary')
         page.evaluate("window.location.hash = '#/network/overview/tax'")
         page.locator('[data-testid="page-overview-tax"]').wait_for(state='visible')
         assert 'ano fiscal 2027' in page.locator('#networkPage').inner_text()
+        impact_2027 = page.locator('.ni-kpi-grid strong').first.inner_text()
+        page.locator('[data-testid="scenario-selector"]').select_option('tax-year:2033')
+        page.locator('#networkLoadingOverlay').wait_for(state='hidden', timeout=20000)
+        assert page.url.endswith('#/network/overview/tax')
+        assert 'ano fiscal 2033' in page.locator('#networkPage').inner_text()
+        assert 'Reforma integral 2033' in page.locator('#networkPage').inner_text()
+        impact_2033 = page.locator('.ni-kpi-grid strong').first.inner_text()
+        assert impact_2033 != impact_2027
+        tax_table = page.locator('#niOverviewTaxImpactChart').locator('..').locator('.vg-chart-data')
+        tax_table.locator('summary').click()
+        chart_value = tax_table.locator('tbody tr').last.locator('td').inner_text()
+        chart_amount = float(chart_value.replace('R$', '').replace('.', '').replace(',', '.').strip())
+        card_amount = float(impact_2033.replace('R$', '').replace('.', '').replace(',', '.').strip())
+        assert abs(chart_amount - card_amount) <= 0.5
+        page.locator('[data-testid="scenario-selector"]').select_option('tax-year:2027')
+        page.locator('#networkLoadingOverlay').wait_for(state='hidden', timeout=20000)
+        assert page.locator('.ni-kpi-grid strong').first.inner_text() == impact_2027
 
         page.locator('a[data-route="#/network/scenarios/build"]').first.click()
         page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible')
