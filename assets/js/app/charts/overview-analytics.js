@@ -147,7 +147,7 @@ function renderCostCharts(state, baseline) {
       ([, key]) => finite(baseCosts[key]) - finite(activeCosts[key])
     );
     renderBarChart('niOverviewCostComparisonChart', {
-      title: `Economia (+) / aumento de custo (−) · ${selected.scenario_name || selected.scenario_id || 'cenário ativo'}`,
+      title: 'Economia ou aumento por componente',
       labels: COST_COMPONENTS.map(([label]) => label),
       datasets: [
         {

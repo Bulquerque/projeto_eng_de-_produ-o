@@ -112,6 +112,41 @@ def test_renderer_values_interactions_and_cleanup():
         page.set_viewport_size({'width': 390, 'height': 844})
         page.wait_for_timeout(100)
         assert page.locator('#signed').evaluate('c => c.width > 0')
+        page.evaluate("""() => {
+          window.testCharts.destroyAllCharts();
+          document.body.insertAdjacentHTML('beforeend', '<div id="chart-wrap" style="width:100%"><canvas id="comparison" style="display:block;width:100%;height:228px"></canvas></div>');
+          window.testCharts.renderBarChart('comparison', {
+            title:'Economia (+) / aumento de custo (−) · Consolidação demonstrativa',
+            labels:['Transferência','Distribuição','Armazenagem','Estoque','Tributos'],
+            datasets:[{label:'Baseline − cenário',data:[0,0,6300,0,0]}],
+            indexAxis:'y',xFormat:'money',yFormat:'money'
+          });
+        }""")
+        mobile_size = page.locator('#comparison').evaluate(
+            'c => ({width:c.width, rect:Math.round(c.getBoundingClientRect().width)})'
+        )
+        assert abs(mobile_size['width'] - mobile_size['rect']) <= 1, mobile_size
+        page.locator('#chart-wrap .vg-chart-data summary').click()
+        assert '6.300' in page.locator('#chart-wrap .vg-chart-data').inner_text()
+        page.add_style_tag(content='@media print { #comparison { width: 640px !important; } }')
+        page.emulate_media(media='print')
+        page.wait_for_function("""() => {
+          const canvas = document.querySelector('#comparison');
+          return canvas && Math.abs(canvas.width - canvas.getBoundingClientRect().width) <= 1;
+        }""")
+        print_size = page.locator('#comparison').evaluate(
+            'c => ({width:c.width, rect:Math.round(c.getBoundingClientRect().width)})'
+        )
+        assert print_size['width'] == 640, print_size
+        page.emulate_media(media='screen')
+        page.wait_for_function("""() => {
+          const canvas = document.querySelector('#comparison');
+          return canvas && Math.abs(canvas.width - canvas.getBoundingClientRect().width) <= 1;
+        }""")
+        screen_size = page.locator('#comparison').evaluate(
+            'c => ({width:c.width, rect:Math.round(c.getBoundingClientRect().width)})'
+        )
+        assert screen_size['width'] < print_size['width'], (screen_size, print_size)
         page.evaluate('window.testCharts.destroyAllCharts(); window.activatedScenario = null')
         page.locator('#signed').focus()
         page.keyboard.press('Enter')
