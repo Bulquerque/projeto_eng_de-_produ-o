@@ -31,17 +31,17 @@ assert '<script type="module" src="assets/js/app/main.js"></script>' in portal
 route_renderers = (ROOT / 'assets/js/app/route-renderers.js').read_text(encoding='utf-8')
 optimizer_routes = {
     "'/network/optimizer/configure'": 'renderOptimizerConfigure',
+    "'/network/optimizer/results'": 'renderOptimizerResults',
+    "'/network/optimizer/tradeoffs'": 'renderOptimizerTradeoffs',
     "'/network/results/summary'": 'renderResultsSummary',
     "'/network/results/tradeoffs'": 'renderResultsTradeoffs',
 }
 for route, renderer in optimizer_routes.items():
     assert route in route_renderers and renderer in route_renderers, (route, renderer)
 router = (ROOT / 'assets/js/app/router.js').read_text(encoding='utf-8')
-for alias in (
-    "'#/network/optimizer/results': '#/network/results/summary'",
-    "'#/network/optimizer/tradeoffs': '#/network/results/tradeoffs'",
-):
-    assert alias in router, alias
+for route in ('#/network/optimizer/results', '#/network/optimizer/tradeoffs'):
+    assert route in router.split('const ROUTE_ALIASES')[0], route
+    assert route not in router.split('const ROUTE_ALIASES')[1], route
 optimizer_pages = (ROOT / 'assets/js/app/pages/optimizer.js').read_text(encoding='utf-8')
 assert 'export function renderOptimizerConfigure(' in optimizer_pages
 results_pages = (ROOT / 'assets/js/app/pages/results.js').read_text(encoding='utf-8')

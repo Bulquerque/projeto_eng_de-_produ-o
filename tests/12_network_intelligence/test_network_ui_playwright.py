@@ -73,9 +73,16 @@ def test_network_ui_is_the_default_public_entrypoint():
             )
             == 'rgb(255, 255, 255)'
         )
-        assert page.locator('.network-nav-number').all_text_contents() == ['01', '02', '03', '04', '05']
+        assert page.locator('.network-nav-number').all_text_contents() == ['01', '02', '03', '04']
+        trust_shortcut = page.locator('.network-trust-shortcut')
+        assert trust_shortcut.inner_text() == 'Dados & confiança'
+        assert trust_shortcut.get_attribute('href') == '#/network/trust/overview'
         assert page.locator('.network-product strong').inner_text() == 'Network Intelligence'
-        assert page.locator('.network-product small').evaluate('node => node.textContent') == 'Decision Workspace'
+        assert page.locator('.network-product small').count() == 0
+        trust_shortcut.click()
+        page.wait_for_function("location.hash === '#/network/trust/overview'")
+        page.locator('.network-trust-shortcut.active').wait_for(state='visible')
+        assert page.locator('#networkPage').get_attribute('data-route-current') == '#/network/trust/overview'
         assert not any('/assets/js/phase' in url and '/main.js' in url for url in requested_urls)
         assert not page_errors, f'page_errors={page_errors}'
         browser.close()
@@ -177,7 +184,7 @@ def test_network_ui_mock_flow():
         page.locator('a[data-route="#/network/optimizer/configure"]').first.click()
         page.locator('[data-testid="page-optimizer-configure"]').wait_for(state='visible')
         page.locator('[data-testid="optimizer-run"]').click()
-        page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=20000)
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=20000)
         page.evaluate("window.location.hash = '#/network/trust/validation'")
         page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=20000)
         assert page.locator('[data-testid="qa-status"]').is_visible()
@@ -337,9 +344,14 @@ def test_network_ui_fallback_debug_drawer_and_manual_decision():
         page.locator('input[name="min_active_cds"]').fill('1')
         page.locator('input[name="max_active_cds"]').fill('10')
         page.locator('[data-testid="optimizer-run"]').click()
-        page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=20000)
-        page.evaluate("window.location.hash = '#/network/optimizer/results'")
-        page.locator('[data-testid="page-results-summary"]').wait_for(state='visible')
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=20000)
+        assert page.locator('[data-testid="page-optimizer-results"]').is_visible()
+        assert page.locator('.ni-workspace-config-summary').inner_text().find('Seed da busca') >= 0
+        page.locator('.ni-section-tabs a[data-route="#/network/optimizer/tradeoffs"]').click()
+        page.locator('[data-testid="page-optimizer-tradeoffs"]').wait_for(state='visible')
+        assert page.locator('#niDecisionOptimizerFrontierChart').count() == 1
+        page.locator('.ni-section-tabs a[data-route="#/network/optimizer/results"]').click()
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible')
         open_details(page, '[data-testid="manual-scenario-selector"]')
         page.locator('[data-testid="manual-scenario-selector"]').wait_for(state='visible')
         page.locator('[data-action="run-decision-manual"]').click()
@@ -459,7 +471,7 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
             page.evaluate("window.location.hash = '#/network/optimizer/configure'")
             page.locator('[data-testid="page-optimizer-configure"]').wait_for(state='visible', timeout=20000)
             page.locator('[data-testid="optimizer-run"]').click()
-            page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=20000)
+            page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=20000)
             page.evaluate("window.location.hash = '#/network/trust/validation'")
             page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=20000)
             page.locator('[data-testid="qa-status"]').wait_for(state='visible', timeout=20000)
@@ -580,7 +592,7 @@ def test_network_ui_reentrant_submissions_and_export_deduplication():
                 }
             }"""
         )
-        page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=20000)
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=20000)
         # Route transitions clear completion toasts after the next screen renders.
         assert page.locator('.network-toast', has_text='Pipeline de decisão concluído.').count() == 0
 
@@ -591,7 +603,7 @@ def test_network_ui_reentrant_submissions_and_export_deduplication():
         assert len(downloads) == 1, f'downloads={len(downloads)}'
         page.reload(wait_until='networkidle')
         page.locator('#networkAppRoot').wait_for(state='visible')
-        assert page.locator('[data-testid="page-results-summary"]').is_visible()
+        assert page.locator('[data-testid="page-optimizer-results"]').is_visible()
         page.close()
         browser.close()
 
@@ -627,7 +639,7 @@ def test_audit_configuration_identity_and_all_mobile_routes():
         page.locator('input[name="profile_id"][value="cfo"]').check()
         page.locator('input[name="seed"]').fill('73')
         page.locator('[data-testid="optimizer-run"]').click()
-        page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=30000)
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=30000)
         selected = page.locator('[data-testid="scenario-selector"]').input_value()
         assert selected, 'Active candidate must appear in the global selector.'
         route_aliases = {
@@ -635,8 +647,6 @@ def test_audit_configuration_identity_and_all_mobile_routes():
             'scenarios/compare': 'results/comparison',
             'scenarios/risk': 'results/risk',
             'scenarios/risk/advanced': 'results/risk/advanced',
-            'optimizer/results': 'results/summary',
-            'optimizer/tradeoffs': 'results/tradeoffs',
         }
         for route in routes:
             canonical = route_aliases.get(route, route)
@@ -647,6 +657,10 @@ def test_audit_configuration_identity_and_all_mobile_routes():
                 arg=expected_hash,
             )
             assert page.evaluate('location.hash') == expected_hash
+            if route == 'optimizer/results':
+                page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible')
+            elif route == 'optimizer/tradeoffs':
+                page.locator('[data-testid="page-optimizer-tradeoffs"]').wait_for(state='visible')
             page.evaluate('() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
             assert page.locator('[data-testid="scenario-selector"]').input_value() == selected
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), route
@@ -665,15 +679,14 @@ def test_audit_configuration_identity_and_all_mobile_routes():
             comparison_content = cards.inner_text()
         assert 'Custo total' in comparison_content
         assert 'Economia ante referência' in comparison_content
-        page.evaluate("location.hash = '#/network/optimizer/tradeoffs'")
-        page.wait_for_function("location.hash === '#/network/results/tradeoffs'")
-        page.locator('[data-testid="page-results-tradeoffs"]').wait_for(state='visible')
-        scatter = page.locator('.ni-workspace-scatter')
-        if scatter.count():
-            assert scatter.get_attribute('role') == 'img'
-            assert scatter.locator('g.ni-workspace-scatter-point title').count() > 0
-        else:
-            assert page.locator('.ni-workspace-empty').is_visible()
+        page.evaluate("location.hash = '#/network/optimizer/results'")
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible')
+        page.locator('.ni-section-tabs a[data-route="#/network/optimizer/tradeoffs"]').click()
+        page.wait_for_function("location.hash === '#/network/optimizer/tradeoffs'")
+        page.locator('[data-testid="page-optimizer-tradeoffs"]').wait_for(state='visible')
+        assert page.locator('#niDecisionOptimizerFrontierChart').count() == 1
+        page.locator('.ni-section-tabs a[data-route="#/network/optimizer/results"]').click()
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible')
         page.evaluate("location.hash = '#/network/results/summary'")
         page.locator('[data-testid="page-results-summary"]').wait_for(state='visible')
         with page.expect_download(timeout=10000) as download_info:

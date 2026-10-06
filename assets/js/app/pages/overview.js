@@ -10,6 +10,7 @@ import {
   table,
 } from '../view-helpers.js';
 import {
+  selectActiveCompany,
   selectActiveScenario,
   selectBaseline,
   selectDecision,
@@ -18,7 +19,7 @@ import { renderBrazilMap, renderNetworkSvg } from '../charts/charts.js';
 import { robustnessPresentation, userStatusLabel } from '../charts/trust-analytics.js';
 
 function humanizeCode(value, labels = {}) {
-  if (value == null || value === '') return 'Não informado';
+  if (!['string', 'number'].includes(typeof value) || value === '') return 'Não informado';
   const key = String(value).trim().toLowerCase();
   if (labels[key]) return labels[key];
   return key
@@ -28,7 +29,7 @@ function humanizeCode(value, labels = {}) {
 }
 
 function formatFiscalWeight(value) {
-  if (value == null || value === '') return '—';
+  if (!['string', 'number'].includes(typeof value) || value === '') return '—';
   const ratio = Number(value);
   return Number.isFinite(ratio) && ratio >= 0 && ratio <= 1 ? formatPct(ratio * 100) : '—';
 }
@@ -107,30 +108,50 @@ export function renderOverviewCosts(state) {
 }
 
 export function renderOverviewTax(state) {
-  const tax = baselineResult(state).tax;
+  const baseline = selectBaseline(state);
+  const activeCompany = selectActiveCompany(state);
+  const baselineCompany =
+    baseline?.company_id || baseline?.model?.company_id || baseline?.provenance?.company_id;
+  const baselineMatchesCompany = Boolean(
+    baseline && activeCompany && baselineCompany === activeCompany
+  );
+  const tax = baselineMatchesCompany ? baselineResult(state).tax : {};
   const coverage = tax.tax_coverage || {};
   const contract = tax.tax_period_contract || tax.metadata?.tax_period_contract || {};
-  const selected = contract.selected_period || {};
-  const periods = contract.available_periods || [];
-  const reference = contract.current_reference_data_period || {};
-  const structuredPeriods = periods.filter((period) => period && typeof period === 'object');
+  const selected =
+    contract.selected_period && typeof contract.selected_period === 'object'
+      ? contract.selected_period
+      : {};
+  const periods = Array.isArray(contract.available_periods) ? contract.available_periods : [];
+  const reference =
+    contract.current_reference_data_period &&
+    typeof contract.current_reference_data_period === 'object'
+      ? contract.current_reference_data_period
+      : {};
+  const observedCoverage =
+    contract.observed_data_coverage && typeof contract.observed_data_coverage === 'object'
+      ? contract.observed_data_coverage
+      : {};
+  const demonstration =
+    state?.context?.provider_kind === 'mock' || activeCompany === 'empresa_mock';
+  const sourceLabel = demonstration ? 'Demonstração · empresa fictícia' : 'Empresa ativa';
+  const safeText = (value, fallback = '—') =>
+    ['string', 'number'].includes(typeof value) && value !== '' ? String(value) : fallback;
+  const safeStatus = (value) => userStatusLabel(safeText(value, null));
+  const structuredPeriods = periods.filter(
+    (period) => period && typeof period === 'object' && !Array.isArray(period)
+  );
   const periodRows = structuredPeriods.map(
     (period) =>
-      `<tr><td>${escapeHtml(period.year ?? '—')}</td><td>${escapeHtml(humanizeCode(period.phase))}</td><td>${escapeHtml(userStatusLabel(period.data_status || period.source_status))}</td><td>${escapeHtml(formatFiscalWeight(period.current_tax_weight))}</td><td>${escapeHtml(formatFiscalWeight(period.reform_tax_weight))}</td></tr>`
+      `<tr><td>${escapeHtml(safeText(period.year))}</td><td>${escapeHtml(humanizeCode(period.phase))}</td><td>${escapeHtml(safeStatus(period.data_status || period.source_status))}</td><td>${escapeHtml(formatFiscalWeight(period.current_tax_weight))}</td><td>${escapeHtml(formatFiscalWeight(period.reform_tax_weight))}</td></tr>`
   );
   const periodBody = structuredPeriods.length
     ? table(['Ano', 'Fase', 'Status', 'Peso atual', 'Peso reforma'], periodRows)
     : emptyState(
         periods.length
           ? 'Há períodos listados, mas a fonte não informa pesos e status em campos separados.'
-          : 'Calendário fiscal indisponível para esta empresa.'
+          : 'Calendário fiscal indisponível no contrato da empresa ativa.'
       );
-  const taxModeLabels = {
-    current: 'Regime atual',
-    reform: 'Regime da reforma',
-    current_and_reform: 'Regimes atual e da reforma',
-    synthetic: 'Demonstrativo sintético',
-  };
   const decisionUseLabels = {
     demo_only: 'Apenas demonstração',
     exploratory_only: 'Apenas exploratório',
@@ -138,17 +159,26 @@ export function renderOverviewTax(state) {
     operational: 'Operacional',
   };
   const coverageRatio = coverage.complete_fiscal_coverage_ratio;
-  const coverageValue = coverageRatio == null ? null : Number(coverageRatio);
+  const coverageValue = ['string', 'number'].includes(typeof coverageRatio)
+    ? Number(coverageRatio)
+    : null;
   const validCoverage =
     coverageValue != null &&
     Number.isFinite(coverageValue) &&
     coverageValue >= 0 &&
     coverageValue <= 1;
   const coverageNote = validCoverage
-    ? 'Proporção declarada no contrato fiscal'
-    : 'Não informada ou fora do intervalo válido na fonte fiscal';
-  const fiscalCoverageSummary = !validCoverage
-    ? 'A fonte não informou uma proporção de cobertura fiscal completa.'
-    : `Cobertura fiscal completa declarada: ${formatPct(coverageValue * 100)}.`;
-  return `<div class="ni-page-heading" data-testid="page-overview-tax"><p class="ni-eyebrow">Visão executiva · Tributação</p><h1>Cobertura fiscal</h1><p>Períodos, pesos tributários e limites informados pela fonte.</p></div>${sectionTabs('overview', state.ui.route)}<div class="ni-kpi-grid">${kpi('Modo de cálculo', humanizeCode(tax.tax_mode, taxModeLabels))}${kpi('Regime', humanizeCode(tax.tax_regime))}${kpi('Uso permitido', humanizeCode(tax.decision_use, decisionUseLabels))}${kpi('Cobertura fiscal completa', validCoverage ? formatPct(coverageValue * 100) : '—', coverageNote)}</div><div class="ni-grid two"><div class="ni-card"><h2>Período selecionado</h2><dl class="ni-details"><div><dt>Ano/fase</dt><dd>${escapeHtml(selected.year == null ? '—' : `${selected.year} · ${humanizeCode(selected.phase)}`)}</dd></div><div><dt>Status</dt><dd>${escapeHtml(userStatusLabel(selected.data_status || selected.source_status))}</dd></div><div><dt>Referência atual</dt><dd>${escapeHtml(reference.period_start || '—')} a ${escapeHtml(reference.period_end ?? '—')}</dd></div><div><dt>Cobertura temporal</dt><dd>${escapeHtml(userStatusLabel(contract.observed_data_coverage?.status))}</dd></div></dl></div><div class="ni-card"><h2>Fonte e limitações</h2><p>${escapeHtml(tax.explanation || 'Metadados fiscais não informados.')}</p><p class="ni-note">${escapeHtml(fiscalCoverageSummary)} Os pesos por período aparecem apenas quando publicados.</p></div></div><div class="ni-card ni-chart-section"><h2>Pesos tributários por período</h2><canvas id="niOverviewTaxCoverageChart" class="ni-chart" role="img" aria-label="Pesos publicados do regime atual e da reforma por período" hidden></canvas><p class="ni-chart-summary" data-chart-summary="niOverviewTaxCoverageChart">Pesos fiscais publicados</p><details class="ni-chart-method"><summary>Dados e premissas</summary><p class="ni-note" data-chart-caption="niOverviewTaxCoverageChart">Comparação publicada apenas para períodos com pesos explícitos.</p></details></div><div class="ni-card" data-testid="tax-periods-panel"><h2>Calendário de transição</h2>${periodBody}</div>`;
+    ? 'Declarada no contrato fiscal'
+    : 'Sem proporção válida publicada';
+  const explanation = safeText(tax.explanation, 'Metadados fiscais indisponíveis.');
+  const selectedPeriod =
+    [safeText(selected.year, ''), safeText(selected.phase, '')].filter(Boolean).join(' · ') || '—';
+  const ownershipMessage = !baseline
+    ? 'Dados fiscais indisponíveis. Carregue o baseline da empresa ativa para consultar a cobertura.'
+    : !activeCompany || !baselineCompany
+      ? 'Não foi possível confirmar a empresa de origem destes dados fiscais. Recarregue o baseline ativo.'
+      : !baselineMatchesCompany
+        ? 'Os dados fiscais deste baseline não correspondem à empresa ativa. Recarregue os dados para consultar a cobertura correta.'
+        : 'Pesos exibidos somente quando publicados no contrato fiscal.';
+  return `<div class="ni-page-heading" data-testid="page-overview-tax"><p class="ni-eyebrow">Visão executiva · Tributação</p><h1>Cobertura fiscal</h1><p>Pesos publicados no contrato fiscal do baseline selecionado.</p></div>${sectionTabs('overview', state.ui.route)}<div class="ni-card ni-tax-source" data-testid="tax-source"><strong>${escapeHtml(sourceLabel)}</strong><span>${escapeHtml(ownershipMessage)}</span></div>${baselineMatchesCompany ? `<div class="ni-kpi-grid">${kpi('Cobertura fiscal completa', validCoverage ? formatPct(coverageValue * 100) : '—', coverageNote)}${kpi('Regime', humanizeCode(tax.tax_regime))}${kpi('Uso permitido', humanizeCode(tax.decision_use, decisionUseLabels))}</div><div class="ni-card ni-chart-section ni-tax-chart"><div class="ni-tax-chart-heading"><div><h2>Pesos tributários por período</h2><p class="ni-note">Percentual dos pesos publicados para cada regime.</p></div><span>${escapeHtml(sourceLabel)}</span></div><canvas id="niOverviewTaxCoverageChart" class="ni-chart" role="img" aria-label="Pesos publicados do regime atual e da reforma por período" hidden></canvas><p class="ni-chart-summary" data-chart-summary="niOverviewTaxCoverageChart">Pesos fiscais publicados</p><details class="ni-chart-method"><summary>Como ler</summary><p class="ni-note" data-chart-caption="niOverviewTaxCoverageChart">Comparação publicada apenas para períodos com pesos explícitos.</p></details></div><div class="ni-grid two ni-tax-details"><details class="ni-card"><summary>Período e fonte</summary><dl class="ni-details"><div><dt>Período selecionado</dt><dd>${escapeHtml(selectedPeriod)}</dd></div><div><dt>Status</dt><dd>${escapeHtml(safeStatus(selected.data_status || selected.source_status))}</dd></div><div><dt>Referência atual</dt><dd>${escapeHtml(safeText(reference.period_start))} a ${escapeHtml(safeText(reference.period_end))}</dd></div><div><dt>Cobertura temporal</dt><dd>${escapeHtml(safeStatus(observedCoverage.status))}</dd></div></dl><p>${escapeHtml(explanation)}</p></details><details class="ni-card" data-testid="tax-periods-panel"><summary>Calendário fiscal · ${structuredPeriods.length} períodos</summary>${periodBody}</details></div>` : `<div class="ni-card">${emptyState(ownershipMessage)}</div>`}`;
 }

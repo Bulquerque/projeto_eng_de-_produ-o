@@ -165,6 +165,32 @@ function enrichOptimizerCandidates(state, candidates = []) {
     });
 }
 
+function renderAppliedOptimizerConfig(state, optimizer) {
+  const config = state.ui.optimizer_config || optimizer?.requested_config || {};
+  const nestedConfig = config.optimizer_config || config;
+  const constraints = config.constraints || optimizer?.constraints || {};
+  const profiles = Object.fromEntries(OBJECTIVE_PROFILES.map(({ value, label }) => [value, label]));
+  const profile = config.profile_id || optimizer?.objective?.profile_id || '—';
+  const details = [
+    ['Perfil', profiles[profile] || profile],
+    ['Limite de candidatos', nestedConfig.max_candidates],
+    ['Seed da busca', nestedConfig.seed],
+    [
+      'CDs ativos',
+      constraints.min_active_cds == null && constraints.max_active_cds == null
+        ? null
+        : `${constraints.min_active_cds ?? '—'} a ${constraints.max_active_cds ?? '—'}`,
+    ],
+    ['Risco máximo', constraints.max_risk_level],
+  ].filter(([, value]) => value != null && value !== '');
+  if (!details.length) return '';
+  return `<section class="ni-workspace-detail-card ni-workspace-config-summary" aria-label="Configuração aplicada"><p class="ni-eyebrow">Contexto da busca</p><dl class="ni-workspace-detail-metrics">${details
+    .map(
+      ([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`
+    )
+    .join('')}</dl></section>`;
+}
+
 export function renderOptimizerConfigure(state) {
   const lastConfig = state.ui.optimizer_config || state.data.optimizer?.requested_config || {};
   const constraints = lastConfig.constraints || state.data.optimizer?.constraints || {};
@@ -297,7 +323,7 @@ export function renderOptimizerResults(state) {
 
   const exactSearchValue =
     log.exact_search_space == null ? '—' : log.exact_search_space ? 'Sim' : 'Não';
-  return `<div class="ni-workspace ni-workspace-results"><div class="ni-page-heading ni-workspace-heading" data-testid="page-optimizer-results"><p class="ni-eyebrow">Avaliação de alternativas · Resultados</p><h1>Resultados da avaliação</h1><p>${escapeHtml(optimizer.result_scope || 'Compare as alternativas avaliadas e confirme os limites da busca.')}</p></div>${sectionTabs('optimizer', state.ui.route)}<div class="ni-workspace-status-strip">${kpi('Status da avaliação', optimizer.optimizer_status || '—')}${kpi('Cobertura', log.coverage_ratio == null ? '—' : formatPct(log.coverage_ratio * 100))}${kpi('Catálogo completo', exactSearchValue)}${kpi('Alternativas avaliadas', formatOptionalNumber(log.simulated_candidates))}</div>${preferredSummary}${whyWinner}<section class="ni-workspace-ranking" data-testid="optimizer-ranking"><div class="ni-workspace-section-heading"><div><p class="ni-eyebrow">Classificação · ${formatNumber(rankedScenarios.length)} ${rankedScenarios.length === 1 ? 'alternativa' : 'alternativas'}</p><h2>Cenários mais bem classificados</h2><p>Compare custos, pontuação e risco antes de encaminhar uma decisão.</p></div></div>${table(['Cenário', 'Custo total', 'Pontuação', 'Risco'], rows, 'Nenhum cenário elegível.')}</section>${manualSelection}<div class="ni-actions ni-workspace-actions"><a class="ni-button secondary" href="#/network/optimizer/tradeoffs" data-route="#/network/optimizer/tradeoffs">Explorar compromissos</a><a class="ni-button primary" href="#/network/trust/validation" data-route="#/network/trust/validation">Ver validação da decisão</a></div></div>`;
+  return `<div class="ni-workspace ni-workspace-results"><div class="ni-page-heading ni-workspace-heading" data-testid="page-optimizer-results"><p class="ni-eyebrow">Avaliação de alternativas · Resultados</p><h1>Resultados da avaliação</h1><p>${escapeHtml(optimizer.result_scope || 'Compare as alternativas avaliadas e confirme os limites da busca.')}</p></div>${sectionTabs('optimizer', state.ui.route)}<div class="ni-workspace-status-strip">${kpi('Status da avaliação', optimizer.optimizer_status || '—')}${kpi('Cobertura', log.coverage_ratio == null ? '—' : formatPct(log.coverage_ratio * 100))}${kpi('Catálogo completo', exactSearchValue)}${kpi('Alternativas avaliadas', formatOptionalNumber(log.simulated_candidates))}</div>${renderAppliedOptimizerConfig(state, optimizer)}${preferredSummary}${whyWinner}<section class="ni-workspace-chart-card ni-workspace-ranking-chart"><h2>Score das melhores alternativas</h2><canvas id="niRankingChart" class="ni-chart" role="img" aria-label="Gráfico de pontuação das melhores alternativas avaliadas"></canvas></section><section class="ni-workspace-ranking" data-testid="optimizer-ranking"><div class="ni-workspace-section-heading"><div><p class="ni-eyebrow">Classificação · ${formatNumber(rankedScenarios.length)} ${rankedScenarios.length === 1 ? 'alternativa' : 'alternativas'}</p><h2>Cenários mais bem classificados</h2><p>Compare custos, pontuação e risco antes de encaminhar uma decisão.</p></div></div>${table(['Cenário', 'Custo total', 'Pontuação', 'Risco'], rows, 'Nenhum cenário elegível.')}</section>${manualSelection}<div class="ni-actions ni-workspace-actions"><a class="ni-button secondary" href="#/network/optimizer/tradeoffs" data-route="#/network/optimizer/tradeoffs">Explorar compromissos</a><a class="ni-button primary" href="#/network/trust/validation" data-route="#/network/trust/validation">Ver validação da decisão</a></div></div>`;
 }
 
 export function renderOptimizerTradeoffs(state) {
@@ -334,5 +360,5 @@ export function renderOptimizerTradeoffs(state) {
       Number.isFinite(Number(y))
     );
   }).length;
-  return `<div class="ni-workspace ni-workspace-tradeoffs"><div class="ni-page-heading ni-workspace-heading" data-testid="page-optimizer-tradeoffs"><p class="ni-eyebrow">Avaliação de alternativas · Trade-offs</p><h1>Compromissos: custo e ${qualityLabel}</h1><p>Alternativas avaliadas nesta busca.</p></div>${sectionTabs('optimizer', state.ui.route)}<div class="ni-workspace-tradeoff-grid"><section class="ni-workspace-chart-card">${tradeoffPointCount ? '<canvas id="niDecisionOptimizerFrontierChart" class="ni-chart" role="img" aria-label="Gráfico interativo de custo total e métrica de qualidade disponível"></canvas>' : '<p class="ni-workspace-chart-empty" role="status">Sem candidatos com custo e score válidos nesta execução.</p>'}<p class="ni-workspace-footnote">${hasQuality ? 'Pontuação de qualidade calculada; não é uma medição observada de nível de serviço.' : 'Pontuação usada para classificar as alternativas; não é uma medição observada de nível de serviço.'}</p></section>${scenarioDetails}</div><section class="ni-workspace-ranking ni-workspace-tradeoff-table"><div class="ni-workspace-section-heading"><div><p class="ni-eyebrow">Alternativas classificadas</p><h2>Melhores cenários</h2></div></div>${table(['Cenário', 'Custo total', 'Pontuação', 'Uso dos dados'], rows, 'Nenhum candidato disponível.')}</section></div>`;
+  return `<div class="ni-workspace ni-workspace-tradeoffs"><div class="ni-page-heading ni-workspace-heading" data-testid="page-optimizer-tradeoffs"><p class="ni-eyebrow">Avaliação de alternativas · Trade-offs</p><h1>Compromissos: custo e ${qualityLabel}</h1><p>Alternativas avaliadas nesta busca; cada ponto representa uma alternativa elegível.</p></div>${sectionTabs('optimizer', state.ui.route)}${renderAppliedOptimizerConfig(state, optimizer)}<div class="ni-workspace-tradeoff-grid"><section class="ni-workspace-chart-card"><h2>Custo total × ${qualityLabel}</h2>${tradeoffPointCount ? '<canvas id="niDecisionOptimizerFrontierChart" class="ni-chart" role="img" aria-label="Gráfico interativo de custo total e métrica de qualidade disponível"></canvas>' : '<p class="ni-workspace-chart-empty" role="status">Sem candidatos com custo e score válidos nesta execução.</p>'}<p class="ni-workspace-footnote">${hasQuality ? 'Qualidade é um score calculado, não uma medição observada de nível de serviço.' : 'O score classifica as alternativas e não representa uma medição observada de nível de serviço.'}</p></section>${scenarioDetails}</div><section class="ni-workspace-ranking ni-workspace-tradeoff-table"><div class="ni-workspace-section-heading"><div><p class="ni-eyebrow">Alternativas classificadas</p><h2>Melhores cenários</h2></div></div>${table(['Cenário', 'Custo total', 'Pontuação', 'Uso dos dados'], rows, 'Nenhum candidato disponível.')}</section></div>`;
 }

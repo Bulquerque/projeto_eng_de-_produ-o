@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { overviewAnalyticsInternals as analytics } from '../../assets/js/app/charts/overview-analytics.js';
 import { buildEvidenceCoverage } from '../../assets/js/app/charts/trust-analytics.js';
-import { renderOverviewSummary } from '../../assets/js/app/pages/overview.js';
+import { renderOverviewSummary, renderOverviewTax } from '../../assets/js/app/pages/overview.js';
 import {
   aggregateDistributionDistances,
   aggregateDistributionWeightByCd,
@@ -145,6 +145,36 @@ executiveState.data.selected_scenario = null;
 executiveState.context.selected_scenario_id = null;
 const baselineHtml = renderOverviewSummary(executiveState);
 assert.match(baselineHtml, /R\$\s?144\.000/);
+
+const taxState = {
+  context: { company_id: 'empresa_mock', provider_kind: 'mock' },
+  ui: { route: '#/network/overview/tax' },
+  data: {
+    baseline: {
+      company_id: 'empresa_mock',
+      tax_results: {
+        tax_results: {
+          tax_regime: 'current',
+          explanation: { unexpected: 'must not stringify as an object' },
+          tax_period_contract: {
+            available_periods: [
+              { year: 2026, phase: 'transicao', current_tax_weight: 0.7, reform_tax_weight: 0.3 },
+            ],
+          },
+        },
+      },
+    },
+  },
+};
+const taxHtml = renderOverviewTax(taxState);
+assert.match(taxHtml, /Demonstração · empresa fictícia/);
+assert.match(taxHtml, /<td>2026<\/td>/);
+assert.match(taxHtml, /70,0%/);
+assert.doesNotMatch(taxHtml, /\[object Object\]/);
+taxState.data.baseline.company_id = 'empresa1';
+const mismatchedTaxHtml = renderOverviewTax(taxState);
+assert.match(mismatchedTaxHtml, /não correspondem à empresa ativa/i);
+assert.doesNotMatch(mismatchedTaxHtml, /niOverviewTaxCoverageChart/);
 
 const missingCd = analytics.buildFlowCountByCd([
   { flow_type: 'cd_to_destination', destination: 'Loja sem CD' },

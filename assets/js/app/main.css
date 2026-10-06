@@ -491,6 +491,14 @@ body.network-ui-active > #cryptoPasswordPrompt {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
+.ni-tax-source {
+  display: grid;
+  gap: 6px;
+}
+.ni-tax-source span {
+  color: var(--ni-muted);
+  font-size: 14px;
+}
 .ni-network-svg {
   display: block;
   width: 100%;
@@ -3407,7 +3415,41 @@ body.network-ui-active {
 }
 .ni-kpi-stack .ni-kpi strong {
   font-size: 20px;
-  overflow-wrap: normal;
+  overflow-wrap: anywhere;
+}
+
+.network-sidebar-tools .network-trust-shortcut {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 34px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  color: #a7c7c5;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.network-sidebar-tools .network-trust-shortcut:hover,
+.network-sidebar-tools .network-trust-shortcut.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.network-sidebar-tools .network-trust-shortcut:focus-visible {
+  outline: 2px solid var(--ni-mint);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1100px) {
+  .ni-kpi-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ni-kpi-stack .ni-kpi strong {
+    font-size: clamp(14px, 1.55vw, 17px);
+    white-space: nowrap;
+  }
 }
 
 .network-topbar-actions .crypto-lock-button {
