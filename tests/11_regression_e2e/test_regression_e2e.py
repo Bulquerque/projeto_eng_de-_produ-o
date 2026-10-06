@@ -179,6 +179,7 @@ def run_ui_audit() -> dict:
         page, console_events, page_errors, request_failures = open_page(
             mobile, base_url, '/?company=empresa_mock#/network/scenarios/build'
         )
+        page.locator('[data-testid="scenario-library"] > summary').click()
         page.locator('[data-testid="scenario-load-mock_consolidation"]').click()
         page.locator('[data-testid="scenario-run"]').click()
         page.locator('[data-testid="page-results-summary"]').wait_for(state='visible', timeout=15000)
