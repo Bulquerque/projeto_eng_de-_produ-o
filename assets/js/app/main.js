@@ -159,6 +159,11 @@ function initializeNetworkIntelligence() {
       state.data.release = packageResult.release || mockDecision.release || null;
       state.data.export_package = packageResult.export_package || null;
       state.context.selected_scenario_id = selectedScenario?.scenario_id || null;
+      // Keep the global selector tied to the package that just completed. A
+      // previous fiscal draft must not survive an optimizer run and make the
+      // header disagree with the result shown below.
+      state.ui.scenario_draft = selectedScenario;
+      state.ui.scenario_draft_dirty = false;
       state.meta.status = resolveDecisionStatus(packageResult);
       state.ui.loading = false;
     };

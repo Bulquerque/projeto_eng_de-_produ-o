@@ -18,153 +18,159 @@
   "model": {
     "company_id": "empresa_mock",
     "scenario_id": "mock_baseline",
-    "active_cds": [
-      "CD Demo Norte",
-      "CD Demo Sul",
-      "CD Demo Centro"
-    ],
+    "active_cds": ["CD Demo Norte", "CD Demo Sul", "CD Demo Centro"],
     "baseline_ready": true
   },
   "flows": [
     {
-      "origin": "Origem Demo A",
-      "destination": "Destino Demo 01",
-      "cd": "CD Demo Norte",
+      "origin": "Fábrica Campinas · SP",
+      "destination": "São Paulo · SP",
+      "cd": "CD Demo Centro",
       "uf": "SP",
       "origin_uf": "SP",
       "destination_uf": "SP",
       "volume": 420,
       "annual_weight_kg": 420,
-      "distance_km": 118,
+      "distance_km": 95,
       "service_level": "D+1",
       "annual_revenue": 252000,
-      "fiscal_category": "default_goods"
+      "fiscal_category": "default_goods",
+      "flow_id": "demo_flow_001"
     },
     {
-      "origin": "Origem Demo B",
-      "destination": "Destino Demo 02",
+      "origin": "Fábrica Porto Alegre · RS",
+      "destination": "Porto Alegre · RS",
       "cd": "CD Demo Sul",
       "uf": "RS",
       "origin_uf": "RS",
       "destination_uf": "RS",
       "volume": 360,
       "annual_weight_kg": 360,
-      "distance_km": 246,
-      "service_level": "D+2",
+      "distance_km": 18,
+      "service_level": "D+1",
       "annual_revenue": 216000,
-      "fiscal_category": "default_goods"
+      "fiscal_category": "default_goods",
+      "flow_id": "demo_flow_002"
     },
     {
-      "origin": "Origem Demo A",
-      "destination": "Destino Demo 03",
-      "cd": "CD Demo Norte",
+      "origin": "Fábrica Campinas · SP",
+      "destination": "Belo Horizonte · MG",
+      "cd": "CD Demo Centro",
       "uf": "MG",
       "origin_uf": "SP",
       "destination_uf": "MG",
       "volume": 290,
       "annual_weight_kg": 290,
-      "distance_km": 164,
-      "service_level": "D+1",
+      "distance_km": 586,
+      "service_level": "D+2",
       "annual_revenue": 174000,
-      "fiscal_category": "essential_goods"
+      "fiscal_category": "essential_goods",
+      "flow_id": "demo_flow_003"
     },
     {
-      "origin": "Origem Demo C",
-      "destination": "Destino Demo 04",
-      "cd": "CD Demo Centro",
+      "origin": "Fábrica Curitiba · PR",
+      "destination": "Londrina · PR",
+      "cd": "CD Demo Sul",
       "uf": "PR",
       "origin_uf": "PR",
       "destination_uf": "PR",
       "volume": 315,
       "annual_weight_kg": 315,
-      "distance_km": 302,
+      "distance_km": 386,
       "service_level": "D+2",
       "annual_revenue": 189000,
-      "fiscal_category": "default_goods"
+      "fiscal_category": "default_goods",
+      "flow_id": "demo_flow_004"
     },
     {
-      "origin": "Origem Demo D",
-      "destination": "Destino Demo 05",
+      "origin": "Fábrica Salvador · BA",
+      "destination": "Feira de Santana · BA",
       "cd": "CD Demo Centro",
       "uf": "BA",
       "origin_uf": "BA",
       "destination_uf": "BA",
       "volume": 240,
       "annual_weight_kg": 240,
-      "distance_km": 388,
-      "service_level": "D+3",
+      "distance_km": 108,
+      "service_level": "D+1",
       "annual_revenue": 144000,
-      "fiscal_category": "default_goods"
+      "fiscal_category": "default_goods",
+      "flow_id": "demo_flow_005"
     },
     {
-      "origin": "Origem Demo B",
-      "destination": "Destino Demo 06",
-      "cd": "CD Demo Sul",
+      "origin": "Fábrica Recife · PE",
+      "destination": "Petrolina · PE",
+      "cd": "CD Demo Norte",
       "uf": "PE",
-      "origin_uf": "RS",
+      "origin_uf": "PE",
       "destination_uf": "PE",
       "volume": 185,
       "annual_weight_kg": 185,
-      "distance_km": 274,
-      "service_level": "D+2",
+      "distance_km": 712,
+      "service_level": "D+3",
       "annual_revenue": 111000,
-      "fiscal_category": "default_goods"
+      "fiscal_category": "default_goods",
+      "flow_id": "demo_flow_006"
     },
     {
-      "origin": "Origem Demo E",
-      "destination": "Destino Demo 07",
-      "cd": "CD Demo Norte",
+      "origin": "Fábrica Goiânia · GO",
+      "destination": "Anápolis · GO",
+      "cd": "CD Demo Centro",
       "uf": "GO",
       "origin_uf": "GO",
       "destination_uf": "GO",
       "volume": 155,
       "annual_weight_kg": 155,
-      "distance_km": 92,
+      "distance_km": 55,
       "service_level": "D+1",
       "annual_revenue": 93000,
-      "fiscal_category": "essential_goods"
+      "fiscal_category": "essential_goods",
+      "flow_id": "demo_flow_007"
     },
     {
-      "origin": "Origem Demo C",
-      "destination": "Destino Demo 08",
-      "cd": "CD Demo Centro",
+      "origin": "Fábrica Curitiba · PR",
+      "destination": "Florianópolis · SC",
+      "cd": "CD Demo Sul",
       "uf": "SC",
       "origin_uf": "PR",
       "destination_uf": "SC",
       "volume": 130,
       "annual_weight_kg": 130,
-      "distance_km": 341,
-      "service_level": "D+3",
+      "distance_km": 300,
+      "service_level": "D+1",
       "annual_revenue": 78000,
-      "fiscal_category": "default_goods"
+      "fiscal_category": "default_goods",
+      "flow_id": "demo_flow_008"
     },
     {
-      "origin": "Origem Demo F",
-      "destination": "Destino Demo 09",
+      "origin": "Fábrica Fortaleza · CE",
+      "destination": "Juazeiro do Norte · CE",
       "cd": "CD Demo Norte",
       "uf": "CE",
       "origin_uf": "CE",
       "destination_uf": "CE",
       "volume": 110,
       "annual_weight_kg": 110,
-      "distance_km": 512,
-      "service_level": "D+3",
+      "distance_km": 491,
+      "service_level": "D+2",
       "annual_revenue": 66000,
-      "fiscal_category": "default_goods"
+      "fiscal_category": "default_goods",
+      "flow_id": "demo_flow_009"
     },
     {
-      "origin": "Origem Demo G",
-      "destination": "Destino Demo 10",
-      "cd": "CD Demo Centro",
+      "origin": "Fábrica Belém · PA",
+      "destination": "Santarém · PA",
+      "cd": "CD Demo Norte",
       "uf": "PA",
       "origin_uf": "PA",
       "destination_uf": "PA",
       "volume": 95,
       "annual_weight_kg": 95,
-      "distance_km": 688,
-      "service_level": "D+4",
+      "distance_km": 1290,
+      "service_level": "D+3",
       "annual_revenue": 57000,
-      "fiscal_category": "default_goods"
+      "fiscal_category": "default_goods",
+      "flow_id": "demo_flow_010"
     }
   ],
   "costs": {
@@ -185,9 +191,130 @@
       "decision_use": "demo_only",
       "period": "2026-demo-current",
       "available_periods": [
-        "2026-demo-current",
-        "2027-demo-reform"
+        {
+          "year": 2026,
+          "phase": "ano-teste",
+          "current_tax_weight": 0.995,
+          "reform_tax_weight": 0.005,
+          "source_status": "synthetic_fixture"
+        },
+        {
+          "year": 2027,
+          "phase": "CBS em vigor",
+          "current_tax_weight": 0.72,
+          "reform_tax_weight": 0.28,
+          "source_status": "synthetic_fixture"
+        },
+        {
+          "year": 2028,
+          "phase": "CBS em vigor",
+          "current_tax_weight": 0.72,
+          "reform_tax_weight": 0.28,
+          "source_status": "synthetic_fixture"
+        },
+        {
+          "year": 2029,
+          "phase": "transicao IBS",
+          "current_tax_weight": 0.9,
+          "reform_tax_weight": 0.1,
+          "source_status": "synthetic_fixture"
+        },
+        {
+          "year": 2030,
+          "phase": "transicao IBS",
+          "current_tax_weight": 0.8,
+          "reform_tax_weight": 0.2,
+          "source_status": "synthetic_fixture"
+        },
+        {
+          "year": 2031,
+          "phase": "transicao IBS",
+          "current_tax_weight": 0.7,
+          "reform_tax_weight": 0.3,
+          "source_status": "synthetic_fixture"
+        },
+        {
+          "year": 2032,
+          "phase": "transicao IBS",
+          "current_tax_weight": 0.6,
+          "reform_tax_weight": 0.4,
+          "source_status": "synthetic_fixture"
+        },
+        {
+          "year": 2033,
+          "phase": "reforma integral",
+          "current_tax_weight": 0,
+          "reform_tax_weight": 1,
+          "source_status": "synthetic_fixture"
+        }
       ],
+      "tax_period_contract": {
+        "selected_period": {
+          "year": 2026,
+          "phase": "ano-teste",
+          "source_status": "synthetic_fixture"
+        },
+        "available_periods": [
+          {
+            "year": 2026,
+            "phase": "ano-teste",
+            "current_tax_weight": 0.995,
+            "reform_tax_weight": 0.005,
+            "source_status": "synthetic_fixture"
+          },
+          {
+            "year": 2027,
+            "phase": "CBS em vigor",
+            "current_tax_weight": 0.72,
+            "reform_tax_weight": 0.28,
+            "source_status": "synthetic_fixture"
+          },
+          {
+            "year": 2028,
+            "phase": "CBS em vigor",
+            "current_tax_weight": 0.72,
+            "reform_tax_weight": 0.28,
+            "source_status": "synthetic_fixture"
+          },
+          {
+            "year": 2029,
+            "phase": "transicao IBS",
+            "current_tax_weight": 0.9,
+            "reform_tax_weight": 0.1,
+            "source_status": "synthetic_fixture"
+          },
+          {
+            "year": 2030,
+            "phase": "transicao IBS",
+            "current_tax_weight": 0.8,
+            "reform_tax_weight": 0.2,
+            "source_status": "synthetic_fixture"
+          },
+          {
+            "year": 2031,
+            "phase": "transicao IBS",
+            "current_tax_weight": 0.7,
+            "reform_tax_weight": 0.3,
+            "source_status": "synthetic_fixture"
+          },
+          {
+            "year": 2032,
+            "phase": "transicao IBS",
+            "current_tax_weight": 0.6,
+            "reform_tax_weight": 0.4,
+            "source_status": "synthetic_fixture"
+          },
+          {
+            "year": 2033,
+            "phase": "reforma integral",
+            "current_tax_weight": 0,
+            "reform_tax_weight": 1,
+            "source_status": "synthetic_fixture"
+          }
+        ],
+        "source_status": "synthetic_fixture",
+        "coverage_note": "Pesos sintéticos para visualizar a transição; não são alíquotas fiscais observadas."
+      },
       "coverage_note": "Parâmetros tributários sintéticos para demonstrar a troca de período.",
       "tax_coverage": {
         "coverage_limited": true,
@@ -202,7 +329,8 @@
     }
   },
   "warnings": [
-    "Dados sintéticos para demonstração visual; não representam uma empresa observada."
+    "Rotas, volumes e custos são sintéticos para demonstração; não representam uma empresa observada.",
+    "Receita assumida em R$ 600/kg e categorias fiscais proxy; uso apenas exploratório."
   ],
   "flow_summary": {
     "total_annual_revenue": 1380000,

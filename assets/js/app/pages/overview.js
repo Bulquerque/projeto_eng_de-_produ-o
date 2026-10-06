@@ -118,12 +118,42 @@ export function renderOverviewTax(state) {
   const baselineMatchesCompany = Boolean(
     baseline && activeCompany && baselineCompany === activeCompany
   );
-  const tax = baselineMatchesCompany ? baselineResult(state).tax : {};
-  const taxImpact =
-    finiteMetric(baselineResult(state).costs.tax_impact) ??
-    finiteMetric(tax.tax_impact) ??
-    finiteMetric(tax.total_tax_impact);
-  const contract = tax.tax_period_contract || tax.metadata?.tax_period_contract || {};
+  const selected = selectActiveScenario(state);
+  const scenarioResult = state?.data?.scenario_result || selected?.result || null;
+  const scenarioMatchesCompany =
+    (!selected?.company_id || selected.company_id === activeCompany) &&
+    (!scenarioResult?.company_id || scenarioResult.company_id === activeCompany);
+  const hasScenarioTax = Boolean(
+    baselineMatchesCompany &&
+    scenarioMatchesCompany &&
+    selected &&
+    selected.scenario_type !== 'baseline' &&
+    scenarioResult
+  );
+  const scenarioTax = scenarioResult?.tax_results?.tax_results || scenarioResult?.tax_results || {};
+  const scenarioCosts = scenarioResult?.costs?.costs || scenarioResult?.costs || {};
+  const tax = hasScenarioTax
+    ? scenarioTax
+    : baselineMatchesCompany
+      ? baselineResult(state).tax
+      : {};
+  const taxImpact = hasScenarioTax
+    ? (finiteMetric(scenarioCosts.tax_impact) ??
+      finiteMetric(tax.tax_impact) ??
+      finiteMetric(tax.total_tax_impact))
+    : (finiteMetric(baselineResult(state).costs.tax_impact) ??
+      finiteMetric(tax.tax_impact) ??
+      finiteMetric(tax.total_tax_impact));
+  // The transition calendar is a property of the active baseline contract;
+  // scenario results carry the selected regime and impact, but may not repeat
+  // the full published period table.
+  const baselineTax = baselineResult(state).tax;
+  const contract =
+    baselineTax.tax_period_contract ||
+    baselineTax.metadata?.tax_period_contract ||
+    tax.tax_period_contract ||
+    tax.metadata?.tax_period_contract ||
+    {};
   const periods = Array.isArray(contract.available_periods) ? contract.available_periods : [];
   const demonstration =
     state?.context?.provider_kind === 'mock' || activeCompany === 'empresa_mock';
@@ -151,5 +181,27 @@ export function renderOverviewTax(state) {
       : !baselineMatchesCompany
         ? 'Os dados fiscais deste baseline não correspondem à empresa ativa. Recarregue os dados para consultar os valores corretos.'
         : 'Pesos exibidos somente quando publicados no contrato fiscal.';
-  return `<div class="ni-page-heading" data-testid="page-overview-tax"><p class="ni-eyebrow">Visão executiva · Tributação</p><h1>Tributos</h1><p>Impacto tributário e pesos publicados no contrato fiscal do baseline.</p></div>${sectionTabs('overview', state.ui.route)}<div class="ni-card ni-tax-source" data-testid="tax-source"><strong>${escapeHtml(sourceLabel)}</strong><span>${escapeHtml(ownershipMessage)}</span></div>${baselineMatchesCompany ? `<div class="ni-kpi-grid">${kpi('Impacto tributário registrado', moneyOrDash(taxImpact), 'Baseline da empresa ativa')}${kpi('Regime', humanizeCode(tax.tax_regime, { current: 'Atual', reform: 'Reforma' }))}</div><div class="ni-card ni-chart-section ni-tax-chart"><h2>Impacto tributário</h2><canvas id="niOverviewTaxImpactChart" class="ni-chart" role="img" aria-label="Impacto tributário registrado no baseline e cenário ativo" hidden></canvas><p class="ni-chart-summary" data-chart-summary="niOverviewTaxImpactChart">Baseline e cenário ativo, quando disponível</p><details class="ni-chart-method"><summary>Dados</summary><p class="ni-note" data-chart-caption="niOverviewTaxImpactChart">Valores tributários publicados no baseline e no resultado do cenário.</p></details></div><div class="ni-card ni-chart-section ni-tax-chart"><div class="ni-tax-chart-heading"><div><h2>Pesos tributários por período</h2><p class="ni-note">Percentual dos pesos publicados para cada regime.</p></div><span>${escapeHtml(sourceLabel)}</span></div><canvas id="niOverviewTaxCoverageChart" class="ni-chart" role="img" aria-label="Pesos publicados do regime atual e da reforma por período" hidden></canvas><p class="ni-chart-summary" data-chart-summary="niOverviewTaxCoverageChart">Pesos fiscais publicados</p><details class="ni-chart-method"><summary>Como ler</summary><p class="ni-note" data-chart-caption="niOverviewTaxCoverageChart">Comparação publicada apenas para períodos com pesos explícitos.</p></details></div><details class="ni-card" data-testid="tax-periods-panel"><summary>Calendário fiscal · ${structuredPeriods.length} períodos</summary>${periodBody}</details>` : `<div class="ni-card">${emptyState(ownershipMessage)}</div>`}`;
+  const activeYear = Number(selected?.changes?.tax_year);
+  const taxContext = hasScenarioTax
+    ? `Cenário ativo${Number.isInteger(activeYear) ? ` · ano fiscal ${activeYear}` : ''}`
+    : 'Baseline da empresa ativa';
+  const pageDescription = hasScenarioTax
+    ? 'Impacto tributário do cenário ativo e pesos publicados no contrato fiscal.'
+    : 'Impacto tributário e pesos publicados no contrato fiscal do baseline.';
+  const regimeValue =
+    {
+      current: 'Atual',
+      reform_2026: 'Ano-teste 2026',
+      reform_2027_2028: 'CBS 2027–2028',
+      transition_2029: 'Transição 2029',
+      transition_2030: 'Transição 2030',
+      transition_2031: 'Transição 2031',
+      transition_2032: 'Transição 2032',
+      reform_full_2033: 'Reforma integral 2033',
+    }[tax.tax_regime || selected?.changes?.tax_regime] ||
+    tax.regime_label ||
+    tax.tax_regime_label ||
+    selected?.changes?.tax_regime_label ||
+    humanizeCode(tax.tax_regime || selected?.changes?.tax_regime);
+  return `<div class="ni-page-heading" data-testid="page-overview-tax"><p class="ni-eyebrow">Visão executiva · Tributação</p><h1>Tributos</h1><p>${pageDescription}</p></div>${sectionTabs('overview', state.ui.route)}<div class="ni-card ni-tax-source" data-testid="tax-source"><strong>${escapeHtml(sourceLabel)}</strong><span>${escapeHtml(ownershipMessage)}</span></div>${baselineMatchesCompany ? `<div class="ni-kpi-grid">${kpi('Impacto tributário registrado', moneyOrDash(taxImpact), taxContext)}${kpi('Regime', regimeValue)}</div><div class="ni-card ni-chart-section ni-tax-chart"><h2>Impacto tributário</h2><canvas id="niOverviewTaxImpactChart" class="ni-chart" role="img" aria-label="Impacto tributário registrado no baseline e cenário ativo" hidden></canvas><p class="ni-chart-summary" data-chart-summary="niOverviewTaxImpactChart">Baseline e cenário ativo, quando disponível</p><details class="ni-chart-method"><summary>Dados</summary><p class="ni-note" data-chart-caption="niOverviewTaxImpactChart">Valores tributários publicados no baseline e no resultado do cenário.</p></details></div><div class="ni-card ni-chart-section ni-tax-chart"><div class="ni-tax-chart-heading"><div><h2>Pesos tributários por período</h2><p class="ni-note">Percentual dos pesos publicados para cada regime.</p></div><span>${escapeHtml(sourceLabel)}</span></div><canvas id="niOverviewTaxCoverageChart" class="ni-chart" role="img" aria-label="Pesos publicados do regime atual e da reforma por período" hidden></canvas><p class="ni-chart-summary" data-chart-summary="niOverviewTaxCoverageChart">Pesos fiscais publicados</p><details class="ni-chart-method"><summary>Como ler</summary><p class="ni-note" data-chart-caption="niOverviewTaxCoverageChart">Comparação publicada apenas para períodos com pesos explícitos.</p></details></div><details class="ni-card" data-testid="tax-periods-panel"><summary>Calendário fiscal · ${structuredPeriods.length} períodos</summary>${periodBody}</details>` : `<div class="ni-card">${emptyState(ownershipMessage)}</div>`}`;
 }
