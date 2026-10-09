@@ -17,7 +17,7 @@ Este mapa descreve a estrutura presente no checkout. `index.html` inicia uma apl
 | `assets/js/app/chart-pipeline.js` | Despacho dos gráficos por rota, separado do bootstrap. |
 | `assets/js/app/presentation/` | Formatação compartilhada de status, evidência e robustez. |
 | `assets/js/app/cost-components.js` | Registro único dos componentes de custo. |
-| `assets/js/core/` | Utilitários e serviços compartilhados, incluindo carregamento e sessão de dados. |
+| `assets/js/core/` | Utilitários e serviços compartilhados; `tax-reform-config.js` mantém configuração tributária, enquanto `tax-reform-config-loader.js` carrega e aplica essa configuração. |
 | `assets/js/phase1/` … `phase5/` | Engines por domínio e módulos de interface legados; confira imports/provedores antes de mover ou remover. |
 | `assets/styles.css` e folhas específicas | Estilos globais e de cada interface. |
 | `data-demo/empresa_mock/` | Fixture sintética para a demonstração pública da Network UI. |
