@@ -268,18 +268,22 @@ export function installBindings({ root, store, controller }) {
   const markDraft = (event) => {
     const form = event.target.form;
     if (form?.id !== 'niScenarioForm' || event.target.disabled) return;
-    const state = store.getState();
     const values = parseScenarioForm(
       new FormData(form),
       form.querySelectorAll('input[name="active_cds"]:checked'),
       rawInputValues.get(form)
     );
-    state.ui.scenario_draft = {
-      ...(state.ui.scenario_draft || {}),
-      scenario_name: values.scenario_name,
-      changes: { ...values },
-    };
-    state.ui.scenario_draft_dirty = true;
+    store.update(
+      (state) => {
+        state.ui.scenario_draft = {
+          ...(state.ui.scenario_draft || {}),
+          scenario_name: values.scenario_name,
+          changes: { ...values },
+        };
+        state.ui.scenario_draft_dirty = true;
+      },
+      { notify: false }
+    );
     const status = root.querySelector('[data-testid="scenario-draft-status"]');
     if (status) status.textContent = 'Alterações pendentes; execute para atualizar.';
     for (const control of root.querySelectorAll(

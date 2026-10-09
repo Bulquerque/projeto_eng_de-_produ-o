@@ -1,17 +1,10 @@
 import { renderBarChart } from '../../core/chart-renderer.js';
+import { COST_COMPONENTS } from '../cost-components.js';
 import {
   selectActiveCompany,
   selectActiveScenario,
   selectBaseline,
 } from '../selectors/business-selectors.js';
-
-const COST_COMPONENTS = [
-  ['Transferência', 'transfer_cost'],
-  ['Distribuição', 'distribution_cost'],
-  ['Armazenagem', 'storage_cost'],
-  ['Estoque', 'inventory_cost'],
-  ['Tributos', 'tax_impact'],
-];
 
 const DISTRIBUTION_TYPES = new Set([
   'distribution',
@@ -99,7 +92,7 @@ function baselineSourceLabel(baseline) {
 
 function renderCostCharts(state, baseline) {
   const baseCosts = getCosts(baseline);
-  const baseEntries = COST_COMPONENTS.map(([label, key]) => [
+  const baseEntries = COST_COMPONENTS.map(({ label, key }) => [
     label,
     finite(baseCosts?.[key]),
   ]).filter(([, value]) => value != null);
@@ -139,16 +132,16 @@ function renderCostCharts(state, baseline) {
   const completeComparison =
     hasScenario &&
     COST_COMPONENTS.every(
-      ([, key]) => finite(baseCosts?.[key]) != null && finite(activeCosts?.[key]) != null
+      ({ key }) => finite(baseCosts?.[key]) != null && finite(activeCosts?.[key]) != null
     );
   setCanvasVisible('niOverviewCostComparisonChart', completeComparison);
   if (completeComparison) {
     const deltas = COST_COMPONENTS.map(
-      ([, key]) => finite(baseCosts[key]) - finite(activeCosts[key])
+      ({ key }) => finite(baseCosts[key]) - finite(activeCosts[key])
     );
     renderBarChart('niOverviewCostComparisonChart', {
       title: 'Economia ou aumento por componente',
-      labels: COST_COMPONENTS.map(([label]) => label),
+      labels: COST_COMPONENTS.map(({ label }) => label),
       datasets: [
         {
           label: 'Baseline − cenário · economia (+) / aumento (−)',

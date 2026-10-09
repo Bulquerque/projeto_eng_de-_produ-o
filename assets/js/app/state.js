@@ -175,10 +175,10 @@ export function createStateStore(initialState) {
       listeners.forEach((listener) => listener(state));
       return state;
     },
-    update(mutator) {
+    update(mutator, { notify = true } = {}) {
       const nextState = mutator(state) || state;
       state = nextState;
-      listeners.forEach((listener) => listener(state));
+      if (notify) listeners.forEach((listener) => listener(state));
       return state;
     },
     subscribe(listener) {
