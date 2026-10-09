@@ -21,6 +21,7 @@ import { sanitizeError } from './dev/dev-console.js';
 import { escapeHtml, routeFallback } from './view-helpers.js';
 import { ROUTE_RENDERERS } from './route-renderers.js';
 import { destroyAllCharts } from '../core/chart-renderer.js';
+import { createChartPipeline } from './chart-pipeline.js';
 import { renderOverviewAnalytics } from './charts/overview-analytics.js';
 import { renderDecisionAnalytics } from './charts/decision-analytics.js';
 import { renderTrustAnalytics } from './charts/trust-analytics.js';
@@ -41,6 +42,25 @@ import {
 } from './charts/charts.js';
 import { loadSavedScenarios } from '../phase3/scenario-persistence.js';
 import { loadOptimizationPresets } from '../core/optimization-config-store.js';
+
+const renderCharts = createChartPipeline({
+  overview: renderOverviewAnalytics,
+  decision: renderDecisionAnalytics,
+  trust: renderTrustAnalytics,
+  bindMap: bindMapInteraction,
+  cost: renderCostChart,
+  volume: renderVolumeByCdChart,
+  distance: renderDistanceHistogram,
+  risk: renderRiskChart,
+  sensitivity: renderSensitivity,
+  histogram: renderRiskHistogram,
+  cdf: renderRiskCdf,
+  totalCurve: renderRiskTotalCurve,
+  drivers: renderRiskDrivers,
+  scatter: renderRiskScatter,
+  probability: renderRiskProbability,
+  ranking: renderRanking,
+});
 
 const request = readRuntimeRequest();
 window.__VISAGIO_NETWORK_UI__ = true;
@@ -121,7 +141,7 @@ function initializeNetworkIntelligence() {
       page.innerHTML = renderer(state, route);
       setActiveNav(root, route);
       updateGlobalContext(root, state);
-      renderCharts(route.path, state);
+      renderCharts({ root, path: route.path, state });
       if (state.ui.error) {
         page.insertAdjacentHTML(
           'afterbegin',
@@ -376,33 +396,6 @@ function initializeNetworkIntelligence() {
         titleNode.focus();
       },
     };
-
-    function renderCharts(path, state) {
-      renderOverviewAnalytics(state);
-      renderDecisionAnalytics(state);
-      renderTrustAnalytics(state);
-      bindMapInteraction(root);
-      if (path === '/network/overview/costs')
-        renderCostChart('niCostChart', state.data.scenario_result || state.data.baseline);
-      if (path === '/network/overview/network') {
-        const flows = state.data.baseline?.flows || [];
-        renderVolumeByCdChart('niVolumeByCdChart', flows);
-        renderDistanceHistogram('niDistanceHistogramChart', flows);
-      }
-      if (path.includes('/risk')) {
-        renderRiskChart('niRiskChart', state.data.monte_carlo);
-        renderSensitivity('niSensitivityChart', state.data.sensitivity);
-        const monteCarlo = state.data.monte_carlo;
-        renderRiskHistogram('niRiskHistogramChart', monteCarlo);
-        renderRiskCdf('niRiskCdfChart', monteCarlo);
-        renderRiskTotalCurve('niRiskTotalChart', monteCarlo);
-        renderRiskDrivers('niRiskDriversChart', monteCarlo);
-        renderRiskScatter('niRiskScatterChart', monteCarlo);
-        renderRiskProbability('niRiskProbabilityChart', monteCarlo);
-      }
-      if (path === '/network/optimizer/results')
-        renderRanking('niRankingChart', state.data.optimizer);
-    }
 
     store.subscribe(render);
     stopRouter = startRouter({

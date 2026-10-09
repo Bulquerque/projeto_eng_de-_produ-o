@@ -26,6 +26,9 @@ def test_app_foundation_contracts():
         import { isKnownRoute, normalizeRoute, parseRoute, replaceCompanyQuery } from './assets/js/app/router.js';
         import { clearScenarioResults, createEmptyData, createInitialState, createStateStore, commitProviderSnapshot, getSafeStateSnapshot, resetCompanyScopedState } from './assets/js/app/state.js';
         import { formatMetric, readMetric } from './assets/js/app/metric-registry.js';
+        import { COST_COMPONENTS } from './assets/js/app/cost-components.js';
+        import { evidenceClassLabel, robustnessPresentation, userStatusLabel } from './assets/js/app/presentation/status.js';
+        import { createChartPipeline } from './assets/js/app/chart-pipeline.js';
 
         assert.equal(COMPANY_REGISTRY.empresa1.provider, 'project');
         assert.equal(COMPANY_REGISTRY.empresa2.provider, 'project');
@@ -45,6 +48,48 @@ def test_app_foundation_contracts():
         assert.equal(isKnownRoute('#/network/dev/console?tab=errors'), true);
         assert.equal(parseRoute('#/network/dev/console?tab=errors').path, '/network/dev/console');
         const store = createStateStore(createInitialState({ company_id: 'empresa1', default_route: '#/network/overview/summary' }));
+        let notifications = 0;
+        const unsubscribe = store.subscribe(() => { notifications += 1; });
+        store.update((state) => { state.ui.scenario_draft = { scenario_name: 'Draft' }; }, { notify: false });
+        assert.equal(store.getState().ui.scenario_draft.scenario_name, 'Draft');
+        assert.equal(notifications, 0);
+        store.update((state) => { state.ui.scenario_draft_dirty = true; });
+        assert.equal(notifications, 1);
+        unsubscribe();
+        assert.deepEqual(COST_COMPONENTS.map(({ key, label }) => [key, label]), [
+          ['transfer_cost', 'Transferência'], ['distribution_cost', 'Distribuição'],
+          ['storage_cost', 'Armazenagem'], ['inventory_cost', 'Estoque'], ['tax_impact', 'Tributos'],
+        ]);
+        assert.equal(userStatusLabel('pass'), 'Aprovado');
+        assert.equal(evidenceClassLabel('proxy'), 'Proxy');
+        assert.equal(robustnessPresentation({ conditional_robustness_score: 68 }).value, 68);
+        const calls = [];
+        const chartPipeline = createChartPipeline(Object.fromEntries(
+          ['overview', 'decision', 'trust', 'bindMap', 'cost', 'volume', 'distance', 'risk', 'sensitivity', 'histogram', 'cdf', 'totalCurve', 'drivers', 'scatter', 'probability', 'ranking']
+            .map((name) => [name, (...args) => calls.push([name, ...args])])
+        ));
+        const chartState = { data: { baseline: { flows: ['flow'] }, scenario_result: 'result', monte_carlo: 'mc', sensitivity: 'sensitivity', optimizer: 'optimizer' } };
+        const chartRoot = {};
+        chartPipeline({ root: chartRoot, path: '/network/overview/costs', state: chartState });
+        assert.deepEqual(calls.map(([name]) => name), ['overview', 'decision', 'trust', 'bindMap', 'cost']);
+        assert.deepEqual(calls[4], ['cost', 'niCostChart', 'result']);
+        calls.length = 0;
+        chartPipeline({ root: chartRoot, path: '/network/overview/network', state: chartState });
+        assert.deepEqual(calls.map(([name]) => name), [
+          'overview', 'decision', 'trust', 'bindMap', 'volume', 'distance',
+        ]);
+        assert.deepEqual(calls[4], ['volume', 'niVolumeByCdChart', ['flow']]);
+        calls.length = 0;
+        chartPipeline({ root: chartRoot, path: '/network/scenarios/risk', state: chartState });
+        assert.deepEqual(calls.map(([name]) => name), [
+          'overview', 'decision', 'trust', 'bindMap', 'risk', 'sensitivity', 'histogram', 'cdf',
+          'totalCurve', 'drivers', 'scatter', 'probability',
+        ]);
+        calls.length = 0;
+        chartPipeline({ root: chartRoot, path: '/network/optimizer/results', state: chartState });
+        assert.deepEqual(calls.map(([name]) => name), [
+          'overview', 'decision', 'trust', 'bindMap', 'ranking',
+        ]);
         assert.deepEqual(store.getState().data.saved_scenarios, []);
         const firstData = createEmptyData();
         const secondData = createEmptyData();
@@ -331,6 +376,9 @@ def test_network_ui_entrypoint_and_e2e_hooks():
         (APP / 'pages' / filename).read_text(encoding='utf-8')
         for filename in ('overview.js', 'scenarios.js', 'optimizer.js', 'trust.js')
     )
+    trust_source = (APP / 'pages/trust.js').read_text(encoding='utf-8')
+    assert "from '../charts/trust-analytics.js'" not in trust_source
+    assert "from '../presentation/status.js'" in trust_source
     for test_id in (
         'page-overview-summary',
         'page-scenarios-build',
