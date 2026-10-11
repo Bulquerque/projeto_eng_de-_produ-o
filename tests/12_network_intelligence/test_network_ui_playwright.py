@@ -148,9 +148,8 @@ def test_network_ui_mock_flow():
         page.locator('a[data-route="#/network/scenarios/build"]').first.click()
         page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible')
         assert page.locator('[data-testid="scenario-library"]').is_visible()
-        open_details(page, '[data-testid="scenario-load-mock_consolidation"]')
-        assert page.locator('[data-testid="scenario-load-mock_consolidation"]').is_visible()
-        open_details(page, '[data-testid="scenario-load-mock_consolidation"]')
+        page.locator('[data-testid="scenario-library"] > summary').click()
+        page.locator('[data-testid="scenario-load-mock_consolidation"]').wait_for(state='visible')
         page.locator('[data-testid="scenario-load-mock_consolidation"]').click()
         assert page.locator('input[name="scenario_name"]').input_value() == 'Consolidação demonstrativa'
         page.locator('[data-testid="scenario-run"]').click()

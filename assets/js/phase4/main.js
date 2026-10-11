@@ -1,5 +1,5 @@
 import { loadCatalog } from '../core/data-loader.js';
-import { loadTaxReformConfiguration } from '../core/tax-reform-config.js';
+import { loadTaxReformConfiguration } from '../core/tax-reform-config-loader.js';
 import { $ } from '../core/common.js';
 import { setupPhase4 } from './phase4-dashboard.js';
 
