@@ -96,7 +96,6 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
                 tax_mode: tm,
                 tax_regime: baseTaxRegime,
                 ...(taxYear ? { tax_year: taxYear } : {}),
-                reallocation_rule: 'nearest_available_cd',
                 scenario_type: 'candidate',
               },
             });

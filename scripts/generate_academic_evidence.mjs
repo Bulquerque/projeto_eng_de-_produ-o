@@ -8,6 +8,19 @@ import { buildObjective } from '../assets/js/phase4/objective-builder.js';
 import { buildBundleReconciliation } from '../assets/js/core/reconciliation-engine.js';
 import { MODEL_DEFAULTS, calculateInventoryCost } from '../assets/js/core/model-configuration.js';
 import { loadRuntimeBundle } from '../tests/runtime_bundle_support.mjs';
+import {
+  ACADEMIC_OPTIMIZER_CONFIG,
+  buildMonteCarloExecutionEvidence,
+  buildOptimizerCompletenessEvidence,
+  buildOptimizerBestEvidence,
+  buildScenarioExecutionEvidence,
+  buildScenarioQualityEvidence,
+  buildScenarioSavingEvidence,
+  compareInventoryCosts,
+  getAcademicOptimizerProfiles,
+  normalizeEvidenceNumber,
+  prepareAcademicReallocation,
+} from './academic-evidence-config.mjs';
 
 function readPassword() {
   if (process.env.VISAGIO_DATA_PASSWORD) return process.env.VISAGIO_DATA_PASSWORD;
@@ -44,8 +57,8 @@ function decryptJson(relPath) {
     Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8')
   );
 }
-const n = (v) => (Number.isFinite(Number(v)) ? Number(v) : null);
-const pickResult = (r) => ({
+const n = normalizeEvidenceNumber;
+const pickResult = (r, reallocationAudit = {}, baselineBundle = null, baselineResult = null) => ({
   scenario_id: r.scenario_id,
   scenario_name: r.scenario?.scenario_name || r.scenario_name,
   company_id: r.company_id,
@@ -58,11 +71,18 @@ const pickResult = (r) => ({
   inventory_days: n(r.scenario?.changes?.inventory_days ?? r.changes?.inventory_days ?? 45),
   wacc: n(r.scenario?.changes?.wacc ?? r.changes?.wacc ?? 0.15),
   tax_mode: r.scenario?.changes?.tax_mode ?? r.changes?.tax_mode ?? 'current',
+  reallocation_rule_original: reallocationAudit.source_reallocation_rule ?? null,
+  reallocation_rule_effective:
+    reallocationAudit.effective_reallocation_rule ??
+    r.scenario?.changes?.reallocation_rule ??
+    r.changes?.reallocation_rule ??
+    null,
   costs: r.costs || {},
   total_with_tax: n(r.total_with_tax),
-  saving_pct: n(r.saving_pct),
-  quality: r.quality || null,
+  saving_pct: baselineResult ? buildScenarioSavingEvidence(r, baselineResult) : null,
+  quality: baselineBundle ? buildScenarioQualityEvidence(r, baselineBundle) : null,
   diagnostics: r.diagnostics || r.costs?.diagnostics || null,
+  ...buildScenarioExecutionEvidence(r),
 });
 function makeScenario(companyId, bundle, overrides = {}) {
   const base = buildBaselineScenario(companyId, bundle);
@@ -85,15 +105,28 @@ const output = {
 };
 for (const companyId of ['empresa1', 'empresa2']) {
   const bundle = loadRuntimeBundle({ companyId, decryptJson });
-  const baseScenario = buildBaselineScenario(companyId, bundle);
-  const baseline = runScenario({ companyId, scenario: baseScenario, baselineBundle: bundle });
+  const baselineAudit = prepareAcademicReallocation(
+    buildBaselineScenario(companyId, bundle),
+    companyId
+  );
+  const baseline = runScenario({
+    companyId,
+    scenario: baselineAudit.scenario,
+    baselineBundle: bundle,
+  });
   const sampleScenarios = decryptJson(`data/${companyId}/phase3/sample_scenarios.json`);
   const sampleList = Array.isArray(sampleScenarios)
     ? sampleScenarios
     : sampleScenarios.scenarios || sampleScenarios.sample_scenarios || [];
-  const published_scenarios = sampleList.map((scenario) =>
-    pickResult(runScenario({ companyId, scenario, baselineBundle: bundle }))
-  );
+  const published_scenarios = sampleList.map((sourceScenario) => {
+    const scenarioAudit = prepareAcademicReallocation(sourceScenario, companyId);
+    return pickResult(
+      runScenario({ companyId, scenario: scenarioAudit.scenario, baselineBundle: bundle }),
+      scenarioAudit,
+      bundle,
+      baseline
+    );
+  });
   const reconciliation = buildBundleReconciliation(bundle);
   const sameDrivers1 = makeScenario(companyId, bundle, {
     label: 'inventory_test_1_cd',
@@ -103,79 +136,63 @@ for (const companyId of ['empresa1', 'empresa2']) {
     label: 'inventory_test_all_cds',
     active_cds: bundle.model.active_cds,
   });
-  const inventory1 = runScenario({ companyId, scenario: sameDrivers1, baselineBundle: bundle });
-  const inventoryN = runScenario({ companyId, scenario: sameDriversN, baselineBundle: bundle });
+  const inventory1Audit = prepareAcademicReallocation(sameDrivers1, companyId);
+  const inventoryNAudit = prepareAcademicReallocation(sameDriversN, companyId);
+  const inventory1 = runScenario({
+    companyId,
+    scenario: inventory1Audit.scenario,
+    baselineBundle: bundle,
+  });
+  const inventoryN = runScenario({
+    companyId,
+    scenario: inventoryNAudit.scenario,
+    baselineBundle: bundle,
+  });
+  const inventoryComparison = compareInventoryCosts(inventory1, inventoryN);
   const mcScenario = makeScenario(companyId, bundle, { label: 'monte_carlo_evidence' });
-  const mcDet = runScenario({ companyId, scenario: mcScenario, baselineBundle: bundle });
+  const mcScenarioAudit = prepareAcademicReallocation(mcScenario, companyId);
+  const mcDet = runScenario({
+    companyId,
+    scenario: mcScenarioAudit.scenario,
+    baselineBundle: bundle,
+  });
   const mc = runMonteCarloSimulation({
     companyId,
-    selectedScenario: mcScenario,
+    selectedScenario: mcScenarioAudit.scenario,
     baselineBundle: bundle,
     deterministicResult: mcDet,
     iterations: 300,
     seed: 42,
     config: { profile: 'balanced', scatter_driver: 'freight_multiplier' },
   });
-  const profiles = {
-    custo: {
-      total_cost: 0.6,
-      service_quality: 0.05,
-      operational_risk: 0.1,
-      tax_impact: 0.15,
-      inventory_efficiency: 0.1,
-    },
-    equilibrado: {
-      total_cost: 0.3,
-      service_quality: 0.2,
-      operational_risk: 0.2,
-      tax_impact: 0.15,
-      inventory_efficiency: 0.15,
-    },
-    servico: {
-      total_cost: 0.15,
-      service_quality: 0.45,
-      operational_risk: 0.2,
-      tax_impact: 0.1,
-      inventory_efficiency: 0.1,
-    },
-    tributo: {
-      total_cost: 0.2,
-      service_quality: 0.1,
-      operational_risk: 0.1,
-      tax_impact: 0.5,
-      inventory_efficiency: 0.1,
-    },
-  };
   const optimization = {};
-  for (const [name, weights] of Object.entries(profiles)) {
-    const objective = buildObjective({ companyId, objectiveName: name, weights });
+  for (const profile of getAcademicOptimizerProfiles()) {
+    const objective = buildObjective({
+      companyId,
+      objectiveName: profile.profile_name,
+      weights: profile.weights,
+    });
     const opt = runOptimization({
       companyId,
       baselineBundle: bundle,
       objective,
-      constraints: {
-        min_active_cds: 1,
-        max_active_cds: 999,
-        max_cd_volume_share: 1,
-        max_risk_level: 'high',
-        allow_tax_disabled: true,
-      },
-      optimizerConfig: { method: 'exact_discrete', max_candidates: 5000, seed: 42 },
+      constraints: { ...ACADEMIC_OPTIMIZER_CONFIG.constraints },
+      optimizerConfig: { ...ACADEMIC_OPTIMIZER_CONFIG.optimizer },
     });
-    optimization[name] = {
+    optimization[profile.profile_id] = {
+      profile_id: profile.profile_id,
+      profile_name: profile.profile_name,
+      weights: { ...profile.weights },
+      constraints: { ...ACADEMIC_OPTIMIZER_CONFIG.constraints },
+      optimizer_config: { ...ACADEMIC_OPTIMIZER_CONFIG.optimizer },
       optimizer_status: opt.optimizer_status,
       decision_use: opt.decision_use,
       result_scope: opt.result_scope,
       search_log: opt.search_log,
-      best: opt.best_scenarios?.slice(0, 3).map((x) => ({
-        scenario_id: x.scenario_id,
-        scenario_name: x.scenario?.scenario_name,
-        active_cds: x.scenario?.changes?.active_cds,
-        score: x.score,
-        total_with_tax: x.result?.total_with_tax,
-        saving_pct: x.result?.saving_pct,
-        risk_level: x.quality?.risk_level,
-      })),
+      search_completeness: buildOptimizerCompletenessEvidence(opt),
+      best: opt.best_scenarios
+        ?.slice(0, 3)
+        .map((candidate) => buildOptimizerBestEvidence(candidate, baseline)),
     };
   }
   output.companies[companyId] = {
@@ -184,14 +201,13 @@ for (const companyId of ['empresa1', 'empresa2']) {
       active_cds: bundle.model?.active_cds?.length || 0,
       core_data_keys: Object.keys(bundle.core_data || {}),
     },
-    baseline: pickResult(baseline),
+    baseline: pickResult(baseline, baselineAudit, bundle, baseline),
     published_scenarios,
     reconciliation,
     inventory_independence_test: {
-      one_cd: pickResult(inventory1),
-      all_cds: pickResult(inventoryN),
-      equal_inventory_cost:
-        Math.abs(n(inventory1.costs?.inventory_cost) - n(inventoryN.costs?.inventory_cost)) < 1e-8,
+      one_cd: pickResult(inventory1, inventory1Audit, bundle, baseline),
+      all_cds: pickResult(inventoryN, inventoryNAudit, bundle, baseline),
+      ...inventoryComparison,
       direct_formula_check: calculateInventoryCost({
         baseInventoryCost: baseline.costs?.inventory_cost,
         demandMultiplier: 1,
@@ -200,11 +216,13 @@ for (const companyId of ['empresa1', 'empresa2']) {
       }),
     },
     monte_carlo: {
+      ...buildMonteCarloExecutionEvidence(mc),
+      reallocation_rule_original: mcScenarioAudit.source_reallocation_rule,
+      reallocation_rule_effective: mcScenarioAudit.effective_reallocation_rule,
       iterations: mc.iterations,
       seed: mc.seed,
       profile: mc.config?.profile,
       scatter_driver: mc.config?.scatter_driver,
-      summary: mc.summary,
       provenance: mc.provenance,
       data_quality: mc.data_quality,
     },

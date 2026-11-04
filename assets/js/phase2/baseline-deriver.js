@@ -2,6 +2,7 @@ import { calculatePhysicalCosts } from '../phase3/physical-cost-engine.js';
 import { buildBundleReconciliation } from '../core/reconciliation-engine.js';
 import { runTaxCalculation } from '../core/tax/tax-orchestrator.js';
 import { safeNumber } from '../core/common.js';
+import { defaultReallocationRule } from '../phase3/reallocation-policy.js';
 import {
   calculateLogisticsTotal,
   calculateTotalWithTax,
@@ -29,7 +30,7 @@ function buildBaselineScenario(bundle, companyId) {
       inventory_days: MODEL_DEFAULTS.inventory_days,
       wacc: MODEL_DEFAULTS.reference_wacc,
       tax_mode: 'current',
-      reallocation_rule: 'nearest_available_cd',
+      reallocation_rule: defaultReallocationRule(companyId),
     },
   };
 }

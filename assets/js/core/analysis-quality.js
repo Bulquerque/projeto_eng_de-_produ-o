@@ -10,29 +10,41 @@ export const DATA_QUALITY_STATUS = Object.freeze({
   TECHNICAL_ERROR: 'technical_error',
 });
 
+function finiteNumberOrNull(value) {
+  if (typeof value !== 'number' && typeof value !== 'string') return null;
+  if (typeof value === 'string' && !value.trim()) return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 export function isTaxCoverageLimited({ taxResults = {}, scenario = {} } = {}) {
   const taxMode = taxResults.tax_mode || scenario?.changes?.tax_mode || 'current';
   if (taxMode === 'disabled' || scenario?.changes?.tax_mode === 'disabled') return false;
 
   const coverage = taxResults.tax_coverage || {};
-  const completeFiscalCoverage = Number(coverage.complete_fiscal_coverage_ratio);
-  const inputCoverage = Number(coverage.input_coverage_ratio);
-  const proxyFlowCount = Number(coverage.proxy_flow_count || 0);
+  const completeFiscalCoverage = finiteNumberOrNull(coverage.complete_fiscal_coverage_ratio);
+  const inputCoverage = finiteNumberOrNull(coverage.input_coverage_ratio);
+  const proxyFlowCount = finiteNumberOrNull(coverage.proxy_flow_count);
   const structuralOrLegacyLimit = coverage.coverage_limited === true || coverage.blocked === true;
   const incompleteCoverage =
-    (Number.isFinite(completeFiscalCoverage) && completeFiscalCoverage < 1) ||
-    (Number.isFinite(inputCoverage) && inputCoverage < 1) ||
-    proxyFlowCount > 0;
+    completeFiscalCoverage == null ||
+    completeFiscalCoverage < 1 ||
+    completeFiscalCoverage > 1 ||
+    inputCoverage == null ||
+    inputCoverage < 1 ||
+    inputCoverage > 1 ||
+    proxyFlowCount == null ||
+    proxyFlowCount !== 0;
   return structuralOrLegacyLimit || incompleteCoverage;
 }
 
 export function buildDataQualityAssessment({ taxResults = {}, scenario = {} } = {}) {
   const limited = isTaxCoverageLimited({ taxResults, scenario });
   const coverage = taxResults.tax_coverage || {};
-  const uncovered = Number(coverage.uncovered_flow_count || 0);
-  const missingOrigin = Number(coverage.missing_origin_uf_count || 0);
-  const completeFiscal = Number(coverage.flows_with_complete_fiscal_data || 0);
-  const eligibleFlowCount = Number(coverage.eligible_flow_count || 0);
+  const uncovered = finiteNumberOrNull(coverage.uncovered_flow_count);
+  const missingOrigin = finiteNumberOrNull(coverage.missing_origin_uf_count);
+  const completeFiscal = finiteNumberOrNull(coverage.flows_with_complete_fiscal_data);
+  const eligibleFlowCount = finiteNumberOrNull(coverage.eligible_flow_count);
 
   return {
     status: limited ? DATA_QUALITY_STATUS.LIMITED_FISCAL_COVERAGE : DATA_QUALITY_STATUS.COMPLETE,
@@ -46,20 +58,20 @@ export function buildDataQualityAssessment({ taxResults = {}, scenario = {} } = 
       missing_origin_uf_count: missingOrigin,
       complete_fiscal_flow_count: completeFiscal,
       eligible_flow_count: eligibleFlowCount,
-      complete_fiscal_coverage_ratio: Number.isFinite(
-        Number(coverage.complete_fiscal_coverage_ratio)
-      )
-        ? Number(coverage.complete_fiscal_coverage_ratio)
-        : null,
+      complete_fiscal_coverage_ratio: finiteNumberOrNull(coverage.complete_fiscal_coverage_ratio),
     },
   };
 }
 
 export function isNumericallyUsableScenarioResult(result = {}) {
+  const isFiniteValue = (value) =>
+    (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) &&
+    Number.isFinite(Number(value));
   return Boolean(
-    result.simulation_status === 'success' &&
-    Number.isFinite(Number(result.total_with_tax)) &&
-    Number.isFinite(Number(result.costs?.total_logistics_cost)) &&
-    Number.isFinite(Number(result.costs?.tax_impact))
+    result?.simulation_status === 'success' &&
+    !(result?.errors?.length > 0) &&
+    isFiniteValue(result?.total_with_tax) &&
+    isFiniteValue(result?.costs?.total_logistics_cost) &&
+    isFiniteValue(result?.costs?.tax_impact)
   );
 }

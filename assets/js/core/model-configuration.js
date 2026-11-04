@@ -26,9 +26,10 @@ export const MODEL_DEFAULTS = Object.freeze({
     rationale: 'Empresa 1 não possui custo de transferência observado por km no pacote.',
     interpretation: 'proxy de engenharia; não é tarifa histórica da Empresa 1.',
     calibration_method: 'weighted_freight_per_kg_by_destination_uf',
-    reproducibility_status: 'limited_runtime_snapshot',
+    recommended_recalibration_method: 'weighted_freight_per_kg_km_by_destination_uf',
+    reproducibility_status: 'historical_method_incomplete',
     reproducibility_note:
-      'As taxas publicadas são um snapshot; a memória de linhas, período e validação deve acompanhar o dataset de calibração.',
+      'A proveniência registrada descreve uma ponderação em R$/kg, enquanto o motor aplica R$/kg-km. scripts/calibrate_transfer_rates.mjs define uma recalibração compatível com a unidade do motor; os valores existentes permanecem como snapshot até validar distância, período, filtros e fonte autorizada.',
   }),
   storage_active_cd_floor_ratio: 0.65,
   storage_active_cd_slope: 0.35,

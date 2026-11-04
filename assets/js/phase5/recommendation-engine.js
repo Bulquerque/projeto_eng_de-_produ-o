@@ -20,9 +20,15 @@ export function buildRecommendation({
   );
   const savingPct = safeNumber(comparison.saving_pct ?? comparisonRow?.saving_pct);
   const hasPositiveSaving = savingPct > 0;
-  const risk = String(
-    quality.risk_level || selectedScenario?.quality?.risk_level || 'medium'
-  ).toLowerCase();
+  const operationalQuality =
+    Object.keys(quality || {}).length > 0 ? quality : selectedScenario?.quality || {};
+  const rawQualityScore = operationalQuality.quality_score;
+  const operationalQualityAvailable =
+    (typeof rawQualityScore === 'number' ||
+      (typeof rawQualityScore === 'string' && rawQualityScore.trim() !== '')) &&
+    Number.isFinite(Number(rawQualityScore)) &&
+    ['low', 'medium', 'high'].includes(String(operationalQuality.risk_level || '').toLowerCase());
+  const risk = String(operationalQuality.risk_level || '').toLowerCase();
   const robustnessScore = safeNumber(robustness.robustness_score, 0);
   const monteCarlo =
     selectedScenario?.monte_carlo?.summary ||
@@ -47,6 +53,7 @@ export function buildRecommendation({
   let status = 'not_recommended';
   if (
     hasPositiveSaving &&
+    operationalQualityAvailable &&
     risk !== 'high' &&
     robustnessScore >= 70 &&
     (mcProbability === null || mcProbability >= 0.65) &&
@@ -58,6 +65,7 @@ export function buildRecommendation({
     status = 'recommended';
   } else if (
     hasPositiveSaving &&
+    operationalQualityAvailable &&
     robustnessScore >= 45 &&
     (mcProbability === null || mcProbability >= 0.5) &&
     evidenceUsable &&
@@ -92,6 +100,8 @@ export function buildRecommendation({
     }
   }
   const main_risks = [];
+  if (!operationalQualityAvailable)
+    main_risks.push('qualidade e risco operacional indisponíveis; recomendação bloqueada');
   if (risk === 'high' || risk === 'medium')
     main_risks.push(`risco operacional ${risk === 'high' ? 'alto' : 'médio'}`);
   if (robustness.alerts?.length) main_risks.push(...robustness.alerts);

@@ -42,6 +42,7 @@ import {
   taxRegimeLabel,
 } from '../core/tax-reform-config.js';
 import { renderScenarioComparisonChart } from './charts.js';
+import { defaultReallocationRule } from './reallocation-policy.js';
 
 const EMPTY_STATE = {
   validation: 'Ainda não validado.',
@@ -60,7 +61,6 @@ const DEFAULT_FORM_VALUES = {
   inventory_days: MODEL_DEFAULTS.inventory_days,
   wacc: MODEL_DEFAULTS.reference_wacc,
   tax_mode: 'current',
-  reallocation_rule: 'nearest_available_cd',
 };
 
 function readMonteCarloConfig() {
@@ -267,7 +267,7 @@ function loadScenarioToForm(scenario) {
   $('waccValue').value = scenario.changes?.wacc ?? DEFAULT_FORM_VALUES.wacc;
   $('taxMode').value = scenarioTaxMode(scenario) || DEFAULT_FORM_VALUES.tax_mode;
   $('reallocationRule').value =
-    scenario.changes?.reallocation_rule || DEFAULT_FORM_VALUES.reallocation_rule;
+    scenario.changes?.reallocation_rule || defaultReallocationRule(state.companyId);
   renderTaxAssumptions();
   const mc = scenario.monte_carlo || scenario.analysis?.monte_carlo || null;
   if (mc?.config) applyMonteCarloConfig(mc.config);
@@ -587,6 +587,29 @@ function runCurrentScenario() {
     scenario,
     baselineBundle: state.library.baselineBundle,
   });
+  if (state.currentResult.simulation_status !== 'success') {
+    const failedResult = state.currentResult;
+    renderValidation({
+      valid: false,
+      errors: failedResult.errors || [],
+      warnings: failedResult.warnings || [],
+    });
+    state.currentResult = null;
+    state.comparison = null;
+    state.quality = null;
+    state.explanation = null;
+    state.monteCarlo = null;
+    renderResult();
+    renderMonteCarlo();
+    renderComparison();
+    renderQuality();
+    renderExplanation();
+    log('Simulação não concluída', {
+      scenario_id: scenario.scenario_id,
+      errors: failedResult.errors,
+    });
+    return;
+  }
   state.quality = evaluateScenarioQuality({
     scenarioResult: state.currentResult,
     baselineBundle: state.library.baselineBundle,
@@ -682,6 +705,7 @@ export async function loadCompany(companyId) {
   }
   state.isLoading = true;
   state.companyId = companyId;
+  if ($('reallocationRule')) $('reallocationRule').value = defaultReallocationRule(companyId);
   state.library = null; // reset explícito — impede reuso de dados da empresa anterior
   renderCompanyTabs();
   resetAnalysisPanels();

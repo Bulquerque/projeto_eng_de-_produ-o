@@ -101,7 +101,6 @@ export function buildBaselineScenario(companyId, baselineBundle) {
       wacc: MODEL_DEFAULTS.reference_wacc,
       tax_mode: 'current',
       tax_regime: resolveTaxRegime({ taxMode: 'current' }),
-      reallocation_rule: 'nearest_available_cd',
       scenario_type: 'baseline',
     },
   });

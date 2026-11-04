@@ -5,6 +5,7 @@ import {
 } from '../core/tax-reform-config.js';
 import { sameCdLabel } from '../core/cd-utils.js';
 import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { defaultReallocationRule } from './reallocation-policy.js';
 function slugify(value) {
   return (
     String(value || 'cenario')
@@ -59,7 +60,7 @@ export function buildScenarioFromForm({
     tax_mode: taxMode,
     tax_regime: taxRegime,
     tax_regime_label: taxRegimeLabel(taxRegime),
-    reallocation_rule: String(formValues.reallocation_rule || 'nearest_available_cd'),
+    reallocation_rule: String(formValues.reallocation_rule || defaultReallocationRule(companyId)),
   };
   if (formValues.tax_year != null) {
     changes.tax_year = Number(formValues.tax_year);

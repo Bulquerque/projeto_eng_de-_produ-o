@@ -125,7 +125,7 @@ function makeScenario({ companyId, baselineBundle, overrides = {} }) {
       tax_mode: overrides.tax_mode ?? 'current',
       tax_regime: overrides.tax_regime,
       tax_year: overrides.tax_year,
-      reallocation_rule: overrides.reallocation_rule || 'nearest_available_cd',
+      reallocation_rule: overrides.reallocation_rule,
       scenario_type: overrides.scenario_type || 'adversarial',
     },
   });

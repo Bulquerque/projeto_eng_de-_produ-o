@@ -24,8 +24,8 @@ export async function parseImportedScenario(file) {
   let parsed;
   try {
     parsed = JSON.parse(text);
-  } catch (e) {
-    throw new Error('JSON inválido: ' + e.message);
+  } catch (error) {
+    throw new Error('JSON inválido: ' + error.message, { cause: error });
   }
   return parsed;
 }

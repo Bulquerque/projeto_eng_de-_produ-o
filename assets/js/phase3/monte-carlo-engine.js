@@ -1,8 +1,95 @@
 import { runScenario } from './scenario-simulator.js';
 import { safeNumber } from '../core/common.js';
 import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
+import {
+  isNumericallyUsableScenarioResult,
+  isTaxCoverageLimited,
+} from '../core/analysis-quality.js';
+
+export const MONTE_CARLO_RISK_BAND_POLICY = Object.freeze({
+  id: 'project_monte_carlo_risk_v1',
+  source: 'project_defined_thresholds',
+  external_standard: false,
+  thresholds: Object.freeze({
+    high: Object.freeze({ probability_positive_below: 0.6, p10_saving_pct_below: 0 }),
+    medium: Object.freeze({ probability_positive_below: 0.8, p10_saving_pct_below: 2 }),
+  }),
+});
+
+export function classifyMonteCarloRiskBand(
+  probabilitySavingPositive,
+  p10SavingPct,
+  { invalidSampleCount = 0 } = {}
+) {
+  const probability = probabilitySavingPositive;
+  const p10 = p10SavingPct;
+  if (
+    invalidSampleCount !== 0 ||
+    typeof probability !== 'number' ||
+    typeof p10 !== 'number' ||
+    !Number.isFinite(probability) ||
+    !Number.isFinite(p10) ||
+    probability < 0 ||
+    probability > 1
+  ) {
+    return null;
+  }
+  const { high, medium } = MONTE_CARLO_RISK_BAND_POLICY.thresholds;
+  if (probability < high.probability_positive_below || p10 < high.p10_saving_pct_below) {
+    return 'high';
+  }
+  if (probability < medium.probability_positive_below || p10 < medium.p10_saving_pct_below) {
+    return 'medium';
+  }
+  return 'low';
+}
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value || {}));
+}
+
+function formatScenarioMessages(items = []) {
+  const list = Array.isArray(items) ? items : [items];
+  return list
+    .map((item) => {
+      if (typeof item === 'string') return item;
+      if (item && typeof item.message === 'string') return item.message;
+      if (item && typeof item.code === 'string') return item.code;
+      try {
+        return JSON.stringify(item);
+      } catch {
+        return String(item);
+      }
+    })
+    .filter(Boolean)
+    .join('; ');
+}
+
+function isFiniteScenarioTotal(value) {
+  return (
+    (typeof value === 'number' || typeof value === 'string') &&
+    !(typeof value === 'string' && !value.trim()) &&
+    Number.isFinite(Number(value))
+  );
+}
+
+export function monteCarloIterationValidationWarning(result, iterationNumber) {
+  if (isNumericallyUsableScenarioResult(result)) return null;
+  const reasons = [];
+  if (result?.simulation_status !== 'success') {
+    reasons.push(`simulation_status=${result?.simulation_status || 'ausente'}`);
+  }
+  if (!isFiniteScenarioTotal(result?.total_with_tax)) {
+    reasons.push('total com tributo ausente ou não numérico');
+  }
+  if (result?.errors?.length) {
+    reasons.push(`erros: ${formatScenarioMessages(result.errors)}`);
+  }
+  if (result?.warnings?.length) {
+    reasons.push(`avisos: ${formatScenarioMessages(result.warnings)}`);
+  }
+  if (!reasons.length) reasons.push('resultado não numericamente utilizável');
+  return `Amostra ${iterationNumber} inválida: ${reasons.join('; ')}`;
 }
 
 function clamp(value, min, max) {
@@ -426,6 +513,7 @@ function buildSampleScenario({ scenario, sampled, index, profile, seed }) {
 
 function summarizeSamples({
   samples,
+  invalidSampleCount = 0,
   baselineTotal,
   deterministicTotal,
   deterministicSavingPct,
@@ -510,12 +598,9 @@ function summarizeSamples({
     importance: Math.abs(item.correlation),
   }));
 
-  let riskBand = 'low';
-  if (probabilityPositive < 0.6 || p10Saving < 0) {
-    riskBand = 'high';
-  } else if (probabilityPositive < 0.8 || p10Saving < 2) {
-    riskBand = 'medium';
-  }
+  const riskBand = samples.length
+    ? classifyMonteCarloRiskBand(probabilityPositive, p10Saving, { invalidSampleCount })
+    : null;
 
   return {
     iterations: samples.length,
@@ -552,6 +637,8 @@ function summarizeSamples({
     deterministic_saving_pct: deterministicSavingPct,
     iterations_requested: config.iterations,
     iterations_valid: samples.length,
+    invalid_sample_count: invalidSampleCount,
+    risk_band_unavailable_reason: invalidSampleCount > 0 ? 'invalid_samples_present' : null,
     deterministic_percentile_saving_pct: deterministicPercentile,
     mean_total_with_tax: meanTotal,
     median_total_with_tax: p50Total,
@@ -569,6 +656,7 @@ function summarizeSamples({
     stddev_total_with_tax: stdTotal,
     stddev_saving_pct: stdSaving,
     risk_band: riskBand,
+    risk_band_policy: MONTE_CARLO_RISK_BAND_POLICY,
     histogram,
     percentile_curve: percentileCurve,
     total_percentile_curve: totalPercentileCurve,
@@ -727,12 +815,17 @@ export function runMonteCarloSimulation({
     safeNumber(baseChanges.inventory_days, MODEL_DEFAULTS.inventory_days)
   );
   const baseWacc = Math.max(0, safeNumber(baseChanges.wacc, MODEL_DEFAULTS.reference_wacc));
-  const baselineTotal = safeNumber(baselineBundle?.costs?.costs?.total_with_tax);
+  const baselineRaw = baselineBundle?.costs?.costs?.total_with_tax;
+  const baselineTotal = isFiniteScenarioTotal(baselineRaw) ? Number(baselineRaw) : null;
   const deterministic =
     deterministicResult || runScenario({ companyId, scenario: baseScenario, baselineBundle });
   const baselineScenarioId = baselineBundle?.model?.scenario_id || null;
 
-  if (deterministic?.errors?.length) {
+  if (
+    !isNumericallyUsableScenarioResult(deterministic) ||
+    baselineTotal == null ||
+    baselineTotal <= 0
+  ) {
     return {
       company_id: companyId,
       scenario_id: selectedScenario?.scenario_id || null,
@@ -745,24 +838,19 @@ export function runMonteCarloSimulation({
       samples: [],
       summary: null,
       warnings: deterministic.warnings || [],
-      errors: deterministic.errors || ['simulação determinística inválida; Monte Carlo bloqueado.'],
+      errors: deterministic?.errors?.length
+        ? deterministic.errors
+        : [
+            baselineTotal == null || baselineTotal <= 0
+              ? 'baseline ausente ou inválido; Monte Carlo bloqueado.'
+              : 'simulação determinística inválida; Monte Carlo bloqueado.',
+          ],
     };
   }
 
-  const taxQualityLimited = Boolean(
-    deterministic?.tax_results?.tax_coverage?.coverage_limited ||
-    deterministic?.calculation_status === 'success_with_tax_limits' ||
-    deterministic?.tax_results?.tax_coverage?.blocked === true
-  );
-
-  const completeFiscalCoverageRatio = Number(
-    deterministic?.tax_results?.tax_coverage?.complete_fiscal_coverage_ratio
-  );
   const classificationLimited =
-    deterministic?.tax_results?.tax_mode !== 'disabled' &&
-    selectedScenario?.changes?.tax_mode !== 'disabled' &&
-    (taxQualityLimited ||
-      (Number.isFinite(completeFiscalCoverageRatio) && completeFiscalCoverageRatio < 1));
+    deterministic?.calculation_status === 'success_with_tax_limits' ||
+    isTaxCoverageLimited({ taxResults: deterministic?.tax_results, scenario: selectedScenario });
   if (classificationLimited) {
     warnings.push(
       'Monte Carlo executado como análise exploratória: a classificação fiscal completa não cobre 100% dos fluxos.'
@@ -770,6 +858,7 @@ export function runMonteCarloSimulation({
   }
 
   const samples = [];
+  let invalidSampleCount = 0;
   for (let index = 0; index < normalizedConfig.iterations; index += 1) {
     const sampled = sampleUncertaintyInputs({
       baseFreight,
@@ -791,8 +880,10 @@ export function runMonteCarloSimulation({
     });
 
     const result = runScenario({ companyId, scenario: sampledScenario, baselineBundle });
-    if (result.errors?.length) {
-      warnings.push(`Amostra ${index + 1} inválida: ${result.errors.join('; ')}`);
+    const iterationWarning = monteCarloIterationValidationWarning(result, index + 1);
+    if (iterationWarning) {
+      invalidSampleCount += 1;
+      warnings.push(iterationWarning);
       continue;
     }
 
@@ -831,6 +922,8 @@ export function runMonteCarloSimulation({
       config: normalizedConfig,
       samples: [],
       summary: null,
+      invalid_sample_count: invalidSampleCount,
+      risk_band_unavailable_reason: 'no_valid_samples',
       warnings,
       errors: warnings.length ? warnings : ['nenhuma amostra válida foi gerada.'],
     };
@@ -842,6 +935,7 @@ export function runMonteCarloSimulation({
   });
   const summary = summarizeSamples({
     samples,
+    invalidSampleCount,
     baselineTotal,
     deterministicTotal: safeNumber(deterministic.total_with_tax),
     deterministicSavingPct: deterministicSaving.saving_pct,

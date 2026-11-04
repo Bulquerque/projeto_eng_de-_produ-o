@@ -22,7 +22,7 @@ function buildVariant({ companyId, baselineBundle, seedRecord, roundIndex, label
       tax_mode: patch.tax_mode ?? current.tax_mode ?? 'current',
       tax_regime: patch.tax_regime ?? current.tax_regime ?? null,
       tax_year: patch.tax_year ?? current.tax_year ?? null,
-      reallocation_rule: current.reallocation_rule || 'nearest_available_cd',
+      reallocation_rule: current.reallocation_rule,
       scenario_type: 'refinement',
     },
   });

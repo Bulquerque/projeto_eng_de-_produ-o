@@ -202,6 +202,7 @@ body{background:linear-gradient(180deg,#F7F3F5 0%,#ffffff 38%,#F7F3F5 100%)}.bra
 .heatmap-neutral{background-color:#F5F5F5;color:#424242;border:1px solid #E0E0E0}
 .heatmap-bad{background-color:#FFF3E0;color:#E65100;border:1px solid #FFE0B2}
 .heatmap-very-bad{background-color:#FFEBEE;color:#B71C1C;border:1px solid #FFCDD2}
+.heatmap-unavailable{background-color:#F3F4F6;color:#59636E;border:1px dashed #AAB2BD}
 
 .executive-table-premium{border-collapse:separate;border-spacing:0;border-radius:16px;overflow:hidden;border:1px solid var(--vg-line)}
 .executive-table-premium th{background:var(--vg-deep);color:var(--white);padding:14px;font-size:12px;text-transform:uppercase;letter-spacing:0.08em}

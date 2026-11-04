@@ -1,4 +1,5 @@
 import { resolveTaxModeForRegime, resolveTaxRegime } from '../core/tax-reform-config.js';
+import { defaultReallocationRule } from '../phase3/reallocation-policy.js';
 
 function readFormValue(data, rawValues, name) {
   return Object.prototype.hasOwnProperty.call(rawValues, name) ? rawValues[name] : data.get(name);
@@ -13,7 +14,7 @@ function validationError(message) {
   return { valid: false, message };
 }
 
-export function parseScenarioForm(data, checkedActiveCds, rawValues = {}) {
+export function parseScenarioForm(data, checkedActiveCds, rawValues = {}, companyId = null) {
   const requestedTaxMode = data.get('tax_mode');
   const requestedTaxRegime = data.get('tax_regime');
   const taxYear = Number(data.get('tax_year')) || null;
@@ -32,7 +33,7 @@ export function parseScenarioForm(data, checkedActiveCds, rawValues = {}) {
     tax_mode: requestedTaxMode || resolveTaxModeForRegime(taxRegime),
     tax_regime: taxRegime,
     tax_year: taxYear,
-    reallocation_rule: data.get('reallocation_rule') || 'nearest_available_cd',
+    reallocation_rule: data.get('reallocation_rule') || defaultReallocationRule(companyId),
   };
 }
 

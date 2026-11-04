@@ -1,13 +1,14 @@
 import { loadPhase2Bundle, loadPhase3Samples } from '../core/data-loader.js';
 import { loadSavedScenarios } from './scenario-persistence.js';
 import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { defaultReallocationRule } from './reallocation-policy.js';
 export async function loadScenarioLibrary(companyId) {
   const baselineBundle = await loadPhase2Bundle(companyId);
   let samples = [];
   try {
     samples = await loadPhase3Samples(companyId);
-  } catch (e) {
-    samples = [];
+  } catch {
+    // Sem biblioteca não impede o carregamento do baseline e dos cenários salvos.
   }
   const baselineScenario = {
     scenario_id: baselineBundle.model.scenario_id,
@@ -24,7 +25,7 @@ export async function loadScenarioLibrary(companyId) {
       wacc: MODEL_DEFAULTS.reference_wacc,
       tax_mode: 'current',
       tax_regime: 'current',
-      reallocation_rule: 'nearest_available_cd',
+      reallocation_rule: defaultReallocationRule(companyId),
     },
     metadata: { phase: 3, source: 'phase2_bundle', editable: false },
   };

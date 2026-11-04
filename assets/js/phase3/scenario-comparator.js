@@ -1,6 +1,18 @@
 import { buildScenarioSummary } from '../core/scenario-summary.js';
 import { safeNumber } from '../core/common.js';
 import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { defaultReallocationRule } from './reallocation-policy.js';
+
+export function isScenarioResultComparable(result) {
+  const total = result?.total_with_tax ?? result?.costs?.total_with_tax;
+  return Boolean(
+    result &&
+    (!result.simulation_status || result.simulation_status === 'success') &&
+    !(result.errors?.length > 0) &&
+    (typeof total === 'number' || (typeof total === 'string' && total.trim() !== '')) &&
+    Number.isFinite(Number(total))
+  );
+}
 
 function buildBaselineResult(bundle) {
   const costs = bundle?.costs?.costs || {};
@@ -16,10 +28,10 @@ function buildBaselineResult(bundle) {
         inventory_days: MODEL_DEFAULTS.inventory_days,
         wacc: MODEL_DEFAULTS.reference_wacc,
         tax_mode: 'current',
-        reallocation_rule: 'nearest_available_cd',
+        reallocation_rule: defaultReallocationRule(bundle?.model?.company_id),
       },
     },
-    total_with_tax: safeNumber(costs.total_with_tax),
+    total_with_tax: costs.total_with_tax ?? null,
     costs,
     tax_results: bundle?.tax_results?.tax_results || {},
   };
@@ -83,8 +95,20 @@ export function compareScenarios({
   scenarioResults = [],
 }) {
   const base = baselineResult || buildBaselineResult(baselineBundle);
-  const rows = [base, ...scenarioResults]
-    .filter(Boolean)
+  const candidates = [base, ...scenarioResults].filter(Boolean);
+  candidates.forEach((result) => assertSameCompany(companyId, result));
+  if (!isScenarioResultComparable(base)) {
+    return {
+      company_id: companyId,
+      comparison: [],
+      best_by_total_cost: null,
+      warnings: [],
+      errors: ['Baseline sem resultado válido para comparação.'],
+    };
+  }
+  const rejected = candidates.filter((result) => !isScenarioResultComparable(result));
+  const rows = candidates
+    .filter(isScenarioResultComparable)
     .map((result) => comparisonRow({ base, companyId, result }));
 
   const ranked = [...rows].sort((a, b) => a.total_with_tax - b.total_with_tax);
@@ -97,12 +121,16 @@ export function compareScenarios({
     company_id: companyId,
     comparison: rows,
     best_by_total_cost: ranked[0]?.scenario_id || null,
-    warnings: [],
+    warnings: rejected.map(
+      (result) =>
+        `Cenário ${result.scenario_id || 'sem identificador'} excluído: simulação sem resultado válido.`
+    ),
     errors: [],
   };
 }
 
 export function componentDelta(baselineBundle, result) {
+  if (!isScenarioResultComparable(result)) return null;
   const baselineCosts = baselineBundle?.costs?.costs || {};
   const scenarioCosts = result?.costs || {};
   const metrics = [
