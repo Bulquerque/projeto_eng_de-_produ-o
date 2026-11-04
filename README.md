@@ -1,4 +1,4 @@
-# Visagio Static Simulator
+# Simulador de Malha Logística
 
 Simulador estático de malha logística com validação de dados, baseline, cenários, análise tributária parametrizada, busca discreta e classificação de alternativas para apoiar decisões executivas. O runtime roda no navegador com JavaScript modular e carrega os dados protegidos somente após desbloqueio local.
 
