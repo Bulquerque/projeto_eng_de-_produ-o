@@ -33,7 +33,7 @@ def test_network_intelligence_frontend_files_exist():
 
 def test_index_loads_only_network_intelligence():
     html = read('index.html')
-    assert '<title>Visagio · Network Intelligence</title>' in html
+    assert '<title>Simulador de Malha Logística · Network Intelligence</title>' in html
     assert 'assets/js/app/main.js' in html
     assert 'assets/js/phase1/main.js' not in html
     assert 'runtimeWarning' not in html

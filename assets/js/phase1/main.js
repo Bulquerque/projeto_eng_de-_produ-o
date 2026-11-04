@@ -206,7 +206,7 @@ function renderProofCards() {
       <p class="metric-note">Faltantes: ${formatNumber(missingPaths.length)}.</p>
     </article>`,
     `<article class="card">
-      ${statusChip('Paleta Visagio', true)}
+      ${statusChip('Paleta de referência', true)}
       <h3>Cores institucionais</h3>
       <div class="palette-row">${colors.map((c) => `<span title="${escapeHtml(c)}" style="background:${escapeHtml(c)}"></span>`).join('')}</div>
       <p class="metric-note">Paleta preservada no CSS da Fase 1.</p>
