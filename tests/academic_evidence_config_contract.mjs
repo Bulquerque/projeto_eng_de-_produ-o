@@ -207,6 +207,45 @@ assert.equal(
   }).search_complete,
   false
 );
+assert.equal(
+  buildOptimizerCompletenessEvidence({
+    search_log: {
+      exact_search_space: true,
+      invalid_candidates: [],
+      simulated_candidates: [4],
+      valid_candidates: [4],
+      candidate_space_size: [4],
+      space_limited: false,
+    },
+  }).search_complete,
+  false
+);
+assert.equal(
+  buildOptimizerCompletenessEvidence({
+    search_log: {
+      exact_search_space: true,
+      invalid_candidates: 0.5,
+      simulated_candidates: 4,
+      valid_candidates: 3.5,
+      candidate_space_size: 4,
+      space_limited: false,
+    },
+  }).search_complete,
+  false
+);
+assert.equal(
+  buildOptimizerCompletenessEvidence({
+    search_log: {
+      exact_search_space: true,
+      invalid_candidates: 0,
+      simulated_candidates: 5,
+      valid_candidates: 5,
+      candidate_space_size: 4,
+      space_limited: false,
+    },
+  }).search_complete,
+  false
+);
 
 assert.equal(normalizeEvidenceNumber(null), null);
 assert.equal(normalizeEvidenceNumber(undefined), null);

@@ -84,28 +84,33 @@ export function buildOptimizerCompletenessEvidence(result = {}) {
     simulatedCandidates,
     validCandidates,
     candidateSpaceSize,
-  ].every((value) => value != null);
+  ].every((value) => Number.isSafeInteger(value) && value >= 0);
+  const countsReconcile =
+    countsKnown && validCandidates + invalidCandidates === simulatedCandidates;
   const searchComplete =
     exactSearchSpace &&
     countsKnown &&
     invalidCandidates === 0 &&
     validCandidates > 0 &&
     candidateSpaceSize > 0 &&
-    simulatedCandidates >= candidateSpaceSize &&
+    simulatedCandidates === candidateSpaceSize &&
+    countsReconcile &&
     searchLog.space_limited !== true;
   const completenessReason = !exactSearchSpace
     ? (searchLog.exactness_reason ?? 'O espaço declarado não foi enumerado integralmente.')
     : !countsKnown
       ? 'A busca não registrou contagens suficientes para confirmar a completude.'
-      : invalidCandidates > 0
-        ? 'Um ou mais candidatos não foram avaliados com sucesso.'
-        : validCandidates === 0
-          ? 'Nenhum candidato válido foi avaliado.'
-          : simulatedCandidates < candidateSpaceSize
-            ? 'A quantidade simulada é menor que o espaço candidato declarado.'
-            : searchLog.space_limited === true
-              ? 'A busca foi limitada pelo espaço configurado.'
-              : (searchLog.exactness_reason ?? 'Busca concluída no espaço declarado.');
+      : !countsReconcile
+        ? 'As contagens de candidatos simulados, válidos e inválidos não fecham.'
+        : invalidCandidates > 0
+          ? 'Um ou mais candidatos não foram avaliados com sucesso.'
+          : validCandidates === 0
+            ? 'Nenhum candidato válido foi avaliado.'
+            : simulatedCandidates !== candidateSpaceSize
+              ? 'A quantidade simulada difere do espaço candidato declarado.'
+              : searchLog.space_limited === true
+                ? 'A busca foi limitada pelo espaço configurado.'
+                : (searchLog.exactness_reason ?? 'Busca concluída no espaço declarado.');
   return {
     exact_search_space: exactSearchSpace,
     search_complete: searchComplete,
@@ -124,7 +129,7 @@ export function buildOptimizerCompletenessEvidence(result = {}) {
 export function normalizeEvidenceNumber(value) {
   if (
     value == null ||
-    typeof value === 'boolean' ||
+    !['number', 'string'].includes(typeof value) ||
     (typeof value === 'string' && value.trim() === '')
   )
     return null;
