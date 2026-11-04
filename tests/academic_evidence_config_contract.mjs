@@ -194,10 +194,25 @@ assert.equal(
   }).search_complete,
   true
 );
+assert.equal(
+  buildOptimizerCompletenessEvidence({
+    search_log: {
+      exact_search_space: true,
+      invalid_candidates: false,
+      simulated_candidates: true,
+      valid_candidates: true,
+      candidate_space_size: true,
+      space_limited: false,
+    },
+  }).search_complete,
+  false
+);
 
 assert.equal(normalizeEvidenceNumber(null), null);
 assert.equal(normalizeEvidenceNumber(undefined), null);
 assert.equal(normalizeEvidenceNumber(''), null);
+assert.equal(normalizeEvidenceNumber(true), null);
+assert.equal(normalizeEvidenceNumber(false), null);
 assert.equal(normalizeEvidenceNumber(0), 0);
 assert.deepEqual(
   compareInventoryCosts(
