@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
 import {
+  calculateInventoryCost,
+  getCompanyModelDefaults,
+  normalizeScenarioModelDefaults,
+} from '../assets/js/core/model-configuration.js';
+import { buildScenarioSummary } from '../assets/js/core/scenario-summary.js';
+import { runTaxCalculation } from '../assets/js/core/tax/tax-orchestrator.js';
+import {
   applyAcademicReallocationRule,
   buildMonteCarloExecutionEvidence,
   buildOptimizerCompletenessEvidence,
@@ -11,6 +18,70 @@ import {
   normalizeEvidenceNumber,
   prepareAcademicReallocation,
 } from '../scripts/academic-evidence-config.mjs';
+
+assert.deepEqual(
+  {
+    inventory_days: getCompanyModelDefaults('empresa1').inventory_days,
+    reference_wacc: getCompanyModelDefaults('empresa1').reference_wacc,
+  },
+  { inventory_days: 30, reference_wacc: 0.15 }
+);
+assert.deepEqual(
+  {
+    inventory_days: getCompanyModelDefaults('empresa2').inventory_days,
+    reference_wacc: getCompanyModelDefaults('empresa2').reference_wacc,
+  },
+  { inventory_days: 45, reference_wacc: 0.12 }
+);
+assert.equal(calculateInventoryCost({ companyId: 'empresa1', baseInventoryCost: 100 }), 100);
+assert.equal(
+  calculateInventoryCost({ companyId: 'empresa1', baseInventoryCost: 100, inventoryDays: 45 }),
+  150
+);
+assert.equal(calculateInventoryCost({ companyId: 'empresa2', baseInventoryCost: 100 }), 100);
+assert.equal(
+  calculateInventoryCost({ companyId: 'empresa2', baseInventoryCost: 100, wacc: 0.15 }),
+  125
+);
+assert.deepEqual(
+  normalizeScenarioModelDefaults('empresa1', {
+    scenario_id: 'empresa1_sample_estoque_menos_10_dias',
+    changes: { inventory_days: 35 },
+  }).changes.inventory_days,
+  20
+);
+assert.deepEqual(
+  normalizeScenarioModelDefaults('empresa1', {
+    scenario_id: 'other_scenario',
+    changes: { inventory_days: 35 },
+  }).changes.inventory_days,
+  35
+);
+assert.equal(
+  buildScenarioSummary({
+    scenario: { company_id: 'empresa2', changes: {} },
+    result: { total_with_tax: 100 },
+    baselineTotal: 100,
+  }).inventory_days,
+  45
+);
+assert.equal(
+  buildScenarioSummary({
+    scenario: { company_id: 'empresa1', changes: {} },
+    result: { total_with_tax: 100 },
+    baselineTotal: 100,
+  }).inventory_days,
+  30
+);
+assert.equal(
+  runTaxCalculation({
+    scenario: { company_id: 'empresa2', changes: { tax_mode: 'reform_2027', tax_year: 2027 } },
+    rebuiltFlows: [],
+    baseTaxBlock: { total_tax_impact: 100 },
+    taxMode: 'reform_2027',
+  }).decision_use,
+  'exploratory_only'
+);
 
 assert.equal(buildScenarioQualityEvidence({ simulation_status: 'error' }, {}), null);
 const qualityEvidence = buildScenarioQualityEvidence(

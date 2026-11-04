@@ -1,7 +1,7 @@
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
 import { resolveTaxRegime } from '../core/tax-reform-config.js';
 import { safeNumber } from '../core/common.js';
-import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { getCompanyModelDefaults } from '../core/model-configuration.js';
 
 export const SUPPORTED_METHOD = 'exact_discrete';
 export const RISK_LEVELS = Object.freeze({
@@ -88,6 +88,7 @@ export function emptyCollections() {
 
 export function buildBaselineScenario(companyId, baselineBundle) {
   const base = baselineBundle?.model || {};
+  const modelDefaults = getCompanyModelDefaults(companyId);
   return buildScenarioFromForm({
     companyId,
     baselineBundle,
@@ -97,8 +98,8 @@ export function buildBaselineScenario(companyId, baselineBundle) {
       active_cds: base.active_cds || [],
       freight_multiplier: 1,
       demand_multiplier: 1,
-      inventory_days: MODEL_DEFAULTS.inventory_days,
-      wacc: MODEL_DEFAULTS.reference_wacc,
+      inventory_days: modelDefaults.inventory_days,
+      wacc: modelDefaults.reference_wacc,
       tax_mode: 'current',
       tax_regime: resolveTaxRegime({ taxMode: 'current' }),
       scenario_type: 'baseline',

@@ -16,7 +16,7 @@ import {
   statusChip,
   table,
 } from '../view-helpers.js';
-import { calculateSaving, MODEL_DEFAULTS } from '../../core/model-configuration.js';
+import { calculateSaving, getCompanyModelDefaults } from '../../core/model-configuration.js';
 import { MONTE_CARLO_RISK_BAND_POLICY } from '../../phase3/monte-carlo-engine.js';
 import { defaultReallocationRule } from '../../phase3/reallocation-policy.js';
 import {
@@ -59,13 +59,14 @@ function statusLabel(value) {
 }
 
 export function renderScenarioBuild(state) {
+  const modelDefaults = getCompanyModelDefaults(state.companyId);
   const base = selectBaseline(state)?.model || {};
   const currentScenario = selectActiveScenario(state);
   const draft = state.ui.scenario_draft || currentScenario || {};
   const changes = draft.changes || {};
   const inventoryDays =
-    changes.inventory_days ?? base.inventory_days ?? MODEL_DEFAULTS.inventory_days;
-  const wacc = changes.wacc ?? base.wacc ?? base.reference_wacc ?? MODEL_DEFAULTS.reference_wacc;
+    changes.inventory_days ?? base.inventory_days ?? modelDefaults.inventory_days;
+  const wacc = changes.wacc ?? base.wacc ?? base.reference_wacc ?? modelDefaults.reference_wacc;
   const eligibleCds = [
     ...new Set(
       [

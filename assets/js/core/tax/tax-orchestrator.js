@@ -228,6 +228,9 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     sourceContext,
   });
   const periodWarnings = [
+    regimeId !== 'current' && regimeId !== 'disabled'
+      ? 'Cenário de reforma é exploratório: o α do modelo mistura totais tributários agregados e não reproduz separadamente os cronogramas legais federal e estadual/municipal.'
+      : null,
     periodMetadata.selected_period?.source_status === 'timeline_row_unavailable'
       ? 'Período tributário selecionado não foi localizado no cronograma oficial carregado.'
       : null,
@@ -246,7 +249,10 @@ export function runTaxCalculation(arg1, arg2, arg3) {
     sourceContext,
     qualityReport: quality,
   });
-  const decisionUse = quality.coverage_limited ? 'exploratory_only' : 'decision_support';
+  const decisionUse =
+    quality.coverage_limited || (regimeId !== 'current' && regimeId !== 'disabled')
+      ? 'exploratory_only'
+      : 'decision_support';
   const scopeMetadata = {
     ...buildTaxScopeMetadata({
       calculationMode,

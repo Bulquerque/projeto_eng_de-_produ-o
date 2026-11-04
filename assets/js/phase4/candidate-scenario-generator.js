@@ -1,5 +1,5 @@
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
-import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { getCompanyModelDefaults } from '../core/model-configuration.js';
 import { resolveTaxModeForRegime, resolveTaxRegime } from '../core/tax-reform-config.js';
 import { uniqueByChanges } from './optimizer-utils.js';
 function combinations(arr, k, limit = 80) {
@@ -42,10 +42,11 @@ function uniqueSets(sets) {
   return out;
 }
 export function generateCandidateScenarios({ companyId, baselineBundle, generationConfig = {} }) {
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const baseCds = baselineBundle?.model?.active_cds || [];
   const maxCandidates = Number(generationConfig.max_candidates ?? 120);
   const freight = generationConfig.freight_multipliers || [0.95, 1, 1.1];
-  const inv = generationConfig.inventory_days_options || [30, MODEL_DEFAULTS.inventory_days, 60];
+  const inv = generationConfig.inventory_days_options || [30, modelDefaults.inventory_days, 60];
   const taxYear = Number(generationConfig.tax_year) || null;
   const taxRegime = taxYear
     ? resolveTaxRegime({ year: taxYear })
@@ -92,7 +93,7 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
                 freight_multiplier: fm,
                 demand_multiplier: dm,
                 inventory_days: days,
-                wacc: MODEL_DEFAULTS.reference_wacc,
+                wacc: modelDefaults.reference_wacc,
                 tax_mode: tm,
                 tax_regime: baseTaxRegime,
                 ...(taxYear ? { tax_year: taxYear } : {}),

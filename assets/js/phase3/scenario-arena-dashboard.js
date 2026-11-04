@@ -34,7 +34,7 @@ import {
 import { buildMonteCarloConfig, runMonteCarloSimulation } from './monte-carlo-engine.js';
 import { appendSharedDebugEntry } from '../core/debug-tools.js';
 import { buildScenarioSummary } from '../core/scenario-summary.js';
-import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { calculateSaving, getCompanyModelDefaults } from '../core/model-configuration.js';
 import {
   getTaxRegimeDefinition,
   resolveTaxRegime,
@@ -58,8 +58,6 @@ const DEFAULT_FORM_VALUES = {
   scenario_name: 'Cenário customizado',
   freight_multiplier: 1,
   demand_multiplier: 1,
-  inventory_days: MODEL_DEFAULTS.inventory_days,
-  wacc: MODEL_DEFAULTS.reference_wacc,
   tax_mode: 'current',
 };
 
@@ -252,6 +250,7 @@ function renderCompanyTabs() {
 }
 
 function loadScenarioToForm(scenario) {
+  const modelDefaults = getCompanyModelDefaults(state.companyId);
   setValue('scenarioName', scenario.scenario_name || DEFAULT_FORM_VALUES.scenario_name);
 
   const active = new Set(scenario.changes?.active_cds || []);
@@ -263,8 +262,8 @@ function loadScenarioToForm(scenario) {
     scenario.changes?.freight_multiplier ?? DEFAULT_FORM_VALUES.freight_multiplier;
   $('demandMultiplier').value =
     scenario.changes?.demand_multiplier ?? DEFAULT_FORM_VALUES.demand_multiplier;
-  $('inventoryDays').value = scenario.changes?.inventory_days ?? DEFAULT_FORM_VALUES.inventory_days;
-  $('waccValue').value = scenario.changes?.wacc ?? DEFAULT_FORM_VALUES.wacc;
+  $('inventoryDays').value = scenario.changes?.inventory_days ?? modelDefaults.inventory_days;
+  $('waccValue').value = scenario.changes?.wacc ?? modelDefaults.reference_wacc;
   $('taxMode').value = scenarioTaxMode(scenario) || DEFAULT_FORM_VALUES.tax_mode;
   $('reallocationRule').value =
     scenario.changes?.reallocation_rule || defaultReallocationRule(state.companyId);

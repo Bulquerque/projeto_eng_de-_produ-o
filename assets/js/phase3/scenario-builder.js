@@ -4,7 +4,7 @@ import {
   taxRegimeLabel,
 } from '../core/tax-reform-config.js';
 import { sameCdLabel } from '../core/cd-utils.js';
-import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { getCompanyModelDefaults } from '../core/model-configuration.js';
 import { defaultReallocationRule } from './reallocation-policy.js';
 function slugify(value) {
   return (
@@ -40,6 +40,7 @@ export function buildScenarioFromForm({
   scenarioId = null,
 }) {
   const base = baselineBundle?.model || {};
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const baseCds = base.active_cds || [];
   const requested = unique(formValues.active_cds || baseCds);
   const scenarioName = sanitizeScenarioName(formValues.scenario_name);
@@ -55,8 +56,8 @@ export function buildScenarioFromForm({
     closed_cds: deriveClosedCds(baseCds, requested),
     freight_multiplier: Number(formValues.freight_multiplier ?? 1),
     demand_multiplier: Number(formValues.demand_multiplier ?? 1),
-    inventory_days: Number(formValues.inventory_days ?? MODEL_DEFAULTS.inventory_days),
-    wacc: Number(formValues.wacc ?? MODEL_DEFAULTS.reference_wacc),
+    inventory_days: Number(formValues.inventory_days ?? modelDefaults.inventory_days),
+    wacc: Number(formValues.wacc ?? modelDefaults.reference_wacc),
     tax_mode: taxMode,
     tax_regime: taxRegime,
     tax_regime_label: taxRegimeLabel(taxRegime),

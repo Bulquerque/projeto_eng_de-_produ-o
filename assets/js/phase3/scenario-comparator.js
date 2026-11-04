@@ -1,6 +1,6 @@
 import { buildScenarioSummary } from '../core/scenario-summary.js';
 import { safeNumber } from '../core/common.js';
-import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { getCompanyModelDefaults } from '../core/model-configuration.js';
 import { defaultReallocationRule } from './reallocation-policy.js';
 
 export function isScenarioResultComparable(result) {
@@ -15,6 +15,7 @@ export function isScenarioResultComparable(result) {
 }
 
 function buildBaselineResult(bundle) {
+  const modelDefaults = getCompanyModelDefaults(bundle?.model?.company_id);
   const costs = bundle?.costs?.costs || {};
   return {
     scenario_id: bundle?.model?.scenario_id || 'baseline',
@@ -25,8 +26,8 @@ function buildBaselineResult(bundle) {
         active_cds: bundle?.model?.active_cds || [],
         freight_multiplier: 1,
         demand_multiplier: 1,
-        inventory_days: MODEL_DEFAULTS.inventory_days,
-        wacc: MODEL_DEFAULTS.reference_wacc,
+        inventory_days: modelDefaults.inventory_days,
+        wacc: modelDefaults.reference_wacc,
         tax_mode: 'current',
         reallocation_rule: defaultReallocationRule(bundle?.model?.company_id),
       },

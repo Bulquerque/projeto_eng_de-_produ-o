@@ -1,5 +1,5 @@
 import { safeNumber } from './common.js';
-import { MODEL_DEFAULTS } from './model-configuration.js';
+import { getCompanyModelDefaults } from './model-configuration.js';
 
 export function sameSet(left = [], right = []) {
   const a = [...new Set((left || []).map(String))].sort();
@@ -21,12 +21,13 @@ export function isCanonicalBaselineNetwork({ companyId, scenario, baselineBundle
 
 export function isCanonicalBaselineScenario({ companyId, scenario, baselineBundle } = {}) {
   const changes = scenario?.changes || {};
+  const modelDefaults = getCompanyModelDefaults(companyId || scenario?.company_id);
   return (
     isCanonicalBaselineNetwork({ companyId, scenario, baselineBundle }) &&
     safeNumber(changes.freight_multiplier, 1) === 1 &&
     safeNumber(changes.demand_multiplier, 1) === 1 &&
-    safeNumber(changes.inventory_days, MODEL_DEFAULTS.inventory_days) ===
-      MODEL_DEFAULTS.inventory_days &&
-    safeNumber(changes.wacc, MODEL_DEFAULTS.reference_wacc) === MODEL_DEFAULTS.reference_wacc
+    safeNumber(changes.inventory_days, modelDefaults.inventory_days) ===
+      modelDefaults.inventory_days &&
+    safeNumber(changes.wacc, modelDefaults.reference_wacc) === modelDefaults.reference_wacc
   );
 }

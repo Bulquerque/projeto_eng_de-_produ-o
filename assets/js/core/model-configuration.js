@@ -36,25 +36,69 @@ export const MODEL_DEFAULTS = Object.freeze({
   storage_active_cd_provenance: 'engineering_hypothesis_not_observed_per_cd',
 });
 
+export const COMPANY_MODEL_DEFAULTS = Object.freeze({
+  empresa1: Object.freeze({
+    ...MODEL_DEFAULTS,
+    inventory_days: 30,
+    reference_wacc: 0.15,
+    inventory_days_provenance:
+      'premissa textual do TCC: estoque de referência equivalente a um mês',
+    wacc_provenance: 'premissa de engenharia; não há WACC observado no pacote da Empresa 1',
+  }),
+  empresa2: Object.freeze({
+    ...MODEL_DEFAULTS,
+    inventory_days: 45,
+    reference_wacc: 0.12,
+    inventory_days_provenance: 'premissa de cenário sem dias de estoque observados no pacote',
+    wacc_provenance: 'Parâmetros do workbook da Empresa 2: WACC anual de 12%',
+  }),
+});
+
+export function getCompanyModelDefaults(companyId) {
+  return COMPANY_MODEL_DEFAULTS[companyId] || MODEL_DEFAULTS;
+}
+
+export function normalizeScenarioModelDefaults(companyId, scenario = {}) {
+  const defaults = getCompanyModelDefaults(companyId);
+  const changes = scenario.changes || {};
+  const legacyRetailInventoryExample =
+    companyId === 'empresa1' &&
+    scenario.scenario_id === 'empresa1_sample_estoque_menos_10_dias' &&
+    Number(changes.inventory_days) === 35;
+  return {
+    ...scenario,
+    changes: {
+      inventory_days: defaults.inventory_days,
+      wacc: defaults.reference_wacc,
+      ...changes,
+      ...(legacyRetailInventoryExample ? { inventory_days: defaults.inventory_days - 10 } : {}),
+    },
+  };
+}
+
 export const RECONCILIATION_THRESHOLDS = Object.freeze({
   aligned_pct: 3,
   tolerable_pct: 10,
 });
 
 export function calculateInventoryCost({
+  companyId = null,
   baseInventoryCost = 0,
   demandMultiplier = 1,
-  inventoryDays = MODEL_DEFAULTS.inventory_days,
-  wacc = MODEL_DEFAULTS.reference_wacc,
+  inventoryDays,
+  wacc,
 } = {}) {
+  const reference = getCompanyModelDefaults(companyId);
+  const resolvedInventoryDays = inventoryDays ?? reference.inventory_days;
+  const resolvedWacc = wacc ?? reference.reference_wacc;
   // Escolha B: estoque é custo de carregamento independente do número de CDs.
   // Não há pooling, 1/sqrt(n), redução por concentração ou outro benefício
   // de risco inventado a partir de active_cds.
   return (
     safeNumber(baseInventoryCost) *
     safeNumber(demandMultiplier, 1) *
-    (safeNumber(inventoryDays, MODEL_DEFAULTS.inventory_days) / MODEL_DEFAULTS.inventory_days) *
-    (safeNumber(wacc, MODEL_DEFAULTS.reference_wacc) / MODEL_DEFAULTS.reference_wacc)
+    (safeNumber(resolvedInventoryDays, reference.inventory_days) / reference.inventory_days) *
+    (safeNumber(resolvedWacc, reference.reference_wacc) / reference.reference_wacc)
   );
 }
 

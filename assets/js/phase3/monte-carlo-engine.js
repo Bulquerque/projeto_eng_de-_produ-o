@@ -1,6 +1,6 @@
 import { runScenario } from './scenario-simulator.js';
 import { safeNumber } from '../core/common.js';
-import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { calculateSaving, getCompanyModelDefaults } from '../core/model-configuration.js';
 import {
   isNumericallyUsableScenarioResult,
   isTaxCoverageLimited,
@@ -808,13 +808,14 @@ export function runMonteCarloSimulation({
   delete baseScenario.monte_carlo;
   delete baseScenario.analysis;
   const baseChanges = baseScenario.changes || {};
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const baseFreight = Math.max(0.0001, safeNumber(baseChanges.freight_multiplier, 1));
   const baseDemand = Math.max(0.0001, safeNumber(baseChanges.demand_multiplier, 1));
   const baseInventory = Math.max(
     0,
-    safeNumber(baseChanges.inventory_days, MODEL_DEFAULTS.inventory_days)
+    safeNumber(baseChanges.inventory_days, modelDefaults.inventory_days)
   );
-  const baseWacc = Math.max(0, safeNumber(baseChanges.wacc, MODEL_DEFAULTS.reference_wacc));
+  const baseWacc = Math.max(0, safeNumber(baseChanges.wacc, modelDefaults.reference_wacc));
   const baselineRaw = baselineBundle?.costs?.costs?.total_with_tax;
   const baselineTotal = isFiniteScenarioTotal(baselineRaw) ? Number(baselineRaw) : null;
   const deterministic =

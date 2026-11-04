@@ -1,8 +1,9 @@
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
 import { clamp, uniqueByChanges } from './optimizer-utils.js';
-import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { getCompanyModelDefaults } from '../core/model-configuration.js';
 
 function buildVariant({ companyId, baselineBundle, seedRecord, roundIndex, label, patch }) {
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const current = seedRecord?.scenario?.changes || {};
   const nextActive = patch.active_cds || current.active_cds || [];
   if (!Array.isArray(nextActive) || nextActive.length === 0) return null;
@@ -17,8 +18,8 @@ function buildVariant({ companyId, baselineBundle, seedRecord, roundIndex, label
       freight_multiplier: patch.freight_multiplier ?? current.freight_multiplier ?? 1,
       demand_multiplier: patch.demand_multiplier ?? current.demand_multiplier ?? 1,
       inventory_days:
-        patch.inventory_days ?? current.inventory_days ?? MODEL_DEFAULTS.inventory_days,
-      wacc: patch.wacc ?? current.wacc ?? MODEL_DEFAULTS.reference_wacc,
+        patch.inventory_days ?? current.inventory_days ?? modelDefaults.inventory_days,
+      wacc: patch.wacc ?? current.wacc ?? modelDefaults.reference_wacc,
       tax_mode: patch.tax_mode ?? current.tax_mode ?? 'current',
       tax_regime: patch.tax_regime ?? current.tax_regime ?? null,
       tax_year: patch.tax_year ?? current.tax_year ?? null,
@@ -35,6 +36,7 @@ export function buildRefinementVariants({
   roundIndex,
   refinementConfig = {},
 }) {
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const base = baselineBundle?.model || {};
   const baseCds = base.active_cds || [];
   const current = seedRecord?.scenario?.changes || {};
@@ -83,7 +85,7 @@ export function buildRefinementVariants({
   for (const delta of inventorySteps) {
     add(`inventory_${delta > 0 ? 'p' : 'm'}${Math.abs(delta)}`, {
       inventory_days: clamp(
-        Math.round((Number(current.inventory_days || MODEL_DEFAULTS.inventory_days) + delta) / 5) *
+        Math.round((Number(current.inventory_days || modelDefaults.inventory_days) + delta) / 5) *
           5,
         15,
         90
@@ -93,7 +95,7 @@ export function buildRefinementVariants({
 
   for (const delta of waccSteps) {
     add(`wacc_${delta > 0 ? 'p' : 'm'}${Math.abs(delta)}`.replace('.', '_'), {
-      wacc: clamp(Number(current.wacc || MODEL_DEFAULTS.reference_wacc) + delta, 0.01, 0.5),
+      wacc: clamp(Number(current.wacc || modelDefaults.reference_wacc) + delta, 0.01, 0.5),
     });
   }
 

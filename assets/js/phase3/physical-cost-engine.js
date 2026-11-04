@@ -20,6 +20,7 @@
 import {
   MODEL_DEFAULTS,
   calculateInventoryCost,
+  getCompanyModelDefaults,
   resolveTransferFallback,
 } from '../core/model-configuration.js';
 
@@ -367,7 +368,8 @@ function resolveStorageCostFromTable(storageCostMap, activeCds, dm) {
 const KILOMETRIC_RATE_BY_UF = MODEL_DEFAULTS.transfer_kilometric_rate_by_uf;
 const KILOMETRIC_RATE_FALLBACK = MODEL_DEFAULTS.transfer_kilometric_fallback_rate;
 
-function buildCostContext({ scenario, baselineBundle }) {
+function buildCostContext({ companyId, scenario, baselineBundle }) {
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const changes = scenario.changes || {};
   const base = baselineBundle?.costs?.costs || {};
   const demandMultiplier = toNum(changes.demand_multiplier, 1);
@@ -376,9 +378,11 @@ function buildCostContext({ scenario, baselineBundle }) {
     demandMultiplier,
     activeCds: changes.active_cds || [],
     base,
+    modelDefaults,
     coreData: baselineBundle?.core_data || {},
     baselineCds: (baselineBundle?.model?.active_cds || []).length,
     inventoryCost: calculateInventoryCost({
+      companyId,
       baseInventoryCost: base.inventory_cost,
       demandMultiplier,
       inventoryDays: changes.inventory_days,
@@ -414,8 +418,10 @@ function buildCostResult(context, values) {
       inventory: {
         method: context.inventoryMethod,
         active_cd_count_not_used: true,
-        reference_days: MODEL_DEFAULTS.inventory_days,
-        reference_wacc: MODEL_DEFAULTS.reference_wacc,
+        reference_days: context.modelDefaults.inventory_days,
+        reference_wacc: context.modelDefaults.reference_wacc,
+        reference_days_provenance: context.modelDefaults.inventory_days_provenance,
+        reference_wacc_provenance: context.modelDefaults.wacc_provenance,
       },
       storage: {
         active_cd_count: context.activeCds.length,
@@ -749,7 +755,7 @@ function calculateUnknownCompanyCosts(companyId, context) {
 
 /** Calculates physical logistics costs from the rebuilt flow model. */
 export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, rebuilt }) {
-  const context = buildCostContext({ scenario, baselineBundle });
+  const context = buildCostContext({ companyId, scenario, baselineBundle });
   if (companyId === 'empresa1') return calculateCompany1Costs(context, rebuilt.flows);
   if (companyId === 'empresa2') return calculateCompany2Costs(context, rebuilt.flows);
   return calculateUnknownCompanyCosts(companyId, context);

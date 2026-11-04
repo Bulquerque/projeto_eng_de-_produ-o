@@ -132,7 +132,7 @@ export function runOptimization({
   constraints = {},
   optimizerConfig = {},
 }) {
-  const canonicalConfig = buildCanonicalOptimizationConfig(optimizerConfig);
+  const canonicalConfig = buildCanonicalOptimizationConfig(optimizerConfig, companyId);
   const requestedMethod = String(canonicalConfig.method || 'exact_discrete');
   const maxCandidates = Number(canonicalConfig.max_candidates ?? 2000);
   const refinementRounds = Math.max(0, Math.floor(Number(optimizerConfig.refinement_rounds ?? 2)));
