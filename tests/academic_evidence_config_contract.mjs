@@ -50,6 +50,20 @@ assert.deepEqual(
   }).changes.inventory_days,
   20
 );
+assert.equal(
+  normalizeScenarioModelDefaults('empresa1', {
+    scenario_id: 'empresa1_sample_frete_mais_10',
+    changes: { inventory_days: 45, wacc: 0.15 },
+  }).changes.inventory_days,
+  30
+);
+assert.equal(
+  normalizeScenarioModelDefaults('empresa2', {
+    scenario_id: 'empresa2_sample_frete_mais_10',
+    changes: { inventory_days: 45, wacc: 0.15 },
+  }).changes.wacc,
+  0.12
+);
 assert.deepEqual(
   normalizeScenarioModelDefaults('empresa1', {
     scenario_id: 'other_scenario',

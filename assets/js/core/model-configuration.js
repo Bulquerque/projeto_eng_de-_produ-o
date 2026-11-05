@@ -61,17 +61,31 @@ export function getCompanyModelDefaults(companyId) {
 export function normalizeScenarioModelDefaults(companyId, scenario = {}) {
   const defaults = getCompanyModelDefaults(companyId);
   const changes = scenario.changes || {};
+  const legacySampleScenario = String(scenario.scenario_id || '').startsWith(
+    `${companyId}_sample_`
+  );
   const legacyRetailInventoryExample =
     companyId === 'empresa1' &&
+    legacySampleScenario &&
     scenario.scenario_id === 'empresa1_sample_estoque_menos_10_dias' &&
     Number(changes.inventory_days) === 35;
+  const legacyRetailReferenceDays =
+    companyId === 'empresa1' &&
+    legacySampleScenario &&
+    Number(changes.inventory_days) === MODEL_DEFAULTS.inventory_days;
+  const legacyIndustryReferenceWacc =
+    companyId === 'empresa2' &&
+    legacySampleScenario &&
+    Number(changes.wacc) === MODEL_DEFAULTS.reference_wacc;
   return {
     ...scenario,
     changes: {
       inventory_days: defaults.inventory_days,
       wacc: defaults.reference_wacc,
       ...changes,
+      ...(legacyRetailReferenceDays ? { inventory_days: defaults.inventory_days } : {}),
       ...(legacyRetailInventoryExample ? { inventory_days: defaults.inventory_days - 10 } : {}),
+      ...(legacyIndustryReferenceWacc ? { wacc: defaults.reference_wacc } : {}),
     },
   };
 }

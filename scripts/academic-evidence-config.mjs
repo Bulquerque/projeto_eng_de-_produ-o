@@ -271,6 +271,28 @@ export function normalizeEvidenceNumber(value) {
   return Number.isFinite(number) ? number : null;
 }
 
+export function buildScenarioAssumptionEvidence(
+  result = {},
+  baselineResult = {},
+  sourceScenario = null
+) {
+  const changes = sourceScenario?.changes ?? result?.scenario?.changes ?? result?.changes ?? {};
+  const baselineChanges = baselineResult?.scenario?.changes ?? baselineResult?.changes ?? {};
+  return {
+    freight_multiplier: normalizeEvidenceNumber(
+      changes.freight_multiplier ?? baselineChanges.freight_multiplier ?? 1
+    ),
+    demand_multiplier: normalizeEvidenceNumber(
+      changes.demand_multiplier ?? baselineChanges.demand_multiplier ?? 1
+    ),
+    inventory_days: normalizeEvidenceNumber(
+      changes.inventory_days ?? baselineChanges.inventory_days ?? 45
+    ),
+    wacc: normalizeEvidenceNumber(changes.wacc ?? baselineChanges.wacc ?? 0.15),
+    tax_mode: changes.tax_mode ?? baselineChanges.tax_mode ?? 'current',
+  };
+}
+
 export function buildOptimizerBestEvidence(candidate = {}, baseline = {}) {
   const result = candidate.result || {};
   const scenarioTotal = normalizeEvidenceNumber(result.total_with_tax);

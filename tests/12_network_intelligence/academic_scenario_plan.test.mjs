@@ -3,6 +3,7 @@ import {
   ACADEMIC_EVIDENCE_SCHEMA_VERSION,
   buildAcademicScenarioEvidence,
   buildAcademicScenarioPlan,
+  buildScenarioAssumptionEvidence,
   getAcademicOptimizerProfiles,
   buildScenarioNAvailabilityEvidence,
 } from '../../scripts/academic-evidence-config.mjs';
@@ -10,6 +11,35 @@ import {
 assert.equal(ACADEMIC_EVIDENCE_SCHEMA_VERSION, '1.1.0');
 assert.equal(getAcademicOptimizerProfiles().length, 6);
 assert.equal(new Set(getAcademicOptimizerProfiles().map(({ profile_id }) => profile_id)).size, 6);
+
+assert.deepEqual(
+  buildScenarioAssumptionEvidence(
+    { scenario: { changes: { freight_multiplier: 1, inventory_days: 45, wacc: 0.15 } } },
+    { scenario: { changes: { inventory_days: 30, wacc: 0.15, tax_mode: 'current' } } },
+    { changes: { freight_multiplier: 1.1 } }
+  ),
+  {
+    freight_multiplier: 1.1,
+    demand_multiplier: 1,
+    inventory_days: 30,
+    wacc: 0.15,
+    tax_mode: 'current',
+  }
+);
+assert.deepEqual(
+  buildScenarioAssumptionEvidence(
+    { scenario: { changes: { inventory_days: 30, wacc: 0.15 } } },
+    { scenario: { changes: { inventory_days: 45, wacc: 0.12, tax_mode: 'current' } } },
+    { changes: {} }
+  ),
+  {
+    freight_multiplier: 1,
+    demand_multiplier: 1,
+    inventory_days: 45,
+    wacc: 0.12,
+    tax_mode: 'current',
+  }
+);
 
 const cds = [
   'CD Ribeirão Preto',

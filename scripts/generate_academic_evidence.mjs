@@ -6,7 +6,11 @@ import { buildBaselineScenario } from '../assets/js/phase4/optimizer-utils.js';
 import { runOptimization } from '../assets/js/phase4/scenario-optimizer.js';
 import { buildObjective } from '../assets/js/phase4/objective-builder.js';
 import { buildBundleReconciliation } from '../assets/js/core/reconciliation-engine.js';
-import { MODEL_DEFAULTS, calculateInventoryCost } from '../assets/js/core/model-configuration.js';
+import {
+  MODEL_DEFAULTS,
+  calculateInventoryCost,
+  normalizeScenarioModelDefaults,
+} from '../assets/js/core/model-configuration.js';
 import { loadRuntimeBundle } from '../tests/runtime_bundle_support.mjs';
 import {
   ACADEMIC_OPTIMIZER_CONFIG,
@@ -20,6 +24,7 @@ import {
   buildScenarioSavingEvidence,
   buildAcademicScenarioPlan,
   buildScenarioNAvailabilityEvidence,
+  buildScenarioAssumptionEvidence,
   compareInventoryCosts,
   getAcademicOptimizerProfiles,
   normalizeEvidenceNumber,
@@ -62,19 +67,19 @@ function decryptJson(relPath) {
   );
 }
 const n = normalizeEvidenceNumber;
-const pickResult = (r, reallocationAudit = {}, baselineBundle = null, baselineResult = null) => ({
+const pickResult = (
+  r,
+  reallocationAudit = {},
+  baselineBundle = null,
+  baselineResult = null,
+  sourceScenario = null
+) => ({
   scenario_id: r.scenario_id,
   scenario_name: r.scenario?.scenario_name || r.scenario_name,
   company_id: r.company_id,
   active_cds: r.scenario?.changes?.active_cds || r.active_cds || [],
   active_cds_count: (r.scenario?.changes?.active_cds || r.active_cds || []).length,
-  freight_multiplier: n(
-    r.scenario?.changes?.freight_multiplier ?? r.changes?.freight_multiplier ?? 1
-  ),
-  demand_multiplier: n(r.scenario?.changes?.demand_multiplier ?? r.changes?.demand_multiplier ?? 1),
-  inventory_days: n(r.scenario?.changes?.inventory_days ?? r.changes?.inventory_days ?? 45),
-  wacc: n(r.scenario?.changes?.wacc ?? r.changes?.wacc ?? 0.15),
-  tax_mode: r.scenario?.changes?.tax_mode ?? r.changes?.tax_mode ?? 'current',
+  ...buildScenarioAssumptionEvidence(r, baselineResult, sourceScenario),
   reallocation_rule_original: reallocationAudit.source_reallocation_rule ?? null,
   reallocation_rule_effective:
     reallocationAudit.effective_reallocation_rule ??
@@ -124,12 +129,14 @@ for (const companyId of ['empresa1', 'empresa2']) {
     ? sampleScenarios
     : sampleScenarios.scenarios || sampleScenarios.sample_scenarios || [];
   const published_scenarios = sampleList.map((sourceScenario) => {
-    const scenarioAudit = prepareAcademicReallocation(sourceScenario, companyId);
+    const normalizedSourceScenario = normalizeScenarioModelDefaults(companyId, sourceScenario);
+    const scenarioAudit = prepareAcademicReallocation(normalizedSourceScenario, companyId);
     return pickResult(
       runScenario({ companyId, scenario: scenarioAudit.scenario, baselineBundle: bundle }),
       scenarioAudit,
       bundle,
-      baseline
+      baseline,
+      scenarioAudit.scenario
     );
   });
   const academicScenarioPlan = buildAcademicScenarioPlan(
@@ -164,7 +171,13 @@ for (const companyId of ['empresa1', 'empresa2']) {
     });
     return buildAcademicScenarioEvidence({
       plan: planned,
-      deterministic: pickResult(deterministic, scenarioAudit, bundle, baseline),
+      deterministic: pickResult(
+        deterministic,
+        scenarioAudit,
+        bundle,
+        baseline,
+        scenarioAudit.scenario
+      ),
       monteCarlo,
     });
   });
@@ -247,7 +260,7 @@ for (const companyId of ['empresa1', 'empresa2']) {
       active_cds: bundle.model?.active_cds?.length || 0,
       core_data_keys: Object.keys(bundle.core_data || {}),
     },
-    baseline: pickResult(baseline, baselineAudit, bundle, baseline),
+    baseline: pickResult(baseline, baselineAudit, bundle, baseline, baselineAudit.scenario),
     published_scenarios,
     academic_scenario_plan: academicScenarioPlan,
     academic_scenario_results: academicScenarioResults,
@@ -263,8 +276,8 @@ for (const companyId of ['empresa1', 'empresa2']) {
           },
     reconciliation,
     inventory_independence_test: {
-      one_cd: pickResult(inventory1, inventory1Audit, bundle, baseline),
-      all_cds: pickResult(inventoryN, inventoryNAudit, bundle, baseline),
+      one_cd: pickResult(inventory1, inventory1Audit, bundle, baseline, inventory1Audit.scenario),
+      all_cds: pickResult(inventoryN, inventoryNAudit, bundle, baseline, inventoryNAudit.scenario),
       ...inventoryComparison,
       direct_formula_check: calculateInventoryCost({
         baseInventoryCost: baseline.costs?.inventory_cost,
