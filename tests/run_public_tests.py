@@ -45,6 +45,7 @@ PUBLIC_TESTS = [
     'tests/09_quality_checks/test_phase_folders_and_module_docs.py',
     'tests/09_quality_checks/test_release_contract.py',
     'tests/09_quality_checks/test_tax_config_dependency.py',
+    'tests/09_quality_checks/test_physical_storage_fallback_diagnostics.py',
     'tests/12_network_intelligence/test_app_contracts.py',
     'tests/12_network_intelligence/test_calibrate_transfer_rates.py',
     'tests/12_network_intelligence/test_academic_evidence_config.py',

@@ -408,12 +408,17 @@ function buildCostResult(context, values) {
     diagnostics: {
       ...(values.diagnostics || {}),
       flow_count: flowCount,
-      fallback_rates: Object.fromEntries(
-        Object.entries(fallbackCounts).map(([key, value]) => [
-          key,
-          flowCount ? Number(value || 0) / flowCount : 0,
-        ])
-      ),
+      fallback_rates: {
+        ...Object.fromEntries(
+          Object.entries(fallbackCounts).map(([key, value]) => [
+            key,
+            flowCount ? Number(value || 0) / flowCount : 0,
+          ])
+        ),
+        // This is scenario-level (0 or 1), not a flow rate. Keeping it
+        // separate prevents storage fallback from inflating flow counts.
+        proportional_storage: Number(fallbackCounts.proportional_storage || 0),
+      },
       fallback_cost_share: values.diagnostics?.fallback_cost_share || {},
       inventory: {
         method: context.inventoryMethod,
@@ -427,6 +432,7 @@ function buildCostResult(context, values) {
         active_cd_count: context.activeCds.length,
         baseline_cd_count: context.baselineCds,
         method: 'active_cd_ratio_hypothesis_when_no_cd_tariff_match',
+        used_proportional_fallback: Boolean(fallbackCounts.proportional_storage),
         provenance: MODEL_DEFAULTS.storage_active_cd_provenance,
       },
     },
@@ -551,6 +557,7 @@ function calculateCompany1Costs(context, flows) {
         missing_transfer_distance: missingDistanceCount,
         transfer_fallback: transferFallbackCount,
         heuristic_fallback: anyPriced ? 0 : 1,
+        proportional_storage: 1,
       },
       fallback_cost_share: anyPriced
         ? {}
@@ -685,6 +692,7 @@ function calculateCompany2Costs(context, flows) {
   }
 
   const realStorage = resolveStorageCostFromTable(storageCostMap, activeCds, demandMultiplier);
+  const proportionalStorageFallbackCount = realStorage === null ? 1 : 0;
   if (realStorage === null)
     warnings.push(
       'CDs do cenário sem correspondência na tabela de armazenagem; usando custo proporcional do baseline.'
@@ -711,6 +719,7 @@ function calculateCompany2Costs(context, flows) {
         revenue_fallback: revenueFallbackCount,
         transfer_fallback: transferFallbackCount,
         heuristic_fallback: anyPriced ? 0 : 1,
+        proportional_storage: proportionalStorageFallbackCount,
       },
       distribution_eligible_flow_count: distributionEligibleCount,
       distribution_observed_flow_count: distributionObservedCount,

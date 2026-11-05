@@ -16,6 +16,140 @@ export const ACADEMIC_OPTIMIZER_CONFIG = Object.freeze({
     seed: 42,
   }),
 });
+export const ACADEMIC_EVIDENCE_SCHEMA_VERSION = '1.1.0';
+
+function normalizeCdLabel(value) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('pt-BR')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+const E1_ACADEMIC_SCENARIOS = Object.freeze([
+  {
+    scenario_id: 'e1_14_cds_sem_ribeirao_preto',
+    scenario_name: 'E1 — 14 CDs sem Ribeirão Preto',
+    exclude_label: 'ribeirao preto',
+  },
+  {
+    scenario_id: 'e1_14_cds_sem_cajamar',
+    scenario_name: 'E1 — 14 CDs sem Cajamar',
+    exclude_label: 'cajamar',
+  },
+]);
+
+/** Pure, data-in/data-out plan for reproducible E1 scenarios; does not run engines. */
+export function buildAcademicScenarioPlan(companyId, baselineBundle = {}, baselineScenario = {}) {
+  if (companyId !== 'empresa1')
+    return {
+      scenario_status: 'not_applicable',
+      scenarios: [],
+      reason: 'Cenários solicitados são específicos da E1.',
+    };
+
+  const activeCds = Array.isArray(baselineBundle?.model?.active_cds)
+    ? [...baselineBundle.model.active_cds]
+    : [];
+  const baseChanges = baselineScenario?.changes || {};
+  const makeEntry = (definition, selectedCds, reason = null) => ({
+    scenario_id: definition.scenario_id,
+    scenario_name: definition.scenario_name,
+    status: reason ? 'not_reproducible' : 'ready',
+    reason,
+    changes: reason
+      ? null
+      : {
+          ...baseChanges,
+          active_cds: selectedCds,
+          freight_multiplier: 1,
+        },
+  });
+  const scenarios = E1_ACADEMIC_SCENARIOS.map((definition) => {
+    const matches = activeCds.filter((cd) =>
+      normalizeCdLabel(cd).includes(definition.exclude_label)
+    );
+    if (activeCds.length !== 15)
+      return makeEntry(
+        definition,
+        [],
+        `A fonte deve conter exatamente 15 CDs ativos; encontrados ${activeCds.length}.`
+      );
+    if (matches.length !== 1)
+      return makeEntry(
+        definition,
+        [],
+        `Era esperado exatamente um CD correspondente a ${definition.exclude_label}; encontrados ${matches.length}.`
+      );
+    return makeEntry(
+      definition,
+      activeCds.filter((cd) => cd !== matches[0])
+    );
+  });
+
+  if (activeCds.length !== 15) {
+    scenarios.push({
+      scenario_id: 'e1_cd_unico',
+      scenario_name: 'E1 — um CD por rodada; frete ×1,0',
+      status: 'not_reproducible',
+      reason: `A fonte deve conter exatamente 15 CDs ativos; encontrados ${activeCds.length}.`,
+      changes: null,
+    });
+  } else {
+    activeCds.forEach((cd, index) =>
+      scenarios.push({
+        scenario_id: `e1_cd_unico_${String(index + 1).padStart(2, '0')}`,
+        scenario_name: `E1 — CD único: ${cd}; frete ×1,0`,
+        status: 'ready',
+        reason: null,
+        changes: { ...baseChanges, active_cds: [cd], freight_multiplier: 1 },
+      })
+    );
+  }
+  return {
+    scenario_status: scenarios.every((scenario) => scenario.status === 'ready')
+      ? 'ready'
+      : 'partial',
+    scenarios,
+  };
+}
+
+/** Scenario N is only reproducible when the source explicitly includes a flow-to-CD mapping. */
+export function buildScenarioNAvailabilityEvidence(scenario = {}) {
+  const allocation = scenario.flow_to_cd_allocation ?? scenario.allocation?.flow_to_cd;
+  const available =
+    (Array.isArray(allocation) && allocation.length > 0) ||
+    (allocation &&
+      typeof allocation === 'object' &&
+      !Array.isArray(allocation) &&
+      Object.keys(allocation).length > 0);
+  return {
+    scenario_id: scenario.scenario_id ?? 'scenario_n',
+    status: available ? 'allocation_available' : 'not_reproducible',
+    execution_status: 'not_run_by_academic_evidence_generator',
+    required_inputs: available ? [] : ['flow_to_cd_allocation'],
+    reason: available
+      ? null
+      : 'A alocação de fluxo para CD não está presente na fonte; nenhuma alocação foi inferida.',
+  };
+}
+
+export function buildAcademicScenarioEvidence({ plan, deterministic, monteCarlo } = {}) {
+  return {
+    scenario: plan ? { ...plan, changes: plan.changes ? { ...plan.changes } : null } : null,
+    deterministic: deterministic ?? null,
+    monte_carlo: {
+      ...buildMonteCarloExecutionEvidence(monteCarlo),
+      iterations: normalizeEvidenceNumber(monteCarlo?.iterations),
+      seed: normalizeEvidenceNumber(monteCarlo?.seed),
+      profile: monteCarlo?.config?.profile ?? null,
+      scatter_driver: monteCarlo?.config?.scatter_driver ?? null,
+      provenance: monteCarlo?.provenance ?? null,
+      data_quality: monteCarlo?.data_quality ?? null,
+    },
+  };
+}
 
 export function getAcademicOptimizerProfiles() {
   return DEFAULT_OBJECTIVE_PROFILES.map((profile) => ({

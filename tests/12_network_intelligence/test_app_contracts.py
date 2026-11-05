@@ -692,6 +692,41 @@ def test_annual_tax_scenario_builder_uses_supported_regimes():
     assert output.endswith('ANNUAL_TAX_SCENARIOS_OK')
 
 
+def test_tax_transition_weights_are_identified_as_exploratory_parameters():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { buildTaxPeriodMetadata } from './assets/js/core/tax/tax-period-contract.js';
+        import { getTaxReformConfig } from './assets/js/core/tax-reform-config.js';
+
+        const config = getTaxReformConfig();
+        const sourceContext = {
+          tax_reform_timeline: [
+            { ano: 2029, fase: 'transição', peso_icms_iss_regime_atual: 0.9, peso_ibs_regime_novo: 0.1 },
+          ],
+          field_sources: {
+            'tax_inputs_reform.ibs_cbs_is_transition': {
+              source_confidence: 'external_official', source_file: 'timeline.csv',
+            },
+          },
+        };
+        const metadata = buildTaxPeriodMetadata({
+          regimeId: 'transition_2029',
+          regime: config.regimes.transition_2029,
+          scenario: { changes: { tax_year: 2029 } },
+          sourceContext,
+        });
+        assert.equal(metadata.model_weights.provenance_status, 'exploratory_model_weight_not_legal_rate');
+        assert.equal(metadata.model_weights.model_current_weight, 0.9);
+        assert.equal(metadata.model_weights.source_current_weight, 0.9);
+        assert.equal(metadata.model_weights.status, 'aligned_or_not_applicable');
+        assert.match(metadata.model_weights.limitation, /não.*cronograma legal/i);
+        console.log('TAX_TRANSITION_WEIGHT_PROVENANCE_OK');
+        """
+    )
+    assert output.endswith('TAX_TRANSITION_WEIGHT_PROVENANCE_OK')
+
+
 def test_optimizer_preset_and_tax_year_controls_render():
     output = run_node(
         """

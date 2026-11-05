@@ -10,12 +10,16 @@ import { MODEL_DEFAULTS, calculateInventoryCost } from '../assets/js/core/model-
 import { loadRuntimeBundle } from '../tests/runtime_bundle_support.mjs';
 import {
   ACADEMIC_OPTIMIZER_CONFIG,
+  ACADEMIC_EVIDENCE_SCHEMA_VERSION,
+  buildAcademicScenarioEvidence,
   buildMonteCarloExecutionEvidence,
   buildOptimizerCompletenessEvidence,
   buildOptimizerBestEvidence,
   buildScenarioExecutionEvidence,
   buildScenarioQualityEvidence,
   buildScenarioSavingEvidence,
+  buildAcademicScenarioPlan,
+  buildScenarioNAvailabilityEvidence,
   compareInventoryCosts,
   getAcademicOptimizerProfiles,
   normalizeEvidenceNumber,
@@ -94,6 +98,7 @@ function makeScenario(companyId, bundle, overrides = {}) {
   };
 }
 const output = {
+  schema_version: ACADEMIC_EVIDENCE_SCHEMA_VERSION,
   generated_at: new Date().toISOString(),
   model_defaults: MODEL_DEFAULTS,
   companies: {},
@@ -127,6 +132,47 @@ for (const companyId of ['empresa1', 'empresa2']) {
       baseline
     );
   });
+  const academicScenarioPlan = buildAcademicScenarioPlan(
+    companyId,
+    bundle,
+    buildBaselineScenario(companyId, bundle)
+  );
+  const reproducibleAcademicScenarios = academicScenarioPlan.scenarios.filter(
+    (scenario) => scenario.status === 'ready'
+  );
+  const academicScenarioResults = reproducibleAcademicScenarios.map((planned) => {
+    const scenario = {
+      ...buildBaselineScenario(companyId, bundle),
+      scenario_id: planned.scenario_id,
+      scenario_name: planned.scenario_name,
+      changes: { ...planned.changes },
+    };
+    const scenarioAudit = prepareAcademicReallocation(scenario, companyId);
+    const deterministic = runScenario({
+      companyId,
+      scenario: scenarioAudit.scenario,
+      baselineBundle: bundle,
+    });
+    const monteCarlo = runMonteCarloSimulation({
+      companyId,
+      selectedScenario: scenarioAudit.scenario,
+      baselineBundle: bundle,
+      deterministicResult: deterministic,
+      iterations: 300,
+      seed: 42,
+      config: { profile: 'balanced', scatter_driver: 'freight_multiplier' },
+    });
+    return buildAcademicScenarioEvidence({
+      plan: planned,
+      deterministic: pickResult(deterministic, scenarioAudit, bundle, baseline),
+      monteCarlo,
+    });
+  });
+  const scenarioNSource = sampleList.find((scenario) =>
+    /scenario[ _-]*n|cenario[ _-]*n/i.test(
+      `${scenario.scenario_id || ''} ${scenario.scenario_name || ''}`
+    )
+  );
   const reconciliation = buildBundleReconciliation(bundle);
   const sameDrivers1 = makeScenario(companyId, bundle, {
     label: 'inventory_test_1_cd',
@@ -203,6 +249,18 @@ for (const companyId of ['empresa1', 'empresa2']) {
     },
     baseline: pickResult(baseline, baselineAudit, bundle, baseline),
     published_scenarios,
+    academic_scenario_plan: academicScenarioPlan,
+    academic_scenario_results: academicScenarioResults,
+    scenario_n_availability:
+      companyId === 'empresa2'
+        ? buildScenarioNAvailabilityEvidence(scenarioNSource || {})
+        : {
+            scenario_id: 'scenario_n',
+            status: 'not_applicable',
+            execution_status: 'not_run_by_academic_evidence_generator',
+            required_inputs: [],
+            reason: 'O cenário N documentado é específico da E2.',
+          },
     reconciliation,
     inventory_independence_test: {
       one_cd: pickResult(inventory1, inventory1Audit, bundle, baseline),

@@ -117,8 +117,12 @@ function modelWeightMetadata(regime = {}, selected = null) {
     source_current_weight: sourceCurrent,
     source_reform_weight: sourceReform,
     status: differs ? 'model_parameter_differs_from_timeline' : 'aligned_or_not_applicable',
+    provenance_status:
+      modelCurrent == null ? 'not_applicable' : 'exploratory_model_weight_not_legal_rate',
     semantics:
       'Os pesos do modelo combinam resultados calculados; os pesos do cronograma representam a transição ICMS/ISS para IBS. Eles não são automaticamente equivalentes.',
+    limitation:
+      'O peso agregado é uma hipótese de modelagem para combinar resultados; não representa cronograma legal nem taxa efetiva por operação. A fonte oficial descreve a transição de ICMS/ISS para IBS, sem validar este peso agregado.',
   };
 }
 
