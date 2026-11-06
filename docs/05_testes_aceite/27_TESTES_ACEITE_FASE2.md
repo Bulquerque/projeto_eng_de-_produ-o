@@ -21,7 +21,7 @@ A Fase 2 está aceita quando:
 1. `/fase-2-baseline/` abre no navegador.
 2. Empresa 1 e Empresa 2 alternam sem misturar dados.
 3. Empresa 1 mostra baseline e custos, com Base Fit histórico `benchmark_pending` e baseline estrutural proxy explícito.
-4. Empresa 2 mostra baseline reconstruído, Base Fit `benchmark_pending` e reconciliação tributária fechada pela fórmula do workbook.
+4. Empresa 2 mostra baseline reconstruído e Base Fit `benchmark_pending`. Os componentes operacionais do baseline reproduzem o workbook; a matriz tributária bruta permanece divergente em 1,97%. A ponte de sensibilidade não fecha a reconciliação nem identifica a causa do resíduo linha a linha.
 5. Custos não são negativos.
 6. Total logístico fecha com transferência + distribuição + armazenagem + estoque.
 7. Total com tributo fecha com total logístico + impacto tributário.
