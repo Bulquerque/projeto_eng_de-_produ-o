@@ -404,14 +404,15 @@ function buildCostResult(context, values) {
   const distributionDenominator = Number(
     values.diagnostics?.distribution_eligible_flow_count ?? flowCount
   );
-  const distributionFallbackMethods = new Set([
+  const distributionUnpricedOrFallbackMethods = new Set([
     'revenue_pct_fallback',
     'revenue_pct_fallback_missing_weight',
     'missing_rate',
     'missing_cif_row',
+    'zero_weight',
   ]);
   const distributionUnpricedOrFallbackCount = pricedFlows.filter((flow) =>
-    distributionFallbackMethods.has(flow?.dist_method || flow?.method)
+    distributionUnpricedOrFallbackMethods.has(flow?.dist_method || flow?.method)
   ).length;
   const transferDenominator = pricedFlows.filter(
     (flow) => flow?.transfer_method && flow.transfer_method !== 'not_required'

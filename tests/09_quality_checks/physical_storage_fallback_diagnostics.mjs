@@ -67,6 +67,37 @@ assert.equal(
 );
 assert.ok(e1Evidence.blockers.some((item) => /armazenagem.*hipótese proporcional/i.test(item)));
 
+const e1ZeroWeight = calculatePhysicalCosts({
+  companyId: 'empresa1',
+  scenario,
+  baselineBundle: base,
+  rebuilt: {
+    flows: [
+      {
+        flow_id: 'observed-e1',
+        cd_uf: 'SP',
+        assigned_cd_uf: 'SP',
+        destination_uf: 'RJ',
+        annual_weight_kg: 1,
+        annual_revenue: 10,
+      },
+      {
+        flow_id: 'zero-weight-e1',
+        cd_uf: 'SP',
+        assigned_cd_uf: 'SP',
+        destination_uf: 'RJ',
+        annual_weight_kg: 0,
+      },
+    ],
+  },
+});
+assert.equal(e1ZeroWeight.diagnostics.distribution_unpriced_or_fallback_flow_count, 1);
+assert.equal(e1ZeroWeight.diagnostics.distribution_unpriced_or_fallback_rate, 0.5);
+assert.equal(e1ZeroWeight.flow_cost_detail[1].method, 'zero_weight');
+assert.equal(e1ZeroWeight.diagnostics.fallback_counts.missing_freight_rate, 0);
+assert.equal(e1ZeroWeight.diagnostics.fallback_counts.revenue_fallback, 0);
+assert.equal(e1ZeroWeight.diagnostics.fallback_counts.heuristic_fallback, 0);
+
 const e2Fallback = calculatePhysicalCosts({
   companyId: 'empresa2',
   scenario,
@@ -117,6 +148,59 @@ assert.equal(
   e2DisjointEvidence.components.find((component) => component.id === 'distribution').classification,
   'fallback'
 );
+
+const e2ZeroWeight = calculatePhysicalCosts({
+  companyId: 'empresa2',
+  scenario,
+  baselineBundle: {
+    ...base,
+    core_data: {
+      tabelas_cif_dist: [
+        { Origem: 'CD A', Destino: 'RJ', 'Até 10kg': 2, 'Acima 100kg (R$/kg)': 2 },
+      ],
+      aux_custo_armazenagem: [{ Filial: 'CD A', Custo: 5 }],
+    },
+  },
+  rebuilt: {
+    flows: [
+      {
+        flow_id: 'observed-e2',
+        cd: 'CD A',
+        destination: 'RJ',
+        annual_weight_kg: 1,
+        annual_revenue: 10,
+      },
+      {
+        flow_id: 'zero-weight-e2',
+        cd: 'CD A',
+        destination: 'RJ',
+        annual_weight_kg: 0,
+      },
+    ],
+  },
+});
+assert.equal(e2ZeroWeight.diagnostics.distribution_eligible_flow_count, 2);
+assert.equal(e2ZeroWeight.diagnostics.distribution_observed_flow_count, 1);
+assert.equal(e2ZeroWeight.diagnostics.distribution_unpriced_or_fallback_flow_count, 1);
+assert.equal(e2ZeroWeight.diagnostics.distribution_unpriced_or_fallback_rate, 0.5);
+assert.equal(e2ZeroWeight.diagnostics.fallback_counts.missing_weight, 0);
+assert.equal(e2ZeroWeight.diagnostics.fallback_counts.missing_cif_row, 0);
+assert.equal(e2ZeroWeight.diagnostics.fallback_counts.revenue_fallback, 0);
+assert.equal(e2ZeroWeight.diagnostics.fallback_counts.heuristic_fallback, 0);
+const e2ZeroWeightEvidence = buildEvidenceReport({
+  companyId: 'empresa2',
+  baselineBundle: { model: { company_id: 'empresa2', active_cds: ['CD A'] }, base_fit: {} },
+  scenarioResult: {
+    scenario_id: 'e2-zero-weight',
+    costs: { diagnostics: e2ZeroWeight.diagnostics },
+  },
+  taxResults: { tax_coverage: {} },
+});
+const e2ZeroWeightDistribution = e2ZeroWeightEvidence.components.find(
+  (component) => component.id === 'distribution'
+);
+assert.equal(e2ZeroWeightDistribution.coverage, 0.5);
+assert.equal(e2ZeroWeightDistribution.classification, 'fallback');
 
 const e2Mixed = calculatePhysicalCosts({
   companyId: 'empresa2',
