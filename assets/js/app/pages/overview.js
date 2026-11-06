@@ -168,10 +168,10 @@ export function renderOverviewTax(state) {
       `<tr><td>${escapeHtml(safeText(period.year))}</td><td>${escapeHtml(humanizeCode(period.phase))}</td><td>${escapeHtml(formatFiscalWeight(period.current_tax_weight))}</td><td>${escapeHtml(formatFiscalWeight(period.reform_tax_weight))}</td></tr>`
   );
   const periodBody = structuredPeriods.length
-    ? table(['Ano', 'Fase', 'Peso atual', 'Peso reforma'], periodRows)
+    ? `${table(['Ano', 'Fase', 'ICMS/ISS remanescente', 'IBS no cronograma'], periodRows)}<p class="ni-note">Parcelas do cronograma legal de transição ICMS/ISS–IBS. O resumo percentual do IBS segue a orientação da Receita Federal; estes valores não são alíquotas efetivas nem pesos da carga tributária da empresa.</p>`
     : emptyState(
         periods.length
-          ? 'Há períodos listados, mas não há pesos publicados para comparação.'
+          ? 'Há períodos listados, mas não há parcelas do cronograma publicadas para comparação.'
           : 'Calendário fiscal indisponível no contrato da empresa ativa.'
       );
   const ownershipMessage = !baseline
@@ -180,14 +180,14 @@ export function renderOverviewTax(state) {
       ? 'Não foi possível confirmar a empresa de origem destes dados fiscais. Recarregue o baseline ativo.'
       : !baselineMatchesCompany
         ? 'Os dados fiscais deste baseline não correspondem à empresa ativa. Recarregue os dados para consultar os valores corretos.'
-        : 'Pesos exibidos somente quando publicados no contrato fiscal.';
+        : 'Parcelas do cronograma exibidas somente quando publicadas no contrato fiscal.';
   const activeYear = Number(selected?.changes?.tax_year);
   const taxContext = hasScenarioTax
     ? `Cenário ativo${Number.isInteger(activeYear) ? ` · ano fiscal ${activeYear}` : ''}`
     : 'Baseline da empresa ativa';
   const pageDescription = hasScenarioTax
-    ? 'Impacto tributário do cenário ativo e pesos publicados no contrato fiscal.'
-    : 'Impacto tributário e pesos publicados no contrato fiscal do baseline.';
+    ? 'Impacto tributário do cenário ativo e parcelas publicadas do cronograma legal de transição.'
+    : 'Impacto tributário e parcelas publicadas do cronograma legal de transição no baseline.';
   const regimeValue =
     {
       current: 'Atual',
@@ -203,5 +203,5 @@ export function renderOverviewTax(state) {
     tax.tax_regime_label ||
     selected?.changes?.tax_regime_label ||
     humanizeCode(tax.tax_regime || selected?.changes?.tax_regime);
-  return `<div class="ni-page-heading" data-testid="page-overview-tax"><p class="ni-eyebrow">Visão executiva · Tributação</p><h1>Tributos</h1><p>${pageDescription}</p></div>${sectionTabs('overview', state.ui.route)}<div class="ni-card ni-tax-source" data-testid="tax-source"><strong>${escapeHtml(sourceLabel)}</strong><span>${escapeHtml(ownershipMessage)}</span></div>${baselineMatchesCompany ? `<div class="ni-kpi-grid">${kpi('Impacto tributário registrado', moneyOrDash(taxImpact), taxContext)}${kpi('Regime', regimeValue)}</div><div class="ni-card ni-chart-section ni-tax-chart"><h2>Impacto tributário</h2><canvas id="niOverviewTaxImpactChart" class="ni-chart" role="img" aria-label="Impacto tributário registrado no baseline e cenário ativo" hidden></canvas><p class="ni-chart-summary" data-chart-summary="niOverviewTaxImpactChart">Baseline e cenário ativo, quando disponível</p><details class="ni-chart-method"><summary>Dados</summary><p class="ni-note" data-chart-caption="niOverviewTaxImpactChart">Valores tributários publicados no baseline e no resultado do cenário.</p></details></div><div class="ni-card ni-chart-section ni-tax-chart"><div class="ni-tax-chart-heading"><div><h2>Pesos tributários por período</h2><p class="ni-note">Percentual dos pesos publicados para cada regime.</p></div><span>${escapeHtml(sourceLabel)}</span></div><canvas id="niOverviewTaxCoverageChart" class="ni-chart" role="img" aria-label="Pesos publicados do regime atual e da reforma por período" hidden></canvas><p class="ni-chart-summary" data-chart-summary="niOverviewTaxCoverageChart">Pesos fiscais publicados</p><details class="ni-chart-method"><summary>Como ler</summary><p class="ni-note" data-chart-caption="niOverviewTaxCoverageChart">Comparação publicada apenas para períodos com pesos explícitos.</p></details></div><details class="ni-card" data-testid="tax-periods-panel"><summary>Calendário fiscal · ${structuredPeriods.length} períodos</summary>${periodBody}</details>` : `<div class="ni-card">${emptyState(ownershipMessage)}</div>`}`;
+  return `<div class="ni-page-heading" data-testid="page-overview-tax"><p class="ni-eyebrow">Visão executiva · Tributação</p><h1>Tributos</h1><p>${pageDescription}</p></div>${sectionTabs('overview', state.ui.route)}<div class="ni-card ni-tax-source" data-testid="tax-source"><strong>${escapeHtml(sourceLabel)}</strong><span>${escapeHtml(ownershipMessage)}</span></div>${baselineMatchesCompany ? `<div class="ni-kpi-grid">${kpi('Impacto tributário registrado', moneyOrDash(taxImpact), taxContext)}${kpi('Regime', regimeValue)}</div><div class="ni-card ni-chart-section ni-tax-chart"><h2>Impacto tributário</h2><canvas id="niOverviewTaxImpactChart" class="ni-chart" role="img" aria-label="Impacto tributário registrado no baseline e cenário ativo" hidden></canvas><p class="ni-chart-summary" data-chart-summary="niOverviewTaxImpactChart">Baseline e cenário ativo, quando disponível</p><details class="ni-chart-method"><summary>Dados</summary><p class="ni-note" data-chart-caption="niOverviewTaxImpactChart">Valores tributários publicados no baseline e no resultado do cenário.</p></details></div><div class="ni-card ni-chart-section ni-tax-chart"><div class="ni-tax-chart-heading"><div><h2>Parcelas do cronograma legal por período</h2><p class="ni-note">ICMS/ISS remanescente e percentual de transição do IBS publicado pela Receita Federal; estes valores não são alíquotas efetivas da empresa.</p></div><span>${escapeHtml(sourceLabel)}</span></div><canvas id="niOverviewTaxCoverageChart" class="ni-chart" role="img" aria-label="Parcelas do cronograma legal: ICMS e ISS remanescentes e IBS em transição por período" hidden></canvas><p class="ni-chart-summary" data-chart-summary="niOverviewTaxCoverageChart">Parcelas do cronograma legal publicadas</p><details class="ni-chart-method"><summary>Como ler</summary><p class="ni-note" data-chart-caption="niOverviewTaxCoverageChart">O resumo de transição do IBS segue a orientação da Receita Federal. As parcelas não são alíquotas efetivas nem pesos da carga tributária da empresa; a tabela não representa CBS, IS, créditos ou tributos efetivamente devidos.</p></details></div><details class="ni-card" data-testid="tax-periods-panel"><summary>Calendário fiscal · ${structuredPeriods.length} períodos</summary>${periodBody}</details>` : `<div class="ni-card">${emptyState(ownershipMessage)}</div>`}`;
 }

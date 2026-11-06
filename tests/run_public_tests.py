@@ -17,6 +17,7 @@ PUBLIC_TESTS = [
     'tests/03_contratos_modulos/test_module_contracts_documentation.py',
     'tests/05_fase2_baseline/test_phase2_static_site.py',
     'tests/05_fase2_baseline/test_phase2_http_server.py',
+    'tests/05_fase2_baseline/test_public_tax_transition_contract.py',
     'tests/06_fase3_cenarios/test_phase3_file_structure.py',
     'tests/06_fase3_cenarios/test_monte_carlo_no_samples.py',
     'tests/06_fase3_cenarios/test_scenario_quality_concentration.py',

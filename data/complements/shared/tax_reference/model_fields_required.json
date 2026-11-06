@@ -91,17 +91,17 @@
     "campo": "ibs_weight",
     "tipo": "numérico",
     "obrigatorio": "sim reforma",
-    "fonte_preferencial": "reform_timeline",
-    "descricao": "Peso do regime novo na transição.",
-    "validacao": "0 a 1."
+    "fonte_preferencial": "parâmetro do modelo",
+    "descricao": "Variável operacional do modelo para combinar o componente IBS; não é alíquota legal nem parcela automaticamente aplicável à carga empresarial.",
+    "validacao": "0 a 1; documentar hipótese e fórmula do cenário."
   },
   {
     "campo": "current_tax_weight",
     "tipo": "numérico",
     "obrigatorio": "sim reforma",
-    "fonte_preferencial": "reform_timeline",
-    "descricao": "Peso do regime atual na transição.",
-    "validacao": "0 a 1."
+    "fonte_preferencial": "parâmetro do modelo",
+    "descricao": "Variável operacional do modelo para combinar o componente ICMS/ISS; não é alíquota legal nem parcela automaticamente aplicável à carga empresarial.",
+    "validacao": "0 a 1; documentar hipótese e fórmula do cenário."
   },
   {
     "campo": "source_confidence",

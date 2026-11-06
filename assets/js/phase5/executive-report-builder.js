@@ -52,10 +52,10 @@ function taxPeriodSection(tax = {}) {
       <tr><td>Limite dos dados observados</td><td>${esc(observed.limitation || '—')}</td></tr>
       <tr><td>Taxas numéricas da reforma</td><td>${esc(contract.reform_rate_provenance?.status || '—')} · ${esc(contract.reform_rate_provenance?.source_file || '—')}</td></tr>
     </tbody></table>
-    <table class="executive-table-premium" style="margin-top:12px"><thead><tr><th>Ano</th><th>Fase</th><th>ICMS/ISS atual</th><th>IBS novo</th><th>Fonte</th><th>Status</th></tr></thead><tbody>
+    <table class="executive-table-premium" style="margin-top:12px"><thead><tr><th>Ano</th><th>Fase</th><th>ICMS/ISS remanescente</th><th>IBS no cronograma</th><th>Fonte</th><th>Status</th></tr></thead><tbody>
       ${periods.length ? periods.map((period) => `<tr><td>${esc(period.year)}</td><td>${esc(period.phase || '—')}</td><td>${esc(ratioPct(period.current_tax_weight))}</td><td>${esc(ratioPct(period.reform_tax_weight))}</td><td>${esc(period.source_confidence || '—')}</td><td>${esc(period.data_status || '—')}</td></tr>`).join('') : '<tr><td colspan="6">Cronograma oficial não carregado.</td></tr>'}
     </tbody></table>
-    <p class="small-note">O cronograma oficial fundamenta o horizonte e as premissas de transição. Ele não fornece, sozinho, alíquotas efetivas por operação nem validação fiscal da empresa.</p>
+    <p class="small-note">As parcelas descrevem o cronograma legal de transição ICMS/ISS–IBS; o percentual do IBS é resumo da orientação da Receita Federal. Não são alíquotas efetivas nem pesos da carga tributária da empresa e não abrangem CBS, IS, créditos ou tributos efetivamente devidos.</p>
   `;
 }
 function status(v) {
