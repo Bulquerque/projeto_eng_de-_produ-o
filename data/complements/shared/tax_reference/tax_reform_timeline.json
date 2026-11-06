@@ -11,38 +11,38 @@
     "peso_ibs_regime_novo": 0.0,
     "cbs_teste_ou_observacao": "CBS 0,9% e IBS 0,1% como teste/obrigação acessória, compensados conforme a Receita.",
     "hipotese_operacional_para_malha": "Não alterar decisão de malha; usar só para preparação tecnológica/parametrização.",
-    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda",
+    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda",
     "observacoes": "Ano de teste. Não usar como reforma plena no resultado executivo."
   },
   {
     "ano": 2027,
     "fase": "início CBS/IS",
     "cbs_status": "CBS ativa",
-    "ibs_status": "IBS teste 0,1%; ICMS/ISS ainda vigentes na transição",
+    "ibs_status": "IBS teste estadual e municipal de 0,05% cada; ICMS/ISS ainda vigentes na transição",
     "is_status": "IS instituído",
     "pis_cofins_status": "PIS/Cofins extintos",
     "ipi_status": "IPI zero, exceto produtos também industrializados na ZFM",
     "peso_icms_iss_regime_atual": 1.0,
     "peso_ibs_regime_novo": 0.0,
-    "cbs_teste_ou_observacao": "CBS passa a substituir PIS/Cofins; alíquota efetiva precisa vir da legislação/tabela aplicável.",
-    "hipotese_operacional_para_malha": "Cenário curto prazo: manter ICMS/ISS atual e trocar PIS/Cofins por CBS se essa camada estiver no modelo.",
-    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda",
-    "observacoes": "Não estimar carga final sem base tributável e regra setorial."
+    "cbs_teste_ou_observacao": "CBS substitui PIS/Cofins; IBS total de teste 0,1%; alíquota efetiva depende da regra legal de referência.",
+    "hipotese_operacional_para_malha": "Cenário de curto prazo: manter ICMS/ISS atual e simular a CBS apenas como parâmetro exploratório se essa camada estiver no modelo.",
+    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda",
+    "observacoes": "Não estimar carga final sem base tributável, classificação e regra setorial."
   },
   {
     "ano": 2028,
     "fase": "continuidade CBS/IS",
     "cbs_status": "CBS ativa",
-    "ibs_status": "IBS teste 0,1%; ICMS/ISS ainda vigentes na transição",
+    "ibs_status": "IBS teste estadual e municipal de 0,05% cada; ICMS/ISS ainda vigentes na transição",
     "is_status": "IS ativo",
     "pis_cofins_status": "PIS/Cofins extintos",
     "ipi_status": "IPI zero, exceto ZFM",
     "peso_icms_iss_regime_atual": 1.0,
     "peso_ibs_regime_novo": 0.0,
-    "cbs_teste_ou_observacao": "Continuidade do período inicial.",
+    "cbs_teste_ou_observacao": "Continuidade da fase de teste do IBS; alíquota total de teste 0,1%.",
     "hipotese_operacional_para_malha": "Manter como cenário de transição curta se necessário; não é o foco principal do projeto.",
-    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda",
-    "observacoes": "Pode ser omitido da apresentação se quiser simplificar."
+    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda",
+    "observacoes": "A alíquota de referência da CBS depende do processo legal; não inferir carga empresarial sem bases e regras aplicáveis."
   },
   {
     "ano": 2029,
@@ -55,9 +55,9 @@
     "peso_icms_iss_regime_atual": 0.9,
     "peso_ibs_regime_novo": 0.1,
     "cbs_teste_ou_observacao": "IBS entra gradualmente.",
-    "hipotese_operacional_para_malha": "Modelo fiscal = 90% efeito fiscal atual de ICMS/ISS + 10% efeito destino/IBS.",
-    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda",
-    "observacoes": "Boa primeira fotografia da mudança de incentivo de localização."
+    "hipotese_operacional_para_malha": "Proporção legal de transição usada apenas como referência para cenário; não é peso validado para a carga tributária total da empresa.",
+    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda",
+    "observacoes": "ICMS/ISS remanescente: 90%; IBS em fase de transição: 10%. Art. 128 do ADCT; arts. 501 e 508 da LC 214/2025 compilada."
   },
   {
     "ano": 2030,
@@ -70,9 +70,9 @@
     "peso_icms_iss_regime_atual": 0.8,
     "peso_ibs_regime_novo": 0.2,
     "cbs_teste_ou_observacao": "IBS aumenta gradualmente.",
-    "hipotese_operacional_para_malha": "Modelo fiscal = 80% efeito fiscal atual de ICMS/ISS + 20% efeito destino/IBS.",
-    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda",
-    "observacoes": "Cenário intermediário recomendado."
+    "hipotese_operacional_para_malha": "Proporção legal de transição usada apenas como referência para cenário; não é peso validado para a carga tributária total da empresa.",
+    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda",
+    "observacoes": "ICMS/ISS remanescente: 80%; IBS em fase de transição: 20%. Art. 128 do ADCT; arts. 501 e 508 da LC 214/2025 compilada."
   },
   {
     "ano": 2031,
@@ -85,9 +85,9 @@
     "peso_icms_iss_regime_atual": 0.7,
     "peso_ibs_regime_novo": 0.3,
     "cbs_teste_ou_observacao": "IBS aumenta gradualmente.",
-    "hipotese_operacional_para_malha": "Modelo fiscal = 70% efeito fiscal atual de ICMS/ISS + 30% efeito destino/IBS.",
-    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda",
-    "observacoes": "Opcional, útil para sensibilidade temporal."
+    "hipotese_operacional_para_malha": "Proporção legal de transição usada apenas como referência para cenário; não é peso validado para a carga tributária total da empresa.",
+    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda",
+    "observacoes": "ICMS/ISS remanescente: 70%; IBS em fase de transição: 30%. Art. 128 do ADCT; arts. 501 e 508 da LC 214/2025 compilada."
   },
   {
     "ano": 2032,
@@ -100,9 +100,9 @@
     "peso_icms_iss_regime_atual": 0.6,
     "peso_ibs_regime_novo": 0.4,
     "cbs_teste_ou_observacao": "IBS aumenta gradualmente.",
-    "hipotese_operacional_para_malha": "Modelo fiscal = 60% efeito fiscal atual de ICMS/ISS + 40% efeito destino/IBS.",
-    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda",
-    "observacoes": "Último ano antes do regime integral."
+    "hipotese_operacional_para_malha": "Proporção legal de transição usada apenas como referência para cenário; não é peso validado para a carga tributária total da empresa.",
+    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda",
+    "observacoes": "ICMS/ISS remanescente: 60%; IBS em fase de transição: 40%. Art. 128 do ADCT; arts. 501 e 508 da LC 214/2025 compilada."
   },
   {
     "ano": 2033,
@@ -115,8 +115,8 @@
     "peso_icms_iss_regime_atual": 0.0,
     "peso_ibs_regime_novo": 1.0,
     "cbs_teste_ou_observacao": "Novo modelo em vigência integral.",
-    "hipotese_operacional_para_malha": "Cenário principal: reduzir dependência de benefício de origem e mover lógica fiscal para destino/consumo.",
-    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda",
-    "observacoes": "Comparar diretamente contra baseline_atual."
+    "hipotese_operacional_para_malha": "Marco legal do novo modelo; cálculo tributário empresarial não é inferido do cronograma.",
+    "fonte_principal": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda",
+    "observacoes": "Em 2033 ICMS e ISS são extintos; ainda são necessárias base, classificação, destino, créditos e alíquotas aplicáveis para calcular tributos da empresa."
   }
 ]

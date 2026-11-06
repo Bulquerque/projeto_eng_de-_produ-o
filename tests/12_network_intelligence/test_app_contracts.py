@@ -719,7 +719,9 @@ def test_tax_transition_weights_are_identified_as_exploratory_parameters():
         assert.equal(metadata.model_weights.provenance_status, 'exploratory_model_weight_not_legal_rate');
         assert.equal(metadata.model_weights.model_current_weight, 0.9);
         assert.equal(metadata.model_weights.source_current_weight, 0.9);
-        assert.equal(metadata.model_weights.status, 'aligned_or_not_applicable');
+        assert.equal(metadata.model_weights.status, 'numeric_values_match_semantics_not_equivalent');
+        assert.equal(metadata.statutory_transition_reference.periods[0].legacy_icms_iss_share, 0.9);
+        assert.equal(metadata.reform_rate_provenance.fixed_parameter_values_status, 'model_defaults_not_promulgated_company_rates');
         assert.match(metadata.model_weights.limitation, /não.*cronograma legal/i);
         console.log('TAX_TRANSITION_WEIGHT_PROVENANCE_OK');
         """
