@@ -393,10 +393,43 @@ function buildCostContext({ companyId, scenario, baselineBundle }) {
 }
 
 function buildCostResult(context, values) {
-  const flowCount = Array.isArray(values.flowCostDetail)
-    ? values.flowCostDetail.filter((flow) => flow?.method !== 'heuristic_fallback').length
-    : 0;
+  const pricedFlows = Array.isArray(values.flowCostDetail)
+    ? values.flowCostDetail.filter(
+        (flow) =>
+          flow?.method !== 'heuristic_fallback' && flow?.flow_id !== 'aggregate_heuristic_fallback'
+      )
+    : [];
+  const flowCount = pricedFlows.length;
   const fallbackCounts = values.diagnostics?.fallback_counts || {};
+  const distributionDenominator = Number(
+    values.diagnostics?.distribution_eligible_flow_count ?? flowCount
+  );
+  const distributionFallbackMethods = new Set([
+    'revenue_pct_fallback',
+    'revenue_pct_fallback_missing_weight',
+    'missing_rate',
+    'missing_cif_row',
+  ]);
+  const distributionUnpricedOrFallbackCount = pricedFlows.filter((flow) =>
+    distributionFallbackMethods.has(flow?.dist_method || flow?.method)
+  ).length;
+  const transferDenominator = pricedFlows.filter(
+    (flow) => flow?.transfer_method && flow.transfer_method !== 'not_required'
+  ).length;
+  const rateDenominator = {
+    missing_freight_rate: distributionDenominator,
+    missing_cif_row: distributionDenominator,
+    missing_weight: distributionDenominator,
+    revenue_fallback: distributionDenominator,
+    missing_transfer_distance: transferDenominator,
+    transfer_fallback: transferDenominator,
+  };
+  const fallbackRates = Object.fromEntries(
+    Object.entries(rateDenominator).map(([key, denominator]) => [
+      key,
+      denominator > 0 ? Number(fallbackCounts[key] || 0) / denominator : 0,
+    ])
+  );
   return {
     transfer_cost: values.transferCost,
     distribution_cost: values.distributionCost,
@@ -407,17 +440,23 @@ function buildCostResult(context, values) {
     warnings: values.warnings,
     diagnostics: {
       ...(values.diagnostics || {}),
+      fallback_counts: fallbackCounts,
       flow_count: flowCount,
-      fallback_rates: {
-        ...Object.fromEntries(
-          Object.entries(fallbackCounts).map(([key, value]) => [
-            key,
-            flowCount ? Number(value || 0) / flowCount : 0,
-          ])
-        ),
-        // This is scenario-level (0 or 1), not a flow rate. Keeping it
-        // separate prevents storage fallback from inflating flow counts.
+      distribution_unpriced_or_fallback_flow_count: distributionUnpricedOrFallbackCount,
+      distribution_unpriced_or_fallback_rate:
+        distributionDenominator > 0
+          ? distributionUnpricedOrFallbackCount / distributionDenominator
+          : 0,
+      fallback_denominators: {
+        all_flows: flowCount,
+        distribution: distributionDenominator,
+        transfer: transferDenominator,
+      },
+      fallback_rates: fallbackRates,
+      fallback_event_counts: {
+        heuristic_fallback: Number(fallbackCounts.heuristic_fallback || 0),
         proportional_storage: Number(fallbackCounts.proportional_storage || 0),
+        unknown_company: Number(fallbackCounts.unknown_company || 0),
       },
       fallback_cost_share: values.diagnostics?.fallback_cost_share || {},
       inventory: {

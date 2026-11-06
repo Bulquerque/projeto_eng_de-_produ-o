@@ -216,7 +216,7 @@ function methodologySection(selectedScenario = {}, audit = {}, robustness = {}) 
       <tr><td>Regime tributário do cenário</td><td>${esc(result?.tax_results?.tax_regime || changes.tax_regime || changes.tax_mode || '—')}</td></tr>
       <tr><td>Período tributário selecionado</td><td>${esc(taxPeriodContract.selected_period?.year || '—')} · ${esc(taxPeriodContract.selected_period?.source_status || '—')}</td></tr>
       <tr><td>Estoque</td><td>Escolha B — independente da quantidade de CDs ativos</td></tr>
-      <tr><td>Fallbacks físicos</td><td>${esc(JSON.stringify({ counts: diagnostics.fallback_counts || {}, rates: diagnostics.fallback_rates || {}, flow_count: diagnostics.flow_count ?? null }))}</td></tr>
+      <tr><td>Fallbacks físicos</td><td>${esc(JSON.stringify({ counts: diagnostics.fallback_counts || {}, rates: diagnostics.fallback_rates || {}, denominators: diagnostics.fallback_denominators || {}, distribution_unpriced_or_fallback: { flow_count: diagnostics.distribution_unpriced_or_fallback_flow_count ?? null, rate: diagnostics.distribution_unpriced_or_fallback_rate ?? null }, scenario_events: diagnostics.fallback_event_counts || {}, flow_count: diagnostics.flow_count ?? null }))}</td></tr>
       <tr><td>Proveniência do proxy de transferência</td><td>${esc(JSON.stringify(diagnostics.transfer_proxy_provenance || '—'))}</td></tr>
       <tr><td>Audit ID</td><td>${esc(audit?.audit_id || '—')}</td></tr>
       <tr><td>Nível de suporte da evidência</td><td>${esc(evidence.evidence_score == null ? '—' : `${evidence.evidence_score}/100 · ${evidence.evidence_status || '—'}`)}</td></tr>
