@@ -1,5 +1,5 @@
 {
-  "release_name": "visagio_static_simulator_1.0",
+  "release_name": "simulador_malha_estatico_1.0",
   "status": "ready_with_documented_limitations",
   "release_qualification": "pacote tecnicamente entregável; recomendações permanecem condicionadas à qualidade dos dados e aos gates registrados",
   "scope": "Fases 1 a 5 implementadas como site estatico",
@@ -39,7 +39,7 @@
     "known_limitations_are_blocking_decisions": false,
     "known_limitations_are_visible_and_non_fabricated": true,
     "tax_study": {
-      "study_id": "estudo_proprio_tributacao_visagio_v1",
+      "study_id": "estudo_proprio_tributacao_v1",
       "status": "registered_validation_pending",
       "decision_use_when_coverage_is_partial": "exploratory_only",
       "official_fiscal_validation": false

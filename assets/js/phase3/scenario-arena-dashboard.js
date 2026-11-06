@@ -230,13 +230,15 @@ function renderTaxAssumptions() {
       <strong>${escapeHtml(regime.label || regime.regime_id)}</strong>
       <p class="small-note">Ano: ${escapeHtml(regime.year_label || regime.year || '—')} · Modo: ${escapeHtml(regime.calculation_mode || '—')}</p>
       <dl class="tax-assumption-grid">
-        <div><dt>Peso sistema atual</dt><dd>${formatPct(Number(regime.current_weight || 0) * 100, 1)}</dd></div>
-        <div><dt>Peso IBS</dt><dd>${formatPct(Number(regime.ibs_weight || 0) * 100, 1)}</dd></div>
-        <div><dt>CBS</dt><dd>${formatPct(Number(regime.cbs_rate || 0) * 100, 2)}</dd></div>
-        <div><dt>IBS</dt><dd>${formatPct(Number(regime.ibs_rate || 0) * 100, 2)}</dd></div>
-        <div><dt>Seletivo</dt><dd>${formatPct(Number(regime.selective_rate || 0) * 100, 2)}</dd></div>
-        <div><dt>Crédito ref.</dt><dd>${formatPct(Number(regime.credit_rate || 0) * 100, 2)}</dd></div>
+        <div><dt>Peso de cenário · sistema atual</dt><dd>${formatPct(Number(regime.current_weight || 0) * 100, 1)}</dd></div>
+        <div><dt>Peso de cenário · IBS</dt><dd>${formatPct(Number(regime.ibs_weight || 0) * 100, 1)}</dd></div>
+        <div><dt>CBS paramétrica</dt><dd>${formatPct(Number(regime.cbs_rate || 0) * 100, 2)}</dd></div>
+        <div><dt>IBS paramétrico</dt><dd>${formatPct(Number(regime.ibs_rate || 0) * 100, 2)}</dd></div>
+        <div><dt>Seletivo paramétrico</dt><dd>${formatPct(Number(regime.selective_rate || 0) * 100, 2)}</dd></div>
+        <div><dt>Crédito paramétrico</dt><dd>${formatPct(Number(regime.credit_rate || 0) * 100, 2)}</dd></div>
       </dl>
+      <p class="small-note">Premissas exploratórias definidas pelos autores. Os pesos não são alíquotas legais e este simulador não apura tributo devido por empresa ou operação. A referência da CBS 2027 calculada pelo TCU (11,3468%) aguardava fixação pelo Senado em 6 nov. 2026; este valor não foi aplicado como alíquota empresarial.</p>
+      <p class="small-note">Calendário legal: <a href="https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda" target="_blank" rel="noopener noreferrer">Receita Federal</a> · <a href="https://www.gov.br/fazenda/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria/perguntas-e-respostas/como-sera-a-transicao-para" target="_blank" rel="noopener noreferrer">Ministério da Fazenda</a>.</p>
     </div>`
   );
 }

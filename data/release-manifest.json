@@ -1,7 +1,7 @@
 {
-  "package": "visagio_static_simulator",
+  "package": "simulador_malha_estatico",
   "package_version": "1.0.0",
-  "release_id": "visagio_static_simulator_1.0",
+  "release_id": "simulador_malha_estatico_1.0",
   "git_commit": "f939684a77cd4f58374bd164f7e72ca6544c73c4",
   "generated_at_utc": "2026-09-12T15:59:40+00:00",
   "status": "ready_with_documented_limitations",
@@ -41,7 +41,7 @@
   },
   "methodology": {
     "status": "documented_with_registered_validation_pending",
-    "tax_study_id": "estudo_proprio_tributacao_visagio_v1",
+    "tax_study_id": "estudo_proprio_tributacao_v1",
     "tax_study_status": "registered_validation_pending",
     "decision_use_when_coverage_is_partial": "exploratory_only",
     "official_fiscal_validation": false,

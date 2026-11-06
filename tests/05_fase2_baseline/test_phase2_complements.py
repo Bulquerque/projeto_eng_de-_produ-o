@@ -64,7 +64,7 @@ for (const companyId of ['empresa1', 'empresa2']) {
   });
 
   if (!taxResult.source_context) throw new Error(`${companyId}: source_context not attached`);
-  if (taxResult.source_context.package_name !== 'visagio_complementos_empresa1_empresa2') throw new Error(`${companyId}: wrong package_name`);
+  if (taxResult.source_context.package_name !== 'complementos_academicos_empresa1_empresa2') throw new Error(`${companyId}: wrong package_name`);
   if (!taxResult.metadata?.source_context) throw new Error(`${companyId}: metadata missing source_context`);
   if (companyId === 'empresa2' && Math.abs(Number(taxResult.total_tax_impact || 0) - Number(bundle.tax_results.tax_results.total_tax_impact || 0)) > 0.0001) throw new Error(`${companyId}: baseline tax changed`);
   if (companyId === 'empresa1' && Number(taxResult.total_tax_impact || 0) < 1.0) throw new Error(`${companyId}: baseline tax should not be zero`);

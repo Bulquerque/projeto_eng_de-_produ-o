@@ -36,12 +36,12 @@ export function renderScenarioComparisonChart(baselineCosts, scenarioCosts) {
     {
       label: 'Baseline',
       data: baselineData,
-      backgroundColor: '#CCC9CA', // --vg-soft
+      backgroundColor: '#CCC9CA', // --app-soft
     },
     {
       label: 'Cenário Atual',
       data: scenarioData,
-      backgroundColor: '#00A189', // --vg-green
+      backgroundColor: '#00A189', // --app-green
     },
   ];
 

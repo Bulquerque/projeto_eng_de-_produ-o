@@ -448,7 +448,7 @@ def test_network_ui_entrypoint_and_e2e_hooks():
     assert 'assets/js/app/main.js' in index
     for phase in range(1, 6):
         phase_main = (ROOT / f'assets/js/phase{phase}/main.js').read_text(encoding='utf-8')
-        assert '!window.__VISAGIO_NETWORK_UI__' in phase_main
+        assert '!window.__APP_NETWORK_UI__' in phase_main
 
     shell = (APP / 'shell.js').read_text(encoding='utf-8')
     expected_ids = [
@@ -727,6 +727,15 @@ def test_tax_transition_weights_are_identified_as_exploratory_parameters():
         """
     )
     assert output.endswith('TAX_TRANSITION_WEIGHT_PROVENANCE_OK')
+
+
+def test_tax_assumption_panel_separates_scenario_weights_from_legal_rates():
+    source = (ROOT / 'assets/js/phase3/scenario-arena-dashboard.js').read_text()
+    assert 'Peso de cenário · sistema atual' in source
+    assert 'Peso de cenário · IBS' in source
+    assert 'CBS paramétrica' in source
+    assert 'não são alíquotas legais' in source
+    assert '11,3468%' in source
 
 
 def test_optimizer_preset_and_tax_year_controls_render():

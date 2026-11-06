@@ -1,6 +1,6 @@
 # Manifesto de Release Final
 
-Release: `visagio_static_simulator_1.0`
+Release: `simulador_malha_estatico_1.0`
 
 Status: código do PR #3 validado pelo CI no commit `ea0abe1161176dc8b051cf466c55bd27f80f1f97`
 (branch `codex/interface-guiada`). A execução `37388863844` concluiu com sucesso em

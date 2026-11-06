@@ -6,9 +6,11 @@ import {
   buildScenarioAssumptionEvidence,
   getAcademicOptimizerProfiles,
   buildScenarioNAvailabilityEvidence,
+  mapAcademicSampleScenarios,
+  projectAcademicScenarioPlan,
 } from '../../scripts/academic-evidence-config.mjs';
 
-assert.equal(ACADEMIC_EVIDENCE_SCHEMA_VERSION, '1.1.0');
+assert.equal(ACADEMIC_EVIDENCE_SCHEMA_VERSION, '1.2.0');
 assert.equal(getAcademicOptimizerProfiles().length, 6);
 assert.equal(new Set(getAcademicOptimizerProfiles().map(({ profile_id }) => profile_id)).size, 6);
 
@@ -76,6 +78,20 @@ assert.equal(plan.scenarios[1].changes.active_cds.length, 14);
 assert.ok(!plan.scenarios[1].changes.active_cds.includes('CD Cajamar'));
 assert.ok(plan.scenarios.slice(2).every(({ changes }) => changes.active_cds.length === 1));
 assert.ok(plan.scenarios.every(({ changes }) => changes.freight_multiplier === 1));
+const projectedPlan = projectAcademicScenarioPlan(plan);
+assert.ok(!JSON.stringify(projectedPlan).includes('Ribeirão Preto'));
+assert.ok(!JSON.stringify(projectedPlan).includes('Cajamar'));
+assert.ok(!JSON.stringify(projectedPlan).includes('ribeirao_preto'));
+assert.deepEqual(
+  projectedPlan.scenarios.map(({ scenario_id }) => scenario_id),
+  [
+    'scenario_plan_001',
+    'scenario_plan_002',
+    ...Array.from({ length: 15 }, (_, i) => `scenario_plan_${String(i + 3).padStart(3, '0')}`),
+  ]
+);
+assert.equal(projectedPlan.scenarios[0].active_cd_count, 14);
+assert.equal(projectedPlan.scenarios[0].scenario_name, 'Cenário planejado 1');
 
 const unresolvedNames = buildAcademicScenarioPlan('empresa1', {
   model: { scenario_id: 'baseline-e1', active_cds: ['CD A', 'CD B'] },
@@ -94,6 +110,32 @@ const nReady = buildScenarioNAvailabilityEvidence({
 assert.equal(nReady.status, 'allocation_available');
 assert.equal(nReady.execution_status, 'not_run_by_academic_evidence_generator');
 assert.deepEqual(nReady.required_inputs, []);
+
+const executedSampleIds = [];
+const sampleResults = mapAcademicSampleScenarios(
+  [
+    { scenario_id: 'ordinary', scenario_name: 'Ordinary scenario' },
+    { scenario_id: 'e2_cenario_n', scenario_name: 'Cenário N' },
+    {
+      scenario_id: 'scenario_n_with_allocation',
+      scenario_name: 'Cenário N com alocação',
+      flow_to_cd_allocation: [{ flow_id: 'PRIVATE_FLOW_SENTINEL', cd: 'PRIVATE_CD_SENTINEL' }],
+    },
+  ],
+  (scenario) => {
+    executedSampleIds.push(scenario.scenario_id);
+    return { scenario_id: scenario.scenario_id, simulation_status: 'success' };
+  },
+  'empresa2'
+);
+assert.deepEqual(executedSampleIds, ['ordinary']);
+assert.equal(sampleResults[1].status, 'not_reproducible');
+assert.equal(sampleResults[1].execution_status, 'not_run_by_academic_evidence_generator');
+assert.deepEqual(sampleResults[1].required_inputs, ['flow_to_cd_allocation']);
+assert.equal(sampleResults[2].status, 'allocation_available');
+assert.equal(sampleResults[2].execution_status, 'not_run_by_academic_evidence_generator');
+assert.ok(!JSON.stringify(sampleResults).includes('PRIVATE_FLOW_SENTINEL'));
+assert.ok(!JSON.stringify(sampleResults).includes('PRIVATE_CD_SENTINEL'));
 const evidence = buildAcademicScenarioEvidence({
   plan: {
     scenario_id: 'sample',
@@ -109,7 +151,8 @@ const evidence = buildAcademicScenarioEvidence({
     summary: { probability_saving_positive: 0.6 },
   },
 });
-assert.equal(evidence.scenario.scenario_id, 'sample');
+assert.equal(evidence.scenario.scenario_id, 'scenario_plan_001');
+assert.equal(evidence.deterministic.scenario_id, 'scenario_plan_001');
 assert.equal(evidence.deterministic.costs.freight_cost, 10);
 assert.equal(evidence.monte_carlo.iterations, 300);
 assert.equal(evidence.monte_carlo.seed, 42);

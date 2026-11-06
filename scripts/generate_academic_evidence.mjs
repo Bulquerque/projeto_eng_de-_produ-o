@@ -9,6 +9,7 @@ import { buildBundleReconciliation } from '../assets/js/core/reconciliation-engi
 import {
   MODEL_DEFAULTS,
   calculateInventoryCost,
+  getCompanyModelDefaults,
   normalizeScenarioModelDefaults,
 } from '../assets/js/core/model-configuration.js';
 import { loadRuntimeBundle } from '../tests/runtime_bundle_support.mjs';
@@ -16,18 +17,19 @@ import {
   ACADEMIC_OPTIMIZER_CONFIG,
   ACADEMIC_EVIDENCE_SCHEMA_VERSION,
   buildAcademicScenarioEvidence,
-  buildMonteCarloExecutionEvidence,
   buildOptimizerCompletenessEvidence,
   buildOptimizerBestEvidence,
-  buildScenarioExecutionEvidence,
   buildScenarioQualityEvidence,
-  buildScenarioSavingEvidence,
   buildAcademicScenarioPlan,
   buildScenarioNAvailabilityEvidence,
-  buildScenarioAssumptionEvidence,
+  isScenarioNScenario,
+  mapAcademicSampleScenarios,
+  projectAcademicScenarioPlan,
+  projectAcademicReconciliation,
+  projectAcademicScenarioResult,
+  projectMonteCarloExecutionEvidence,
   compareInventoryCosts,
   getAcademicOptimizerProfiles,
-  normalizeEvidenceNumber,
   prepareAcademicReallocation,
 } from './academic-evidence-config.mjs';
 
@@ -66,33 +68,20 @@ function decryptJson(relPath) {
     Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8')
   );
 }
-const n = normalizeEvidenceNumber;
 const pickResult = (
   r,
   reallocationAudit = {},
   baselineBundle = null,
   baselineResult = null,
-  sourceScenario = null
-) => ({
-  scenario_id: r.scenario_id,
-  scenario_name: r.scenario?.scenario_name || r.scenario_name,
-  company_id: r.company_id,
-  active_cds: r.scenario?.changes?.active_cds || r.active_cds || [],
-  active_cds_count: (r.scenario?.changes?.active_cds || r.active_cds || []).length,
-  ...buildScenarioAssumptionEvidence(r, baselineResult, sourceScenario),
-  reallocation_rule_original: reallocationAudit.source_reallocation_rule ?? null,
-  reallocation_rule_effective:
-    reallocationAudit.effective_reallocation_rule ??
-    r.scenario?.changes?.reallocation_rule ??
-    r.changes?.reallocation_rule ??
-    null,
-  costs: r.costs || {},
-  total_with_tax: n(r.total_with_tax),
-  saving_pct: baselineResult ? buildScenarioSavingEvidence(r, baselineResult) : null,
-  quality: baselineBundle ? buildScenarioQualityEvidence(r, baselineBundle) : null,
-  diagnostics: r.diagnostics || r.costs?.diagnostics || null,
-  ...buildScenarioExecutionEvidence(r),
-});
+  safeScenarioId = null
+) =>
+  projectAcademicScenarioResult({
+    result: r,
+    reallocationAudit,
+    baselineResult,
+    quality: baselineBundle ? buildScenarioQualityEvidence(r, baselineBundle) : null,
+    scenarioId: safeScenarioId,
+  });
 function makeScenario(companyId, bundle, overrides = {}) {
   const base = buildBaselineScenario(companyId, bundle);
   return {
@@ -128,17 +117,21 @@ for (const companyId of ['empresa1', 'empresa2']) {
   const sampleList = Array.isArray(sampleScenarios)
     ? sampleScenarios
     : sampleScenarios.scenarios || sampleScenarios.sample_scenarios || [];
-  const published_scenarios = sampleList.map((sourceScenario) => {
-    const normalizedSourceScenario = normalizeScenarioModelDefaults(companyId, sourceScenario);
-    const scenarioAudit = prepareAcademicReallocation(normalizedSourceScenario, companyId);
-    return pickResult(
-      runScenario({ companyId, scenario: scenarioAudit.scenario, baselineBundle: bundle }),
-      scenarioAudit,
-      bundle,
-      baseline,
-      scenarioAudit.scenario
-    );
-  });
+  const published_scenarios = mapAcademicSampleScenarios(
+    sampleList,
+    (sourceScenario, sampleIndex) => {
+      const normalizedSourceScenario = normalizeScenarioModelDefaults(companyId, sourceScenario);
+      const scenarioAudit = prepareAcademicReallocation(normalizedSourceScenario, companyId);
+      return pickResult(
+        runScenario({ companyId, scenario: scenarioAudit.scenario, baselineBundle: bundle }),
+        scenarioAudit,
+        bundle,
+        baseline,
+        `sample_${String(sampleIndex + 1).padStart(3, '0')}`
+      );
+    },
+    companyId
+  );
   const academicScenarioPlan = buildAcademicScenarioPlan(
     companyId,
     bundle,
@@ -147,7 +140,8 @@ for (const companyId of ['empresa1', 'empresa2']) {
   const reproducibleAcademicScenarios = academicScenarioPlan.scenarios.filter(
     (scenario) => scenario.status === 'ready'
   );
-  const academicScenarioResults = reproducibleAcademicScenarios.map((planned) => {
+  const academicScenarioResults = reproducibleAcademicScenarios.map((planned, planIndex) => {
+    const safeScenarioId = `scenario_plan_${String(planIndex + 1).padStart(3, '0')}`;
     const scenario = {
       ...buildBaselineScenario(companyId, bundle),
       scenario_id: planned.scenario_id,
@@ -171,21 +165,12 @@ for (const companyId of ['empresa1', 'empresa2']) {
     });
     return buildAcademicScenarioEvidence({
       plan: planned,
-      deterministic: pickResult(
-        deterministic,
-        scenarioAudit,
-        bundle,
-        baseline,
-        scenarioAudit.scenario
-      ),
+      deterministic: pickResult(deterministic, scenarioAudit, bundle, baseline, safeScenarioId),
       monteCarlo,
+      scenarioId: safeScenarioId,
     });
   });
-  const scenarioNSource = sampleList.find((scenario) =>
-    /scenario[ _-]*n|cenario[ _-]*n/i.test(
-      `${scenario.scenario_id || ''} ${scenario.scenario_name || ''}`
-    )
-  );
+  const scenarioNSource = sampleList.find(isScenarioNScenario);
   const reconciliation = buildBundleReconciliation(bundle);
   const sameDrivers1 = makeScenario(companyId, bundle, {
     label: 'inventory_test_1_cd',
@@ -247,22 +232,23 @@ for (const companyId of ['empresa1', 'empresa2']) {
       optimizer_status: opt.optimizer_status,
       decision_use: opt.decision_use,
       result_scope: opt.result_scope,
-      search_log: opt.search_log,
       search_completeness: buildOptimizerCompletenessEvidence(opt),
       best: opt.best_scenarios
         ?.slice(0, 3)
-        .map((candidate) => buildOptimizerBestEvidence(candidate, baseline)),
+        .map((candidate, index) => buildOptimizerBestEvidence(candidate, baseline, index + 1)),
+      ranked_candidates: (opt.scored_scenarios || []).map((candidate, index) =>
+        buildOptimizerBestEvidence(candidate, baseline, index + 1)
+      ),
     };
   }
   output.companies[companyId] = {
     source_counts: {
       flows: bundle.flows?.length || 0,
-      active_cds: bundle.model?.active_cds?.length || 0,
-      core_data_keys: Object.keys(bundle.core_data || {}),
+      active_cd_count: bundle.model?.active_cds?.length || 0,
     },
-    baseline: pickResult(baseline, baselineAudit, bundle, baseline, baselineAudit.scenario),
+    baseline: pickResult(baseline, baselineAudit, bundle, baseline, 'baseline'),
     published_scenarios,
-    academic_scenario_plan: academicScenarioPlan,
+    academic_scenario_plan: projectAcademicScenarioPlan(academicScenarioPlan),
     academic_scenario_results: academicScenarioResults,
     scenario_n_availability:
       companyId === 'empresa2'
@@ -274,34 +260,37 @@ for (const companyId of ['empresa1', 'empresa2']) {
             required_inputs: [],
             reason: 'O cenário N documentado é específico da E2.',
           },
-    reconciliation,
+    reconciliation: projectAcademicReconciliation(reconciliation),
     inventory_independence_test: {
-      one_cd: pickResult(inventory1, inventory1Audit, bundle, baseline, inventory1Audit.scenario),
-      all_cds: pickResult(inventoryN, inventoryNAudit, bundle, baseline, inventoryNAudit.scenario),
+      one_cd: pickResult(inventory1, inventory1Audit, bundle, baseline, 'inventory_one_cd'),
+      all_cds: pickResult(inventoryN, inventoryNAudit, bundle, baseline, 'inventory_all_cds'),
       ...inventoryComparison,
       direct_formula_check: calculateInventoryCost({
+        companyId,
         baseInventoryCost: baseline.costs?.inventory_cost,
         demandMultiplier: 1,
-        inventoryDays: 45,
-        wacc: 0.15,
+        inventoryDays: getCompanyModelDefaults(companyId).inventory_days,
+        wacc: getCompanyModelDefaults(companyId).reference_wacc,
       }),
     },
     monte_carlo: {
-      ...buildMonteCarloExecutionEvidence(mc),
+      ...projectMonteCarloExecutionEvidence(mc),
       reallocation_rule_original: mcScenarioAudit.source_reallocation_rule,
       reallocation_rule_effective: mcScenarioAudit.effective_reallocation_rule,
       iterations: mc.iterations,
       seed: mc.seed,
       profile: mc.config?.profile,
       scatter_driver: mc.config?.scatter_driver,
-      provenance: mc.provenance,
-      data_quality: mc.data_quality,
+      provenance_status: mc.config?.historical_provenance_status || 'not_applicable',
+      data_quality_status: mc.data_quality_status,
     },
     optimization,
   };
 }
-fs.mkdirSync('entregaveis', { recursive: true });
-fs.writeFileSync('entregaveis/evidence.json', JSON.stringify(output, null, 2));
+fs.mkdirSync('entregaveis', { recursive: true, mode: 0o700 });
+fs.chmodSync('entregaveis', 0o700);
+fs.writeFileSync('entregaveis/evidence.json', JSON.stringify(output, null, 2), { mode: 0o600 });
+fs.chmodSync('entregaveis/evidence.json', 0o600);
 console.log(
   JSON.stringify(
     {
@@ -309,8 +298,8 @@ console.log(
         Object.entries(output.companies).map(([k, v]) => [
           k,
           {
-            baseline_total: v.baseline.total_with_tax,
-            reconciliation: v.reconciliation,
+            baseline_status: v.baseline.simulation_status,
+            reconciliation_status: v.reconciliation.overall.status,
             inventory_equal: v.inventory_independence_test.equal_inventory_cost,
             mc_iterations: v.monte_carlo.iterations,
             optimizer_best: Object.fromEntries(

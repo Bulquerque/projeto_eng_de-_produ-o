@@ -63,7 +63,7 @@ const renderCharts = createChartPipeline({
 });
 
 const request = readRuntimeRequest();
-window.__VISAGIO_NETWORK_UI__ = true;
+window.__APP_NETWORK_UI__ = true;
 
 function initializeNetworkIntelligence() {
   const stylesheet = document.createElement('link');

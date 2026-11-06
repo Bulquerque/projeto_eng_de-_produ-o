@@ -1,10 +1,10 @@
-# Estudo técnico próprio de tributação — Visagio Static Simulator
+# Estudo técnico próprio de tributação — Simulador de Malha Logística
 
 Status: complementar ao modelo, versionado no código e reproduzível no runtime.
 Registro runtime: `registered_validation_pending` enquanto a revisão tributária/legal
 independente permanecer pendente.
 
-Identificador operacional: `estudo_proprio_tributacao_visagio_v1`.
+Identificador operacional: `estudo_proprio_tributacao_v1`.
 
 ## Objetivo e limite
 

@@ -40,10 +40,10 @@ def test_index_loads_only_network_intelligence():
     assert 'phase1AutoChecks' not in html
 
 
-def test_phase1_css_has_visagio_palette_and_components():
+def test_phase1_css_has_generic_palette_and_components():
     css = read('assets/styles.css')
-    for color in ['#00363D', '#F7F3F5', '#0F515C', '#0C7878', '#A9FDAC', '#00A189']:
-        assert color in css, color
+    for token in ['--app-dark:#00292E', '--app-bg:#F5F7F8', '--app-green:#00917C']:
+        assert token in css, token
     for klass in ['company-panel', 'dataset-card', 'check-item', 'debug-console', 'status-chip']:
         assert klass in css, klass
 
@@ -108,7 +108,7 @@ def test_phase1_path_report_clean():
 if __name__ == '__main__':
     test_network_intelligence_frontend_files_exist()
     test_index_loads_only_network_intelligence()
-    test_phase1_css_has_visagio_palette_and_components()
+    test_phase1_css_has_generic_palette_and_components()
     test_phase1_js_declares_modules_and_uses_relative_paths_only()
     test_phase1_company_catalog_separation()
     test_phase1_required_catalog_paths_exist()

@@ -11,6 +11,12 @@ import {
   safeScenarioCost,
   safeScenarioTotal,
 } from './academic-package-content.mjs';
+import {
+  copyPrivateFile,
+  ensurePrivateDirectory,
+  restrictPrivateFile,
+  writePrivateFile,
+} from './private-artifact-files.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 
@@ -37,7 +43,7 @@ const { Workbook, SpreadsheetFile } = await loadArtifactTool();
 async function copyOptionalInput(inputPath, outputPath, label) {
   try {
     await access(inputPath);
-    await fs.writeFile(
+    await writePrivateFile(
       outputPath,
       `Anexo de origem identificado, mas não incluído por conter texto-fonte: ${label}.\n` +
         'Consulte o original local autorizado. O conteúdo não foi copiado para o pacote.\n',
@@ -46,7 +52,7 @@ async function copyOptionalInput(inputPath, outputPath, label) {
     return { label, status: 'available_not_copied', source: path.relative(root, inputPath) };
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
-    await fs.writeFile(
+    await writePrivateFile(
       outputPath,
       `Recurso opcional não disponível nesta execução: ${label}.\n` +
         'O pacote foi gerado sem esse anexo textual; consulte references/raw_sources e o manifesto de fontes.\n',
@@ -55,11 +61,15 @@ async function copyOptionalInput(inputPath, outputPath, label) {
     return { label, status: 'not_available' };
   }
 }
-const outDir = path.join(root, 'entregaveis', 'pacote_relatorio_visagio_2026-09-10');
-await fs.mkdir(outDir, { recursive: true });
-const evidence = JSON.parse(
-  await fs.readFile(path.join(root, 'entregaveis/evidence.json'), 'utf8')
-);
+const deliverablesDir = path.join(root, 'entregaveis');
+const privateDir = path.join(deliverablesDir, 'privado');
+const outDir = path.join(privateDir, 'pacote_academico_2026-11-06');
+await ensurePrivateDirectory(deliverablesDir);
+await ensurePrivateDirectory(privateDir);
+await ensurePrivateDirectory(outDir);
+const evidencePath = path.join(deliverablesDir, 'evidence.json');
+const evidence = JSON.parse(await fs.readFile(evidencePath, 'utf8'));
+await restrictPrivateFile(evidencePath);
 const { report, validation, taxAudit, statusRows } = buildAcademicPackageNarratives(evidence);
 const companies = Object.entries(evidence.companies || {});
 const e1 = evidence.companies?.empresa1 || {};
@@ -76,15 +86,15 @@ const csv = (rows) =>
         .join(';')
     )
     .join('\n') + '\n';
-await fs.writeFile(
+await writePrivateFile(
   path.join(outDir, 'matriz_plano_trabalho.csv'),
   csv([['id', 'item', 'status_atual', 'prioridade', 'acao_para_relatorio'], ...statusRows]),
   'utf8'
 );
 
-await fs.writeFile(path.join(outDir, 'LEIA_ME_PRIMEIRO.md'), report, 'utf8');
-await fs.writeFile(path.join(outDir, 'AUDITORIA_TRIBUTARIA_PROFISSIONAL.md'), taxAudit, 'utf8');
-await fs.writeFile(path.join(outDir, 'VALIDACAO_FINAL.md'), validation, 'utf8');
+await writePrivateFile(path.join(outDir, 'LEIA_ME_PRIMEIRO.md'), report, 'utf8');
+await writePrivateFile(path.join(outDir, 'AUDITORIA_TRIBUTARIA_PROFISSIONAL.md'), taxAudit, 'utf8');
+await writePrivateFile(path.join(outDir, 'VALIDACAO_FINAL.md'), validation, 'utf8');
 const packagedAt = new Date().toISOString();
 const snapshotInputs = [];
 for (const file of [
@@ -105,7 +115,7 @@ for (const file of [
       packagedAt,
       fileModifiedAt: stat.mtime.toISOString(),
     });
-    await fs.writeFile(path.join(outDir, file), notice, 'utf8');
+    await writePrivateFile(path.join(outDir, file), notice, 'utf8');
     snapshotInputs.push({
       kind: 'documentation',
       source: file,
@@ -134,7 +144,7 @@ for (const file of [
   const packageFile = path.basename(file);
   try {
     const stat = await fs.stat(sourcePath);
-    await fs.copyFile(sourcePath, path.join(outDir, packageFile));
+    await copyPrivateFile(sourcePath, path.join(outDir, packageFile));
     snapshotInputs.push({
       kind: 'validation',
       source: file,
@@ -154,7 +164,6 @@ for (const file of [
     });
   }
 }
-await fs.writeFile(path.join(outDir, 'evidence.json'), JSON.stringify(evidence, null, 2), 'utf8');
 const optionalInputs = [];
 optionalInputs.push(
   await copyOptionalInput(
@@ -170,7 +179,7 @@ optionalInputs.push(
     'plano de trabalho recebido extraído'
   )
 );
-await fs.writeFile(
+await writePrivateFile(
   path.join(outDir, 'package-input-status.json'),
   JSON.stringify(
     {
@@ -181,6 +190,14 @@ await fs.writeFile(
     null,
     2
   ),
+  'utf8'
+);
+await writePrivateFile(
+  path.join(outDir, 'CLASSIFICACAO_PRIVACIDADE.md'),
+  '# Material privado com dados empresariais\n\n' +
+    'Este diretório contém resultados agregados derivados de evidência empresarial e não é um pacote distribuível.\n' +
+    'Os arquivos são separados do bundle compartilhável; não compartilhe nem publique este diretório.\n' +
+    'O evidence.json bruto permanece em entregaveis/evidence.json, fora deste pacote.\n',
   'utf8'
 );
 
@@ -236,7 +253,7 @@ header(
     [
       'Empresa 1',
       safeScenarioTotal(e1.baseline),
-      normalizePackageNumber(e1.source_counts?.active_cds),
+      normalizePackageNumber(e1.source_counts?.active_cd_count),
       normalizePackageNumber(e1.source_counts?.flows),
       e1.reconciliation?.operational?.status || 'n.a.',
       e1.baseline?.simulation_status || 'status não registrado',
@@ -244,7 +261,7 @@ header(
     [
       'Empresa 2',
       safeScenarioTotal(e2.baseline),
-      normalizePackageNumber(e2.source_counts?.active_cds),
+      normalizePackageNumber(e2.source_counts?.active_cd_count),
       normalizePackageNumber(e2.source_counts?.flows),
       e2.reconciliation?.operational?.status || 'n.a.',
       e2.baseline?.simulation_status || 'status não registrado',
@@ -470,5 +487,7 @@ sheets['Mecanismo de avaliação'].getRange('F4:F11').format.numberFormat = '0.0
 sheets['Mecanismo de avaliação'].getRange('G4:G11').format.numberFormat = '"R$" #,##0.00';
 sheets['Mecanismo de avaliação'].getRange('H4:H11').format.numberFormat = '0.00"%"';
 const xlsx = await SpreadsheetFile.exportXlsx(wb);
-await xlsx.save(path.join(outDir, 'pacote_dados_corrigidos.xlsx'));
+const workbookPath = path.join(outDir, 'pacote_dados_corrigidos.xlsx');
+await xlsx.save(workbookPath);
+await restrictPrivateFile(workbookPath);
 console.log(outDir);

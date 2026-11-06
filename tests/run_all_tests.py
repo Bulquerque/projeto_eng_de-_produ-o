@@ -61,6 +61,7 @@ TESTS = [
     'tests/09_quality_checks/test_model_invariants.py',
     'tests/09_quality_checks/test_evidence_uncertainty_contracts.py',
     'tests/09_quality_checks/test_release_contract.py',
+    'tests/09_quality_checks/test_academic_package_privacy.py',
     'tests/09_quality_checks/test_tax_config_dependency.py',
     'tests/09_quality_checks/test_physical_storage_fallback_diagnostics.py',
     'tests/10_presentation_e2e/test_presentation_flow_playwright.py',

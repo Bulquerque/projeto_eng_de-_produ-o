@@ -128,7 +128,7 @@ function buildTaxStudyMetadata({
       : 'registered'
     : 'not_available';
   return {
-    study_id: 'estudo_proprio_tributacao_visagio_v1',
+    study_id: 'estudo_proprio_tributacao_v1',
     study_type: 'parametric_internal_tax_study',
     status: validationStatus,
     scope: {

@@ -14,7 +14,10 @@ import {
   buildScenarioExecutionEvidence,
   buildScenarioQualityEvidence,
   buildScenarioSavingEvidence,
+  buildAcademicScenarioEvidence,
   compareInventoryCosts,
+  projectAcademicScenarioResult,
+  projectMonteCarloExecutionEvidence,
   normalizeEvidenceNumber,
   prepareAcademicReallocation,
 } from '../scripts/academic-evidence-config.mjs';
@@ -129,17 +132,185 @@ assert.equal(
   null
 );
 
+const privateFlowSentinel = 'PRIVATE_FLOW_SENTINEL_9f4c';
+const projectedScenario = projectAcademicScenarioResult({
+  result: {
+    scenario_id: 'fixture-scenario',
+    scenario_name: 'fixture scenario',
+    company_id: 'empresa2',
+    scenario: {
+      changes: {
+        active_cds: ['PRIVATE_LOCATION_SENTINEL'],
+        freight_multiplier: 1.1,
+        demand_multiplier: 1,
+        inventory_days: 45,
+        wacc: 0.12,
+        tax_mode: 'current',
+      },
+    },
+    costs: {
+      transfer_cost: 10,
+      distribution_cost: 20,
+      storage_cost: 30,
+      inventory_cost: 40,
+      tax_impact: 50,
+      total_logistics_cost: 100,
+      total_with_tax: 150,
+      calculation_method: 'physical_cif_table',
+      flow_cost_detail: [{ flow_id: privateFlowSentinel, distribution_cost: 999 }],
+      tax_details: {
+        flow_breakdown: [{ flow_id: privateFlowSentinel, tax_amount: 777 }],
+      },
+      diagnostics: {
+        flow_count: 2,
+        fallback_counts: { missing_weight: 1, [privateFlowSentinel]: 1 },
+        fallback_denominators: { distribution: 2 },
+        fallback_rates: { missing_weight: 0.5 },
+        private_rows: [{ flow_id: privateFlowSentinel }],
+      },
+    },
+    total_with_tax: 150,
+    flows: [{ flow_id: privateFlowSentinel }],
+    warnings: [`private warning ${privateFlowSentinel}`],
+    errors: [`private error ${privateFlowSentinel}`],
+    validation: { valid: true, rows: [{ flow_id: privateFlowSentinel }] },
+    data_quality: {
+      status: 'limited_fiscal_coverage',
+      decision_use: 'exploratory_only',
+      coverage_limited: true,
+      coverage: {
+        eligible_flow_count: 2,
+        uncovered_flow_count: 1,
+        complete_fiscal_coverage_ratio: 0.5,
+        private_rows: [{ flow_id: privateFlowSentinel }],
+      },
+    },
+  },
+  reallocationAudit: {
+    source_reallocation_rule: 'nearest_available_cd',
+    effective_reallocation_rule: 'nearest_available_cd',
+  },
+  baselineResult: { simulation_status: 'success', total_with_tax: 200 },
+  quality: { quality_score: 82, risk_level: 'medium', private_rows: [privateFlowSentinel] },
+});
+const projectedScenarioJson = JSON.stringify(projectedScenario);
+assert.ok(!projectedScenarioJson.includes(privateFlowSentinel));
+assert.ok(!projectedScenarioJson.includes('PRIVATE_LOCATION_SENTINEL'));
+assert.ok(!projectedScenarioJson.includes('fixture-scenario'));
+assert.equal(projectedScenario.scenario_id, null);
+assert.equal(
+  projectAcademicScenarioResult({
+    result: { scenario_id: privateFlowSentinel },
+    scenarioId: privateFlowSentinel,
+  }).scenario_id,
+  null
+);
+assert.equal(
+  projectAcademicScenarioResult({ result: {}, scenarioId: 'sample_001' }).scenario_id,
+  'sample_001'
+);
+assert.equal(projectedScenario.costs.transfer_cost, 10);
+assert.equal(projectedScenario.costs.total_with_tax, 150);
+assert.equal(projectedScenario.diagnostics.fallback_counts.missing_weight, 1);
+assert.equal(projectedScenario.diagnostics.fallback_rates.missing_weight, 0.5);
+assert.equal(projectedScenario.active_cds_count, 1);
+assert.equal(projectedScenario.quality.quality_score, 82);
+
+const privateTaxModeSentinel = 'PRIVATE_TAX_MODE_SENTINEL_41ac';
+const projectedPrivateTaxMode = projectAcademicScenarioResult({
+  result: {
+    company_id: 'empresa1',
+    scenario: { changes: { tax_mode: privateTaxModeSentinel } },
+  },
+});
+assert.equal(projectedPrivateTaxMode.tax_mode, null);
+assert.ok(!JSON.stringify(projectedPrivateTaxMode).includes(privateTaxModeSentinel));
+assert.equal(
+  projectAcademicScenarioResult({
+    result: { company_id: 'empresa1', scenario: { changes: { tax_mode: 'reform_2027' } } },
+  }).tax_mode,
+  'reform_2027'
+);
+
+const privateMonteCarloMetadataSentinel = 'PRIVATE_MC_METADATA_SENTINEL_45de';
+const projectedPrivateMonteCarlo = projectMonteCarloExecutionEvidence({
+  monte_carlo_status: 'success',
+  summary: {
+    risk_band: privateMonteCarloMetadataSentinel,
+    risk_band_policy: privateMonteCarloMetadataSentinel,
+    decision_use: privateMonteCarloMetadataSentinel,
+    analysis_type: privateMonteCarloMetadataSentinel,
+    uncertainty_source: privateMonteCarloMetadataSentinel,
+    probability_interpretation: privateMonteCarloMetadataSentinel,
+    scatter_driver: privateMonteCarloMetadataSentinel,
+    most_sensitive_driver: privateMonteCarloMetadataSentinel,
+  },
+});
+assert.ok(!JSON.stringify(projectedPrivateMonteCarlo).includes(privateMonteCarloMetadataSentinel));
+for (const field of [
+  'risk_band',
+  'risk_band_policy',
+  'decision_use',
+  'analysis_type',
+  'uncertainty_source',
+  'probability_interpretation',
+  'scatter_driver',
+  'most_sensitive_driver',
+])
+  assert.equal(projectedPrivateMonteCarlo.summary[field], null, `${field} is enum-projected`);
+const projectedKnownMonteCarloEnums = projectMonteCarloExecutionEvidence({
+  monte_carlo_status: 'success',
+  summary: {
+    risk_band: 'medium',
+    risk_band_policy: {
+      id: 'project_monte_carlo_risk_v1',
+      source: privateMonteCarloMetadataSentinel,
+    },
+    decision_use: 'exploratory_only',
+    analysis_type: 'exploratory_uncertainty_analysis',
+    uncertainty_source: 'parametric_assumptions',
+    probability_interpretation: 'condicional_as_premissas_parametricas',
+    scatter_driver: 'freight_multiplier',
+    most_sensitive_driver: 'inventory_days',
+  },
+});
+assert.equal(projectedKnownMonteCarloEnums.summary.risk_band, 'medium');
+assert.equal(projectedKnownMonteCarloEnums.summary.risk_band_policy, 'project_monte_carlo_risk_v1');
+assert.ok(
+  !JSON.stringify(projectedKnownMonteCarloEnums).includes(privateMonteCarloMetadataSentinel)
+);
+const projectedPrivateMonteCarloMetadata = buildAcademicScenarioEvidence({
+  monteCarlo: {
+    config: {
+      profile: privateMonteCarloMetadataSentinel,
+      scatter_driver: privateMonteCarloMetadataSentinel,
+      historical_provenance_status: privateMonteCarloMetadataSentinel,
+    },
+    data_quality_status: privateMonteCarloMetadataSentinel,
+  },
+});
+assert.ok(
+  !JSON.stringify(projectedPrivateMonteCarloMetadata).includes(privateMonteCarloMetadataSentinel)
+);
+
 const bestEvidence = buildOptimizerBestEvidence(
   {
     scenario_id: 'example',
     final_score: 72,
+    scenario: {
+      scenario_name: 'private branch',
+      changes: { active_cds: ['PRIVATE_LOCATION_SENTINEL'] },
+    },
     result: { simulation_status: 'success', total_with_tax: 80 },
   },
   { simulation_status: 'success', total_with_tax: 100 }
 );
 assert.equal(bestEvidence.score, 72);
+assert.equal(bestEvidence.scenario_id, 'candidate_rank_0001');
 assert.equal(bestEvidence.simulation_status, 'success');
 assert.equal(bestEvidence.saving_pct, 20);
+assert.equal(bestEvidence.active_cd_count, 1);
+assert.ok(!JSON.stringify(bestEvidence).includes('PRIVATE_LOCATION_SENTINEL'));
 assert.equal(
   buildScenarioSavingEvidence(
     { simulation_status: 'success', total_with_tax: 80 },
@@ -226,7 +397,7 @@ const limitedSearch = buildOptimizerCompletenessEvidence({
   result_scope: 'conditional_declared_catalog',
   search_log: {
     exact_search_space: false,
-    exactness_reason: 'limited catalog',
+    exactness_reason: 'PRIVATE_SEARCH_LOG_SENTINEL',
     space_limited: true,
     candidate_space_size: 9000,
     simulated_candidates: 5000,
@@ -235,14 +406,19 @@ const limitedSearch = buildOptimizerCompletenessEvidence({
 });
 assert.equal(limitedSearch.exact_search_space, false);
 assert.equal(limitedSearch.search_complete, false);
-assert.equal(limitedSearch.exactness_reason, 'limited catalog');
+assert.equal(limitedSearch.exactness_reason, undefined);
+assert.equal(
+  limitedSearch.completeness_reason,
+  'O espaço declarado não foi enumerado integralmente.'
+);
+assert.ok(!JSON.stringify(limitedSearch).includes('PRIVATE_SEARCH_LOG_SENTINEL'));
 assert.equal(limitedSearch.candidate_space_size, 9000);
 assert.equal(limitedSearch.simulated_candidates, 5000);
 
 const enumeratedWithFailures = buildOptimizerCompletenessEvidence({
   search_log: {
     exact_search_space: true,
-    exactness_reason: 'all declared candidates enumerated',
+    exactness_reason: 'PRIVATE_EXACTNESS_SENTINEL',
     space_limited: false,
     candidate_space_size: 12,
     simulated_candidates: 12,
