@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 // Rebuild only the public runtime in the opened Site, preserving encrypted inputs.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const publicComplementFiles = ['data/complements/shared/tax_reference/icms_interstate_matrix.json'];
 const targetArgument = process.argv[2];
 const sourceCommit = process.argv[3] ?? null;
 const sourceBranch = process.argv[4] ?? null;
@@ -132,6 +133,7 @@ for (const sourceDirectory of ['assets', 'data-demo', 'data/tax']) {
   const source = path.join(root, sourceDirectory);
   assertTreeHasNoSymlinks(source, `Public source ${sourceDirectory}`);
 }
+for (const file of publicComplementFiles) assertRegularFile(path.join(root, file), file);
 assertRegularFile(path.join(root, 'index.html'), 'Source entrypoint');
 assertRegularFile(path.join(root, 'data/catalog.json'), 'Public data catalog');
 
@@ -156,6 +158,11 @@ try {
   }
   fs.mkdirSync(path.join(staging, 'data'), { recursive: true });
   fs.copyFileSync(path.join(root, 'data/catalog.json'), path.join(staging, 'data/catalog.json'));
+  for (const file of publicComplementFiles) {
+    const destination = path.join(staging, ...file.split('/'));
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.copyFileSync(path.join(root, file), destination);
+  }
 
   const entrypoint = fs
     .readFileSync(path.join(root, 'index.html'), 'utf8')
@@ -195,6 +202,7 @@ try {
     'build-info.json',
     'data/catalog.json',
     'data/encrypted_manifest.json',
+    ...publicComplementFiles,
     'data-demo/empresa_mock/baseline.json',
     'data-demo/empresa_mock/objective.json',
     'data-demo/empresa_mock/scenarios.json',

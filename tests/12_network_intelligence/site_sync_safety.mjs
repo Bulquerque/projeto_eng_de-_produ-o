@@ -63,6 +63,45 @@ try {
   assert.equal(fs.existsSync(path.join(dist, 'data-demo/empresa_mock')), true);
   assert.equal(fs.existsSync(path.join(dist, 'data/catalog.json')), true);
   assert.equal(fs.existsSync(path.join(dist, 'data/tax/tax_reform_config.json')), true);
+  const publicIcmsReference = 'data/complements/shared/tax_reference/icms_interstate_matrix.json';
+  assert.equal(
+    fs.existsSync(path.join(dist, publicIcmsReference)),
+    true,
+    'the shared ICMS matrix is a runtime dependency'
+  );
+  assert.match(
+    fs.readFileSync(path.join(root, 'assets/js/core/runtime-bundle-contract.js'), 'utf8'),
+    /data\/complements\/shared\/tax_reference\/icms_interstate_matrix\.json/
+  );
+  assert.match(
+    fs.readFileSync(path.join(dist, 'index.html'), 'utf8'),
+    /name="app-complements" content="omitted"/
+  );
+  const publishedComplements = [];
+  const collectFiles = (directory, relative = '') => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const child = relative ? `${relative}/${entry.name}` : entry.name;
+      const full = path.join(directory, entry.name);
+      if (entry.isDirectory()) collectFiles(full, child);
+      else publishedComplements.push(`data/complements/${child}`);
+    }
+  };
+  collectFiles(path.join(dist, 'data/complements'));
+  assert.deepEqual(publishedComplements, [publicIcmsReference]);
+  assert.equal(
+    fs.existsSync(
+      path.join(dist, 'data/complements/shared/tax_reference/data_bridge_empresas.json')
+    ),
+    false,
+    'company bridge data must not enter the public Site bundle'
+  );
+  assert.equal(
+    fs.existsSync(
+      path.join(dist, 'data/complements/complementos/empresa_1/tax/tax_inputs_current_sample.json')
+    ),
+    false,
+    'tenant tax inputs must not enter the public Site bundle'
+  );
 
   const sourceExtraTarget = path.join(scratch, 'source-extra-site');
   const sourceExtraDist = makeTarget(sourceExtraTarget);

@@ -32,22 +32,23 @@ Na data desta revisão, o TCU havia calculado **11,3468%** como referência da C
 
 ## Evidência e privacidade
 
-Na revisão de 6/11/2026, `npm run quality` terminou com código 0: lint e
-formatação JavaScript/Python, suíte pública, suíte integral, integridade dos
-dados cifrados, testes de regressão e Playwright da interface. O Playwright
-exercitou a demonstração sintética e o fluxo de acesso aos dados protegidos; a
-senha não foi copiada nem versionada. A geração da evidência protegida terminou
+Na revisão de 6/11/2026, `npm run quality` terminou com código 0 após a última
+alteração do empacotamento do Site: lint e formatação JavaScript/Python, suíte
+pública, suíte integral, integridade dos dados cifrados, testes de regressão e
+Playwright da interface. O Playwright exercitou a demonstração sintética e o
+fluxo de acesso aos dados protegidos; a senha não foi copiada nem versionada. A geração da evidência protegida terminou
 para os dois conjuntos; uma varredura adicional confirmou que não há chaves de
 dados por fluxo, mensagens livres, IDs de origem, caminhos locais ou nomes de
 CDs no JSON de evidência. A evidência de schema 1.2.0 está ignorada pelo Git e
 com permissão local `600`.
 
-A projeção acadêmica exporta campos permitidos, reduz mensagens livres a marcadores genéricos e substitui identificadores de cenários e candidatos por referências opacas. Os arquivos produzidos com dados protegidos ficam fora do Git e fora do Site público. A versão pública contém somente o simulador e seus dados demonstrativos fictícios.
+A projeção acadêmica exporta campos permitidos, reduz mensagens livres a marcadores genéricos e substitui identificadores de cenários e candidatos por referências opacas. Arquivos produzidos com dados protegidos, amostras fiscais por tenant e evidência bruta ficam fora do Git e do Site público. O Site publica a demonstração sintética, a matriz ICMS compartilhada exigida pelo carregador e somente os arquivos cifrados explicitamente citados pelo manifesto; não publica os complementos JSON por tenant.
 
 O sincronizador do Site valida caminhos e rejeita symlinks, monta a pasta pública
 em staging com uma allowlist de arquivos e só então troca a publicação. Ele
-preserva apenas arquivos cifrados citados pelo manifesto, rejeita qualquer
-conteúdo extra na árvore de origem e elimina resíduos antigos do `dist`. O
+preserva apenas arquivos cifrados citados pelo manifesto, inclui a matriz ICMS
+compartilhada requerida pelo runtime, rejeita conteúdo extra na árvore de origem
+e elimina resíduos antigos do `dist`. O
 gerador do pacote analítico grava em `entregaveis/privado/` com diretórios `0700`
 e arquivos `0600`; o JSON bruto da evidência fica fora desse pacote.
 
