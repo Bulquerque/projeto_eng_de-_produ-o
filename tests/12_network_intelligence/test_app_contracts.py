@@ -261,6 +261,96 @@ def test_scenario_actions_controller_contract():
     assert output.endswith('SCENARIO_ACTIONS_API_OK')
 
 
+def test_failed_simulations_preserve_last_good_state_and_are_not_compared():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        globalThis.document = {
+          createElement() { return { remove() {}, className: '', textContent: '' }; },
+          querySelector() { return null; },
+        };
+        globalThis.window = { addEventListener() {}, setTimeout() {} };
+        const { createInitialState, createStateStore } = await import('./assets/js/app/state.js');
+        const { createOperationGuard } = await import('./assets/js/app/operation-guard.js');
+        const { createScenarioActions } = await import('./assets/js/app/scenario-actions.js');
+        const { createProjectProvider } = await import('./assets/js/app/providers/project-provider.js');
+
+        const projectProvider = await createProjectProvider();
+        projectProvider.context = { company_id: 'empresa1' };
+        projectProvider.baselineBundle = { model: { company_id: 'empresa1', scenario_id: 'base-1', active_cds: ['CD A'] } };
+        const priorProjectScenario = { scenario_id: 'prior', result: { simulation_status: 'success' } };
+        projectProvider.lastScenario = priorProjectScenario;
+        await assert.rejects(
+          projectProvider.runScenario({
+            scenario: {
+              scenario_id: 'invalid',
+              scenario_name: 'Cenário inválido sintético',
+              company_id: 'empresa2',
+              base_scenario_id: 'base-1',
+              changes: { active_cds: ['CD A'], freight_multiplier: 1, demand_multiplier: 1, inventory_days: 0, wacc: 0.15 },
+            },
+          }),
+          /não pertence à empresa selecionada/
+        );
+        assert.equal(projectProvider.lastScenario, priorProjectScenario);
+
+        for (const status of ['invalid', 'error']) {
+          const state = createInitialState({ company_id: 'empresa1', default_route: '#/network/results/summary' });
+          const store = createStateStore(state);
+          const previousScenario = { scenario_id: 'previous', company_id: 'empresa1' };
+          const previousResult = { simulation_status: 'success', total_with_tax: 100 };
+          const previousQuality = { quality_score: 90 };
+          const previousComparison = { comparison: [{ scenario_id: 'previous' }] };
+          state.data.selected_scenario = previousScenario;
+          state.data.scenario_result = previousResult;
+          state.data.scenario_quality = previousQuality;
+          state.data.comparison = previousComparison;
+          state.context.selected_scenario_id = 'previous';
+          state.ui.scenario_draft = previousScenario;
+          let shownToast = null;
+          const toastHost = { replaceChildren(toast) { shownToast = toast; } };
+          const provider = {
+            async runScenario() {
+              return {
+                company_id: 'empresa1',
+                scenario: { scenario_id: 'failed', company_id: 'empresa1' },
+                result: { simulation_status: status, errors: [{ message: 'Entrada sintética inválida.' }] },
+                quality: { quality_score: 0 },
+                comparison: { comparison: [{ scenario_id: 'failed' }] },
+              };
+            },
+          };
+          const root = {
+            querySelector(selector) { return selector === '#networkToastRoot' ? toastHost : null; },
+            setAttribute() {},
+          };
+          const actions = createScenarioActions({
+            root,
+            store,
+            getProvider: () => provider,
+            operationGuard: createOperationGuard({ getState: store.getState, getProvider: () => provider }),
+            render() {},
+          });
+          await actions.runScenario({ scenarioId: 'failed' });
+          assert.equal(state.meta.status, 'error', `${status} must not produce scenario_ready`);
+          assert.equal(state.data.selected_scenario, previousScenario);
+          assert.equal(state.data.scenario_result, previousResult);
+          assert.equal(state.data.scenario_quality, previousQuality);
+          assert.equal(state.data.comparison, previousComparison);
+          assert.equal(state.context.selected_scenario_id, 'previous');
+          assert.equal(state.ui.scenario_draft, previousScenario);
+          assert.equal(state.ui.error.message, 'Entrada sintética inválida.');
+          assert.equal(state.ui.loading, false);
+          assert.equal(state.ui.route, '#/network/results/summary');
+          assert.equal(shownToast?.className, 'network-toast error');
+          assert.equal(shownToast?.textContent, 'Entrada sintética inválida.');
+        }
+        console.log('FAILED_SIMULATION_STATE_PRESERVED');
+        """
+    )
+    assert output.endswith('FAILED_SIMULATION_STATE_PRESERVED')
+
+
 def test_analysis_actions_ignore_stale_work_and_report_failures():
     output = run_node(
         """
@@ -358,7 +448,7 @@ def test_network_ui_entrypoint_and_e2e_hooks():
     assert 'assets/js/app/main.js' in index
     for phase in range(1, 6):
         phase_main = (ROOT / f'assets/js/phase{phase}/main.js').read_text(encoding='utf-8')
-        assert '!window.__VISAGIO_NETWORK_UI__' in phase_main
+        assert '!window.__APP_NETWORK_UI__' in phase_main
 
     shell = (APP / 'shell.js').read_text(encoding='utf-8')
     expected_ids = [
@@ -420,6 +510,8 @@ def test_draft_reactivation_and_risk_configuration():
         import assert from 'node:assert/strict';
         import { createInitialState } from './assets/js/app/state.js';
         import { renderScenarioBuild, renderScenarioRisk } from './assets/js/app/pages/scenarios.js';
+        import { parseScenarioForm } from './assets/js/app/form-values.js';
+        import { classifyMonteCarloRiskBand } from './assets/js/phase3/monte-carlo-engine.js';
         const state = createInitialState({company_id:'empresa1'});
         state.data.baseline = {model:{active_cds:['A','B'],inventory_days:40,wacc:0.15},flows:[]};
         state.ui.scenario_draft = {scenario_name:'Reduced',changes:{active_cds:['A']}};
@@ -428,17 +520,110 @@ def test_draft_reactivation_and_risk_configuration():
         assert.match(html, /name="active_cds" value="A" checked/);
         assert.match(html, /name="active_cds" value="B"(?! checked)/);
         assert.match(html, /Alterações pendentes/);
+        assert.match(html, /name="reallocation_rule"/);
+        assert.match(html, /value="lowest_freight_available_cd"/);
+        assert.match(html, /<option value="lowest_freight_available_cd" selected>Menor frete por kg/);
+        const parsedScenario = parseScenarioForm(
+          {get(name) { return ({tax_mode:'current', tax_regime:'current', reallocation_rule:'lowest_freight_available_cd'}[name] ?? null); }},
+          [{value:'A'}],
+          {scenario_name:'Checagem', freight_multiplier:'1', demand_multiplier:'1', inventory_days:'30', wacc:'0.15', reallocation_rule:'lowest_freight_available_cd'}
+        );
+        assert.equal(parsedScenario.reallocation_rule, 'lowest_freight_available_cd');
         state.data.selected_scenario = {scenario_id:'a',company_id:'empresa1'};
         state.data.scenario_result = {total_with_tax:100};
         state.data.monte_carlo = {summary:{iterations:100,seed:42}};
+        state.data.robustness = {robustness_status:'high', robustness_score:92};
         state.ui.risk_config = {iterations:500,seed:73,profile:'conservative',stress_profile:'conservative'};
         const risk = renderScenarioRisk(state, true);
         assert.match(risk, /name="seed"[^>]*value="73"/);
         assert.match(risk, /value="conservative" selected/);
+        assert.match(risk, /aguardando classificação/);
+        assert.match(risk, /critérios definidos pelo projeto/);
+        assert.match(risk, /A faixa Monte Carlo é probabilística/);
+        state.data.monte_carlo = {summary:{iterations_valid:9,iterations_requested:10,invalid_sample_count:1,risk_band:null,risk_band_unavailable_reason:'invalid_samples_present',probability_saving_positive:0.8,p10_saving_pct:2,median_saving_pct:3}};
+        const partialRisk = renderScenarioRisk(state, true);
+        assert.match(partialRisk, /Faixa Monte Carlo indisponível: 1 iteração inválida/);
+        assert.match(partialRisk, /P\\(saving &gt; 0\\)/);
+        assert.match(partialRisk, /risco operacional vem da avaliação de qualidade/);
+        state.data.monte_carlo = {monte_carlo_status:'error',risk_band_unavailable_reason:'no_valid_samples',summary:null};
+        const noSamplesRisk = renderScenarioRisk(state, true);
+        assert.match(noSamplesRisk, /Faixa Monte Carlo indisponível: não há amostras válidas/);
+        assert.equal(classifyMonteCarloRiskBand(0.59, 1), 'high');
+        assert.equal(classifyMonteCarloRiskBand(0.6, -0.01), 'high');
+        assert.equal(classifyMonteCarloRiskBand(0.79, 3), 'medium');
+        assert.equal(classifyMonteCarloRiskBand(0.8, 1.99), 'medium');
+        assert.equal(classifyMonteCarloRiskBand(0.8, 2), 'low');
+        assert.equal(classifyMonteCarloRiskBand(null, null), null);
+        for (const invalidProbability of ['', ' ', true, false, -0.01, 1.01, '0.8']) {
+          assert.equal(classifyMonteCarloRiskBand(invalidProbability, 2), null);
+        }
+        for (const invalidP10 of ['', ' ', true, false, '2']) {
+          assert.equal(classifyMonteCarloRiskBand(0.8, invalidP10), null);
+        }
+        assert.equal(classifyMonteCarloRiskBand(0.8, 2, {invalidSampleCount:1}), null);
         console.log('DRAFT_AND_RISK_CONFIG_OK');
         """
     )
     assert output.endswith('DRAFT_AND_RISK_CONFIG_OK')
+
+
+def test_academic_evidence_uses_product_optimizer_profiles():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { DEFAULT_OBJECTIVE_PROFILES } from './assets/js/phase4/objective-profile-library.js';
+        import { ACADEMIC_OPTIMIZER_CONFIG, applyAcademicReallocationRule, getAcademicOptimizerProfiles } from './scripts/academic-evidence-config.mjs';
+
+        const profiles = getAcademicOptimizerProfiles();
+        assert.deepEqual(profiles.map(({profile_id}) => profile_id), [
+          'balanced', 'cfo', 'supply', 'fiscal', 'conservative', 'growth'
+        ]);
+        assert.deepEqual(profiles, DEFAULT_OBJECTIVE_PROFILES);
+        for (const profile of profiles) {
+          assert.ok(Math.abs(Object.values(profile.weights).reduce((sum, weight) => sum + weight, 0) - 1) < 1e-9);
+        }
+        assert.deepEqual(ACADEMIC_OPTIMIZER_CONFIG.optimizer, {
+          method: 'exact_discrete', max_candidates: 5000, seed: 42
+        });
+        const scenario = applyAcademicReallocationRule({scenario_id:'source',changes:{reallocation_rule:'nearest_available_cd'}});
+        assert.equal(scenario.changes.reallocation_rule, 'lowest_freight_available_cd');
+        console.log('ACADEMIC_EVIDENCE_PROFILES_OK');
+        """
+    )
+    assert output.endswith('ACADEMIC_EVIDENCE_PROFILES_OK')
+
+
+def test_transfer_rate_calibration_is_weighted_and_aggregated():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { calibrateTransferRates } from './scripts/calibrate_transfer_rates.mjs';
+        import { MODEL_DEFAULTS } from './assets/js/core/model-configuration.js';
+
+        const result = calibrateTransferRates({
+          source: 'synthetic-fixture',
+          period: '2026-Q1',
+          rows: [
+            {destination_uf:'SP', freight_brl:100, weight_kg:10, distance_km:5},
+            {destination_uf:'SP', freight_brl:300, weight_kg:20, distance_km:10},
+            {destination_uf:'RJ', freight_brl:60, weight_kg:10, distance_km:3},
+            {destination_uf:'??', freight_brl:1, weight_kg:1, distance_km:1},
+            {destination_uf:'MG', freight_brl:2, weight_kg:0, distance_km:1},
+          ],
+        });
+        assert.equal(result.method, 'sum_freight_brl_divided_by_sum_weight_kg_times_distance_km');
+        assert.equal(result.unit, 'BRL_per_kg_km');
+        assert.equal(result.rows_used, 3);
+        assert.deepEqual(result.rows_excluded, {invalid_uf:1, nonpositive_or_missing_input:1});
+        assert.equal(result.rates_by_destination_uf.SP.rate_brl_per_kg_km, 400 / 250);
+        assert.equal(result.rates_by_destination_uf.RJ.rate_brl_per_kg_km, 2);
+        assert.equal(Object.hasOwn(result, 'rows'), false, 'output must not include source rows');
+        assert.equal(MODEL_DEFAULTS.transfer_kilometric_rate_provenance.reproducibility_status, 'historical_method_incomplete');
+        assert.equal(MODEL_DEFAULTS.transfer_kilometric_rate_provenance.recommended_recalibration_method, 'weighted_freight_per_kg_km_by_destination_uf');
+        console.log('TRANSFER_RATE_CALIBRATION_OK');
+        """
+    )
+    assert output.endswith('TRANSFER_RATE_CALIBRATION_OK')
 
 
 def test_error_output_is_escaped_and_blocked_decisions_keep_status():
@@ -505,6 +690,52 @@ def test_annual_tax_scenario_builder_uses_supported_regimes():
         """
     )
     assert output.endswith('ANNUAL_TAX_SCENARIOS_OK')
+
+
+def test_tax_transition_weights_are_identified_as_exploratory_parameters():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { buildTaxPeriodMetadata } from './assets/js/core/tax/tax-period-contract.js';
+        import { getTaxReformConfig } from './assets/js/core/tax-reform-config.js';
+
+        const config = getTaxReformConfig();
+        const sourceContext = {
+          tax_reform_timeline: [
+            { ano: 2029, fase: 'transição', peso_icms_iss_regime_atual: 0.9, peso_ibs_regime_novo: 0.1 },
+          ],
+          field_sources: {
+            'tax_inputs_reform.ibs_cbs_is_transition': {
+              source_confidence: 'external_official', source_file: 'timeline.csv',
+            },
+          },
+        };
+        const metadata = buildTaxPeriodMetadata({
+          regimeId: 'transition_2029',
+          regime: config.regimes.transition_2029,
+          scenario: { changes: { tax_year: 2029 } },
+          sourceContext,
+        });
+        assert.equal(metadata.model_weights.provenance_status, 'exploratory_model_weight_not_legal_rate');
+        assert.equal(metadata.model_weights.model_current_weight, 0.9);
+        assert.equal(metadata.model_weights.source_current_weight, 0.9);
+        assert.equal(metadata.model_weights.status, 'numeric_values_match_semantics_not_equivalent');
+        assert.equal(metadata.statutory_transition_reference.periods[0].legacy_icms_iss_share, 0.9);
+        assert.equal(metadata.reform_rate_provenance.fixed_parameter_values_status, 'model_defaults_not_promulgated_company_rates');
+        assert.match(metadata.model_weights.limitation, /não.*cronograma legal/i);
+        console.log('TAX_TRANSITION_WEIGHT_PROVENANCE_OK');
+        """
+    )
+    assert output.endswith('TAX_TRANSITION_WEIGHT_PROVENANCE_OK')
+
+
+def test_tax_assumption_panel_separates_scenario_weights_from_legal_rates():
+    source = (ROOT / 'assets/js/phase3/scenario-arena-dashboard.js').read_text()
+    assert 'Peso de cenário · sistema atual' in source
+    assert 'Peso de cenário · IBS' in source
+    assert 'CBS paramétrica' in source
+    assert 'não são alíquotas legais' in source
+    assert '11,3468%' in source
 
 
 def test_optimizer_preset_and_tax_year_controls_render():

@@ -185,7 +185,8 @@ export function installBindings({ root, store, controller }) {
       const values = parseScenarioForm(
         new FormData(event.target),
         event.target.querySelectorAll('input[name="active_cds"]:checked'),
-        rawInputValues.get(event.target)
+        rawInputValues.get(event.target),
+        store.getState().context.company_id
       );
       const validation = validateScenarioValues(values);
       if (!validation.valid) {
@@ -271,7 +272,8 @@ export function installBindings({ root, store, controller }) {
     const values = parseScenarioForm(
       new FormData(form),
       form.querySelectorAll('input[name="active_cds"]:checked'),
-      rawInputValues.get(form)
+      rawInputValues.get(form),
+      store.getState().context.company_id
     );
     store.update(
       (state) => {

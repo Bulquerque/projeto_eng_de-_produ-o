@@ -63,12 +63,12 @@ const renderCharts = createChartPipeline({
 });
 
 const request = readRuntimeRequest();
-window.__VISAGIO_NETWORK_UI__ = true;
+window.__APP_NETWORK_UI__ = true;
 
 function initializeNetworkIntelligence() {
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = new URL('./main.css?v=mobile-chart-polish-20261006', import.meta.url);
+  stylesheet.href = new URL('./main.css?v=academic-review-20261104', import.meta.url);
   document.head.append(stylesheet);
   const createRoot = (config) => {
     const existing = document.getElementById('networkAppRoot');

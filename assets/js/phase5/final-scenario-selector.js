@@ -34,8 +34,8 @@ export function selectFinalScenario({
       (s.company_id || s.scenario?.company_id || s.result?.company_id) === companyId ||
       !s.company_id
   );
-  let selected = null;
-  let selection_reason = '';
+  let selected;
+  let selection_reason;
   if (selectionMode === 'manual') {
     selected = candidates.find(
       (s) =>

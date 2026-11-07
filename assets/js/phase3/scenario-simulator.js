@@ -11,7 +11,8 @@ import {
 import {
   calculateLogisticsTotal,
   calculateTotalWithTax,
-  MODEL_DEFAULTS,
+  getCompanyModelDefaults,
+  normalizeScenarioModelDefaults,
 } from '../core/model-configuration.js';
 import { buildDataQualityAssessment } from '../core/analysis-quality.js';
 
@@ -119,6 +120,7 @@ function applyCanonicalBaselineReference({ companyId, scenario, baselineBundle, 
   const baselineNetwork = isCanonicalBaselineNetwork({ companyId, scenario, baselineBundle });
   if (!baselineNetwork) return costs;
   const exactBaseline = isCanonicalBaselineScenario({ companyId, scenario, baselineBundle });
+  const defaults = getCompanyModelDefaults(companyId);
 
   const official = baselineBundle?.costs?.costs || {};
   const numericOr = (value, fallback) => safeNumber(value, safeNumber(fallback));
@@ -169,8 +171,8 @@ function applyCanonicalBaselineReference({ companyId, scenario, baselineBundle, 
       canonical_sensitivity_drivers: {
         freight_multiplier: freightMultiplier,
         demand_multiplier: demandMultiplier,
-        inventory_days: safeNumber(scenario.changes?.inventory_days, MODEL_DEFAULTS.inventory_days),
-        wacc: safeNumber(scenario.changes?.wacc, MODEL_DEFAULTS.reference_wacc),
+        inventory_days: safeNumber(scenario.changes?.inventory_days, defaults.inventory_days),
+        wacc: safeNumber(scenario.changes?.wacc, defaults.reference_wacc),
       },
       canonical_baseline_source:
         companyId === 'empresa2' ? 'phase2_scenario_totals' : 'phase2_runtime_recomputed',
@@ -233,6 +235,7 @@ function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export function runScenario({ companyId, scenario, baselineBundle }) {
+  scenario = normalizeScenarioModelDefaults(companyId, scenario);
   const validation = validateScenario({ companyId, scenario, baselineBundle });
   if (!validation.valid) {
     return {

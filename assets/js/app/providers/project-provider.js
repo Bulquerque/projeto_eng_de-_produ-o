@@ -67,6 +67,16 @@ function assertNoMockLeakage(value, companyId) {
   return value;
 }
 
+function simulationFailureMessage(result) {
+  const issue =
+    result?.errors?.find((item) => item?.message) ||
+    result?.validation?.errors?.find((item) => item?.message);
+  return (
+    issue?.message ||
+    `A simulação não foi concluída${result?.simulation_status ? ` (${result.simulation_status})` : ''}.`
+  );
+}
+
 function logProviderEvent(companyId, event, detail = {}) {
   appendSharedDebugEntry({
     phase: 'network-intelligence',
@@ -173,6 +183,9 @@ export async function createProjectProvider() {
         scenario: executable,
         baselineBundle: this.baselineBundle,
       });
+      if (result?.simulation_status !== 'success') {
+        throw new Error(simulationFailureMessage(result));
+      }
       const quality = evaluateScenarioQuality({
         scenarioResult: result,
         baselineBundle: this.baselineBundle,

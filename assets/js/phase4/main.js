@@ -15,4 +15,4 @@ async function init() {
   }
 }
 
-if (!window.__VISAGIO_NETWORK_UI__) init();
+if (!window.__APP_NETWORK_UI__) init();

@@ -33,14 +33,14 @@ export function renderTradeoffChart(frontierResult) {
     {
       label: 'Fronteira Eficiente',
       data: frontierData,
-      backgroundColor: '#00A189', // --vg-green
+      backgroundColor: '#00A189', // --app-green
       pointRadius: 6,
       pointHoverRadius: 8,
     },
     {
       label: 'Dominados',
       data: dominatedData,
-      backgroundColor: '#CCC9CA', // --vg-soft
+      backgroundColor: '#CCC9CA', // --app-soft
       pointRadius: 4,
       pointHoverRadius: 6,
     },

@@ -17,7 +17,7 @@ import { buildWorkbookParitySummary } from './workbook-parity.js';
 import { appendSharedDebugEntry } from '../core/debug-tools.js';
 import { buildCanonicalOptimizationConfig } from '../core/optimization-policy.js';
 import { loadOptimizationConfig } from '../core/optimization-config-store.js';
-import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { calculateSaving, getCompanyModelDefaults } from '../core/model-configuration.js';
 import { readDecisionControls } from './decision-controls.js';
 import { renderPhase5CompanyTabs, renderPhase5Dashboard } from './phase5-dashboard-view.js';
 
@@ -273,7 +273,7 @@ function runDecisionPipeline(controls = readDecisionControls()) {
     baselineBundle: state.bundle,
     sensitivityConfig: {
       variable: controls.sensitivityVariable,
-      values: sensitivityValues(controls.sensitivityVariable),
+      values: sensitivityValues(controls.sensitivityVariable, state.companyId),
     },
   });
   state.sensitivityMatrix = runSensitivityMatrix({
@@ -283,8 +283,8 @@ function runDecisionPipeline(controls = readDecisionControls()) {
     matrixConfig: {
       xVariable: controls.sensitivityX,
       yVariable: controls.sensitivityY,
-      xValues: sensitivityValues(controls.sensitivityX, true),
-      yValues: sensitivityValues(controls.sensitivityY, true),
+      xValues: sensitivityValues(controls.sensitivityX, state.companyId),
+      yValues: sensitivityValues(controls.sensitivityY, state.companyId),
     },
   });
   state.robustness = calculateRobustness({
@@ -381,16 +381,16 @@ function runDecisionPipeline(controls = readDecisionControls()) {
     decisionPackage: finalizedDecisionPackage,
   });
 }
-function sensitivityValues(variable, compact = false) {
+function sensitivityValues(variable, companyId = state.companyId) {
+  const modelDefaults = getCompanyModelDefaults(companyId);
   if (variable === 'inventory_days')
-    return compact
-      ? [30, MODEL_DEFAULTS.inventory_days, 60]
-      : [30, MODEL_DEFAULTS.inventory_days, 60];
-  if (variable === 'wacc')
-    return compact
-      ? [0.1, MODEL_DEFAULTS.reference_wacc, 0.2]
-      : [0.1, MODEL_DEFAULTS.reference_wacc, 0.2];
-  return compact ? [0.9, 1.0, 1.1] : [0.9, 1.0, 1.1, 1.2];
+    return [
+      Math.max(0, modelDefaults.inventory_days - 15),
+      modelDefaults.inventory_days,
+      modelDefaults.inventory_days + 15,
+    ];
+  if (variable === 'wacc') return [0.1, modelDefaults.reference_wacc, 0.2];
+  return [0.9, 1.0, 1.1, 1.2];
 }
 function renderAll() {
   renderPhase5Dashboard(state, scenarioComparison);

@@ -52,10 +52,10 @@ function taxPeriodSection(tax = {}) {
       <tr><td>Limite dos dados observados</td><td>${esc(observed.limitation || '—')}</td></tr>
       <tr><td>Taxas numéricas da reforma</td><td>${esc(contract.reform_rate_provenance?.status || '—')} · ${esc(contract.reform_rate_provenance?.source_file || '—')}</td></tr>
     </tbody></table>
-    <table class="executive-table-premium" style="margin-top:12px"><thead><tr><th>Ano</th><th>Fase</th><th>ICMS/ISS atual</th><th>IBS novo</th><th>Fonte</th><th>Status</th></tr></thead><tbody>
+    <table class="executive-table-premium" style="margin-top:12px"><thead><tr><th>Ano</th><th>Fase</th><th>ICMS/ISS remanescente</th><th>IBS no cronograma</th><th>Fonte</th><th>Status</th></tr></thead><tbody>
       ${periods.length ? periods.map((period) => `<tr><td>${esc(period.year)}</td><td>${esc(period.phase || '—')}</td><td>${esc(ratioPct(period.current_tax_weight))}</td><td>${esc(ratioPct(period.reform_tax_weight))}</td><td>${esc(period.source_confidence || '—')}</td><td>${esc(period.data_status || '—')}</td></tr>`).join('') : '<tr><td colspan="6">Cronograma oficial não carregado.</td></tr>'}
     </tbody></table>
-    <p class="small-note">O cronograma oficial fundamenta o horizonte e as premissas de transição. Ele não fornece, sozinho, alíquotas efetivas por operação nem validação fiscal da empresa.</p>
+    <p class="small-note">As parcelas descrevem o cronograma legal de transição ICMS/ISS–IBS; o percentual do IBS é resumo da orientação da Receita Federal. Não são alíquotas efetivas nem pesos da carga tributária da empresa e não abrangem CBS, IS, créditos ou tributos efetivamente devidos.</p>
   `;
 }
 function status(v) {
@@ -216,7 +216,7 @@ function methodologySection(selectedScenario = {}, audit = {}, robustness = {}) 
       <tr><td>Regime tributário do cenário</td><td>${esc(result?.tax_results?.tax_regime || changes.tax_regime || changes.tax_mode || '—')}</td></tr>
       <tr><td>Período tributário selecionado</td><td>${esc(taxPeriodContract.selected_period?.year || '—')} · ${esc(taxPeriodContract.selected_period?.source_status || '—')}</td></tr>
       <tr><td>Estoque</td><td>Escolha B — independente da quantidade de CDs ativos</td></tr>
-      <tr><td>Fallbacks físicos</td><td>${esc(JSON.stringify({ counts: diagnostics.fallback_counts || {}, rates: diagnostics.fallback_rates || {}, flow_count: diagnostics.flow_count ?? null }))}</td></tr>
+      <tr><td>Fallbacks físicos</td><td>${esc(JSON.stringify({ counts: diagnostics.fallback_counts || {}, rates: diagnostics.fallback_rates || {}, denominators: diagnostics.fallback_denominators || {}, distribution_unpriced_or_fallback: { flow_count: diagnostics.distribution_unpriced_or_fallback_flow_count ?? null, rate: diagnostics.distribution_unpriced_or_fallback_rate ?? null }, scenario_events: diagnostics.fallback_event_counts || {}, flow_count: diagnostics.flow_count ?? null }))}</td></tr>
       <tr><td>Proveniência do proxy de transferência</td><td>${esc(JSON.stringify(diagnostics.transfer_proxy_provenance || '—'))}</td></tr>
       <tr><td>Audit ID</td><td>${esc(audit?.audit_id || '—')}</td></tr>
       <tr><td>Nível de suporte da evidência</td><td>${esc(evidence.evidence_score == null ? '—' : `${evidence.evidence_score}/100 · ${evidence.evidence_status || '—'}`)}</td></tr>

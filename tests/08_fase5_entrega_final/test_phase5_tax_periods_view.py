@@ -17,6 +17,10 @@ assert.match(html, /&lt;fonte&gt;/);
 assert.match(html, /&lt;fase&gt;/);
 assert.match(html, /2026-01-01 a aberto · matriz.csv/);
 assert.match(html, /cronograma oficial/);
+assert.ok(html.includes('ICMS/ISS remanescente'));
+assert.match(html, /IBS no cronograma/);
+assert.match(html, /não são alíquotas efetivas nem pesos da carga tributária da empresa/i);
+assert.match(html, /não abrangem CBS, IS, créditos ou tributos efetivamente devidos/i);
 assert.doesNotMatch(html, /<fonte>|<fase>/);
 assert.match(renderTaxPeriodsHtml({}), /colspan="6">Cronograma oficial não carregado/);
 """

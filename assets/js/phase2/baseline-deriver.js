@@ -2,10 +2,11 @@ import { calculatePhysicalCosts } from '../phase3/physical-cost-engine.js';
 import { buildBundleReconciliation } from '../core/reconciliation-engine.js';
 import { runTaxCalculation } from '../core/tax/tax-orchestrator.js';
 import { safeNumber } from '../core/common.js';
+import { defaultReallocationRule } from '../phase3/reallocation-policy.js';
 import {
   calculateLogisticsTotal,
   calculateTotalWithTax,
-  MODEL_DEFAULTS,
+  getCompanyModelDefaults,
 } from '../core/model-configuration.js';
 
 function cloneValue(value) {
@@ -15,6 +16,7 @@ function cloneValue(value) {
 }
 
 function buildBaselineScenario(bundle, companyId) {
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const activeCds = Array.isArray(bundle?.model?.active_cds) ? bundle.model.active_cds : [];
   return {
     scenario_id: bundle?.model?.scenario_id || `${companyId}_baseline`,
@@ -26,10 +28,10 @@ function buildBaselineScenario(bundle, companyId) {
       closed_cds: [],
       freight_multiplier: 1,
       demand_multiplier: 1,
-      inventory_days: MODEL_DEFAULTS.inventory_days,
-      wacc: MODEL_DEFAULTS.reference_wacc,
+      inventory_days: modelDefaults.inventory_days,
+      wacc: modelDefaults.reference_wacc,
       tax_mode: 'current',
-      reallocation_rule: 'nearest_available_cd',
+      reallocation_rule: defaultReallocationRule(companyId),
     },
   };
 }

@@ -12,7 +12,7 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
   return `<div id="networkAppRoot" class="network-app" data-testid="network-shell" data-runtime="network-intelligence">
     <button class="network-skip-link" type="button" data-action="skip-to-content">Pular para o conteúdo</button>
     <aside class="network-sidebar" aria-label="Navegação Network Intelligence">
-      <div class="network-brand"><span class="network-brand-mark" aria-hidden="true">V</span><div><strong>visagio</strong><small>Network Intelligence</small></div></div>
+      <div class="network-brand"><span class="network-brand-mark" aria-hidden="true">M</span><div><strong>Malha</strong><small>Network Intelligence</small></div></div>
       <nav class="network-nav" aria-label="Seções principais">
         <a href="#/network/overview/summary" data-route="#/network/overview/summary" data-section="overview"><span class="network-nav-number" aria-hidden="true">01</span><span>Visão executiva</span></a>
         <a href="#/network/scenarios/build" data-route="#/network/scenarios/build" data-section="scenarios"><span class="network-nav-number" aria-hidden="true">02</span><span>Cenários</span></a>

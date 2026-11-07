@@ -361,13 +361,13 @@ function renderTaxCoverageChart(tax) {
   setCanvasVisible(canvasId, available);
   if (available) {
     renderBarChart(canvasId, {
-      title: 'Pesos tributários publicados por período',
+      title: 'Parcelas do cronograma legal de transição por período',
       labels: result.rows.map((period) => period.label),
       datasets: [
         ...(currentAvailable
           ? [
               {
-                label: 'Regime atual',
+                label: 'ICMS/ISS remanescente',
                 data: result.rows.map((period) =>
                   period.current == null ? null : period.current * 100
                 ),
@@ -378,7 +378,7 @@ function renderTaxCoverageChart(tax) {
         ...(reformAvailable
           ? [
               {
-                label: 'Regime da reforma',
+                label: 'IBS no cronograma (resumo RFB)',
                 data: result.rows.map((period) =>
                   period.reform == null ? null : period.reform * 100
                 ),
@@ -391,14 +391,14 @@ function renderTaxCoverageChart(tax) {
     });
   }
   const caption = available
-    ? `${result.pairedCount}/${result.rows.length} períodos têm pesos publicados para os dois regimes; atual informado em ${result.currentCount} e reforma em ${result.reformCount}. Campos ausentes não são estimados.`
-    : 'Sem pesos tributários por período no contrato da empresa ativa; a comparação não é calculada.';
+    ? `${result.pairedCount}/${result.rows.length} períodos têm parcelas publicadas do cronograma legal para ICMS/ISS e IBS; ICMS/ISS informado em ${result.currentCount} e IBS em ${result.reformCount}. Não são alíquotas efetivas da empresa. Campos ausentes não são estimados.`
+    : 'Sem parcelas do cronograma por período no contrato da empresa ativa; a comparação não é calculada.';
   chartCaption(
     canvasId,
     caption,
     available
-      ? `${result.pairedCount}/${result.rows.length} períodos com ambos os pesos`
-      : 'Sem pesos por período'
+      ? `${result.pairedCount}/${result.rows.length} períodos com ambas as parcelas`
+      : 'Sem parcelas por período'
   );
 }
 

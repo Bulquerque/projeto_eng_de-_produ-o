@@ -15,7 +15,7 @@ import { buildScenarioFromForm } from './assets/js/phase3/scenario-builder.js';
 import { runScenario } from './assets/js/phase3/scenario-simulator.js';
 import { evaluateScenarioQuality } from './assets/js/phase3/scenario-quality-check.js';
 import { buildScenarioSummary } from './assets/js/core/scenario-summary.js';
-import { MODEL_DEFAULTS } from './assets/js/core/model-configuration.js';
+import { getCompanyModelDefaults } from './assets/js/core/model-configuration.js';
 import { loadRuntimeBundle } from './tests/runtime_bundle_support.mjs';
 
 function referenceRows({ companyId, library, currentResult, quality }) {
@@ -35,7 +35,7 @@ function referenceRows({ companyId, library, currentResult, quality }) {
             active_cds: library.baselineBundle.model?.active_cds || [],
             freight_multiplier: 1,
             demand_multiplier: 1,
-            inventory_days: MODEL_DEFAULTS.inventory_days,
+            inventory_days: getCompanyModelDefaults(companyId).inventory_days,
             tax_mode: 'current',
           },
         },
@@ -96,8 +96,8 @@ for (const companyId of ['empresa1', 'empresa2']) {
         active_cds: baselineBundle.model.active_cds,
         freight_multiplier: 1 + (index + 1) / 100,
         demand_multiplier: 1,
-        inventory_days: MODEL_DEFAULTS.inventory_days,
-        wacc: MODEL_DEFAULTS.reference_wacc,
+        inventory_days: getCompanyModelDefaults(companyId).inventory_days,
+        wacc: getCompanyModelDefaults(companyId).reference_wacc,
         tax_mode: 'disabled',
       },
     });
@@ -120,8 +120,8 @@ for (const companyId of ['empresa1', 'empresa2']) {
       active_cds: baselineBundle.model.active_cds,
       freight_multiplier: 1.12,
       demand_multiplier: 1,
-      inventory_days: MODEL_DEFAULTS.inventory_days,
-      wacc: MODEL_DEFAULTS.reference_wacc,
+      inventory_days: getCompanyModelDefaults(companyId).inventory_days,
+      wacc: getCompanyModelDefaults(companyId).reference_wacc,
       tax_mode: 'disabled',
     },
   });

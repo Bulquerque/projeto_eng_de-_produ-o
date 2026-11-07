@@ -32,6 +32,18 @@ function upsertScenario(scenarios, scenario) {
   ];
 }
 
+function simulationFailureMessage(result) {
+  const issue =
+    result?.errors?.find((item) => item?.message) ||
+    result?.validation?.errors?.find((item) => item?.message);
+  return (
+    issue?.message ||
+    (result
+      ? `A simulação não foi concluída${result.simulation_status ? ` (${result.simulation_status})` : ''}.`
+      : 'O provider não retornou um resultado de simulação.')
+  );
+}
+
 /** Builds scenario actions while keeping their UI, state, provider, and operation guard explicit. */
 export function createScenarioActions({ root, store, getProvider, operationGuard, render } = {}) {
   const {
@@ -255,6 +267,9 @@ export function createScenarioActions({ root, store, getProvider, operationGuard
       }
       const scenario = output.scenario || output;
       const result = output.result || null;
+      if (result?.simulation_status !== 'success') {
+        throw new Error(simulationFailureMessage(result));
+      }
       store.update((state) => {
         state.data.selected_scenario = scenario;
         state.data.analysis_runs ||= { simulation: null, optimization: null };

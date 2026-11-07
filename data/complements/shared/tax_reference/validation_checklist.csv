@@ -7,4 +7,4 @@ dados,Demanda encontra rota,Demanda sem match = 0 ou alertada,Gerar lista de rot
 frete,Frete não duplicado,Transferência + distribuição não somam com campo já consolidado,Auditar fórmula de custo total.
 estoque,WOC proxy marcado,Toda cobertura importada da outra empresa tem tag proxy_empresa2,Não apresentar como observado.
 geografia,UFs padronizadas,Todas as UFs em uf_reference,Corrigir grafia/acentos/códigos.
-reforma,Pesos de transição somam 1,peso_icms_iss + peso_ibs = 1 para 2029-2033,Corrigir timeline.
+reforma,Consistência estrutural do cronograma legal ICMS/ISS–IBS,"Para 2029–2032, parcelas remanescentes ICMS/ISS = 90%, 80%, 70%, 60% e resumo IBS RFB = 10%, 20%, 30%, 40%; em 2033, ICMS/ISS = 0% e IBS = 100%. Verifica apenas o cronograma publicado, não alíquotas, créditos ou carga tributária da empresa.",Corrigir o cronograma e a fonte pública; não usar esta checagem como validação fiscal empresarial.

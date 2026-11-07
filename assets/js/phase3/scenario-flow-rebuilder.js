@@ -1,5 +1,6 @@
 import { findNearestCd } from '../core/geo-utils.js';
 import { findMatchingCdLabel, sameCdLabel } from '../core/cd-utils.js';
+import { defaultReallocationRule } from './reallocation-policy.js';
 
 function normalizeCd(flow) {
   return flow.cd || flow.origin || flow.destination || '';
@@ -43,6 +44,56 @@ function pickActiveCd(flow, activeCds, rule, distanceMatrix) {
   const matchedCurrent = findMatchingCdLabel(current, activeCds);
   if (matchedCurrent) return matchedCurrent;
 
+  if (rule === 'lowest_freight_available_cd') {
+    if (!Array.isArray(distanceMatrix)) return null;
+    const destination =
+      flow.centroid || flow.destination || flow.destination_city || flow.destination_uf;
+    const exactRows = distanceMatrix.filter(
+      (row) =>
+        row.DESTINO === destination ||
+        (!String(row.DESTINO ?? '').trim() && row.UF_DESTINO === destination)
+    );
+    const rows = exactRows.length
+      ? exactRows
+      : distanceMatrix.filter(
+          (row) =>
+            !String(row.DESTINO ?? '').trim() &&
+            String(row.UF_DESTINO ?? '')
+              .trim()
+              .toUpperCase() ===
+              String(flow.destination_uf ?? '')
+                .trim()
+                .toUpperCase() &&
+            String(flow.destination_uf ?? '').trim() !== ''
+        );
+    const candidates = rows
+      .map((row) => {
+        const label = row.UF_ORIGEM && row.ORIGEM ? `${row.UF_ORIGEM} / ${row.ORIGEM}` : row.ORIGEM;
+        const activeCd =
+          findMatchingCdLabel(label, activeCds) || findMatchingCdLabel(row.ORIGEM, activeCds);
+        const freightPerKg = Number(row['Frete (R$/Kg)'] ?? row.frete_por_kg);
+        const distanceKm = Number(row['Distancia(KM)'] ?? row.distance_km);
+        return {
+          activeCd,
+          freightPerKg,
+          distanceKm: Number.isFinite(distanceKm) && distanceKm > 0 ? distanceKm : Infinity,
+        };
+      })
+      .filter(
+        (candidate) =>
+          candidate.activeCd &&
+          Number.isFinite(candidate.freightPerKg) &&
+          candidate.freightPerKg > 0
+      )
+      .sort(
+        (left, right) =>
+          left.freightPerKg - right.freightPerKg ||
+          left.distanceKm - right.distanceKm ||
+          left.activeCd.localeCompare(right.activeCd, 'pt-BR')
+      );
+    return candidates[0]?.activeCd || null;
+  }
+
   if (rule === 'nearest_available_cd' && distanceMatrix) {
     const destination =
       flow.centroid || flow.destination || flow.destination_city || flow.destination_uf;
@@ -67,8 +118,12 @@ function pickActiveCd(flow, activeCds, rule, distanceMatrix) {
 }
 
 function findActiveCdForFlow(flow, activeCds) {
-  const exact = findMatchingCdLabel(normalizeCd(flow), activeCds);
+  const originalCd = normalizeCd(flow);
+  const exact = findMatchingCdLabel(originalCd, activeCds);
   if (exact) return exact;
+  // A named CD that is no longer active must follow the selected rule,
+  // even when another active CD happens to be in the same state.
+  if (originalCd) return null;
   const uf = String(flow.cd_uf || flow.destination_uf || '').toUpperCase();
   if (!uf) return null;
   return activeCds.find((cd) => getCdUf(cd) === uf) || null;
@@ -78,7 +133,7 @@ export function rebuildScenarioFlows({ scenario, baselineFlows = [], distanceMat
   const c = scenario?.changes || {};
   const activeCds = c.active_cds || [];
   const closedCds = c.closed_cds || [];
-  const rule = c.reallocation_rule || 'nearest_available_cd';
+  const rule = c.reallocation_rule || defaultReallocationRule(scenario?.company_id);
   const warnings = [];
   const errors = [];
   let reallocated = 0,
@@ -133,7 +188,7 @@ export function rebuildScenarioFlows({ scenario, baselineFlows = [], distanceMat
   if (uncovered)
     errors.push({
       code: 'UNCOVERED_FLOWS',
-      message: `${uncovered} fluxos ficaram sem CD ativo.`,
+      message: `${uncovered} fluxos não puderam ser atribuídos pela regra ${rule}; verifique se há dados aplicáveis para um CD ativo.`,
       severity: 'error',
     });
   const totalMeasure = flows.reduce((a, f) => a + getFlowMeasure(f), 0);

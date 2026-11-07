@@ -20,6 +20,7 @@
 import {
   MODEL_DEFAULTS,
   calculateInventoryCost,
+  getCompanyModelDefaults,
   resolveTransferFallback,
 } from '../core/model-configuration.js';
 
@@ -367,7 +368,8 @@ function resolveStorageCostFromTable(storageCostMap, activeCds, dm) {
 const KILOMETRIC_RATE_BY_UF = MODEL_DEFAULTS.transfer_kilometric_rate_by_uf;
 const KILOMETRIC_RATE_FALLBACK = MODEL_DEFAULTS.transfer_kilometric_fallback_rate;
 
-function buildCostContext({ scenario, baselineBundle }) {
+function buildCostContext({ companyId, scenario, baselineBundle }) {
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const changes = scenario.changes || {};
   const base = baselineBundle?.costs?.costs || {};
   const demandMultiplier = toNum(changes.demand_multiplier, 1);
@@ -376,9 +378,11 @@ function buildCostContext({ scenario, baselineBundle }) {
     demandMultiplier,
     activeCds: changes.active_cds || [],
     base,
+    modelDefaults,
     coreData: baselineBundle?.core_data || {},
     baselineCds: (baselineBundle?.model?.active_cds || []).length,
     inventoryCost: calculateInventoryCost({
+      companyId,
       baseInventoryCost: base.inventory_cost,
       demandMultiplier,
       inventoryDays: changes.inventory_days,
@@ -389,10 +393,44 @@ function buildCostContext({ scenario, baselineBundle }) {
 }
 
 function buildCostResult(context, values) {
-  const flowCount = Array.isArray(values.flowCostDetail)
-    ? values.flowCostDetail.filter((flow) => flow?.method !== 'heuristic_fallback').length
-    : 0;
+  const pricedFlows = Array.isArray(values.flowCostDetail)
+    ? values.flowCostDetail.filter(
+        (flow) =>
+          flow?.method !== 'heuristic_fallback' && flow?.flow_id !== 'aggregate_heuristic_fallback'
+      )
+    : [];
+  const flowCount = pricedFlows.length;
   const fallbackCounts = values.diagnostics?.fallback_counts || {};
+  const distributionDenominator = Number(
+    values.diagnostics?.distribution_eligible_flow_count ?? flowCount
+  );
+  const distributionUnpricedOrFallbackMethods = new Set([
+    'revenue_pct_fallback',
+    'revenue_pct_fallback_missing_weight',
+    'missing_rate',
+    'missing_cif_row',
+    'zero_weight',
+  ]);
+  const distributionUnpricedOrFallbackCount = pricedFlows.filter((flow) =>
+    distributionUnpricedOrFallbackMethods.has(flow?.dist_method || flow?.method)
+  ).length;
+  const transferDenominator = pricedFlows.filter(
+    (flow) => flow?.transfer_method && flow.transfer_method !== 'not_required'
+  ).length;
+  const rateDenominator = {
+    missing_freight_rate: distributionDenominator,
+    missing_cif_row: distributionDenominator,
+    missing_weight: distributionDenominator,
+    revenue_fallback: distributionDenominator,
+    missing_transfer_distance: transferDenominator,
+    transfer_fallback: transferDenominator,
+  };
+  const fallbackRates = Object.fromEntries(
+    Object.entries(rateDenominator).map(([key, denominator]) => [
+      key,
+      denominator > 0 ? Number(fallbackCounts[key] || 0) / denominator : 0,
+    ])
+  );
   return {
     transfer_cost: values.transferCost,
     distribution_cost: values.distributionCost,
@@ -403,24 +441,38 @@ function buildCostResult(context, values) {
     warnings: values.warnings,
     diagnostics: {
       ...(values.diagnostics || {}),
+      fallback_counts: fallbackCounts,
       flow_count: flowCount,
-      fallback_rates: Object.fromEntries(
-        Object.entries(fallbackCounts).map(([key, value]) => [
-          key,
-          flowCount ? Number(value || 0) / flowCount : 0,
-        ])
-      ),
+      distribution_unpriced_or_fallback_flow_count: distributionUnpricedOrFallbackCount,
+      distribution_unpriced_or_fallback_rate:
+        distributionDenominator > 0
+          ? distributionUnpricedOrFallbackCount / distributionDenominator
+          : 0,
+      fallback_denominators: {
+        all_flows: flowCount,
+        distribution: distributionDenominator,
+        transfer: transferDenominator,
+      },
+      fallback_rates: fallbackRates,
+      fallback_event_counts: {
+        heuristic_fallback: Number(fallbackCounts.heuristic_fallback || 0),
+        proportional_storage: Number(fallbackCounts.proportional_storage || 0),
+        unknown_company: Number(fallbackCounts.unknown_company || 0),
+      },
       fallback_cost_share: values.diagnostics?.fallback_cost_share || {},
       inventory: {
         method: context.inventoryMethod,
         active_cd_count_not_used: true,
-        reference_days: MODEL_DEFAULTS.inventory_days,
-        reference_wacc: MODEL_DEFAULTS.reference_wacc,
+        reference_days: context.modelDefaults.inventory_days,
+        reference_wacc: context.modelDefaults.reference_wacc,
+        reference_days_provenance: context.modelDefaults.inventory_days_provenance,
+        reference_wacc_provenance: context.modelDefaults.wacc_provenance,
       },
       storage: {
         active_cd_count: context.activeCds.length,
         baseline_cd_count: context.baselineCds,
         method: 'active_cd_ratio_hypothesis_when_no_cd_tariff_match',
+        used_proportional_fallback: Boolean(fallbackCounts.proportional_storage),
         provenance: MODEL_DEFAULTS.storage_active_cd_provenance,
       },
     },
@@ -545,6 +597,7 @@ function calculateCompany1Costs(context, flows) {
         missing_transfer_distance: missingDistanceCount,
         transfer_fallback: transferFallbackCount,
         heuristic_fallback: anyPriced ? 0 : 1,
+        proportional_storage: 1,
       },
       fallback_cost_share: anyPriced
         ? {}
@@ -679,6 +732,7 @@ function calculateCompany2Costs(context, flows) {
   }
 
   const realStorage = resolveStorageCostFromTable(storageCostMap, activeCds, demandMultiplier);
+  const proportionalStorageFallbackCount = realStorage === null ? 1 : 0;
   if (realStorage === null)
     warnings.push(
       'CDs do cenário sem correspondência na tabela de armazenagem; usando custo proporcional do baseline.'
@@ -705,6 +759,7 @@ function calculateCompany2Costs(context, flows) {
         revenue_fallback: revenueFallbackCount,
         transfer_fallback: transferFallbackCount,
         heuristic_fallback: anyPriced ? 0 : 1,
+        proportional_storage: proportionalStorageFallbackCount,
       },
       distribution_eligible_flow_count: distributionEligibleCount,
       distribution_observed_flow_count: distributionObservedCount,
@@ -749,7 +804,7 @@ function calculateUnknownCompanyCosts(companyId, context) {
 
 /** Calculates physical logistics costs from the rebuilt flow model. */
 export function calculatePhysicalCosts({ companyId, scenario, baselineBundle, rebuilt }) {
-  const context = buildCostContext({ scenario, baselineBundle });
+  const context = buildCostContext({ companyId, scenario, baselineBundle });
   if (companyId === 'empresa1') return calculateCompany1Costs(context, rebuilt.flows);
   if (companyId === 'empresa2') return calculateCompany2Costs(context, rebuilt.flows);
   return calculateUnknownCompanyCosts(companyId, context);

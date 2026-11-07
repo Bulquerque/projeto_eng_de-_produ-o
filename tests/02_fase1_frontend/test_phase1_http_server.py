@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PATHS = [
     ('/index.html', 'Network Intelligence'),
-    ('/assets/styles.css', '--vg-dark'),
+    ('/assets/styles.css', '--app-dark'),
     ('/assets/js/phase1/main.js', None),
     ('/data/catalog.json', 'empresa1'),
     ('/data/validation/path_resolution_report.json', 'missing_paths'),

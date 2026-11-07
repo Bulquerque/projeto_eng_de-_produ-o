@@ -21,8 +21,59 @@ export function calculateRobustness({
   const worstCaseSavingPct = total
     ? Math.min(...validStressResults.map((r) => safeNumber(r.saving_pct)))
     : 0;
-  const qualityScore = safeNumber(quality.quality_score, 70);
-  const risk = String(quality.risk_level || 'medium').toLowerCase();
+  const rawQualityScore = quality?.quality_score;
+  const qualityScoreAvailable =
+    (typeof rawQualityScore === 'number' ||
+      (typeof rawQualityScore === 'string' && rawQualityScore.trim() !== '')) &&
+    Number.isFinite(Number(rawQualityScore));
+  const risk = String(quality?.risk_level || '').toLowerCase();
+  const operationalQualityAvailable =
+    qualityScoreAvailable && ['low', 'medium', 'high'].includes(risk);
+  const fiscalCoverageLimited = limitedStressCases > 0;
+
+  if (!operationalQualityAvailable) {
+    const alerts = ['Qualidade operacional indisponível; não foi calculado um score de robustez.'];
+    if (blockedStressCases > 0)
+      alerts.push(
+        `${blockedStressCases} caso(s) de stress foram bloqueados por resultado inválido.`
+      );
+    if (limitedStressCases > 0)
+      alerts.push(
+        `${limitedStressCases} caso(s) de stress foram calculados com cobertura fiscal parcial; a robustez é exploratória.`
+      );
+    if (total && worstCaseSavingPct < 0)
+      alerts.push('O cenário perde saving em pelo menos um caso de stress.');
+    return {
+      company_id: companyId,
+      scenario_id: scenarioId,
+      robustness_score: null,
+      conditional_robustness_score: null,
+      certified_robustness_score: null,
+      robustness_interpretation: 'operational_quality_unavailable',
+      robustness_status: 'unknown',
+      cases_positive: positives,
+      cases_total: total,
+      cases_blocked: blockedStressCases,
+      stress_status: blockedStressCases
+        ? 'inconclusive'
+        : limitedStressCases
+          ? 'complete_with_warnings'
+          : 'complete',
+      cases_limited: limitedStressCases,
+      worst_case_saving_pct: total ? worstCaseSavingPct : null,
+      stress_score: null,
+      probabilistic_score: null,
+      monte_carlo_probability_positive: null,
+      monte_carlo_p10_saving_pct: null,
+      evidence_score: null,
+      evidence_penalty: null,
+      alerts,
+      warnings: [],
+      errors: [],
+    };
+  }
+
+  const qualityScore = Number(rawQualityScore);
   const riskPenalty = risk === 'high' ? 18 : risk === 'medium' ? 8 : 0;
   const worstPenalty = worstCaseSavingPct < 0 ? Math.min(30, Math.abs(worstCaseSavingPct) * 2) : 0;
   const stressScore = Math.max(
@@ -48,7 +99,6 @@ export function calculateRobustness({
     )
   );
   const status = robustness_score >= 80 ? 'high' : robustness_score >= 55 ? 'medium' : 'low';
-  const fiscalCoverageLimited = limitedStressCases > 0;
   const robustnessInterpretation = fiscalCoverageLimited
     ? 'robustez_condicional_exploratoria'
     : 'robustez_condicional_modelada';

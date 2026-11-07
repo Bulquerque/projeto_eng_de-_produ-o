@@ -1,4 +1,4 @@
-# Metodologia do modelo logístico Visagio
+# Metodologia do simulador de malha logística
 
 Este documento define a metodologia efetivamente usada pelo simulador depois
 das correções do Plano de Trabalho. Ele separa dado observado, proxy, fallback,
@@ -28,7 +28,8 @@ As fórmulas ficam centralizadas em
 sensibilidade e Monte Carlo reutilizam os mesmos helpers.
 
 Quando o cenário solicitado é exatamente o baseline publicado — mesmos CDs,
-multiplicadores unitários, 45 dias, WACC de 15% e regime atual —
+multiplicadores unitários, dias e WACC de referência específicos da empresa e
+regime atual —
 `runScenario` preserva os totais oficiais da Fase 2 e marca o resultado como
 `canonical_baseline_reference`. Essa exceção é deliberada: a reconstrução
 física serve para auditar fluxos e testar alternativas, mas não pode substituir
@@ -119,9 +120,13 @@ inventory_cost =
   × wacc / reference_wacc
 ~~~
 
-Os valores de referência atuais são 45 dias e WACC de 15%, preservados como
-premissas versionadas do simulador. Eles não são apresentados como descoberta
-do dado-fonte quando o workbook fornece outra taxa implícita.
+As referências são específicas por cadeia e herdadas automaticamente ao criar
+cenários: Empresa 1 usa 30 dias e WACC de 15%; Empresa 2 usa 45 dias e WACC de
+12%. Os 45 dias e 15% em `MODEL_DEFAULTS` são somente fallback genérico para
+identificadores não cadastrados; eles não substituem as referências das duas
+empresas do estudo. Os dias da Empresa 1 são uma premissa equivalente a um mês,
+e seu WACC não é observado no pacote. Os parâmetros da Empresa 2 vêm do
+workbook. O número de CDs não altera o custo de estoque neste modelo.
 
 Não há:
 
@@ -136,7 +141,39 @@ transferência, distribuição, tributação e qualidade operacional podem mudar
 com \`active_cds\`. A independência da Escolha B vale para o componente financeiro
 \`inventory_cost\`, mantendo demanda, dias e WACC constantes.
 
-## 4. Fontes de custo e proxies
+## 4. Premissas tributárias e transição legal
+
+Os pesos `current_weight`/`ibs_weight` (`αₜ`) e as taxas e créditos numéricos
+em `data/tax/tax_reform_config.json` são parâmetros exploratórios definidos
+pelos autores. `current_weight` é uma mistura matemática dos resultados dos
+regimes no simulador; não é a parcela legal de um tributo, uma alíquota efetiva
+da empresa nem um percentual que deva ser aplicado diretamente aos custos.
+Os valores de α não foram calibrados com dados fiscais por operação. A
+configuração registra essa classificação e suas fontes oficiais em
+`tax_transition_metadata`.
+
+A legislação fornece o calendário de transição, não as alíquotas efetivas por
+rota ou empresa: 2026 é ano de teste; em 2027–2028 a regra geral prevê IBS de
+0,1% (0,05% estadual e 0,05% municipal) e CBS pela alíquota de referência
+menos 0,1 ponto percentual, ressalvadas as regras legais; de 2029 a 2032 ocorre
+a transição gradual de ICMS/ISS para IBS; e 2033 marca o modelo integral. Os
+percentuais de 10%, 20%, 30% e 40% divulgados para 2029–2032 descrevem o
+cronograma de transição, não pesos fiscais específicos da empresa.
+
+Em 28 de outubro de 2026, o TCU calculou uma referência de 11,3468% para a
+CBS de 2027, ainda sujeita à fixação pelo Senado na data de referência deste
+documento. O motor mantém sua taxa estática como hipótese exploratória; não a
+substitui pelo cálculo do TCU, pois ele não equivale à apuração por regime,
+operação, destino, classificação, crédito ou contribuinte. Assim, os cenários
+de 2033 são condicionais e não constituem previsão tributária validada.
+
+Fontes oficiais consultadas em 6 nov. 2026: [Receita Federal — cronograma da
+Reforma](https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda),
+[Ministério da Fazenda — transição](https://www.gov.br/fazenda/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria/perguntas-e-respostas/como-sera-a-transicao-para),
+[LC nº 214/2025 consolidada](https://legis.senado.leg.br/norma/40180341/publicacao/40181429)
+e [TCU — cálculo da referência da CBS 2027](https://portal.tcu.gov.br/imprensa/noticias/tcu-calcula-aliquota-de-referencia-de-113-para-novo-tributo-sobre-consumo).
+
+## 5. Fontes de custo e proxies
 
 ### Empresa 1
 
@@ -162,7 +199,7 @@ com \`active_cds\`. A independência da Escolha B vale para o componente finance
 
 A camada tributária é complementada pelo estudo próprio versionado em
 [`ESTUDO_PROPRIO_TRIBUTACAO.md`](ESTUDO_PROPRIO_TRIBUTACAO.md). O runtime
-registra o identificador `estudo_proprio_tributacao_visagio_v1`, a versão dos
+registra o identificador `estudo_proprio_tributacao_v1`, a versão dos
 parâmetros, o regime, o período, as fontes, a cobertura e o uso permitido do
 resultado.
 
@@ -210,7 +247,7 @@ calculada sobre o número de fluxos avaliados. Essa taxa não é uma margem de
 erro estatística; é uma medida de cobertura do dado e de dependência do método
 substitutivo.
 
-## 5. Fluxos e realocação
+## 6. Fluxos e realocação
 
 O rebuilder mantém separados:
 
@@ -227,7 +264,7 @@ No baseline completo, a expectativa é zero realocações para fluxos já cobert
 e nenhum erro de tarifa causado por trocar um nome de CD por um rótulo de
 apresentação.
 
-## 6. Monte Carlo
+## 7. Monte Carlo
 
 Monte Carlo é complementar e nunca substitui o resultado determinístico, o
 ranking ou os componentes oficiais. O motor distingue a origem da incerteza:
@@ -277,7 +314,7 @@ Quando a classificação fiscal completa fica abaixo de 100%, o bloco registra
 útil para exploração sob premissas, mas não deve ser apresentada como evidência
 de decisão fiscal ou como previsão.
 
-## 7. Mecanismo de avaliação e estabilidade
+## 8. Mecanismo de avaliação e estabilidade
 
 O mecanismo de avaliação trabalha em uma grade discreta de cenários. Para Empresas com até
 quatro CDs, todos os subconjuntos não vazios são enumerados. Para espaços
@@ -316,7 +353,7 @@ concentração ausentes bloqueiam o candidato. O padrão da Fase 5 usa 75% como
 limite de concentração por CD, sem afirmar que um CD único possui capacidade
 operacional ou pooling de risco.
 
-## 8. Stress, reconciliação e recomendação
+## 9. Stress, reconciliação e recomendação
 
 Stress cases sujeitos a uma política de seleção de cenários não podem desligar tributos
 apenas para aumentar artificialmente o saving. A biblioteca padrão usa choques
@@ -352,7 +389,7 @@ bloqueadores relevantes impedem uma recomendação limpa, mesmo quando o saving
 determinístico é positivo. Evidência é medida de suporte, não estimativa de
 precisão estatística.
 
-## 9. Limitações que devem acompanhar a apresentação
+## 10. Limitações que devem acompanhar a apresentação
 
 1. A Empresa 1 não possui benchmark histórico consolidado independente no pacote.
 2. Transferência da Empresa 1 usa proxy quilométrico calibrado com observações
@@ -378,7 +415,7 @@ precisão estatística.
    exploratório, com o estudo próprio tributário e seus requisitos de
    complementação.
 
-## 10. Evidência técnica
+## 11. Evidência técnica
 
 Os principais pontos de implementação são:
 

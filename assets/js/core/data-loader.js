@@ -9,7 +9,7 @@ import { recomputePhase2Baseline } from '../phase2/baseline-deriver.js';
 
 let encryptedManifest = null;
 const complementsOmitted =
-  document.querySelector('meta[name="visagio-complements"]')?.content === 'omitted';
+  document.querySelector('meta[name="app-complements"]')?.content === 'omitted';
 
 function isCompanyDataPath(path) {
   return /^data\/empresa[12]\//.test(resolveProjectPath(path));

@@ -1,6 +1,6 @@
 import { runScenario } from '../phase3/scenario-simulator.js';
-import { safeNumber } from '../core/common.js';
 import { calculateSaving } from '../core/model-configuration.js';
+import { isNumericallyUsableScenarioResult } from '../core/analysis-quality.js';
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj || {}));
 }
@@ -21,25 +21,42 @@ export function runSensitivity({
       warnings: [],
       errors: [`variável não suportada: ${cfg.variable}`],
     };
-  const baselineTotal = safeNumber(baselineBundle?.costs?.costs?.total_with_tax);
+  const baselineRaw = baselineBundle?.costs?.costs?.total_with_tax;
+  const baselineUsable =
+    baselineRaw !== null &&
+    baselineRaw !== '' &&
+    Number.isFinite(Number(baselineRaw)) &&
+    Number(baselineRaw) > 0;
+  const baselineTotal = baselineUsable ? Number(baselineRaw) : null;
   const sensitivity_results = (cfg.values || []).map((value) => {
     const scenario = clone(selectedScenario);
     scenario.scenario_id = `${selectedScenario.scenario_id}__sens_${cfg.variable}_${String(value).replace('.', '_')}`;
     scenario.changes = { ...(scenario.changes || {}), [cfg.variable]: value };
     const result = runScenario({ companyId, scenario, baselineBundle });
-    const saving = calculateSaving({ baselineTotal, scenarioTotal: result.total_with_tax });
+    const validResult = isNumericallyUsableScenarioResult(result);
+    const usable = validResult && baselineUsable;
+    const saving = usable
+      ? calculateSaving({ baselineTotal, scenarioTotal: result.total_with_tax })
+      : { saving_abs: null, saving_pct: null };
     return {
       variable: cfg.variable,
       value,
-      total_with_tax: safeNumber(result.total_with_tax),
+      status: usable ? 'success' : 'blocked',
+      simulation_status: result.simulation_status || null,
+      total_with_tax: usable ? Number(result.total_with_tax) : null,
+      saving_abs: saving.saving_abs,
       saving_pct: saving.saving_pct,
-      errors: result.errors || [],
+      errors: [
+        ...(result.errors || []),
+        ...(!baselineUsable ? ['baseline indisponível para comparação'] : []),
+      ],
       warnings: result.warnings || [],
     };
   });
   const vals = sensitivity_results.map((r) => r.total_with_tax);
-  const slope =
-    vals.length > 1
+  const slope = vals.some((value) => !Number.isFinite(value))
+    ? null
+    : vals.length > 1
       ? Math.abs(vals[vals.length - 1] - vals[0]) /
         Math.max(1, Math.abs((cfg.values || [])[vals.length - 1] - (cfg.values || [])[0]))
       : 0;
@@ -47,7 +64,8 @@ export function runSensitivity({
     company_id: companyId,
     scenario_id: selectedScenario?.scenario_id,
     sensitivity_results,
-    most_sensitive_variable: cfg.variable,
+    analyzed_variable: cfg.variable,
+    most_sensitive_variable: slope == null ? null : cfg.variable,
     sensitivity_slope: slope,
     warnings: [],
     errors: [],
@@ -89,7 +107,13 @@ export function runSensitivityMatrix({
       errors: ['escolha duas variáveis diferentes para a matriz'],
     };
   }
-  const baselineTotal = safeNumber(baselineBundle?.costs?.costs?.total_with_tax);
+  const baselineRaw = baselineBundle?.costs?.costs?.total_with_tax;
+  const baselineUsable =
+    baselineRaw !== null &&
+    baselineRaw !== '' &&
+    Number.isFinite(Number(baselineRaw)) &&
+    Number(baselineRaw) > 0;
+  const baselineTotal = baselineUsable ? Number(baselineRaw) : null;
   const matrix_results = [];
   for (const yValue of cfg.yValues || []) {
     for (const xValue of cfg.xValues || []) {
@@ -105,17 +129,26 @@ export function runSensitivityMatrix({
         [cfg.yVariable]: yValue,
       };
       const result = runScenario({ companyId, scenario, baselineBundle });
-      const total = safeNumber(result.total_with_tax);
-      const saving = calculateSaving({ baselineTotal, scenarioTotal: total });
+      const validResult = isNumericallyUsableScenarioResult(result);
+      const usable = validResult && baselineUsable;
+      const total = usable ? Number(result.total_with_tax) : null;
+      const saving = usable
+        ? calculateSaving({ baselineTotal, scenarioTotal: total })
+        : { saving_abs: null, saving_pct: null };
       matrix_results.push({
         x_variable: cfg.xVariable,
         y_variable: cfg.yVariable,
         x_value: xValue,
         y_value: yValue,
+        status: usable ? 'success' : 'blocked',
+        simulation_status: result.simulation_status || null,
         total_with_tax: total,
         saving_abs: saving.saving_abs,
         saving_pct: saving.saving_pct,
-        errors: result.errors || [],
+        errors: [
+          ...(result.errors || []),
+          ...(!baselineUsable ? ['baseline indisponível para comparação'] : []),
+        ],
         warnings: result.warnings || [],
       });
     }

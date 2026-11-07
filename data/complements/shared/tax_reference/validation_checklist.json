@@ -49,8 +49,8 @@
   },
   {
     "grupo": "reforma",
-    "checagem": "Pesos de transição somam 1",
-    "criterio_de_ok": "peso_icms_iss + peso_ibs = 1 para 2029-2033",
-    "acao_se_falhar": "Corrigir timeline."
+    "checagem": "Consistência estrutural do cronograma legal ICMS/ISS–IBS",
+    "criterio_de_ok": "Para 2029–2032, parcelas remanescentes ICMS/ISS = 90%, 80%, 70%, 60% e resumo IBS RFB = 10%, 20%, 30%, 40%; em 2033, ICMS/ISS = 0% e IBS = 100%. Verifica apenas o cronograma publicado, não alíquotas, créditos ou carga tributária da empresa.",
+    "acao_se_falhar": "Corrigir o cronograma e a fonte pública; não usar esta checagem como validação fiscal empresarial."
   }
 ]

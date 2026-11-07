@@ -173,7 +173,7 @@ function buildTaxSourceContext({
   ];
 
   return {
-    package_name: manifest.package_name || 'visagio_complementos',
+    package_name: manifest.package_name || 'complementos_modelo',
     package_created_at: manifest.created_at || null,
     package_purpose: manifest.purpose || null,
     company_id: companyId,

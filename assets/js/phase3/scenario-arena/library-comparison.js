@@ -1,7 +1,8 @@
 import { buildScenarioSummary } from '../../core/scenario-summary.js';
-import { MODEL_DEFAULTS } from '../../core/model-configuration.js';
+import { getCompanyModelDefaults } from '../../core/model-configuration.js';
 import { runScenario } from '../scenario-simulator.js';
 import { evaluateScenarioQuality } from '../scenario-quality-check.js';
+import { isScenarioResultComparable } from '../scenario-comparator.js';
 
 function isHiddenScenario(scenario) {
   return (
@@ -14,6 +15,7 @@ export function buildLibraryComparisonRows({ companyId, library, currentResult, 
   if (!library) return null;
 
   const baselineBundle = library.baselineBundle;
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const baselineTotal = Number(baselineBundle.costs.costs.total_with_tax || 0);
   const baselineRows = [
     {
@@ -26,7 +28,8 @@ export function buildLibraryComparisonRows({ companyId, library, currentResult, 
             active_cds: baselineBundle.model?.active_cds || [],
             freight_multiplier: 1,
             demand_multiplier: 1,
-            inventory_days: MODEL_DEFAULTS.inventory_days,
+            inventory_days: modelDefaults.inventory_days,
+            wacc: modelDefaults.reference_wacc,
             tax_mode: 'current',
           },
         },
@@ -40,31 +43,33 @@ export function buildLibraryComparisonRows({ companyId, library, currentResult, 
       type: 'referência',
     },
   ];
-  const libraryRows = (library.scenarios || [])
-    .filter((scenario) => !isHiddenScenario(scenario))
-    .slice(0, 8)
-    .map((scenario) => {
-      const result = runScenario({
-        companyId,
-        scenario,
-        baselineBundle,
-      });
-      const scenarioQuality = evaluateScenarioQuality({
-        scenarioResult: result,
-        baselineBundle,
-      });
-      return {
-        ...buildScenarioSummary({
-          scenario,
-          result,
-          quality: scenarioQuality,
-          baselineTotal,
-        }),
-        type: scenario.scenario_type || 'biblioteca',
-      };
+  const libraryRows = [];
+  for (const scenario of library.scenarios || []) {
+    if (isHiddenScenario(scenario)) continue;
+    const result = runScenario({
+      companyId,
+      scenario,
+      baselineBundle,
     });
+    if (!isScenarioResultComparable(result)) continue;
+    const scenarioQuality = evaluateScenarioQuality({
+      scenarioResult: result,
+      baselineBundle,
+    });
+    libraryRows.push({
+      ...buildScenarioSummary({
+        scenario,
+        result,
+        quality: scenarioQuality,
+        baselineTotal,
+      }),
+      type: scenario.scenario_type || 'biblioteca',
+    });
+    if (libraryRows.length === 8) break;
+  }
   const current =
-    currentResult && !isHiddenScenario(currentResult.scenario || currentResult)
+    isScenarioResultComparable(currentResult) &&
+    !isHiddenScenario(currentResult.scenario || currentResult)
       ? [
           {
             ...buildScenarioSummary({

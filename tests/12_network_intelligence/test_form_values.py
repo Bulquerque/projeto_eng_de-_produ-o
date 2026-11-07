@@ -22,6 +22,8 @@ assert.deepEqual(scenario, {
   scenario_name: 'Cenário A', active_cds: ['CD-1'], tax_year: null, freight_multiplier: 1,
   demand_multiplier: 1, inventory_days: 45, wacc: 0.15, tax_mode: 'current', tax_regime: 'current', reallocation_rule: 'nearest_available_cd',
 });
+assert.equal(parseScenarioForm(validScenarioData, [{value:'CD-1'}], {}, 'empresa1').reallocation_rule, 'lowest_freight_available_cd');
+assert.equal(parseScenarioForm(validScenarioData, [{value:'CD-1'}], {}, 'empresa2').reallocation_rule, 'nearest_available_cd');
 assert.equal(validateScenarioValues({ ...scenario, scenario_name: '' }).valid, false);
 assert.deepEqual(validateScenarioValues(scenario), { valid: true, message: '' });
 assert.equal(parseScenarioForm(form({ scenario_name: ' ' }), []).scenario_name, ' ');

@@ -29,7 +29,7 @@ for (const companyId of ['empresa1','empresa2']) {
  if(companyId==='empresa2') {
    if(!selected) throw new Error('empresa2 should export an exploratory selected scenario');
    if(selected.result?.data_quality?.status!=='limited_fiscal_coverage') throw new Error('empresa2 data quality status missing from selected result');
-   if(selected.result?.tax_results?.tax_study?.study_id!=='estudo_proprio_tributacao_visagio_v1') throw new Error('tax study metadata missing');
+   if(selected.result?.tax_results?.tax_study?.study_id!=='estudo_proprio_tributacao_v1') throw new Error('tax study metadata missing');
    if(selected.result?.tax_results?.tax_study?.status!=='registered_validation_pending') throw new Error('tax study validation status missing');
  }
  if(Number(selected.scenario?.changes?.freight_multiplier ?? 1)!==1) throw new Error('selected scenario changed freight');
