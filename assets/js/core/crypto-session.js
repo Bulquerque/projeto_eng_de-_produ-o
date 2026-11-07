@@ -127,7 +127,7 @@ export function lockCryptoSession() {
 }
 
 export function installLockButton() {
-  if (window.__VISAGIO_NETWORK_UI__ || document.getElementById('cryptoLockButton')) return;
+  if (window.__APP_NETWORK_UI__ || document.getElementById('cryptoLockButton')) return;
   ensureStyles();
   const button = document.createElement('button');
   button.type = 'button';

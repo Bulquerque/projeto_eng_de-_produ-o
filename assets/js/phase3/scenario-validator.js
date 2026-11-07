@@ -4,6 +4,7 @@ import {
   listTaxModes,
 } from '../core/tax-reform-config.js';
 import { sameCdLabel } from '../core/cd-utils.js';
+import { defaultReallocationRule } from './reallocation-policy.js';
 const VALID_TAX_MODES = new Set(listTaxModes());
 const VALID_TAX_REGIMES = new Set([
   'current',
@@ -17,6 +18,7 @@ const VALID_TAX_REGIMES = new Set([
   'reform_full_2033',
 ]);
 const VALID_REALLOCATION = new Set([
+  'lowest_freight_available_cd',
   'nearest_available_cd',
   'first_available_cd',
   'keep_if_active_else_first',
@@ -101,7 +103,7 @@ export function validateScenario({ companyId, scenario, baselineBundle }) {
     'Regime tributário inválido.'
   );
   validate(
-    VALID_REALLOCATION.has(String(c.reallocation_rule || 'nearest_available_cd')),
+    VALID_REALLOCATION.has(String(c.reallocation_rule || defaultReallocationRule(companyId))),
     'REALLOCATION_RULE_VALID',
     'Regra de realocação inválida.'
   );

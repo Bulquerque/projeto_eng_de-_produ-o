@@ -1,5 +1,5 @@
 import { resolveTaxRegime } from './tax-reform-config.js';
-import { MODEL_DEFAULTS } from './model-configuration.js';
+import { MODEL_DEFAULTS, getCompanyModelDefaults } from './model-configuration.js';
 
 export const CANONICAL_OPTIMIZATION_POLICY = {
   freight_multiplier: 1,
@@ -13,11 +13,13 @@ export const CANONICAL_OPTIMIZATION_POLICY = {
   allow_tax_disabled: false,
 };
 
-export function buildCanonicalOptimizationConfig(optimizerConfig = {}) {
+export function buildCanonicalOptimizationConfig(optimizerConfig = {}, companyId = null) {
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const requestedMax = Number(optimizerConfig.max_candidates ?? 2000);
   const requestedSeed = Number(optimizerConfig.seed ?? 42);
   return {
     ...CANONICAL_OPTIMIZATION_POLICY,
+    inventory_days: modelDefaults.inventory_days,
     method: String(optimizerConfig.method || 'exact_discrete'),
     max_candidates: Number.isInteger(requestedMax) && requestedMax > 0 ? requestedMax : 2000,
     seed: Number.isFinite(requestedSeed) ? Math.trunc(requestedSeed) : 42,

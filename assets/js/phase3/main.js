@@ -1,6 +1,6 @@
 import { setupPhase3 } from './scenario-arena-dashboard.js';
 import { loadCatalog, loadPhase3Report } from '../core/data-loader.js';
-import { loadTaxReformConfiguration } from '../core/tax-reform-config.js';
+import { loadTaxReformConfiguration } from '../core/tax-reform-config-loader.js';
 import { $ } from '../core/common.js';
 
 async function init() {
@@ -27,4 +27,4 @@ async function init() {
   // loadCompany já escreve o erro no #phase3Loading e controla o botão de simular.
 }
 
-if (!window.__VISAGIO_NETWORK_UI__) init();
+if (!window.__APP_NETWORK_UI__) init();

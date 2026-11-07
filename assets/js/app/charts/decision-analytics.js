@@ -1,5 +1,6 @@
 import { renderBarChart, renderScatterChart } from '../../core/chart-renderer.js';
 import { calculateSaving } from '../../core/model-configuration.js';
+import { COST_COMPONENTS } from '../cost-components.js';
 import {
   selectActiveScenario,
   selectBaseline,
@@ -7,14 +8,6 @@ import {
   selectScenarios,
 } from '../selectors/business-selectors.js';
 import { comparisonCandidates } from '../pages/results.js';
-
-const COST_COMPONENTS = [
-  ['transfer_cost', 'Transferência'],
-  ['distribution_cost', 'Distribuição'],
-  ['storage_cost', 'Armazenagem'],
-  ['inventory_cost', 'Estoque'],
-  ['tax_impact', 'Tributos'],
-];
 
 function finite(value) {
   const number = Number(value);
@@ -115,7 +108,7 @@ function renderComparison(state) {
 
   const selectedRow = comparisonRows.find((row) => row.scenario_id === selected?.scenario_id);
   const selectedCosts = selected?.result?.costs || decision.result?.costs || selectedRow || {};
-  const deltas = COST_COMPONENTS.map(([key, label]) => ({
+  const deltas = COST_COMPONENTS.map(({ key, label }) => ({
     key,
     label,
     value:

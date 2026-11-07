@@ -1,6 +1,6 @@
 import { resolveTaxRegime, taxRegimeLabel } from './tax-reform-config.js';
 import { safeNumber } from './common.js';
-import { calculateSaving, MODEL_DEFAULTS } from './model-configuration.js';
+import { calculateSaving, getCompanyModelDefaults } from './model-configuration.js';
 
 export function formatMultiplierDisplay(value) {
   const number = Number(value);
@@ -34,6 +34,7 @@ export function buildScenarioSummary({
   const changes = scenarioSource?.changes || {};
   const taxResults = result?.tax_results || scenarioSource?.tax_results || {};
   const totalWithTax = safeNumber(result?.total_with_tax ?? result?.costs?.total_with_tax);
+  const modelDefaults = getCompanyModelDefaults(scenarioSource?.company_id);
   const activeCds = Array.isArray(changes.active_cds) ? changes.active_cds : [];
   const saving = calculateSaving({ baselineTotal, scenarioTotal: totalWithTax });
 
@@ -45,8 +46,8 @@ export function buildScenarioSummary({
     freight_multiplier: safeNumber(changes.freight_multiplier ?? 1, 1),
     demand_multiplier: safeNumber(changes.demand_multiplier ?? 1, 1),
     inventory_days: safeNumber(
-      changes.inventory_days ?? MODEL_DEFAULTS.inventory_days,
-      MODEL_DEFAULTS.inventory_days
+      changes.inventory_days ?? modelDefaults.inventory_days,
+      modelDefaults.inventory_days
     ),
     tax_regime_label: resolveScenarioTaxRegimeLabel(scenarioSource, taxResults),
     tax_source_label:

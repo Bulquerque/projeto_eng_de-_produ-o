@@ -185,7 +185,8 @@ export function installBindings({ root, store, controller }) {
       const values = parseScenarioForm(
         new FormData(event.target),
         event.target.querySelectorAll('input[name="active_cds"]:checked'),
-        rawInputValues.get(event.target)
+        rawInputValues.get(event.target),
+        store.getState().context.company_id
       );
       const validation = validateScenarioValues(values);
       if (!validation.valid) {
@@ -268,18 +269,23 @@ export function installBindings({ root, store, controller }) {
   const markDraft = (event) => {
     const form = event.target.form;
     if (form?.id !== 'niScenarioForm' || event.target.disabled) return;
-    const state = store.getState();
     const values = parseScenarioForm(
       new FormData(form),
       form.querySelectorAll('input[name="active_cds"]:checked'),
-      rawInputValues.get(form)
+      rawInputValues.get(form),
+      store.getState().context.company_id
     );
-    state.ui.scenario_draft = {
-      ...(state.ui.scenario_draft || {}),
-      scenario_name: values.scenario_name,
-      changes: { ...values },
-    };
-    state.ui.scenario_draft_dirty = true;
+    store.update(
+      (state) => {
+        state.ui.scenario_draft = {
+          ...(state.ui.scenario_draft || {}),
+          scenario_name: values.scenario_name,
+          changes: { ...values },
+        };
+        state.ui.scenario_draft_dirty = true;
+      },
+      { notify: false }
+    );
     const status = root.querySelector('[data-testid="scenario-draft-status"]');
     if (status) status.textContent = 'Alterações pendentes; execute para atualizar.';
     for (const control of root.querySelectorAll(

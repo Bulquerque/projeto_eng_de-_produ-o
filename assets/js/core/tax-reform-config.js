@@ -40,6 +40,15 @@ export const DEFAULT_TAX_REFORM_CONFIG = {
   default_tax_mode: 'current',
   default_tax_regime: 'current',
   default_category: 'default_goods',
+  tax_transition_metadata: {
+    status: 'exploratory_author_defined_parameters',
+    reference_checked_on: '2026-11-06',
+    current_weight_definition:
+      'Scenario blend chosen by the authors; it is not a statutory rate, a direct legal transition share, or a company tax calculation.',
+    company_specific_tax_validation: false,
+    limitation:
+      'The model rates, credits, and alpha weights remain exploratory assumptions; no official or company-specific fiscal validation is claimed.',
+  },
   tax_mode_aliases: normalizeAliasMap({
     current: 'current',
     disabled: 'disabled',
@@ -519,12 +528,4 @@ export function listTaxModes(config = getTaxReformConfig()) {
     if (regime.alt_ui_mode) values.add(regime.alt_ui_mode);
   }
   return [...values];
-}
-
-export async function loadTaxReformConfiguration(path = 'data/tax/tax_reform_config.json') {
-  const { fetchJson } = await import('./data-loader.js');
-  const loaded = await fetchJson(path);
-  const normalized = normalizeTaxReformConfig(loaded);
-  setTaxReformConfig(normalized);
-  return normalized;
 }

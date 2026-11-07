@@ -54,7 +54,7 @@ for (const companyId of ['empresa1', 'empresa2']) {
     throw new Error(`${companyId}: fiscal coverage limitation was not classified`);
   if (result.tax_results.decision_use !== 'exploratory_only')
     throw new Error(`${companyId}: fiscal limitation should force exploratory use`);
-  if (result.tax_results.tax_study?.study_id !== 'estudo_proprio_tributacao_visagio_v1')
+  if (result.tax_results.tax_study?.study_id !== 'estudo_proprio_tributacao_v1')
     throw new Error(`${companyId}: tax study metadata missing`);
   if (result.tax_results.tax_study?.status !== 'registered_validation_pending')
     throw new Error(`${companyId}: own tax study validation status missing`);
@@ -187,6 +187,12 @@ for (const companyId of ['empresa1', 'empresa2']) {
 const customConfig = getTaxReformConfig();
 const loadedConfig = JSON.parse(readFileSync('data/tax/tax_reform_config.json', 'utf8'));
 const normalizedLoadedConfig = normalizeTaxReformConfig(loadedConfig);
+if (normalizedLoadedConfig.tax_transition_metadata?.status !== 'exploratory_author_defined_parameters')
+  throw new Error('tax transition provenance status missing');
+if (normalizedLoadedConfig.tax_transition_metadata?.company_specific_tax_validation !== false)
+  throw new Error('tax company-specific validation boundary missing');
+if (normalizedLoadedConfig.tax_transition_metadata?.cbs_2027_reference?.rate !== 0.113468)
+  throw new Error('TCU 2027 CBS reference metadata missing');
 if (
   normalizedLoadedConfig.regimes.reform_full_2033.category_rules.essential_goods
     .cbs_rate_multiplier !== 0.65

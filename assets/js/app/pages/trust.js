@@ -3,7 +3,7 @@ import {
   evidenceClassLabel,
   robustnessPresentation,
   userStatusLabel,
-} from '../charts/trust-analytics.js';
+} from '../presentation/status.js';
 import {
   card,
   emptyState,

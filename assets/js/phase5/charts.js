@@ -5,14 +5,25 @@ import {
   destroyChart,
 } from '../core/chart-renderer.js';
 
+export function usablePhase5ChartRows(results) {
+  return (results || []).filter(
+    (result) =>
+      result?.status !== 'blocked' &&
+      !['error', 'invalid'].includes(result?.simulation_status) &&
+      Number.isFinite(result?.saving_pct) &&
+      Number.isFinite(result?.total_with_tax)
+  );
+}
+
 export function renderSensitivityChart(sensitivityResults) {
-  if (!sensitivityResults || sensitivityResults.length === 0) {
+  const usableResults = usablePhase5ChartRows(sensitivityResults);
+  if (usableResults.length === 0) {
     destroyChart('sensitivityChart');
     return;
   }
 
-  const labels = sensitivityResults.map((r) => String(r.value));
-  const data = sensitivityResults.map((r) => r.saving_pct);
+  const labels = usableResults.map((r) => String(r.value));
+  const data = usableResults.map((r) => r.saving_pct);
 
   renderLineChart('sensitivityChart', {
     labels,
@@ -30,16 +41,17 @@ export function renderSensitivityChart(sensitivityResults) {
 }
 
 export function renderStressChart(stressResults) {
-  if (!stressResults || stressResults.length === 0) {
+  const usableResults = usablePhase5ChartRows(stressResults);
+  if (usableResults.length === 0) {
     destroyChart('stressChart');
     return;
   }
 
-  const labels = stressResults.map((r) => r.case_name);
-  const data = stressResults.map((r) => r.saving_pct);
+  const labels = usableResults.map((r) => r.case_name);
+  const data = usableResults.map((r) => r.saving_pct);
 
   // Green if scenario_still_better_than_baseline is true, Red otherwise
-  const backgroundColors = stressResults.map((r) =>
+  const backgroundColors = usableResults.map((r) =>
     r.scenario_still_better_than_baseline ? '#00A189' : '#b42318'
   );
 

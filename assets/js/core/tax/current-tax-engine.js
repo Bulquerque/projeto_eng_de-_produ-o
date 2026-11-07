@@ -103,8 +103,6 @@ export function calculateCurrentTax({
 
   const flowBreakdown = fiscalFlows.map((flow) => {
     const grossRevenue = safeNumber(flow.gross_revenue);
-    let current = 0;
-
     let source = 'parametric_reference_rate';
     let appliedRate = referenceRate;
 
@@ -155,7 +153,7 @@ export function calculateCurrentTax({
     } else {
       matchCounts.fallback += 1;
     }
-    current = grossRevenue * appliedRate * safeNumber(demandMultiplier, 1);
+    const current = grossRevenue * appliedRate * safeNumber(demandMultiplier, 1);
     const sourceRow = taxData.find(
       (row) =>
         normalizeText(firstValue(row, ['UF_ORIGEM', 'uf_origem', 'UF Origem'])) ===

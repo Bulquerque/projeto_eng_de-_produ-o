@@ -1,41 +1,10 @@
 import { runScenario } from '../phase3/scenario-simulator.js';
 import { buildStressCaseLibrary } from './stress-case-library.js';
 import { safeNumber } from '../core/common.js';
-import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { calculateSaving, getCompanyModelDefaults } from '../core/model-configuration.js';
 import { isNumericallyUsableScenarioResult } from '../core/analysis-quality.js';
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj || {}));
-}
-export function applyStressCaseToScenario({ scenario, stressCase }) {
-  const stressed = clone(scenario);
-  stressed.scenario_id = `${scenario.scenario_id || 'scenario'}__stress_${stressCase.case_id}`;
-  stressed.scenario_name = `${scenario.scenario_name || scenario.scenario_id || 'Cenário'} · ${stressCase.name}`;
-  stressed.changes = { ...(scenario.changes || {}) };
-  const c = stressCase.changes || {};
-  if (c.freight_multiplier_delta !== undefined)
-    stressed.changes.freight_multiplier =
-      safeNumber(stressed.changes.freight_multiplier, 1) *
-      (1 + safeNumber(c.freight_multiplier_delta));
-  if (c.demand_multiplier_delta !== undefined)
-    stressed.changes.demand_multiplier =
-      safeNumber(stressed.changes.demand_multiplier, 1) *
-      (1 + safeNumber(c.demand_multiplier_delta));
-  if (c.wacc_delta !== undefined)
-    stressed.changes.wacc =
-      safeNumber(stressed.changes.wacc, MODEL_DEFAULTS.reference_wacc) + safeNumber(c.wacc_delta);
-  if (c.inventory_days_delta !== undefined)
-    stressed.changes.inventory_days =
-      safeNumber(stressed.changes.inventory_days, MODEL_DEFAULTS.inventory_days) +
-      safeNumber(c.inventory_days_delta);
-  if (c.tax_mode) stressed.changes.tax_mode = c.tax_mode;
-  if (c.tax_regime) stressed.changes.tax_regime = c.tax_regime;
-  stressed.metadata = {
-    ...(stressed.metadata || {}),
-    phase: 5,
-    stress_case_id: stressCase.case_id,
-    stress_case_name: stressCase.name,
-  };
-  return stressed;
 }
 export function runStressTests({
   companyId,
@@ -51,7 +20,11 @@ export function runStressTests({
   const stress_results = [];
   const warnings = [];
   for (const stressCase of cases) {
-    const stressedScenario = applyStressCaseToScenario({ scenario: selectedScenario, stressCase });
+    const stressedScenario = applyStressCaseToScenario({
+      companyId,
+      scenario: selectedScenario,
+      stressCase,
+    });
     const result = runScenario({ companyId, scenario: stressedScenario, baselineBundle });
     const taxLimited =
       result.calculation_status === 'success_with_tax_limits' ||
@@ -137,4 +110,37 @@ export function runStressTests({
     warnings,
     errors: [],
   };
+}
+
+export function applyStressCaseToScenario({ companyId, scenario, stressCase }) {
+  const defaults = getCompanyModelDefaults(companyId || scenario?.company_id);
+  const stressed = clone(scenario);
+  stressed.scenario_id = `${scenario.scenario_id || 'scenario'}__stress_${stressCase.case_id}`;
+  stressed.scenario_name = `${scenario.scenario_name || scenario.scenario_id || 'Cenário'} · ${stressCase.name}`;
+  stressed.changes = { ...(scenario.changes || {}) };
+  const c = stressCase.changes || {};
+  if (c.freight_multiplier_delta !== undefined)
+    stressed.changes.freight_multiplier =
+      safeNumber(stressed.changes.freight_multiplier, 1) *
+      (1 + safeNumber(c.freight_multiplier_delta));
+  if (c.demand_multiplier_delta !== undefined)
+    stressed.changes.demand_multiplier =
+      safeNumber(stressed.changes.demand_multiplier, 1) *
+      (1 + safeNumber(c.demand_multiplier_delta));
+  if (c.wacc_delta !== undefined)
+    stressed.changes.wacc =
+      safeNumber(stressed.changes.wacc, defaults.reference_wacc) + safeNumber(c.wacc_delta);
+  if (c.inventory_days_delta !== undefined)
+    stressed.changes.inventory_days =
+      safeNumber(stressed.changes.inventory_days, defaults.inventory_days) +
+      safeNumber(c.inventory_days_delta);
+  if (c.tax_mode) stressed.changes.tax_mode = c.tax_mode;
+  if (c.tax_regime) stressed.changes.tax_regime = c.tax_regime;
+  stressed.metadata = {
+    ...(stressed.metadata || {}),
+    phase: 5,
+    stress_case_id: stressCase.case_id,
+    stress_case_name: stressCase.name,
+  };
+  return stressed;
 }

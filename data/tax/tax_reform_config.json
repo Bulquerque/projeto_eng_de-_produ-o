@@ -2,6 +2,30 @@
   "default_tax_mode": "current",
   "default_tax_regime": "current",
   "default_category": "default_goods",
+  "tax_transition_metadata": {
+    "status": "exploratory_author_defined_parameters",
+    "reference_checked_on": "2026-11-06",
+    "current_weight_definition": "Scenario blend chosen by the authors; it is not a statutory rate, a direct legal transition share, or a company tax calculation.",
+    "company_specific_tax_validation": false,
+    "legal_timeline": {
+      "2026": "Test year: CBS 0.9% and IBS 0.1%, subject to statutory compensation rules.",
+      "2027_2028": "CBS reference less 0.1 percentage point and IBS 0.1% in the general transition rules, subject to statutory exceptions.",
+      "2029_2032": "Gradual transition between IBS and ICMS/ISS; the 10/20/30/40 percentages describe the transition schedule and are not company-specific effective rates.",
+      "2033": "Full new model; does not establish a company-specific effective rate by itself."
+    },
+    "cbs_2027_reference": {
+      "rate": 0.113468,
+      "rate_status": "TCU_calculation_pending_Senate_fixation_as_of_reference_date",
+      "as_of": "2026-11-06"
+    },
+    "sources": [
+      "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda",
+      "https://www.gov.br/fazenda/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria/perguntas-e-respostas/como-sera-a-transicao-para",
+      "https://legis.senado.leg.br/norma/40180341/publicacao/40181429",
+      "https://portal.tcu.gov.br/imprensa/noticias/tcu-calcula-aliquota-de-referencia-de-113-para-novo-tributo-sobre-consumo"
+    ],
+    "limitation": "The model rates, credits, and alpha weights remain exploratory assumptions; no official or company-specific fiscal validation is claimed."
+  },
   "tax_mode_aliases": {
     "current": "current",
     "disabled": "disabled",

@@ -1,8 +1,8 @@
 {
-  "package": "visagio_static_simulator",
+  "package": "simulador_malha_estatico",
   "version": "1.0.0",
   "package_version": "1.0.0",
-  "release_id": "visagio_static_simulator_1.0",
+  "release_id": "simulador_malha_estatico_1.0",
   "git_commit": "f939684a77cd4f58374bd164f7e72ca6544c73c4",
   "generated_at_utc": "2026-09-12T15:59:40+00:00",
   "release_manifest": "data/release-manifest.json",

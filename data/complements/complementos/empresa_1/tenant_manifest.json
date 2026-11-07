@@ -2,7 +2,7 @@
   "tenant_id": "empresa_1",
   "display_name": "Empresa 1",
   "enabled": true,
-  "tenant_type": "visagio_case",
+  "tenant_type": "academic_case",
   "raw_root": "references/raw_sources",
   "tenant_root": "data/complements/complementos/empresa_1",
   "canonical_root": "data/complements/complementos/empresa_1/canonical",

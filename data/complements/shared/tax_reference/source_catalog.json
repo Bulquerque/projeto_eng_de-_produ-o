@@ -6,7 +6,7 @@
     "tipo": "página explicativa oficial",
     "prioridade": "alta",
     "url": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda",
-    "uso_no_modelo": "Cronograma de transição CBS/IBS/IS, extinção PIS/Cofins e ICMS/ISS, pesos 2029-2033.",
+    "uso_no_modelo": "Referência para o cronograma legal de transição CBS/IBS/IS e extinção de PIS/Cofins e ICMS/ISS; não fornece pesos da carga tributária empresarial.",
     "limite_cuidado": "É resumo operacional; para texto legal usar LC/EC."
   },
   {

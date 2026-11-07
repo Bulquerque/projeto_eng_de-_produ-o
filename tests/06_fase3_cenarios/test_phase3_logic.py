@@ -45,7 +45,11 @@ for (const companyId of ['empresa1','empresa2']) {
   const bad = buildScenarioFromForm({companyId, baselineBundle: bundle, formValues: {scenario_name:'bad', active_cds:[], freight_multiplier:-1, demand_multiplier:1, inventory_days:45, wacc:0.15, tax_mode:'current'}});
   const badValidation = validateScenario({companyId, scenario: bad, baselineBundle: bundle});
   if (badValidation.valid) throw new Error('invalid scenario accepted');
-  const rebuilt = rebuildScenarioFlows({scenario, baselineFlows: bundle.flows});
+  const rebuilt = rebuildScenarioFlows({
+    scenario,
+    baselineFlows: bundle.flows,
+    distanceMatrix: bundle.core_data?.distance_matrix,
+  });
   if (rebuilt.flows.length !== bundle.flows.length) throw new Error('flow count not preserved');
   if ((rebuilt.flow_summary.uncovered_flows || 0) !== 0) throw new Error('unexpected uncovered flows');
   const result = runScenario({companyId, scenario, baselineBundle: bundle});

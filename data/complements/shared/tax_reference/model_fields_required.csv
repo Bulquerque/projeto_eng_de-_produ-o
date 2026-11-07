@@ -10,6 +10,6 @@ frete_rs_kg,numérico,sim empresa1,Dados de Distância,Frete por kg da rota.,>=0
 custo_armazenagem_rs_kg_mes,numérico,sim se estoque,Premissas/Empresa2,Custo de armazenagem por kg/mês.,>=0; unidade explícita.
 woc_dias,numérico,condicional,Empresa2 / proxy,Cobertura/dias de estoque.,Marcar proxy se vier de outra empresa.
 icms_atual,numérico,condicional,Empresa2/external,Alíquota/efeito ICMS atual da rota.,Fonte e tipo de operação documentados.
-ibs_weight,numérico,sim reforma,reform_timeline,Peso do regime novo na transição.,0 a 1.
-current_tax_weight,numérico,sim reforma,reform_timeline,Peso do regime atual na transição.,0 a 1.
+ibs_weight,numérico,sim reforma,parâmetro do modelo,Variável operacional do modelo para combinar o componente IBS; não é alíquota legal nem parcela automaticamente aplicável à carga empresarial.,0 a 1; documentar hipótese e fórmula do cenário.
+current_tax_weight,numérico,sim reforma,parâmetro do modelo,Variável operacional do modelo para combinar o componente ICMS/ISS; não é alíquota legal nem parcela automaticamente aplicável à carga empresarial.,0 a 1; documentar hipótese e fórmula do cenário.
 source_confidence,texto,sim,catálogo,"interno, proxy_empresa2, externo_oficial, hipotese.",Não aceitar vazio.

@@ -62,16 +62,36 @@ function weightedAverage(items) {
 }
 
 function fallbackProfile(diagnostics = {}) {
-  const rates = Object.values(diagnostics.fallback_rates || {})
+  const rates = diagnostics.fallback_rates || {};
+  const distributionRates = [
+    rates.missing_freight_rate,
+    rates.missing_cif_row,
+    rates.missing_weight,
+    rates.revenue_fallback,
+  ]
     .map(Number)
     .filter(Number.isFinite);
+  const transferRates = [rates.missing_transfer_distance, rates.transfer_fallback]
+    .map(Number)
+    .filter(Number.isFinite);
+  const distributionMaxCategoryRate = distributionRates.length ? Math.max(...distributionRates) : 0;
+  const distributionIssueRate = Number(diagnostics.distribution_unpriced_or_fallback_rate);
+  const distributionFlowIssueRate = Number.isFinite(distributionIssueRate)
+    ? distributionIssueRate
+    : distributionMaxCategoryRate;
+  const transferMaxRate = transferRates.length ? Math.max(...transferRates) : 0;
+  const scenarioEvents = diagnostics.fallback_event_counts || {};
   return {
-    rates,
-    maxRate: rates.length ? Math.max(...rates) : 0,
+    distributionFlowIssueRate,
+    transferMaxRate,
+    maxRate: Math.max(distributionFlowIssueRate, transferMaxRate),
+    hasHeuristicFallback: Number(scenarioEvents.heuristic_fallback || 0) > 0,
+    hasProportionalStorageFallback: Number(scenarioEvents.proportional_storage || 0) > 0,
+    hasUnknownCompanyFallback: Number(scenarioEvents.unknown_company || 0) > 0,
   };
 }
 
-function buildDistributionEvidence(diagnostics, maxFallbackRate) {
+function buildDistributionEvidence(diagnostics, distributionFlowIssueRate) {
   const eligibleCount = Number(
     diagnostics.distribution_eligible_flow_count || diagnostics.flow_count || 0
   );
@@ -81,7 +101,7 @@ function buildDistributionEvidence(diagnostics, maxFallbackRate) {
     id: 'distribution',
     label: 'Distribuição',
     classification:
-      maxFallbackRate >= 0.5
+      distributionFlowIssueRate >= 0.5
         ? EVIDENCE_CLASSES.FALLBACK
         : diagnostics.source_classification?.includes('observed')
           ? EVIDENCE_CLASSES.PARTIALLY_OBSERVED
@@ -90,28 +110,37 @@ function buildDistributionEvidence(diagnostics, maxFallbackRate) {
       diagnostics.distribution_eligible_flow_count != null
         ? observedCoverage
         : diagnostics.flow_count
-          ? Math.max(0, 1 - maxFallbackRate)
+          ? Math.max(0, 1 - distributionFlowIssueRate)
           : 0,
     source: diagnostics.proxy_sources || null,
-    notes: diagnostics.fallback_rates ? ['Cobertura física registrada por fluxo.'] : [],
+    notes: diagnostics.fallback_rates
+      ? ['Cobertura calculada por fluxo; considera preços ausentes e fallbacks aplicados.']
+      : [],
   });
 }
 
-function buildTransferEvidence({ diagnostics, transferProxy, maxFallbackRate }) {
+function buildTransferEvidence({ diagnostics, transferProxy, transferFallbackRate }) {
+  const transferDenominator = Number(diagnostics.fallback_denominators?.transfer || 0);
+  const transferApplicable = transferDenominator > 0;
   return item({
     id: 'transfer',
     label: 'Transferência',
-    classification:
-      maxFallbackRate >= 0.25
+    classification: !transferApplicable
+      ? EVIDENCE_CLASSES.UNKNOWN
+      : transferFallbackRate >= 0.25
         ? EVIDENCE_CLASSES.PARTIALLY_OBSERVED
         : transferProxy
           ? EVIDENCE_CLASSES.PROXY
           : EVIDENCE_CLASSES.OBSERVED,
-    coverage: diagnostics.flow_count
+    coverage: transferApplicable
       ? Math.max(0, 1 - Number(diagnostics.fallback_rates?.transfer_fallback || 0))
       : 0,
     source: transferProxy || diagnostics.proxy_sources || null,
-    notes: transferProxy ? ['O valor não é uma tarifa histórica própria da empresa.'] : [],
+    notes: transferApplicable
+      ? transferProxy
+        ? ['O valor não é uma tarifa histórica própria da empresa.']
+        : []
+      : ['Nenhum fluxo exigiu transferência neste cenário; componente não aplicável.'],
   });
 }
 
@@ -178,7 +207,10 @@ function buildEvidenceBlockers({
   transferProxy,
   taxProxyFlows,
   taxCoverage,
-  maxFallbackRate,
+  maxFlowIssueRate,
+  hasHeuristicFallback,
+  hasProportionalStorageFallback,
+  hasUnknownCompanyFallback,
   hasHistoricalBenchmark,
   reconciliation,
   taxPeriodMetadata,
@@ -188,7 +220,14 @@ function buildEvidenceBlockers({
   if (taxProxyFlows > 0) blockers.push('classificação fiscal incompleta em parte dos fluxos');
   if (taxCoverage.coverage_limited || taxCoverage.blocked)
     blockers.push('cobertura fiscal parcial por campos obrigatórios ausentes');
-  if (maxFallbackRate >= 0.25) blockers.push('dependência material de fallback físico');
+  if (maxFlowIssueRate >= 0.25)
+    blockers.push('dependência material de fluxos sem tarifa observada ou com fallback físico');
+  if (hasHeuristicFallback)
+    blockers.push('custos físicos dependem de fallback heurístico por cenário');
+  if (hasProportionalStorageFallback)
+    blockers.push('armazenagem depende de hipótese proporcional por cenário');
+  if (hasUnknownCompanyFallback)
+    blockers.push('empresa sem configuração específica usa heurística genérica');
   if (!hasHistoricalBenchmark) blockers.push('benchmark histórico independente ausente');
   if (!reconciliation.overall || reconciliation.overall.status === 'pending') {
     blockers.push('reconciliação independente pendente');
@@ -201,10 +240,19 @@ function buildEvidenceBlockers({
 
 function cappedEvidenceScore(
   score,
-  { maxFallbackRate, fiscalClassificationCoverage, hasHistoricalBenchmark }
+  {
+    maxFlowIssueRate,
+    hasHeuristicFallback,
+    hasProportionalStorageFallback,
+    hasUnknownCompanyFallback,
+    fiscalClassificationCoverage,
+    hasHistoricalBenchmark,
+  }
 ) {
   const caps = [score];
-  if (maxFallbackRate >= 0.25) caps.push(54);
+  if (maxFlowIssueRate >= 0.25) caps.push(54);
+  if (hasHeuristicFallback || hasUnknownCompanyFallback) caps.push(54);
+  if (hasProportionalStorageFallback) caps.push(69);
   if (fiscalClassificationCoverage < 0.5) caps.push(59);
   if (!hasHistoricalBenchmark) caps.push(69);
   return Math.min(...caps);
@@ -241,7 +289,8 @@ export function buildEvidenceReport({
   const fiscalClassificationCoverage = flowCount
     ? finiteRatio(Number(taxCoverage.flows_with_complete_fiscal_data || 0) / flowCount)
     : 0;
-  const { maxRate: maxFallbackRate } = fallbackProfile(diagnostics);
+  const fallback = fallbackProfile(diagnostics);
+  const { maxRate: maxFlowIssueRate } = fallback;
   const baseFit = baselineBundle.base_fit || {};
   const hasHistoricalBenchmark =
     Boolean(baseFit.reference_source) && baseFit.status !== 'benchmark_pending';
@@ -253,8 +302,12 @@ export function buildEvidenceReport({
     taxResults.tax_period_contract || taxResults.metadata?.tax_period_contract;
 
   const components = [
-    buildDistributionEvidence(diagnostics, maxFallbackRate),
-    buildTransferEvidence({ diagnostics, transferProxy, maxFallbackRate }),
+    buildDistributionEvidence(diagnostics, fallback.distributionFlowIssueRate),
+    buildTransferEvidence({
+      diagnostics,
+      transferProxy,
+      transferFallbackRate: fallback.transferMaxRate,
+    }),
     buildTaxEvidence({ taxResults, taxCoverage, fiscalCoverage, fiscalClassificationCoverage }),
     buildBenchmarkEvidence({ baselineBundle, hasHistoricalBenchmark, hasHistoricalSeries }),
     buildReconciliationEvidence(reconciliation),
@@ -273,13 +326,19 @@ export function buildEvidenceReport({
     transferProxy,
     taxProxyFlows,
     taxCoverage,
-    maxFallbackRate,
+    maxFlowIssueRate,
+    hasHeuristicFallback: fallback.hasHeuristicFallback,
+    hasProportionalStorageFallback: fallback.hasProportionalStorageFallback,
+    hasUnknownCompanyFallback: fallback.hasUnknownCompanyFallback,
     hasHistoricalBenchmark,
     reconciliation,
     taxPeriodMetadata,
   });
   const cappedScore = cappedEvidenceScore(score, {
-    maxFallbackRate,
+    maxFlowIssueRate,
+    hasHeuristicFallback: fallback.hasHeuristicFallback,
+    hasProportionalStorageFallback: fallback.hasProportionalStorageFallback,
+    hasUnknownCompanyFallback: fallback.hasUnknownCompanyFallback,
     fiscalClassificationCoverage,
     hasHistoricalBenchmark,
   });

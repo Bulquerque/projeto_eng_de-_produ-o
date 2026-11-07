@@ -125,7 +125,7 @@ function makeScenario({ companyId, baselineBundle, overrides = {} }) {
       tax_mode: overrides.tax_mode ?? 'current',
       tax_regime: overrides.tax_regime,
       tax_year: overrides.tax_year,
-      reallocation_rule: overrides.reallocation_rule || 'nearest_available_cd',
+      reallocation_rule: overrides.reallocation_rule,
       scenario_type: overrides.scenario_type || 'adversarial',
     },
   });
@@ -1162,7 +1162,7 @@ async function runPhaseCompanyAudit(companyId) {
     selectedScenario: {
       scenario_id: selectedRawScenario.scenario_id,
       final_score: 92,
-      quality: { risk_level: 'low' },
+      quality: { quality_score: 92, risk_level: 'low' },
       evidence: { evidence_score: 80, evidence_status: 'high', blockers: [] },
       monte_carlo: {
         summary: {
@@ -1172,7 +1172,7 @@ async function runPhaseCompanyAudit(companyId) {
       },
     },
     comparison: { saving_pct: 4 },
-    quality: { risk_level: 'low' },
+    quality: { quality_score: 92, risk_level: 'low' },
     robustness: { robustness_score: 88, alerts: [] },
     objective: selectedObjective,
   });
@@ -1181,7 +1181,7 @@ async function runPhaseCompanyAudit(companyId) {
     selectedScenario: {
       scenario_id: selectedRawScenario.scenario_id,
       final_score: 70,
-      quality: { risk_level: 'medium' },
+      quality: { quality_score: 65, risk_level: 'medium' },
       evidence: { evidence_score: 55, evidence_status: 'medium', blockers: [] },
       monte_carlo: {
         summary: {
@@ -1191,7 +1191,7 @@ async function runPhaseCompanyAudit(companyId) {
       },
     },
     comparison: { saving_pct: 2 },
-    quality: { risk_level: 'medium' },
+    quality: { quality_score: 65, risk_level: 'medium' },
     robustness: { robustness_score: 55, alerts: ['atenção operacional'] },
     objective: selectedObjective,
   });
@@ -1200,7 +1200,7 @@ async function runPhaseCompanyAudit(companyId) {
     selectedScenario: {
       scenario_id: selectedRawScenario.scenario_id,
       final_score: 20,
-      quality: { risk_level: 'high' },
+      quality: { quality_score: 20, risk_level: 'high' },
       evidence: {
         evidence_score: 0,
         evidence_status: 'insufficient',
@@ -1214,7 +1214,7 @@ async function runPhaseCompanyAudit(companyId) {
       },
     },
     comparison: { saving_pct: -1 },
-    quality: { risk_level: 'high' },
+    quality: { quality_score: 20, risk_level: 'high' },
     robustness: { robustness_score: 20, alerts: ['custo acima do baseline'] },
     objective: selectedObjective,
   });

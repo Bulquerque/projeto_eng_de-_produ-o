@@ -1,4 +1,6 @@
 import { resolveTaxModeForRegime, resolveTaxRegime } from '../core/tax-reform-config.js';
+import { defaultReallocationRule } from '../phase3/reallocation-policy.js';
+import { getCompanyModelDefaults } from '../core/model-configuration.js';
 
 function readFormValue(data, rawValues, name) {
   return Object.prototype.hasOwnProperty.call(rawValues, name) ? rawValues[name] : data.get(name);
@@ -13,7 +15,8 @@ function validationError(message) {
   return { valid: false, message };
 }
 
-export function parseScenarioForm(data, checkedActiveCds, rawValues = {}) {
+export function parseScenarioForm(data, checkedActiveCds, rawValues = {}, companyId = null) {
+  const modelDefaults = getCompanyModelDefaults(companyId);
   const requestedTaxMode = data.get('tax_mode');
   const requestedTaxRegime = data.get('tax_regime');
   const taxYear = Number(data.get('tax_year')) || null;
@@ -27,12 +30,12 @@ export function parseScenarioForm(data, checkedActiveCds, rawValues = {}) {
     active_cds: [...checkedActiveCds].map((input) => input.value),
     freight_multiplier: readFormNumber(data, rawValues, 'freight_multiplier', 1),
     demand_multiplier: readFormNumber(data, rawValues, 'demand_multiplier', 1),
-    inventory_days: readFormNumber(data, rawValues, 'inventory_days', 45),
-    wacc: readFormNumber(data, rawValues, 'wacc', 0.15),
+    inventory_days: readFormNumber(data, rawValues, 'inventory_days', modelDefaults.inventory_days),
+    wacc: readFormNumber(data, rawValues, 'wacc', modelDefaults.reference_wacc),
     tax_mode: requestedTaxMode || resolveTaxModeForRegime(taxRegime),
     tax_regime: taxRegime,
     tax_year: taxYear,
-    reallocation_rule: data.get('reallocation_rule') || 'nearest_available_cd',
+    reallocation_rule: data.get('reallocation_rule') || defaultReallocationRule(companyId),
   };
 }
 

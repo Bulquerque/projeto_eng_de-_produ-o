@@ -145,10 +145,14 @@ export function renderPhase5Dashboard(state, scenarioComparison, charts = {}) {
 
   function renderStress() {
     const rows = (state.stress?.stress_results || [])
-      .map(
-        (result) =>
-          `<tr><td>${escapeHtml(result.case_name)}</td><td>${formatBRL(result.total_with_tax, true)}</td><td>${formatBRL(result.saving_vs_baseline, true)}</td><td>${formatPct(result.saving_pct)}</td><td>${result.scenario_still_better_than_baseline ? 'sim' : 'não'}</td><td>${escapeHtml(result.data_quality_status || 'complete')}</td></tr>`
-      )
+      .map((result) => {
+        const unavailable =
+          result.status === 'blocked' ||
+          ['error', 'invalid'].includes(result.simulation_status) ||
+          !Number.isFinite(result.total_with_tax) ||
+          !Number.isFinite(result.saving_pct);
+        return `<tr><td>${escapeHtml(result.case_name)}</td><td>${unavailable ? 'indisponível' : formatBRL(result.total_with_tax, true)}</td><td>${unavailable ? 'indisponível' : formatBRL(result.saving_vs_baseline, true)}</td><td>${unavailable ? 'indisponível' : formatPct(result.saving_pct)}</td><td>${unavailable ? 'indisponível' : result.scenario_still_better_than_baseline ? 'sim' : 'não'}</td><td>${escapeHtml(result.data_quality_status || 'complete')}</td></tr>`;
+      })
       .join('');
     $('stressPanel').innerHTML =
       `<table><thead><tr><th>Caso</th><th>Total</th><th>Saving</th><th>Saving %</th><th>Melhor que base?</th><th>Qualidade dos dados</th></tr></thead><tbody>${rows}</tbody></table><p class="small-note">Casos com cobertura fiscal parcial permanecem disponíveis para leitura exploratória.</p>`;
@@ -157,13 +161,17 @@ export function renderPhase5Dashboard(state, scenarioComparison, charts = {}) {
 
   function renderSensitivityPanel() {
     const rows = (state.sensitivity?.sensitivity_results || [])
-      .map(
-        (result) =>
-          `<tr><td>${escapeHtml(result.variable)}</td><td>${escapeHtml(result.value)}</td><td>${formatBRL(result.total_with_tax, true)}</td><td>${formatPct(result.saving_pct)}</td></tr>`
-      )
+      .map((result) => {
+        const unavailable =
+          result.status === 'blocked' ||
+          ['error', 'invalid'].includes(result.simulation_status) ||
+          !Number.isFinite(result.total_with_tax) ||
+          !Number.isFinite(result.saving_pct);
+        return `<tr><td>${escapeHtml(result.variable)}</td><td>${escapeHtml(result.value)}</td><td>${unavailable ? 'indisponível' : formatBRL(result.total_with_tax, true)}</td><td>${unavailable ? 'indisponível' : formatPct(result.saving_pct)}</td></tr>`;
+      })
       .join('');
     $('sensitivityPanel').innerHTML =
-      `<table><thead><tr><th>Variável</th><th>Valor</th><th>Total</th><th>Saving %</th></tr></thead><tbody>${rows}</tbody></table><p class="small-note">Mais sensível: ${escapeHtml(state.sensitivity?.most_sensitive_variable || '—')}</p>`;
+      `<table><thead><tr><th>Variável</th><th>Valor</th><th>Total</th><th>Saving %</th></tr></thead><tbody>${rows}</tbody></table><p class="small-note">Variável analisada: ${escapeHtml(state.sensitivity?.analyzed_variable || state.sensitivity?.most_sensitive_variable || '—')}</p>`;
     chartRenderers.renderSensitivityChart(state.sensitivity?.sensitivity_results);
     renderSensitivityMatrix();
   }
@@ -187,8 +195,16 @@ export function renderPhase5Dashboard(state, scenarioComparison, charts = {}) {
                 String(result.x_value) === String(xValue) &&
                 String(result.y_value) === String(yValue)
             );
-            const heatmapClass = getHeatmapClass(cell?.saving_pct || 0);
-            return `<td class="heatmap-cell ${heatmapClass}">${formatPct(cell?.saving_pct, 1)}<br><span class="small-note" style="color:inherit;opacity:0.8">${formatBRL(cell?.total_with_tax, true)}</span></td>`;
+            const unavailable =
+              !cell ||
+              cell.status === 'blocked' ||
+              ['error', 'invalid'].includes(cell.simulation_status) ||
+              !Number.isFinite(cell.total_with_tax) ||
+              !Number.isFinite(cell.saving_pct);
+            const heatmapClass = unavailable
+              ? 'heatmap-unavailable'
+              : getHeatmapClass(cell.saving_pct);
+            return `<td class="heatmap-cell ${heatmapClass}">${unavailable ? 'indisponível' : formatPct(cell.saving_pct, 1)}<br><span class="small-note" style="color:inherit;opacity:0.8">${unavailable ? '—' : formatBRL(cell.total_with_tax, true)}</span></td>`;
           })
           .join('');
         return `<tr><th>${escapeHtml(String(yValue))}</th>${cells}</tr>`;

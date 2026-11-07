@@ -1,5 +1,5 @@
 import { loadCatalog } from '../core/data-loader.js';
-import { loadTaxReformConfiguration } from '../core/tax-reform-config.js';
+import { loadTaxReformConfiguration } from '../core/tax-reform-config-loader.js';
 import { $ } from '../core/common.js';
 import { setupPhase5 } from './phase5-dashboard.js';
 
@@ -15,4 +15,4 @@ async function init() {
   }
 }
 
-if (!window.__VISAGIO_NETWORK_UI__) init();
+if (!window.__APP_NETWORK_UI__) init();

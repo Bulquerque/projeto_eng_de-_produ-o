@@ -34,7 +34,7 @@ import {
 import { buildMonteCarloConfig, runMonteCarloSimulation } from './monte-carlo-engine.js';
 import { appendSharedDebugEntry } from '../core/debug-tools.js';
 import { buildScenarioSummary } from '../core/scenario-summary.js';
-import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
+import { calculateSaving, getCompanyModelDefaults } from '../core/model-configuration.js';
 import {
   getTaxRegimeDefinition,
   resolveTaxRegime,
@@ -42,6 +42,7 @@ import {
   taxRegimeLabel,
 } from '../core/tax-reform-config.js';
 import { renderScenarioComparisonChart } from './charts.js';
+import { defaultReallocationRule } from './reallocation-policy.js';
 
 const EMPTY_STATE = {
   validation: 'Ainda não validado.',
@@ -57,10 +58,7 @@ const DEFAULT_FORM_VALUES = {
   scenario_name: 'Cenário customizado',
   freight_multiplier: 1,
   demand_multiplier: 1,
-  inventory_days: MODEL_DEFAULTS.inventory_days,
-  wacc: MODEL_DEFAULTS.reference_wacc,
   tax_mode: 'current',
-  reallocation_rule: 'nearest_available_cd',
 };
 
 function readMonteCarloConfig() {
@@ -232,13 +230,15 @@ function renderTaxAssumptions() {
       <strong>${escapeHtml(regime.label || regime.regime_id)}</strong>
       <p class="small-note">Ano: ${escapeHtml(regime.year_label || regime.year || '—')} · Modo: ${escapeHtml(regime.calculation_mode || '—')}</p>
       <dl class="tax-assumption-grid">
-        <div><dt>Peso sistema atual</dt><dd>${formatPct(Number(regime.current_weight || 0) * 100, 1)}</dd></div>
-        <div><dt>Peso IBS</dt><dd>${formatPct(Number(regime.ibs_weight || 0) * 100, 1)}</dd></div>
-        <div><dt>CBS</dt><dd>${formatPct(Number(regime.cbs_rate || 0) * 100, 2)}</dd></div>
-        <div><dt>IBS</dt><dd>${formatPct(Number(regime.ibs_rate || 0) * 100, 2)}</dd></div>
-        <div><dt>Seletivo</dt><dd>${formatPct(Number(regime.selective_rate || 0) * 100, 2)}</dd></div>
-        <div><dt>Crédito ref.</dt><dd>${formatPct(Number(regime.credit_rate || 0) * 100, 2)}</dd></div>
+        <div><dt>Peso de cenário · sistema atual</dt><dd>${formatPct(Number(regime.current_weight || 0) * 100, 1)}</dd></div>
+        <div><dt>Peso de cenário · IBS</dt><dd>${formatPct(Number(regime.ibs_weight || 0) * 100, 1)}</dd></div>
+        <div><dt>CBS paramétrica</dt><dd>${formatPct(Number(regime.cbs_rate || 0) * 100, 2)}</dd></div>
+        <div><dt>IBS paramétrico</dt><dd>${formatPct(Number(regime.ibs_rate || 0) * 100, 2)}</dd></div>
+        <div><dt>Seletivo paramétrico</dt><dd>${formatPct(Number(regime.selective_rate || 0) * 100, 2)}</dd></div>
+        <div><dt>Crédito paramétrico</dt><dd>${formatPct(Number(regime.credit_rate || 0) * 100, 2)}</dd></div>
       </dl>
+      <p class="small-note">Premissas exploratórias definidas pelos autores. Os pesos não são alíquotas legais e este simulador não apura tributo devido por empresa ou operação. A referência da CBS 2027 calculada pelo TCU (11,3468%) aguardava fixação pelo Senado em 6 nov. 2026; este valor não foi aplicado como alíquota empresarial.</p>
+      <p class="small-note">Calendário legal: <a href="https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda" target="_blank" rel="noopener noreferrer">Receita Federal</a> · <a href="https://www.gov.br/fazenda/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria/perguntas-e-respostas/como-sera-a-transicao-para" target="_blank" rel="noopener noreferrer">Ministério da Fazenda</a>.</p>
     </div>`
   );
 }
@@ -252,6 +252,7 @@ function renderCompanyTabs() {
 }
 
 function loadScenarioToForm(scenario) {
+  const modelDefaults = getCompanyModelDefaults(state.companyId);
   setValue('scenarioName', scenario.scenario_name || DEFAULT_FORM_VALUES.scenario_name);
 
   const active = new Set(scenario.changes?.active_cds || []);
@@ -263,11 +264,11 @@ function loadScenarioToForm(scenario) {
     scenario.changes?.freight_multiplier ?? DEFAULT_FORM_VALUES.freight_multiplier;
   $('demandMultiplier').value =
     scenario.changes?.demand_multiplier ?? DEFAULT_FORM_VALUES.demand_multiplier;
-  $('inventoryDays').value = scenario.changes?.inventory_days ?? DEFAULT_FORM_VALUES.inventory_days;
-  $('waccValue').value = scenario.changes?.wacc ?? DEFAULT_FORM_VALUES.wacc;
+  $('inventoryDays').value = scenario.changes?.inventory_days ?? modelDefaults.inventory_days;
+  $('waccValue').value = scenario.changes?.wacc ?? modelDefaults.reference_wacc;
   $('taxMode').value = scenarioTaxMode(scenario) || DEFAULT_FORM_VALUES.tax_mode;
   $('reallocationRule').value =
-    scenario.changes?.reallocation_rule || DEFAULT_FORM_VALUES.reallocation_rule;
+    scenario.changes?.reallocation_rule || defaultReallocationRule(state.companyId);
   renderTaxAssumptions();
   const mc = scenario.monte_carlo || scenario.analysis?.monte_carlo || null;
   if (mc?.config) applyMonteCarloConfig(mc.config);
@@ -587,6 +588,29 @@ function runCurrentScenario() {
     scenario,
     baselineBundle: state.library.baselineBundle,
   });
+  if (state.currentResult.simulation_status !== 'success') {
+    const failedResult = state.currentResult;
+    renderValidation({
+      valid: false,
+      errors: failedResult.errors || [],
+      warnings: failedResult.warnings || [],
+    });
+    state.currentResult = null;
+    state.comparison = null;
+    state.quality = null;
+    state.explanation = null;
+    state.monteCarlo = null;
+    renderResult();
+    renderMonteCarlo();
+    renderComparison();
+    renderQuality();
+    renderExplanation();
+    log('Simulação não concluída', {
+      scenario_id: scenario.scenario_id,
+      errors: failedResult.errors,
+    });
+    return;
+  }
   state.quality = evaluateScenarioQuality({
     scenarioResult: state.currentResult,
     baselineBundle: state.library.baselineBundle,
@@ -682,6 +706,7 @@ export async function loadCompany(companyId) {
   }
   state.isLoading = true;
   state.companyId = companyId;
+  if ($('reallocationRule')) $('reallocationRule').value = defaultReallocationRule(companyId);
   state.library = null; // reset explícito — impede reuso de dados da empresa anterior
   renderCompanyTabs();
   resetAnalysisPanels();
