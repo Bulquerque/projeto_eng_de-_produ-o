@@ -16,7 +16,7 @@ function cloneValue(value) {
 }
 
 function buildBaselineScenario(bundle, companyId) {
-  const modelDefaults = getCompanyModelDefaults(companyId);
+  const modelDefaults = getCompanyModelDefaults(companyId, bundle);
   const activeCds = Array.isArray(bundle?.model?.active_cds) ? bundle.model.active_cds : [];
   return {
     scenario_id: bundle?.model?.scenario_id || `${companyId}_baseline`,

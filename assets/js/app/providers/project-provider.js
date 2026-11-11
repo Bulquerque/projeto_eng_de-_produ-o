@@ -111,7 +111,9 @@ export async function createProjectProvider() {
       this.scenarioLibrary = await loadScenarioLibrary(context.company_id);
       this.optimizationConfig = loadOptimizationConfig(context.company_id) || {};
       this.optimizationConfig.optimizer_config = buildCanonicalOptimizationConfig(
-        this.optimizationConfig.optimizer_config || {}
+        this.optimizationConfig.optimizer_config || {},
+        context.company_id,
+        this.baselineBundle
       );
       assertNoMockLeakage(
         {
@@ -283,13 +285,17 @@ export async function createProjectProvider() {
       const effectiveObjective =
         objective ||
         defaultObjective(companyId, { ...this.optimizationConfig, profile_id: profileId });
-      const optimizerConfig = buildCanonicalOptimizationConfig({
-        ...(this.optimizationConfig?.optimizer_config || {}),
-        ...config,
-        method: config.method || 'exact_discrete',
-        max_candidates: Number(config.max_candidates || 2000),
-        seed: Number(config.seed ?? 42),
-      });
+      const optimizerConfig = buildCanonicalOptimizationConfig(
+        {
+          ...(this.optimizationConfig?.optimizer_config || {}),
+          ...config,
+          method: config.method || 'exact_discrete',
+          max_candidates: Number(config.max_candidates || 2000),
+          seed: Number(config.seed ?? 42),
+        },
+        companyId,
+        this.baselineBundle
+      );
       const effectiveConstraints = defaultConstraints({
         ...this.optimizationConfig,
         constraints,

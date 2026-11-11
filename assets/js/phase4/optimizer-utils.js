@@ -77,6 +77,73 @@ export function scenarioChangesKey(changes = {}) {
   );
 }
 
+function sameDomainValue(left, right) {
+  return JSON.stringify(stableValue(left)) === JSON.stringify(stableValue(right));
+}
+
+export function isScenarioWithinDeclaredSearchSpace(scenario, domain = {}) {
+  const changes = scenario?.scenario?.changes || scenario?.changes || {};
+  const activeCds = Array.isArray(changes.active_cds)
+    ? [...new Set(changes.active_cds.map(String))]
+    : [];
+  const declaredCds = new Set((domain.active_cd_ids || []).map(String));
+  if (!activeCds.length || activeCds.some((cd) => !declaredCds.has(cd))) return false;
+
+  const activeSet = new Set(activeCds);
+  const expectedClosedCds = (domain.active_cd_ids || [])
+    .map(String)
+    .filter((cd) => !activeSet.has(cd))
+    .sort();
+  const actualClosedCds = Array.isArray(changes.closed_cds)
+    ? [...new Set(changes.closed_cds.map(String))].sort()
+    : [];
+  if (!sameDomainValue(actualClosedCds, expectedClosedCds)) return false;
+
+  const dimensions = domain.dimensions || {};
+  const fields = [
+    ['freight_multiplier', 'freight_multipliers'],
+    ['demand_multiplier', 'demand_multipliers'],
+    ['inventory_days', 'inventory_days_options'],
+    ['tax_mode', 'tax_modes'],
+  ];
+  for (const [field, domainField] of fields) {
+    if (!(dimensions[domainField] || []).some((value) => sameDomainValue(value, changes[field])))
+      return false;
+  }
+
+  const fixed = domain.fixed_changes || {};
+  for (const field of ['wacc', 'tax_regime', 'tax_year', 'reallocation_rule']) {
+    if (!sameDomainValue(fixed[field], changes[field])) return false;
+  }
+  return true;
+}
+
+export function classifyRefinementCandidates({
+  candidates = [],
+  baseScenarioKeys = new Set(),
+  domain = {},
+  baseCandidateSpaceSize = 0,
+} = {}) {
+  const uniqueCandidates = uniqueByChanges(candidates);
+  const newToCatalog = uniqueCandidates.filter(
+    (candidate) =>
+      !baseScenarioKeys.has(
+        scenarioChangesKey(candidate?.changes || candidate?.scenario?.changes || {})
+      )
+  );
+  const withinDeclaredSpace = newToCatalog.filter((candidate) =>
+    isScenarioWithinDeclaredSearchSpace(candidate, domain)
+  );
+  return {
+    uniqueCandidateCount: uniqueCandidates.length,
+    newToCatalogCount: newToCatalog.length,
+    withinDeclaredSpaceCount: withinDeclaredSpace.length,
+    outsideDeclaredSpaceCount: newToCatalog.length - withinDeclaredSpace.length,
+    candidateSpaceSize:
+      Number(baseCandidateSpaceSize) + (newToCatalog.length - withinDeclaredSpace.length),
+  };
+}
+
 export function emptyCollections() {
   return {
     scenario_metrics: [],
@@ -88,7 +155,7 @@ export function emptyCollections() {
 
 export function buildBaselineScenario(companyId, baselineBundle) {
   const base = baselineBundle?.model || {};
-  const modelDefaults = getCompanyModelDefaults(companyId);
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   return buildScenarioFromForm({
     companyId,
     baselineBundle,
@@ -138,6 +205,11 @@ export function buildSearchLog({
   refinementSeedCount = 0,
   refinementCandidatesGenerated = 0,
   refinementCandidatesSimulated = 0,
+  refinementCandidatesUnique = 0,
+  refinementCandidatesNewToCatalog = 0,
+  refinementCandidatesWithinDeclaredSpace = 0,
+  refinementCandidatesOutsideDeclaredSpace = 0,
+  baseCandidateSpaceSize = null,
   bestScore = null,
   bestScenarioId = null,
   bestByTotalCostScenarioId = null,
@@ -165,6 +237,11 @@ export function buildSearchLog({
     refinement_seed_count: refinementSeedCount,
     refinement_candidates_generated: refinementCandidatesGenerated,
     refinement_candidates_simulated: refinementCandidatesSimulated,
+    refinement_candidates_unique: refinementCandidatesUnique,
+    refinement_candidates_new_to_catalog: refinementCandidatesNewToCatalog,
+    refinement_candidates_within_declared_space: refinementCandidatesWithinDeclaredSpace,
+    refinement_candidates_outside_declared_space: refinementCandidatesOutsideDeclaredSpace,
+    base_candidate_space_size: baseCandidateSpaceSize,
     best_score: bestScore,
     best_scenario_id: bestScenarioId,
     best_by_total_cost_scenario_id: bestByTotalCostScenarioId,

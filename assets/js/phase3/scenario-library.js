@@ -6,12 +6,14 @@ import {
 } from '../core/model-configuration.js';
 import { defaultReallocationRule } from './reallocation-policy.js';
 export async function loadScenarioLibrary(companyId) {
-  const modelDefaults = getCompanyModelDefaults(companyId);
   const baselineBundle = await loadPhase2Bundle(companyId);
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   let samples = [];
   try {
     samples = await loadPhase3Samples(companyId);
-    samples = samples.map((sample) => normalizeScenarioModelDefaults(companyId, sample));
+    samples = samples.map((sample) =>
+      normalizeScenarioModelDefaults(companyId, sample, baselineBundle)
+    );
   } catch {
     // Sem biblioteca não impede o carregamento do baseline e dos cenários salvos.
   }

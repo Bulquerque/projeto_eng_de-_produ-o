@@ -19,6 +19,16 @@ export function renderSearchLog(searchLog) {
     ['Motivo da cobertura', searchLog.exactness_reason || '—'],
     ['Cobertura', coverage],
     [
+      'Espaço discreto base',
+      searchLog.base_candidate_space_size == null
+        ? '—'
+        : formatNumber(searchLog.base_candidate_space_size),
+    ],
+    [
+      'Espaço contado',
+      searchLog.candidate_space_size == null ? '—' : formatNumber(searchLog.candidate_space_size),
+    ],
+    [
       'Interpretação',
       searchLog.exact_search_space
         ? 'ótimo global no espaço enumerado'
@@ -38,6 +48,18 @@ export function renderSearchLog(searchLog) {
     [
       'Refino',
       `${formatNumber(searchLog.refinement_rounds)} x ${formatNumber(searchLog.refinement_seed_count)}`,
+    ],
+    [
+      'Refinos já no espaço base',
+      searchLog.refinement_candidates_within_declared_space == null
+        ? '—'
+        : formatNumber(searchLog.refinement_candidates_within_declared_space),
+    ],
+    [
+      'Refinos fora do espaço base',
+      searchLog.refinement_candidates_outside_declared_space == null
+        ? '—'
+        : formatNumber(searchLog.refinement_candidates_outside_declared_space),
     ],
     ['Melhor score', searchLog.best_score == null ? '—' : Number(searchLog.best_score).toFixed(1)],
     ['Top cenário', searchLog.best_scenario_id || '—'],

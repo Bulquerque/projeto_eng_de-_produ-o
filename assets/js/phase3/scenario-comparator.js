@@ -15,7 +15,7 @@ export function isScenarioResultComparable(result) {
 }
 
 function buildBaselineResult(bundle) {
-  const modelDefaults = getCompanyModelDefaults(bundle?.model?.company_id);
+  const modelDefaults = getCompanyModelDefaults(bundle?.model?.company_id, bundle);
   const costs = bundle?.costs?.costs || {};
   return {
     scenario_id: bundle?.model?.scenario_id || 'baseline',

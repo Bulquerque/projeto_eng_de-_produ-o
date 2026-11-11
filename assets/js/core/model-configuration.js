@@ -57,12 +57,30 @@ export const COMPANY_MODEL_DEFAULTS = Object.freeze({
   }),
 });
 
-export function getCompanyModelDefaults(companyId) {
-  return COMPANY_MODEL_DEFAULTS[companyId] || MODEL_DEFAULTS;
+function resolveBundleWacc(baselineBundle) {
+  const value = baselineBundle?.costs?.assumptions_used?.wacc;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= 1
+    ? value
+    : null;
 }
 
-export function normalizeScenarioModelDefaults(companyId, scenario = {}) {
-  const defaults = getCompanyModelDefaults(companyId);
+export function getCompanyModelDefaults(companyId, baselineBundle = null) {
+  const defaults = COMPANY_MODEL_DEFAULTS[companyId] || MODEL_DEFAULTS;
+  if (companyId !== 'empresa1') return defaults;
+  const bundleWacc = resolveBundleWacc(baselineBundle);
+  return {
+    ...defaults,
+    reference_wacc: bundleWacc ?? defaults.reference_wacc,
+    wacc_provenance:
+      bundleWacc === null
+        ? 'fallback exploratório explícito; bundle sem WACC válido em assumptions_used'
+        : 'WACC carregado em memória de costs.assumptions_used do baselineBundle',
+    wacc_source: bundleWacc === null ? 'fallback_exploratory_default' : 'bundle_assumptions_used',
+  };
+}
+
+export function normalizeScenarioModelDefaults(companyId, scenario = {}, baselineBundle = null) {
+  const defaults = getCompanyModelDefaults(companyId, baselineBundle);
   const changes = scenario.changes || {};
   const legacySampleScenario = String(scenario.scenario_id || '').startsWith(
     `${companyId}_sample_`
@@ -80,6 +98,11 @@ export function normalizeScenarioModelDefaults(companyId, scenario = {}) {
     companyId === 'empresa2' &&
     legacySampleScenario &&
     Number(changes.wacc) === MODEL_DEFAULTS.reference_wacc;
+  const legacyRetailReferenceWacc =
+    companyId === 'empresa1' &&
+    legacySampleScenario &&
+    scenario.metadata?.wacc_explicit !== true &&
+    Number(changes.wacc) === MODEL_DEFAULTS.reference_wacc;
   return {
     ...scenario,
     changes: {
@@ -88,6 +111,7 @@ export function normalizeScenarioModelDefaults(companyId, scenario = {}) {
       ...changes,
       ...(legacyRetailReferenceDays ? { inventory_days: defaults.inventory_days } : {}),
       ...(legacyRetailInventoryExample ? { inventory_days: defaults.inventory_days - 10 } : {}),
+      ...(legacyRetailReferenceWacc ? { wacc: defaults.reference_wacc } : {}),
       ...(legacyIndustryReferenceWacc ? { wacc: defaults.reference_wacc } : {}),
     },
   };
@@ -100,12 +124,13 @@ export const RECONCILIATION_THRESHOLDS = Object.freeze({
 
 export function calculateInventoryCost({
   companyId = null,
+  baselineBundle = null,
   baseInventoryCost = 0,
   demandMultiplier = 1,
   inventoryDays,
   wacc,
 } = {}) {
-  const reference = getCompanyModelDefaults(companyId);
+  const reference = getCompanyModelDefaults(companyId, baselineBundle);
   const resolvedInventoryDays = inventoryDays ?? reference.inventory_days;
   const resolvedWacc = wacc ?? reference.reference_wacc;
   // Escolha B: estoque é custo de carregamento independente do número de CDs.

@@ -2,6 +2,7 @@ import { navigate } from './router.js';
 import { showLoading, showToast } from './shell.js';
 import { escapeHtml } from './view-helpers.js';
 import { saveOptimizationPreset } from '../core/optimization-config-store.js';
+import { selectBaseline } from './selectors/business-selectors.js';
 import {
   parseOptimizerForm,
   parseRiskForm,
@@ -186,7 +187,8 @@ export function installBindings({ root, store, controller }) {
         new FormData(event.target),
         event.target.querySelectorAll('input[name="active_cds"]:checked'),
         rawInputValues.get(event.target),
-        store.getState().context.company_id
+        store.getState().context.company_id,
+        selectBaseline(store.getState())
       );
       const validation = validateScenarioValues(values);
       if (!validation.valid) {
@@ -273,7 +275,8 @@ export function installBindings({ root, store, controller }) {
       new FormData(form),
       form.querySelectorAll('input[name="active_cds"]:checked'),
       rawInputValues.get(form),
-      store.getState().context.company_id
+      store.getState().context.company_id,
+      selectBaseline(store.getState())
     );
     store.update(
       (state) => {

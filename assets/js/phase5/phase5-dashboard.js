@@ -273,7 +273,7 @@ function runDecisionPipeline(controls = readDecisionControls()) {
     baselineBundle: state.bundle,
     sensitivityConfig: {
       variable: controls.sensitivityVariable,
-      values: sensitivityValues(controls.sensitivityVariable, state.companyId),
+      values: sensitivityValues(controls.sensitivityVariable, state.companyId, state.bundle),
     },
   });
   state.sensitivityMatrix = runSensitivityMatrix({
@@ -283,8 +283,8 @@ function runDecisionPipeline(controls = readDecisionControls()) {
     matrixConfig: {
       xVariable: controls.sensitivityX,
       yVariable: controls.sensitivityY,
-      xValues: sensitivityValues(controls.sensitivityX, state.companyId),
-      yValues: sensitivityValues(controls.sensitivityY, state.companyId),
+      xValues: sensitivityValues(controls.sensitivityX, state.companyId, state.bundle),
+      yValues: sensitivityValues(controls.sensitivityY, state.companyId, state.bundle),
     },
   });
   state.robustness = calculateRobustness({
@@ -381,8 +381,8 @@ function runDecisionPipeline(controls = readDecisionControls()) {
     decisionPackage: finalizedDecisionPackage,
   });
 }
-function sensitivityValues(variable, companyId = state.companyId) {
-  const modelDefaults = getCompanyModelDefaults(companyId);
+function sensitivityValues(variable, companyId = state.companyId, baselineBundle = state.bundle) {
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   if (variable === 'inventory_days')
     return [
       Math.max(0, modelDefaults.inventory_days - 15),

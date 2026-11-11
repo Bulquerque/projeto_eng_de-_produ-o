@@ -3,7 +3,7 @@ import { clamp, uniqueByChanges } from './optimizer-utils.js';
 import { getCompanyModelDefaults } from '../core/model-configuration.js';
 
 function buildVariant({ companyId, baselineBundle, seedRecord, roundIndex, label, patch }) {
-  const modelDefaults = getCompanyModelDefaults(companyId);
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   const current = seedRecord?.scenario?.changes || {};
   const nextActive = patch.active_cds || current.active_cds || [];
   if (!Array.isArray(nextActive) || nextActive.length === 0) return null;
@@ -36,7 +36,7 @@ export function buildRefinementVariants({
   roundIndex,
   refinementConfig = {},
 }) {
-  const modelDefaults = getCompanyModelDefaults(companyId);
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   const base = baselineBundle?.model || {};
   const baseCds = base.active_cds || [];
   const current = seedRecord?.scenario?.changes || {};

@@ -24,6 +24,7 @@ export function runStressTests({
       companyId,
       scenario: selectedScenario,
       stressCase,
+      baselineBundle,
     });
     const result = runScenario({ companyId, scenario: stressedScenario, baselineBundle });
     const taxLimited =
@@ -112,8 +113,8 @@ export function runStressTests({
   };
 }
 
-export function applyStressCaseToScenario({ companyId, scenario, stressCase }) {
-  const defaults = getCompanyModelDefaults(companyId || scenario?.company_id);
+export function applyStressCaseToScenario({ companyId, scenario, stressCase, baselineBundle }) {
+  const defaults = getCompanyModelDefaults(companyId || scenario?.company_id, baselineBundle);
   const stressed = clone(scenario);
   stressed.scenario_id = `${scenario.scenario_id || 'scenario'}__stress_${stressCase.case_id}`;
   stressed.scenario_name = `${scenario.scenario_name || scenario.scenario_id || 'Cenário'} · ${stressCase.name}`;

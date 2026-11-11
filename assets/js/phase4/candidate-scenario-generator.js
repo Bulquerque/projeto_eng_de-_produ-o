@@ -42,7 +42,7 @@ function uniqueSets(sets) {
   return out;
 }
 export function generateCandidateScenarios({ companyId, baselineBundle, generationConfig = {} }) {
-  const modelDefaults = getCompanyModelDefaults(companyId);
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   const baseCds = baselineBundle?.model?.active_cds || [];
   const maxCandidates = Number(generationConfig.max_candidates ?? 120);
   const freight = generationConfig.freight_multipliers || [0.95, 1, 1.1];

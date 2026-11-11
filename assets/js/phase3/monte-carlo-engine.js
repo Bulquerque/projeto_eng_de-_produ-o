@@ -515,7 +515,7 @@ function buildSampleScenario({ scenario, sampled, index, profile, seed }) {
 function buildBaselineScenario({ companyId, baselineBundle, selectedScenario }) {
   const activeCds = baselineBundle?.model?.active_cds;
   if (!Array.isArray(activeCds) || !activeCds.length) return null;
-  const defaults = getCompanyModelDefaults(companyId);
+  const defaults = getCompanyModelDefaults(companyId, baselineBundle);
   return {
     scenario_id: baselineBundle?.model?.scenario_id || `${companyId}_baseline`,
     scenario_name: baselineBundle?.model?.scenario_name || 'Baseline',
@@ -864,7 +864,7 @@ export function runMonteCarloSimulation({
   delete baseScenario.monte_carlo;
   delete baseScenario.analysis;
   const baseChanges = baseScenario.changes || {};
-  const modelDefaults = getCompanyModelDefaults(companyId);
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   const baseFreight = Math.max(0.0001, safeNumber(baseChanges.freight_multiplier, 1));
   const baseDemand = Math.max(0.0001, safeNumber(baseChanges.demand_multiplier, 1));
   const baseInventory = Math.max(

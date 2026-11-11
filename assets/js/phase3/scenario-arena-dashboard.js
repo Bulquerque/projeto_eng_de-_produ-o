@@ -252,7 +252,7 @@ function renderCompanyTabs() {
 }
 
 function loadScenarioToForm(scenario) {
-  const modelDefaults = getCompanyModelDefaults(state.companyId);
+  const modelDefaults = getCompanyModelDefaults(state.companyId, state.library?.baselineBundle);
   setValue('scenarioName', scenario.scenario_name || DEFAULT_FORM_VALUES.scenario_name);
 
   const active = new Set(scenario.changes?.active_cds || []);

@@ -6,6 +6,8 @@ Fase 4 — `phase-04-scoring-optimizer`
 ## O que faz
 Renderiza log da busca com candidatos gerados, simulados, válidos, inválidos e melhor score.
 
+O painel mostra também o tamanho do espaço discreto-base e separa refinamentos únicos que estão dentro desse espaço dos que usam parâmetros fora do domínio declarado. Um CD-set refinado pode ser novo para o catálogo inicial e ainda estar dentro do espaço teórico de subconjuntos; nesses casos ele aumenta candidatos simulados, mas não o denominador da cobertura.
+
 ## Implementação real
 `assets/js/phase4/phase4-dashboard-templates.js`
 

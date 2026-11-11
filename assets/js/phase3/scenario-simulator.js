@@ -120,7 +120,7 @@ function applyCanonicalBaselineReference({ companyId, scenario, baselineBundle, 
   const baselineNetwork = isCanonicalBaselineNetwork({ companyId, scenario, baselineBundle });
   if (!baselineNetwork) return costs;
   const exactBaseline = isCanonicalBaselineScenario({ companyId, scenario, baselineBundle });
-  const defaults = getCompanyModelDefaults(companyId);
+  const defaults = getCompanyModelDefaults(companyId, baselineBundle);
 
   const official = baselineBundle?.costs?.costs || {};
   const numericOr = (value, fallback) => safeNumber(value, safeNumber(fallback));
@@ -258,7 +258,7 @@ export function runScenario({
   if (!['canonical_reference', 'physical_unanchored'].includes(baselineMode)) {
     throw new RangeError(`Modo de baseline desconhecido: ${baselineMode}`);
   }
-  scenario = normalizeScenarioModelDefaults(companyId, scenario);
+  scenario = normalizeScenarioModelDefaults(companyId, scenario, baselineBundle);
   const validation = validateScenario({ companyId, scenario, baselineBundle });
   if (!validation.valid) {
     return {

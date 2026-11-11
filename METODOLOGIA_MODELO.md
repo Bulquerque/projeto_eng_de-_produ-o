@@ -120,13 +120,14 @@ inventory_cost =
   × wacc / reference_wacc
 ~~~
 
-As referências são específicas por cadeia e herdadas automaticamente ao criar
-cenários: Empresa 1 usa 30 dias e WACC de 15%; Empresa 2 usa 45 dias e WACC de
-12%. Os 45 dias e 15% em `MODEL_DEFAULTS` são somente fallback genérico para
-identificadores não cadastrados; eles não substituem as referências das duas
-empresas do estudo. Os dias da Empresa 1 são uma premissa equivalente a um mês,
-embora o campo WACC conste nas premissas de origem, sua periodicidade não está documentada e o valor do motor não coincide com o campo. A reconciliação permanece pendente; 15% é uma hipótese de execução, não valor observado validado. Os parâmetros da Empresa 2 vêm do
-workbook. O número de CDs não altera o custo de estoque neste modelo.
+As referências são específicas por cadeia. Para a Empresa 1, o motor usa 30 dias
+como hipótese de estoque e lê o WACC de `costs.assumptions_used` no bundle
+protegido quando disponível e válido. Se a premissa estiver ausente ou for
+inválida, usa o fallback exploratório de 15%, com sua origem identificada. A
+periodicidade e a interpretação econômica do campo da fonte ainda precisam de
+confirmação. A Empresa 2 usa 45 dias e WACC de 12% como referências do modelo.
+Uma escolha explícita no cenário permanece uma escolha do usuário. O número de
+CDs não altera o custo de estoque neste modelo.
 
 Não há:
 

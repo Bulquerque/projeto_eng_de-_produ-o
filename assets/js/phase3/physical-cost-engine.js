@@ -369,7 +369,7 @@ const KILOMETRIC_RATE_BY_UF = MODEL_DEFAULTS.transfer_kilometric_rate_by_uf;
 const KILOMETRIC_RATE_FALLBACK = MODEL_DEFAULTS.transfer_kilometric_fallback_rate;
 
 function buildCostContext({ companyId, scenario, baselineBundle }) {
-  const modelDefaults = getCompanyModelDefaults(companyId);
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   const changes = scenario.changes || {};
   const base = baselineBundle?.costs?.costs || {};
   const demandMultiplier = toNum(changes.demand_multiplier, 1);
@@ -383,6 +383,7 @@ function buildCostContext({ companyId, scenario, baselineBundle }) {
     baselineCds: (baselineBundle?.model?.active_cds || []).length,
     inventoryCost: calculateInventoryCost({
       companyId,
+      baselineBundle,
       baseInventoryCost: base.inventory_cost,
       demandMultiplier,
       inventoryDays: changes.inventory_days,
