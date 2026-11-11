@@ -121,25 +121,21 @@ function applyInheritedOptimizationConfig() {
     note.textContent = `Configuração herdada da Fase 4: ${state.optimizationConfig.objective?.objective_name || 'objetivo customizado'} · seed ${state.optimizationConfig.optimizer_config?.seed ?? 42}.`;
 }
 function baselineResult() {
-  return {
-    scenario_id: state.bundle?.model?.scenario_id,
-    total_with_tax: state.bundle?.costs?.costs?.total_with_tax,
-    costs: state.bundle?.costs?.costs || {},
-    tax_results: state.bundle?.tax_results?.tax_results || {},
-  };
+  return state.optimizer?.baseline_reference?.result || null;
 }
 export function scenarioComparison(selected) {
   const scenarioTotal = selected?.result?.total_with_tax ?? selected?.total_with_tax;
-  if (scenarioTotal == null || !Number.isFinite(Number(scenarioTotal))) {
+  const baselineTotal = baselineResult()?.total_with_tax;
+  if (baselineTotal == null || scenarioTotal == null || !Number.isFinite(Number(scenarioTotal))) {
     return {
-      baseline_total: Number(state.bundle?.costs?.costs?.total_with_tax) || 0,
+      baseline_total: baselineTotal ?? null,
       scenario_total: null,
       saving_abs: null,
       saving_pct: null,
     };
   }
   return calculateSaving({
-    baselineTotal: state.bundle?.costs?.costs?.total_with_tax,
+    baselineTotal,
     scenarioTotal,
   });
 }

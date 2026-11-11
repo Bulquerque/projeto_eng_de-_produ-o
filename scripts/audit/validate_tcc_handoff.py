@@ -17,6 +17,7 @@ import re
 import sys
 import zipfile
 from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 from pathlib import PurePosixPath
 
 ROOT_PREFIX = 'TCC_HANDOFF_AUDITADO_'
@@ -89,6 +90,186 @@ def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def validate_manuscript_hash(data: bytes, manifest: dict[str, object]) -> list[str]:
+    expected = manifest.get('authorized_manuscript_sha256')
+    if not isinstance(expected, str) or not re.fullmatch(r'[0-9a-f]{64}', expected):
+        return ['Authorized manuscript SHA-256 is missing or malformed in the run manifest.']
+    if sha256(data) != expected:
+        return ['Authorized manuscript SHA-256 does not match the run manifest.']
+    return []
+
+
+def scientific_readiness(manifest_status: str, *, blocked: bool, errors: list[str]) -> str:
+    if errors or blocked:
+        return 'BLOCKED_FOR_FINAL_NUMERICAL_CLAIMS'
+    return manifest_status if manifest_status not in ('', 'UNKNOWN') else 'UNASSESSED'
+
+
+def validate_numeric_rows(
+    relative: str, rows: list[dict[str, str]], run_id: str, headers: list[str] | None = None
+) -> list[str]:
+    """Recalculate available identities without importing the model or exporter."""
+    errors: list[str] = []
+    if headers is None:
+        headers = list(rows[0]) if rows else []
+    scenario = relative.endswith('/scenario_summary_all.csv')
+    decomposition = relative.endswith(
+        (
+            '/baseline_anchored_vs_unanchored.csv',
+            '/tabela_4_2_baseline_reconciliation.csv',
+            '/e1_baseline_decomposition.csv',
+        )
+    )
+    monte_carlo = relative.endswith('/monte_carlo_paired_summary.csv')
+    tax = relative.endswith(('/tax_2033_sensitivity.csv', '/2033_scenario_comparison.csv', '/2033_tax_breakdown.csv'))
+    profiles = relative.endswith(('/tabela_4_5_12_perfis.csv', '/tabela_4_5_e1_sem_tributo.csv'))
+    if not any((scenario, decomposition, monte_carlo, tax, profiles)):
+        return errors
+    if set(headers) == {'status', 'reason_code', 'blocking_reason'}:
+        if not rows or not all(
+            row.get('status', '').startswith('BLOCKED') and row.get('blocking_reason') for row in rows
+        ):
+            errors.append(f'{relative}: invalid blocked placeholder.')
+        return errors
+    required = {'run_id'}
+    if scenario:
+        required.update(
+            {
+                'company_id',
+                'scenario_id',
+                'transfer_brl',
+                'distribution_brl',
+                'storage_brl',
+                'inventory_brl',
+                'logistics_brl',
+                'tax_impact_brl',
+                'total_with_tax_brl',
+                'baseline_comparable_id',
+                'baseline_logistics_brl',
+                'baseline_total_brl',
+                'saving_logistics_pct',
+                'saving_total_pct',
+                'source_classification',
+            }
+        )
+    if decomposition:
+        required.update(
+            {'company_id', 'component', 'anchored_value_brl', 'physical_unanchored_value_brl', 'delta_brl', 'status'}
+        )
+    if monte_carlo:
+        required.update(
+            {
+                'company_id',
+                'scenario_id',
+                'baseline_scenario_id',
+                'iterations_requested',
+                'iterations_valid',
+                'iterations_invalid',
+                'prob_candidate_cheaper',
+                'prob_tie',
+                'p10_delta_cost_brl',
+                'p50_delta_cost_brl',
+                'p90_delta_cost_brl',
+                'paired_method',
+            }
+        )
+    if tax:
+        required.update(
+            {
+                'scenario',
+                'assumption',
+                'tax_year',
+                'tax_regime',
+                'logistics_brl',
+                'tax_impact_brl',
+                'total_with_tax_brl',
+                'source_class',
+                'fiscal_validation',
+            }
+        )
+    if profiles:
+        required.update(
+            {
+                'company_id',
+                'profile_id',
+                'candidate_space_base',
+                'candidate_space_extended',
+                'candidates_simulated',
+                'candidates_valid',
+                'winner_scenario_id',
+                'winner_total_brl',
+                'methodology_status',
+            }
+        )
+    missing = required - set(headers)
+    if missing:
+        errors.append(f'{relative}: missing required columns: {sorted(missing)}')
+        return errors
+    for index, row in enumerate(rows, 2):
+        if set(row) == {'status', 'reason_code', 'blocking_reason'} and row['status'].startswith('BLOCKED'):
+            continue
+        if row.get('run_id') != run_id:
+            errors.append(f'{relative}:{index}: run_id differs from manifest.')
+
+        def number(key: str, row: dict[str, str] = row, index: int = index) -> Decimal | None:
+            value = row.get(key, '').strip()
+            if not value:
+                return None
+            try:
+                result = Decimal(value)
+                if not result.is_finite():
+                    raise InvalidOperation
+                return result
+            except InvalidOperation:
+                errors.append(f'{relative}:{index}: {key} is not a finite number.')
+                return None
+
+        def identity(keys: tuple[str, ...], target: str, tolerance: str = '0.05', index: int = index) -> None:
+            values = [number(key) for key in keys]
+            expected = number(target)
+            if expected is not None and all(value is not None for value in values):
+                if abs(sum(values, Decimal(0)) - expected) > Decimal(tolerance):
+                    errors.append(f'{relative}:{index}: {target} does not match its components.')
+
+        if scenario:
+            identity(('transfer_brl', 'distribution_brl', 'storage_brl', 'inventory_brl'), 'logistics_brl')
+            identity(('logistics_brl', 'tax_impact_brl'), 'total_with_tax_brl')
+            for baseline, actual, saving in (
+                ('baseline_total_brl', 'total_with_tax_brl', 'saving_total_pct'),
+                ('baseline_logistics_brl', 'logistics_brl', 'saving_logistics_pct'),
+            ):
+                base, value, pct = number(baseline), number(actual), number(saving)
+                if base is not None and value is not None and pct is not None and base != 0:
+                    if abs((base - value) * 100 / base - pct) > Decimal('0.001'):
+                        errors.append(f'{relative}:{index}: {saving} does not match the comparable baseline.')
+            if row.get('total_with_tax_brl') and not row.get('source_classification'):
+                errors.append(f'{relative}:{index}: numeric result has no source classification.')
+        if decomposition:
+            anchor, physical, delta = (
+                number(key) for key in ('anchored_value_brl', 'physical_unanchored_value_brl', 'delta_brl')
+            )
+            if None not in (anchor, physical, delta) and abs(physical - anchor - delta) > Decimal('0.05'):
+                errors.append(f'{relative}:{index}: baseline delta is inconsistent.')
+        if tax:
+            identity(('logistics_brl', 'tax_impact_brl'), 'total_with_tax_brl')
+        if monte_carlo:
+            requested, valid, invalid = (
+                number(key) for key in ('iterations_requested', 'iterations_valid', 'iterations_invalid')
+            )
+            if None not in (requested, valid, invalid) and (
+                min(requested, valid, invalid) < 0 or valid + invalid != requested
+            ):
+                errors.append(f'{relative}:{index}: iteration counts are inconsistent.')
+            for key in ('prob_candidate_cheaper', 'prob_tie'):
+                probability = number(key)
+                if probability is not None and not Decimal(0) <= probability <= Decimal(1):
+                    errors.append(f'{relative}:{index}: {key} is outside [0, 1].')
+            quantiles = [number(key) for key in ('p10_delta_cost_brl', 'p50_delta_cost_brl', 'p90_delta_cost_brl')]
+            if all(value is not None for value in quantiles) and quantiles != sorted(quantiles):
+                errors.append(f'{relative}:{index}: Monte Carlo percentiles are not ordered.')
+    return errors
+
+
 def validate_archive(zip_path: str) -> dict[str, object]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -158,6 +339,31 @@ def validate_archive(zip_path: str) -> dict[str, object]:
             if anchor not in registry:
                 errors.append(f'Required file is not registered: {anchor}')
 
+        manuscript = '11_DOCUMENTOS_TCC/TCC_BASE_PARA_REVISAO.docx'
+        document_paths = [name for name in contents if name.lower().endswith('.docx')]
+        if any(name != manuscript for name in document_paths):
+            errors.append('Unexpected DOCX in archive; only the authorized manuscript path is allowed.')
+        if manuscript in contents:
+            row = registry.get(manuscript, {})
+            if (
+                row.get('produced') != 'true'
+                or row.get('status') != 'AUTHORIZED_PRIVATE_REVIEW'
+                or row.get('sensitivity') != 'PRIVATE_REVIEWER_ONLY'
+                or row.get('source') != 'author_confirmed_source'
+            ):
+                errors.append('DOCX lacks authorized private-reviewer registry classification.')
+            try:
+                with zipfile.ZipFile(io.BytesIO(contents[manuscript])) as docx:
+                    if docx.testzip() or not {'[Content_Types].xml', 'word/document.xml'}.issubset(docx.namelist()):
+                        errors.append('Invalid authorized DOCX container.')
+            except zipfile.BadZipFile:
+                errors.append('Invalid authorized DOCX container.')
+            warnings.append(
+                'PRIVATE_REVIEWER_ONLY: manuscript content and embedded media require separate confidentiality review; scanner does not inspect the DOCX internally.'
+            )
+        else:
+            warnings.append('Authorized manuscript absent; editorial handoff remains blocked.')
+
         checksum_bytes = contents.get('00_MANIFESTO/CHECKSUMS.sha256')
         if checksum_bytes:
             seen_hashes: set[str] = set()
@@ -193,6 +399,10 @@ def validate_archive(zip_path: str) -> dict[str, object]:
                     errors.append('run_manifest.json has no run_id.')
             except (UnicodeDecodeError, json.JSONDecodeError) as error:
                 errors.append(f'Invalid run_manifest.json: {error}')
+        if manuscript in contents:
+            errors.extend(validate_manuscript_hash(contents[manuscript], manifest_data))
+            if manifest_data.get('privacy_classification') != 'PRIVATE_REVIEWER_ONLY':
+                errors.append('Manifest must classify the manuscript package PRIVATE_REVIEWER_ONLY.')
 
         # Check structured data files independently of application code.
         for relative, data in contents.items():
@@ -210,6 +420,13 @@ def validate_archive(zip_path: str) -> dict[str, object]:
                         errors.append(f'CSV has no header row: {relative}')
                     elif any(len(row) != len(rows[0]) for row in rows[1:]):
                         errors.append(f'CSV column count mismatch: {relative}')
+                    else:
+                        structured_rows = [dict(zip(rows[0], row, strict=True)) for row in rows[1:]]
+                        errors.extend(
+                            validate_numeric_rows(
+                                relative, structured_rows, str(manifest_data.get('run_id', '')), rows[0]
+                            )
+                        )
                 except (UnicodeDecodeError, csv.Error) as error:
                     errors.append(f'Invalid CSV {relative}: {error}')
 
@@ -233,6 +450,12 @@ def validate_archive(zip_path: str) -> dict[str, object]:
             errors.append('Package contains blocked evidence but manifest does not block final numerical claims.')
         if blocked_rows:
             warnings.append(f'{len(blocked_rows)} registry items are blocked; scientific claims remain unavailable.')
+        warnings.append(
+            'Scanner checks common credential and formatted identifier patterns only; it does not certify absence of raw commercial records, routes, unformatted identifiers, or confidential data in embedded media. SEC_001 is not established by this scan.'
+        )
+        warnings.append(
+            'Numeric checks cover listed CSV schemas and identities only when required values are present; provenance mapping and source validity are not independently established.'
+        )
 
     return {
         'schema_version': 'tcc-handoff-validation-1.0',
@@ -240,7 +463,7 @@ def validate_archive(zip_path: str) -> dict[str, object]:
         'archive': str(zip_path),
         'files_checked': checked,
         'structural_status': 'PASS' if not errors else 'FAIL',
-        'scientific_status': 'BLOCKED_FOR_FINAL_NUMERICAL_CLAIMS' if errors or warnings else 'UNASSESSED',
+        'scientific_status': scientific_readiness(scientific_status, blocked=bool(blocked_rows), errors=errors),
         'errors': errors,
         'warnings': warnings,
         'independence_note': 'stdlib-only validator; no simulator or package-builder imports.',

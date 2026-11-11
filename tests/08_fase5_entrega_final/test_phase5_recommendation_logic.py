@@ -29,7 +29,7 @@ for (const companyId of ['empresa1','empresa2']) {
  const selected=sel.selected_scenario;
  if(Number(selected.scenario?.changes?.freight_multiplier ?? 1)!==1) throw new Error('selected scenario changed freight');
  if(Number(selected.scenario?.changes?.demand_multiplier ?? 1)!==1) throw new Error('selected scenario changed demand');
- if(Number(selected.scenario?.changes?.inventory_days ?? 45)!==45) throw new Error('selected scenario changed inventory');
+ if(Number(selected.scenario?.changes?.inventory_days)!==(companyId==='empresa1' ? 30 : 45)) throw new Error('selected scenario changed company inventory assumption');
  if((selected.scenario?.changes?.tax_mode || '')==='disabled') throw new Error('selected scenario disabled tax');
  const stress=runStressTests({companyId,selectedScenario:selected.scenario,baselineBundle:bundle});
  const robustness=calculateRobustness({companyId,scenarioId:selected.scenario_id,stressResults:stress.stress_results,quality:selected.quality});

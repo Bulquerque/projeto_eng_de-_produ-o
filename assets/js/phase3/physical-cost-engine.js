@@ -402,6 +402,37 @@ function buildCostResult(context, values) {
     : [];
   const flowCount = pricedFlows.length;
   const fallbackCounts = values.diagnostics?.fallback_counts || {};
+  const flowCostDetail = Array.isArray(values.flowCostDetail) ? values.flowCostDetail : [];
+  const sumCost = (items, field) =>
+    items.reduce((sum, item) => sum + Math.max(0, toNum(item?.[field])), 0);
+  const distributionFallbackMethods = new Set([
+    'revenue_pct_fallback',
+    'revenue_pct_fallback_missing_weight',
+    'missing_rate',
+    'missing_cif_row',
+    'zero_weight',
+    'heuristic_fallback',
+  ]);
+  const transferFallbackMethods = new Set([
+    'distribution_ratio_fallback',
+    'revenue_pct_fallback',
+    'missing_transfer_inputs',
+    'heuristic_fallback',
+  ]);
+  const distributionFallbackCost = sumCost(
+    flowCostDetail.filter((flow) =>
+      distributionFallbackMethods.has(flow?.dist_method || flow?.method)
+    ),
+    'distribution_cost'
+  );
+  const transferFallbackCost = sumCost(
+    flowCostDetail.filter((flow) => transferFallbackMethods.has(flow?.transfer_method)),
+    'transfer_cost'
+  );
+  const transferProxyCost = sumCost(
+    flowCostDetail.filter((flow) => flow?.transfer_method === 'kilometric_proxy'),
+    'transfer_cost'
+  );
   const distributionDenominator = Number(
     values.diagnostics?.distribution_eligible_flow_count ?? flowCount
   );
@@ -460,7 +491,14 @@ function buildCostResult(context, values) {
         proportional_storage: Number(fallbackCounts.proportional_storage || 0),
         unknown_company: Number(fallbackCounts.unknown_company || 0),
       },
-      fallback_cost_share: values.diagnostics?.fallback_cost_share || {},
+      fallback_cost_share: {
+        distribution:
+          values.distributionCost > 0 ? distributionFallbackCost / values.distributionCost : 0,
+        transfer: values.transferCost > 0 ? transferFallbackCost / values.transferCost : 0,
+        transfer_unvalidated_proxy:
+          values.transferCost > 0 ? transferProxyCost / values.transferCost : 0,
+        storage_proportional: fallbackCounts.proportional_storage ? 1 : 0,
+      },
       inventory: {
         method: context.inventoryMethod,
         active_cd_count_not_used: true,
@@ -474,6 +512,14 @@ function buildCostResult(context, values) {
         baseline_cd_count: context.baselineCds,
         method: 'active_cd_ratio_hypothesis_when_no_cd_tariff_match',
         used_proportional_fallback: Boolean(fallbackCounts.proportional_storage),
+        proportional_fallback_ratio:
+          MODEL_DEFAULTS.storage_active_cd_floor_ratio +
+          MODEL_DEFAULTS.storage_active_cd_slope *
+            (context.activeCds.length / (context.baselineCds || 1)),
+        ratio_parameters: {
+          floor: MODEL_DEFAULTS.storage_active_cd_floor_ratio,
+          slope: MODEL_DEFAULTS.storage_active_cd_slope,
+        },
         provenance: MODEL_DEFAULTS.storage_active_cd_provenance,
       },
     },
@@ -614,11 +660,24 @@ function calculateCompany1Costs(context, flows) {
           },
       proxy_sources: [
         'distance_matrix',
-        'calibrated_uf_kilometric_transfer_rate',
+        'unvalidated_historical_uf_kilometric_proxy',
         `${MODEL_DEFAULTS.transfer_kilometric_rate_provenance.source_company}_${MODEL_DEFAULTS.transfer_kilometric_rate_provenance.source_dataset}`,
       ],
-      source_classification: 'observed_distribution_plus_cross_company_calibrated_transfer_proxy',
+      source_classification: 'observed_distribution_plus_unvalidated_cross_company_transfer_proxy',
       transfer_proxy_provenance: MODEL_DEFAULTS.transfer_kilometric_rate_provenance,
+      transfer_proxy_assessment: {
+        transfer_source_status: 'missing_supplier_cd_network',
+        decision_use: 'exploratory_only',
+        source_rate_unit: 'BRL_per_kg',
+        applied_rate_unit: 'BRL_per_kg_km',
+        unit_status: 'incompatible_without_distance_weighted_recalibration',
+        distance_basis: 'cd_to_customer_destination_matrix_proxy',
+        physical_route_status: 'not_supplier_or_factory_to_cd',
+        flow_count_using_proxy: flowCostDetail.filter(
+          (flow) => flow.transfer_method === 'kilometric_proxy'
+        ).length,
+        observed_supplier_to_cd_route_count: 0,
+      },
     },
   });
 }

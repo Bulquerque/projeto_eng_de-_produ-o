@@ -33,8 +33,17 @@ const REFINEMENT_CONFIG = Object.freeze({
   wacc_steps: [],
 });
 
+// Keep the optimizer's reference and every candidate on the same physical model.
+// The simulator's default may use the canonical anchor for an unchanged network.
+const OPTIMIZER_BASELINE_MODE = 'physical_unanchored';
+
 function evaluateCandidate({ companyId, scenario, baselineBundle, constraints }) {
-  const result = runScenario({ companyId, scenario, baselineBundle });
+  const result = runScenario({
+    companyId,
+    scenario,
+    baselineBundle,
+    baselineMode: OPTIMIZER_BASELINE_MODE,
+  });
   if (result.simulation_status !== 'success') {
     return { reason: result.errors?.[0] || 'simulação inválida' };
   }
@@ -133,6 +142,10 @@ export function runOptimization({
   constraints = {},
   optimizerConfig = {},
 }) {
+  const researchTaxDisabled = optimizerConfig.research_tax_disabled === true;
+  const effectiveConstraints = researchTaxDisabled
+    ? { ...constraints, allow_tax_disabled: true }
+    : constraints;
   const canonicalConfig = buildCanonicalOptimizationConfig(
     optimizerConfig,
     companyId,
@@ -162,7 +175,7 @@ export function runOptimization({
     });
   }
   const effectiveObjective = normalizeObjective(objective);
-  const constraintValidation = validateConstraintConfig(constraints);
+  const constraintValidation = validateConstraintConfig(effectiveConstraints);
   if (!constraintValidation.valid) {
     return buildFailureResult({
       companyId,
@@ -181,11 +194,11 @@ export function runOptimization({
   const candidateGenerationConfig = {
     max_candidates: maxCandidates,
     freight_multipliers: [CANONICAL_OPTIMIZATION_POLICY.freight_multiplier],
-    inventory_days_options: [CANONICAL_OPTIMIZATION_POLICY.inventory_days],
-    base_tax_mode: CANONICAL_OPTIMIZATION_POLICY.tax_mode,
-    base_tax_regime: CANONICAL_OPTIMIZATION_POLICY.tax_regime,
-    tax_year: taxYear,
-    allow_tax_disabled: CANONICAL_OPTIMIZATION_POLICY.allow_tax_disabled,
+    inventory_days_options: [canonicalConfig.inventory_days],
+    base_tax_mode: researchTaxDisabled ? 'disabled' : CANONICAL_OPTIMIZATION_POLICY.tax_mode,
+    base_tax_regime: researchTaxDisabled ? 'disabled' : CANONICAL_OPTIMIZATION_POLICY.tax_regime,
+    tax_year: researchTaxDisabled ? null : taxYear,
+    allow_tax_disabled: researchTaxDisabled || CANONICAL_OPTIMIZATION_POLICY.allow_tax_disabled,
     demand_multipliers: [CANONICAL_OPTIMIZATION_POLICY.demand_multiplier],
     seed: canonicalConfig.seed,
     exhaustive_subsets: optimizerConfig.exhaustive_subsets === true,
@@ -246,12 +259,21 @@ export function runOptimization({
   const initialEvaluation = evaluateCandidates(generated.candidate_scenarios, {
     companyId,
     baselineBundle,
-    constraints,
+    constraints: effectiveConstraints,
   });
   const { records: scenarioRecords, invalid, invalidReasons } = initialEvaluation;
 
-  const baselineScenario = buildBaselineScenario(companyId, baselineBundle);
-  const baselineResult = runScenario({ companyId, scenario: baselineScenario, baselineBundle });
+  const baselineScenario = buildBaselineScenario(
+    companyId,
+    baselineBundle,
+    generated.candidate_scenarios[0]?.changes
+  );
+  const baselineResult = runScenario({
+    companyId,
+    scenario: baselineScenario,
+    baselineBundle,
+    baselineMode: OPTIMIZER_BASELINE_MODE,
+  });
   if (baselineResult.simulation_status !== 'success') {
     const message = 'Falha ao simular o baseline de referência.';
     return buildFailureResult({
@@ -280,27 +302,15 @@ export function runOptimization({
     constraint: { passes_constraints: true, violations: [], warnings: [] },
   };
 
-  const preliminaryMetrics = extractScenarioMetrics({
-    companyId,
-    scenarioResults: scenarioRecords,
-  });
-  const preliminaryNormalized = normalizeMetrics({
-    companyId,
-    scenarioMetrics: preliminaryMetrics.scenario_metrics,
-    referenceMetrics: buildBaselineReferenceMetrics(baselineRecord),
-  });
-  const preliminaryScoring = scoreScenarios({
-    companyId,
-    objective: effectiveObjective,
-    normalizedMetrics: preliminaryNormalized.normalized_metrics,
-  });
+  // Select refinement seeds from a stable candidate order, never from a
+  // profile's preliminary score. This keeps the evaluated catalog identical
+  // across profiles for the same company, generated space and constraints.
   const refinementSeeds = uniqueByChanges(
-    (preliminaryScoring.scored_scenarios.length
-      ? preliminaryScoring.scored_scenarios
-          .map((s) => scenarioRecords.find((r) => r.result.scenario_id === s.scenario_id))
-          .filter(Boolean)
-      : [baselineRecord]
-    ).slice(0, refinementSeedCount)
+    [...scenarioRecords]
+      .sort((a, b) =>
+        String(a.result?.scenario_id || '').localeCompare(String(b.result?.scenario_id || ''))
+      )
+      .slice(0, refinementSeedCount)
   );
 
   const refinedCandidates = [];
@@ -333,7 +343,7 @@ export function runOptimization({
   const refinedEvaluation = evaluateCandidates(refinedCandidates, {
     companyId,
     baselineBundle,
-    constraints,
+    constraints: effectiveConstraints,
     deduplicate: true,
     seenScenarioIds,
     seenScenarioKeys,
@@ -355,7 +365,11 @@ export function runOptimization({
       demand_multipliers: candidateGenerationConfig.demand_multipliers,
       inventory_days_options: candidateGenerationConfig.inventory_days_options,
       tax_modes: candidateGenerationConfig.allow_tax_disabled
-        ? [generated.candidate_scenarios[0]?.changes?.tax_mode, 'disabled'].filter(Boolean)
+        ? [
+            ...new Set(
+              [generated.candidate_scenarios[0]?.changes?.tax_mode, 'disabled'].filter(Boolean)
+            ),
+          ]
         : [
             generated.candidate_scenarios[0]?.changes?.tax_mode ||
               candidateGenerationConfig.base_tax_mode,
@@ -377,6 +391,10 @@ export function runOptimization({
   const totalInvalid = invalid + refinedInvalid;
   const limitedFiscalRecords = allScenarioRecords.filter(
     (record) => record.data_quality?.coverage_limited
+  );
+  const physicalProxyRecords = allScenarioRecords.filter(
+    (record) =>
+      record.result?.diagnostics?.transfer_proxy_assessment?.decision_use === 'exploratory_only'
   );
   const coverageRatio = candidateSpaceSize > 0 ? totalSimulated / candidateSpaceSize : 0;
   const baseSpaceComplete = Boolean(generated.generation_summary?.search_space_complete);
@@ -457,20 +475,28 @@ export function runOptimization({
 
   return {
     company_id: companyId,
+    comparison_baseline_mode: OPTIMIZER_BASELINE_MODE,
+    refinement_seed_policy: 'stable_scenario_id_order_independent_of_objective',
+    tax_research_mode: researchTaxDisabled ? 'all_scenarios_tax_disabled' : 'canonical_tax_policy',
     optimizer_status: exactSearchSpace ? 'success' : 'success_with_limited_space',
     result_scope: exactSearchSpace ? 'exact_declared_space' : 'conditional_declared_catalog',
     data_quality_status: limitedFiscalRecords.length ? 'limited_fiscal_coverage' : 'complete',
-    decision_use: limitedFiscalRecords.length ? 'exploratory_only' : 'decision_support',
+    decision_use:
+      researchTaxDisabled || limitedFiscalRecords.length || physicalProxyRecords.length
+        ? 'exploratory_only'
+        : 'decision_support',
     data_quality_summary: {
       candidates_with_limited_fiscal_coverage: limitedFiscalRecords.length,
       candidates_with_complete_fiscal_coverage:
         allScenarioRecords.length - limitedFiscalRecords.length,
+      candidates_with_physical_proxy_limit: physicalProxyRecords.length,
     },
     search_strategy: 'broad_then_refine',
     best_scenarios,
     best_by_total_cost,
     scored_scenarios: enriched,
     scenario_records: allScenarioRecords,
+    baseline_reference: baselineRecord,
     metrics,
     normalized,
     ranking_sensitivity: rankingSensitivity,
@@ -508,6 +534,16 @@ export function runOptimization({
     },
     warnings: [
       ...searchWarnings,
+      ...(researchTaxDisabled
+        ? [
+            'Modo de pesquisa sem tributos: baseline e todos os candidatos são simulados sem tributo; resultados somente exploratórios.',
+          ]
+        : []),
+      ...(physicalProxyRecords.length
+        ? [
+            'A transferência usa proxy física não validada; o ranking é exploratório e não constitui recomendação operacional.',
+          ]
+        : []),
       ...(exactSearchSpace
         ? []
         : [

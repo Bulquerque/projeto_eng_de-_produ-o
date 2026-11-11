@@ -3,6 +3,8 @@ import { buildStressCaseLibrary } from './stress-case-library.js';
 import { safeNumber } from '../core/common.js';
 import { calculateSaving, getCompanyModelDefaults } from '../core/model-configuration.js';
 import { isNumericallyUsableScenarioResult } from '../core/analysis-quality.js';
+import { buildPhysicalComparisonBaseline } from './physical-comparison.js';
+import { resolveTaxModeForRegime, resolveTaxRegime } from '../core/tax-reform-config.js';
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj || {}));
 }
@@ -10,12 +12,13 @@ export function runStressTests({
   companyId,
   selectedScenario,
   baselineBundle,
-  baselineResult = null,
   stressCases = null,
 } = {}) {
-  const baseTotal = safeNumber(
-    baselineResult?.total_with_tax ?? baselineBundle?.costs?.costs?.total_with_tax
-  );
+  const reference = buildPhysicalComparisonBaseline({
+    companyId,
+    baselineBundle,
+    selectedScenario,
+  });
   const cases = stressCases || buildStressCaseLibrary({ companyId }).stress_cases;
   const stress_results = [];
   const warnings = [];
@@ -26,16 +29,33 @@ export function runStressTests({
       stressCase,
       baselineBundle,
     });
-    const result = runScenario({ companyId, scenario: stressedScenario, baselineBundle });
+    const fiscalChanges = stressCase.changes || {};
+    const caseReference =
+      fiscalChanges.tax_mode || fiscalChanges.tax_regime || fiscalChanges.tax_year != null
+        ? buildPhysicalComparisonBaseline({
+            companyId,
+            baselineBundle,
+            selectedScenario: stressedScenario,
+          })
+        : reference;
+    const baseTotal = caseReference?.total_with_tax ?? null;
+    const result = runScenario({
+      companyId,
+      scenario: stressedScenario,
+      baselineBundle,
+      baselineMode: 'physical_unanchored',
+    });
     const taxLimited =
       result.calculation_status === 'success_with_tax_limits' ||
       result.tax_results?.tax_coverage?.coverage_limited === true ||
       result.tax_results?.tax_coverage?.blocked === true;
     const validResult = isNumericallyUsableScenarioResult(result);
-    if (!validResult) {
+    if (!validResult || baseTotal == null) {
       const caseWarnings = [
         ...(result.warnings || []),
-        'Caso de stress bloqueado: o cenário não produziu um resultado determinístico válido.',
+        baseTotal == null
+          ? 'Baseline físico indisponível para comparação.'
+          : 'Caso de stress bloqueado: o cenário não produziu um resultado determinístico válido.',
       ];
       warnings.push(`${stressCase.case_id}: resultado inválido ou bloqueado.`);
       stress_results.push({
@@ -51,7 +71,12 @@ export function runStressTests({
         saving_pct: null,
         scenario_still_better_than_baseline: null,
         warnings: caseWarnings,
-        errors: result.errors || ['resultado de stress inválido'],
+        errors:
+          baseTotal == null
+            ? [...(result.errors || []), 'baseline físico indisponível para comparação']
+            : result.errors?.length
+              ? result.errors
+              : ['resultado de stress inválido'],
       });
       continue;
     }
@@ -73,10 +98,12 @@ export function runStressTests({
       stressed_scenario_id: stressedScenario.scenario_id,
       status: 'success',
       data_quality_status: taxLimited ? 'limited_fiscal_coverage' : 'complete',
-      decision_use: taxLimited ? 'exploratory_only' : 'decision_support',
+      decision_use: 'exploratory_only',
       total_with_tax: safeNumber(result.total_with_tax),
       total_logistics_cost: safeNumber(result.costs?.total_logistics_cost),
       tax_impact: safeNumber(result.tax_results?.total_tax_impact),
+      baseline_total_with_tax: baseTotal,
+      baseline_tax_regime: caseReference?.tax_results?.tax_regime ?? null,
       saving_vs_baseline: saving.saving_abs,
       saving_pct: saving.saving_pct,
       scenario_still_better_than_baseline: stillBetter,
@@ -135,8 +162,17 @@ export function applyStressCaseToScenario({ companyId, scenario, stressCase, bas
     stressed.changes.inventory_days =
       safeNumber(stressed.changes.inventory_days, defaults.inventory_days) +
       safeNumber(c.inventory_days_delta);
-  if (c.tax_mode) stressed.changes.tax_mode = c.tax_mode;
-  if (c.tax_regime) stressed.changes.tax_regime = c.tax_regime;
+  if (c.tax_mode || c.tax_regime || c.tax_year != null) {
+    const regime = resolveTaxRegime({
+      taxMode: c.tax_mode,
+      taxRegime: c.tax_regime,
+      year: c.tax_year,
+    });
+    stressed.changes.tax_mode = c.tax_mode || resolveTaxModeForRegime(regime);
+    stressed.changes.tax_regime = regime;
+    if (c.tax_year != null) stressed.changes.tax_year = c.tax_year;
+    else delete stressed.changes.tax_year;
+  }
   stressed.metadata = {
     ...(stressed.metadata || {}),
     phase: 5,

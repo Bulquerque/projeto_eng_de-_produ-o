@@ -20,7 +20,7 @@ export const MODEL_DEFAULTS = Object.freeze({
     RJ: 0.0133,
   }),
   transfer_kilometric_rate_provenance: Object.freeze({
-    classification: 'cross_company_calibrated_proxy',
+    classification: 'cross_company_unvalidated_historical_proxy',
     validation_status: 'unvalidated_unit_and_physical_route',
     transfer_source_status: 'missing_supplier_cd_network',
     decision_use: 'exploratory_only',
@@ -46,7 +46,8 @@ export const COMPANY_MODEL_DEFAULTS = Object.freeze({
     reference_wacc: 0.15,
     inventory_days_provenance:
       'premissa textual do TCC: estoque de referência equivalente a um mês',
-    wacc_provenance: 'premissa de engenharia; não há WACC observado no pacote da Empresa 1',
+    wacc_provenance:
+      'fallback exploratório; usar costs.assumptions_used.wacc do baselineBundle quando disponível; periodicidade não confirmada',
   }),
   empresa2: Object.freeze({
     ...MODEL_DEFAULTS,

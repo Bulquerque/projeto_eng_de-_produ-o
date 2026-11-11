@@ -1,5 +1,5 @@
 import { buildScenarioFromForm } from '../phase3/scenario-builder.js';
-import { resolveTaxRegime } from '../core/tax-reform-config.js';
+import { resolveTaxModeForRegime, resolveTaxRegime } from '../core/tax-reform-config.js';
 import { safeNumber } from '../core/common.js';
 import { getCompanyModelDefaults } from '../core/model-configuration.js';
 
@@ -153,9 +153,19 @@ export function emptyCollections() {
   };
 }
 
-export function buildBaselineScenario(companyId, baselineBundle) {
+export function buildBaselineScenario(companyId, baselineBundle, taxContext = {}) {
   const base = baselineBundle?.model || {};
   const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
+  const hasTaxContext = Boolean(
+    taxContext.tax_mode || taxContext.tax_regime || taxContext.tax_year != null
+  );
+  const taxRegime = hasTaxContext
+    ? resolveTaxRegime({
+        taxMode: taxContext.tax_mode,
+        taxRegime: taxContext.tax_regime,
+        year: taxContext.tax_year,
+      })
+    : resolveTaxRegime({ taxMode: 'current' });
   return buildScenarioFromForm({
     companyId,
     baselineBundle,
@@ -167,8 +177,9 @@ export function buildBaselineScenario(companyId, baselineBundle) {
       demand_multiplier: 1,
       inventory_days: modelDefaults.inventory_days,
       wacc: modelDefaults.reference_wacc,
-      tax_mode: 'current',
-      tax_regime: resolveTaxRegime({ taxMode: 'current' }),
+      tax_mode: taxContext.tax_mode || resolveTaxModeForRegime(taxRegime),
+      tax_regime: taxRegime,
+      ...(taxContext.tax_year != null ? { tax_year: taxContext.tax_year } : {}),
       scenario_type: 'baseline',
     },
   });

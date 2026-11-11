@@ -580,6 +580,9 @@ function summarizeSamples({
   const savingValues = samples.map((sample) => sample.saving_pct);
   const sortedTotal = [...totalValues].sort((a, b) => a - b);
   const sortedSaving = [...savingValues].sort((a, b) => a - b);
+  const sortedDelta = samples
+    .map((sample) => sample.total_with_tax - sample.baseline_total_with_tax)
+    .sort((a, b) => a - b);
   const meanTotal = mean(totalValues);
   const meanSaving = mean(savingValues);
   const p10Saving = quantile(sortedSaving, 0.1);
@@ -707,6 +710,11 @@ function summarizeSamples({
     best_case_saving_pct: bestCase,
     worst_case_saving_pct: worstCase,
     probability_saving_positive: probabilityPositive,
+    probability_tie: sortedDelta.filter((value) => value === 0).length / sortedDelta.length,
+    mean_delta_cost_brl: sortedDelta.length ? mean(sortedDelta) : null,
+    p10_delta_cost: quantile(sortedDelta, 0.1),
+    p50_delta_cost: quantile(sortedDelta, 0.5),
+    p90_delta_cost: quantile(sortedDelta, 0.9),
     probability_saving_loss: probabilityLoss,
     probability_saving_strong_positive: probabilityStrongPositive,
     stddev_total_with_tax: stdTotal,
@@ -884,10 +892,6 @@ export function runMonteCarloSimulation({
     inventory_days: baseInventory,
     wacc: baseWacc,
   };
-  const baselineRaw = baselineBundle?.costs?.costs?.total_with_tax;
-  const baselineTotal = isFiniteScenarioTotal(baselineRaw) ? Number(baselineRaw) : null;
-  const deterministic =
-    deterministicResult || runScenario({ companyId, scenario: baseScenario, baselineBundle });
   const baselineScenarioId = baselineBundle?.model?.scenario_id || null;
   const pairedBaselineScenario = buildBaselineScenario({
     companyId,
@@ -895,6 +899,29 @@ export function runMonteCarloSimulation({
     selectedScenario,
   });
   const pairingAvailable = Boolean(pairedBaselineScenario);
+  // Compare both networks using the same physical method. The canonical
+  // baseline is an anchored accounting reference, not an independent cost model.
+  const comparisonMode = pairingAvailable ? 'physical_unanchored' : 'canonical_reference';
+  const comparableBaseline = pairingAvailable
+    ? runScenario({
+        companyId,
+        scenario: pairedBaselineScenario,
+        baselineBundle,
+        baselineMode: comparisonMode,
+      })
+    : null;
+  const baselineRaw = pairingAvailable
+    ? comparableBaseline?.total_with_tax
+    : baselineBundle?.costs?.costs?.total_with_tax;
+  const baselineTotal = isFiniteScenarioTotal(baselineRaw) ? Number(baselineRaw) : null;
+  const deterministic = pairingAvailable
+    ? runScenario({
+        companyId,
+        scenario: baseScenario,
+        baselineBundle,
+        baselineMode: comparisonMode,
+      })
+    : deterministicResult || runScenario({ companyId, scenario: baseScenario, baselineBundle });
 
   if (
     !isNumericallyUsableScenarioResult(deterministic) ||
@@ -931,6 +958,11 @@ export function runMonteCarloSimulation({
       'Monte Carlo executado como análise exploratória: a classificação fiscal completa não cobre 100% dos fluxos.'
     );
   }
+  if (pairingAvailable) {
+    warnings.push(
+      'Comparação pareada usa cálculo físico não ancorado nos dois lados; proxies e limitações fiscais não estão validados.'
+    );
+  }
   if (!pairingAvailable) {
     warnings.push(
       'Comparação Monte Carlo legada: o bundle não contém CDs ativos suficientes para reconstruir a referência pareada; saving usa o total fixo publicado do baseline.'
@@ -959,7 +991,12 @@ export function runMonteCarloSimulation({
       seed: normalizedConfig.seed_effective,
     });
 
-    const result = runScenario({ companyId, scenario: sampledScenario, baselineBundle });
+    const result = runScenario({
+      companyId,
+      scenario: sampledScenario,
+      baselineBundle,
+      baselineMode: comparisonMode,
+    });
     const iterationWarning = monteCarloIterationValidationWarning(result, index + 1);
     if (iterationWarning) {
       invalidSampleCount += 1;
@@ -986,6 +1023,7 @@ export function runMonteCarloSimulation({
         companyId,
         scenario: sampledBaselineScenario,
         baselineBundle,
+        baselineMode: comparisonMode,
       });
       const baselineIterationWarning = monteCarloIterationValidationWarning(
         pairedBaselineResult,
@@ -1027,6 +1065,8 @@ export function runMonteCarloSimulation({
       scenario_id: result.scenario_id,
       total_with_tax: adjustedTotal,
       baseline_total_with_tax: pairedBaselineTotal,
+      baseline_mode: comparisonMode,
+      candidate_baseline_mode: comparisonMode,
       baseline_inputs: pairedBaselineInputs,
       baseline_tax_mode: pairedBaselineScenario?.changes?.tax_mode || 'current',
       baseline_tax_regime: pairedBaselineScenario?.changes?.tax_regime || 'current',
@@ -1072,7 +1112,8 @@ export function runMonteCarloSimulation({
     deterministicTotal: safeNumber(deterministic.total_with_tax),
     deterministicSavingPct: deterministicSaving.saving_pct,
     config: normalizedConfig,
-    decisionUse: classificationLimited ? 'exploratory_only' : 'decision_support',
+    decisionUse:
+      pairingAvailable || classificationLimited ? 'exploratory_only' : 'decision_support',
   });
 
   return {
@@ -1082,6 +1123,7 @@ export function runMonteCarloSimulation({
     pairing: {
       method: pairingAvailable ? 'common_random_numbers_v1' : 'static_baseline_legacy_v1',
       status: pairingAvailable ? 'paired' : 'legacy',
+      baseline_mode: comparisonMode,
       paired_baseline_iterations: pairingAvailable ? samples.length : 0,
     },
     deterministic_scenario_id: deterministic?.scenario_id || selectedScenario?.scenario_id || null,
@@ -1091,10 +1133,12 @@ export function runMonteCarloSimulation({
     historical_distribution: normalizedConfig.historical_distribution,
     uncertainty_source: normalizedConfig.uncertainty_source,
     historical_drivers: normalizedConfig.historical_drivers,
-    decision_use: classificationLimited ? 'exploratory_only' : 'decision_support',
+    decision_use:
+      pairingAvailable || classificationLimited ? 'exploratory_only' : 'decision_support',
     data_quality_status: classificationLimited ? 'limited_fiscal_coverage' : 'complete',
     deterministic_reference: {
       scenario_id: deterministic?.scenario_id || selectedScenario?.scenario_id || null,
+      baseline_mode: comparisonMode,
       total_with_tax: safeNumber(deterministic?.total_with_tax),
       saving_pct: deterministicSaving.saving_pct,
     },
@@ -1103,6 +1147,55 @@ export function runMonteCarloSimulation({
     summary,
     warnings,
     errors: [],
+  };
+}
+
+/** Re-summarize an exact iteration prefix of the same seeded run. */
+export function summarizeMonteCarloPrefix(result, iterations) {
+  const count = Number(iterations);
+  if (!Number.isInteger(count) || count < 1 || count > Number(result?.config?.iterations)) {
+    throw new RangeError('Prefixo Monte Carlo fora do intervalo executado.');
+  }
+  if (result?.monte_carlo_status !== 'success' || !Array.isArray(result.samples)) {
+    return {
+      ...result,
+      config: { ...result.config, iterations: count },
+      samples: [],
+      summary: null,
+    };
+  }
+  const samples = result.samples.filter((sample) => sample.index <= count);
+  const invalidSampleCount = count - samples.length;
+  const config = { ...result.config, iterations: count };
+  if (!samples.length) {
+    return {
+      ...result,
+      monte_carlo_status: 'blocked',
+      config,
+      samples,
+      summary: null,
+      invalid_sample_count: invalidSampleCount,
+    };
+  }
+  const summary = summarizeSamples({
+    samples,
+    invalidSampleCount,
+    baselineTotal: result.summary.baseline_total_with_tax,
+    deterministicTotal: result.summary.deterministic_total_with_tax,
+    deterministicSavingPct: result.summary.deterministic_saving_pct,
+    config,
+    decisionUse: result.decision_use,
+  });
+  return {
+    ...result,
+    config,
+    samples,
+    invalid_sample_count: invalidSampleCount,
+    pairing: {
+      ...result.pairing,
+      paired_baseline_iterations: result.pairing?.status === 'paired' ? samples.length : 0,
+    },
+    summary,
   };
 }
 

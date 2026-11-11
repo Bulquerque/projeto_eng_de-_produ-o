@@ -213,7 +213,7 @@ async function runPhaseCompanyAudit(companyId) {
     );
     ensure(
       baselineBundle?.costs?.diagnostics?.source_classification ===
-        'observed_distribution_plus_cross_company_calibrated_transfer_proxy',
+        'observed_distribution_plus_unvalidated_cross_company_transfer_proxy',
       'Empresa 1 deveria classificar o proxy de transferência',
       { companyId, diagnostics: baselineBundle?.costs?.diagnostics }
     );

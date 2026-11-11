@@ -30,7 +30,7 @@ for (const companyId of ['empresa1','empresa2']) {
  const scenario=sel.selected_scenario.scenario;
  if(Number(scenario.changes?.freight_multiplier ?? 1)!==1) throw new Error('selected scenario changed freight');
  if(Number(scenario.changes?.demand_multiplier ?? 1)!==1) throw new Error('selected scenario changed demand');
- if(Number(scenario.changes?.inventory_days ?? 45)!==45) throw new Error('selected scenario changed inventory');
+ if(Number(scenario.changes?.inventory_days)!==(companyId==='empresa1' ? 30 : 45)) throw new Error('selected scenario changed company inventory assumption');
  if((scenario.changes?.tax_mode || '')==='disabled') throw new Error('selected scenario disabled tax');
  const original=JSON.stringify(scenario);
  const cases=buildStressCaseLibrary({companyId}).stress_cases;

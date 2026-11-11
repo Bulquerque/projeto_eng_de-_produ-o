@@ -55,7 +55,9 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
     ? resolveTaxModeForRegime(taxRegime)
     : generationConfig.base_tax_mode || 'current';
   const baseTaxRegime = taxRegime || generationConfig.base_tax_regime || null;
-  const tax = generationConfig.allow_tax_disabled ? [baseTaxMode, 'disabled'] : [baseTaxMode];
+  const tax = [
+    ...new Set(generationConfig.allow_tax_disabled ? [baseTaxMode, 'disabled'] : [baseTaxMode]),
+  ];
   const demand = generationConfig.demand_multipliers || [0.95, 1, 1.05];
   const exhaustiveSubsets = generationConfig.exhaustive_subsets === true || baseCds.length <= 4;
   const cdSets = [];
@@ -95,8 +97,8 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
                 inventory_days: days,
                 wacc: modelDefaults.reference_wacc,
                 tax_mode: tm,
-                tax_regime: baseTaxRegime,
-                ...(taxYear ? { tax_year: taxYear } : {}),
+                tax_regime: tm === 'disabled' ? 'disabled' : baseTaxRegime,
+                ...(taxYear && tm !== 'disabled' ? { tax_year: taxYear } : {}),
                 scenario_type: 'candidate',
               },
             });

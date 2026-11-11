@@ -87,7 +87,11 @@ export function buildBaselineCardsHtml({ bundle, companyId }) {
       formatNumber((bundle?.model?.active_cds || []).length),
       'base do diagnóstico'
     ),
-    metric('Total baseline', formatBRL(c.total_with_tax, true), 'com tributo'),
+    metric(
+      'Total baseline canônico',
+      formatBRL(c.total_with_tax, true),
+      'referência contábil com tributo'
+    ),
     metric('Fluxos', formatNumber((bundle?.flows || []).length), 'base para candidatos'),
   ].join('');
 }
@@ -105,7 +109,7 @@ export function buildOptimizerInputTableHtml({
     ['Baseline usado', bundle?.model?.scenario_id || '—'],
     ['CDs ativos no baseline', formatNumber((bundle?.model?.active_cds || []).length)],
     ['Fluxos avaliados', formatNumber((bundle?.flows || []).length)],
-    ['Total baseline', formatBRL(c.total_with_tax, true)],
+    ['Total baseline canônico', formatBRL(c.total_with_tax, true)],
     [
       'Regime fiscal fixo',
       taxRegimeLabel(

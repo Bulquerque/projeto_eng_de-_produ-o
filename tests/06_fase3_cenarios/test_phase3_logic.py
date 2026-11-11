@@ -69,7 +69,8 @@ for (const companyId of ['empresa1','empresa2']) {
     if (!Number.isFinite(inputs.tax_multiplier) || inputs.tax_multiplier < 0.7 || inputs.tax_multiplier > 1.35) throw new Error('tax sample outside contract bounds');
     if (!Number.isFinite(inputs.common_shock)) throw new Error('common shock missing from sample');
   }
-  if (Math.abs(Number(mcA.summary.baseline_total_with_tax) - Number(bundle.costs.costs.total_with_tax)) > 0.1) throw new Error('monte carlo denominator is not the official baseline');
+  if (!Number.isFinite(mcA.summary.baseline_total_with_tax) || mcA.summary.baseline_total_with_tax <= 0) throw new Error('monte carlo physical baseline missing');
+  if (mcA.pairing?.baseline_mode !== 'physical_unanchored' || !mcA.samples.every(s => s.baseline_mode === 'physical_unanchored' && s.candidate_baseline_mode === 'physical_unanchored')) throw new Error('monte carlo methods are not comparable');
   if (mcA.baseline_scenario_id !== bundle.model.scenario_id) throw new Error('monte carlo baseline id mismatch');
   if (mcA.deterministic_scenario_id !== result.scenario_id) throw new Error('monte carlo deterministic id mismatch');
   if (!mcA.summary.total_percentile_curve || mcA.summary.total_percentile_curve.length !== 11) throw new Error('total percentile curve missing');

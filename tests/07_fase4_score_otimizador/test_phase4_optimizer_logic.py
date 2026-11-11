@@ -28,6 +28,25 @@ for (const companyId of ['empresa1','empresa2']) {
  const opt=runOptimization({companyId,baselineBundle:bundle,objective,taxYear:2030,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}});
  const opt2=runOptimization({companyId,baselineBundle:bundle,objective,taxYear:2030,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}});
  if(opt.scored_scenarios.some(s=>s.scenario?.changes?.tax_year!==2030 || s.scenario?.changes?.tax_regime!=='transition_2030')) throw new Error('optimization ignored selected reform scenario');
+ if(opt.comparison_baseline_mode!=='physical_unanchored') throw new Error('optimizer did not declare common physical baseline mode');
+ if(!opt.scenario_records.length || opt.scenario_records.some(r=>r.result?.baseline_mode!=='physical_unanchored')) throw new Error('candidate evaluations mixed canonical and physical baseline modes');
+ if(opt.refinement_seed_policy!=='stable_scenario_id_order_independent_of_objective') throw new Error('refinement still depends on profile ranking');
+ const profiles=[
+   {total_cost:40,service_quality:20,operational_risk:15,tax_impact:15,inventory_efficiency:10},
+   {total_cost:70,service_quality:5,operational_risk:5,tax_impact:10,inventory_efficiency:10},
+   {total_cost:10,service_quality:60,operational_risk:10,tax_impact:10,inventory_efficiency:10},
+   {total_cost:10,service_quality:10,operational_risk:60,tax_impact:10,inventory_efficiency:10},
+   {total_cost:10,service_quality:10,operational_risk:10,tax_impact:60,inventory_efficiency:10},
+   {total_cost:10,service_quality:10,operational_risk:10,tax_impact:10,inventory_efficiency:60},
+ ];
+ const profileRuns=profiles.map((weights,index)=>index===0?opt:runOptimization({companyId,baselineBundle:bundle,objective:buildObjective({companyId,objectiveName:`Perfil-${index+1}`,weights}),taxYear:2030,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:true},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77}}));
+ const ids=profileRuns.map(run=>JSON.stringify(run.scenario_records.map(r=>r.result.scenario_id).sort()));
+ if(ids.some(id=>id!==ids[0])) throw new Error('six profiles did not evaluate the same candidate universe');
+ const scales=profileRuns.map(run=>JSON.stringify(run.normalized.minmax));
+ if(scales.some(scale=>scale!==scales[0])) throw new Error('six profiles did not use the same company min-max scales');
+ const taxResearch=runOptimization({companyId,baselineBundle:bundle,objective,taxYear:2030,constraints:{min_active_cds:1,max_active_cds:999,max_cd_volume_share:1,max_risk_level:'high',allow_tax_disabled:false},optimizerConfig:{method:'exact_discrete',max_candidates:5000,seed:77,research_tax_disabled:true}});
+ if(taxResearch.tax_research_mode!=='all_scenarios_tax_disabled' || taxResearch.decision_use!=='exploratory_only') throw new Error('tax-disabled research route is not explicitly exploratory');
+ if(!taxResearch.scenario_records.length || taxResearch.scenario_records.some(r=>r.scenario?.changes?.tax_mode!=='disabled' || r.result?.tax_results?.tax_mode!=='disabled' || r.result?.baseline_mode!=='physical_unanchored')) throw new Error('tax-disabled research mixed tax or physical baseline modes');
  if(companyId==='empresa2') {
    if(!String(opt.optimizer_status || '').startsWith('success')) throw new Error('empresa2 optimizer should deliver exploratory results');
    if(opt.decision_use!=='exploratory_only' || opt.data_quality_status!=='limited_fiscal_coverage') throw new Error('empresa2 fiscal limitation status missing');
@@ -46,13 +65,13 @@ for (const companyId of ['empresa1','empresa2']) {
  if(opt.search_log.seed !== 77) throw new Error('optimizer seed not persisted');
  if(opt.scored_scenarios.some(s=>Number(s.scenario?.changes?.freight_multiplier ?? 1)!==1)) throw new Error('optimizer changed freight');
  if(opt.scored_scenarios.some(s=>Number(s.scenario?.changes?.demand_multiplier ?? 1)!==1)) throw new Error('optimizer changed demand');
- if(opt.scored_scenarios.some(s=>Number(s.scenario?.changes?.inventory_days ?? 45)!==45)) throw new Error('optimizer changed inventory');
+ if(opt.scored_scenarios.some(s=>Number(s.scenario?.changes?.inventory_days)!==30)) throw new Error('optimizer changed inventory');
  if(opt.scored_scenarios.some(s=>(s.scenario?.changes?.tax_mode || '')==='disabled')) throw new Error('optimizer disabled tax');
  if(!opt.best_scenarios.length) throw new Error('no best scenarios');
  const best = opt.best_scenarios[0];
  if(Number(best.scenario?.changes?.freight_multiplier ?? 1)!==1) throw new Error('best scenario changed freight');
  if(Number(best.scenario?.changes?.demand_multiplier ?? 1)!==1) throw new Error('best scenario changed demand');
- if(Number(best.scenario?.changes?.inventory_days ?? 45)!==45) throw new Error('best scenario changed inventory');
+ if(Number(best.scenario?.changes?.inventory_days)!==30) throw new Error('best scenario changed inventory');
  if((best.scenario?.changes?.tax_mode || '')==='disabled') throw new Error('best scenario disabled tax');
  if(opt.best_scenarios[0].scenario_id!==opt2.best_scenarios[0].scenario_id) throw new Error('seed not reproducible');
  const frontier=buildTradeoffFrontier({companyId,scenarioRecords:opt.scenario_records,scoredScenarios:opt.scored_scenarios});

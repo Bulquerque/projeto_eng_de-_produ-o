@@ -83,9 +83,11 @@ for (const companyId of ['empresa1', 'empresa2']) {
   if (companyId === 'empresa1') {
     if (
       fullResult.costs.diagnostics.source_classification !==
-      'observed_distribution_plus_cross_company_calibrated_transfer_proxy'
+      'observed_distribution_plus_unvalidated_cross_company_transfer_proxy'
     )
       throw new Error('empresa1: transfer proxy provenance is not classified');
+    if (fullResult.costs.diagnostics.transfer_proxy_assessment?.decision_use !== 'exploratory_only')
+      throw new Error('empresa1: unvalidated transfer proxy must be marked exploratory');
     if (!String(fullResult.costs.diagnostics.transfer_proxy_provenance?.source_company).length)
       throw new Error('empresa1: transfer proxy source company is missing');
     if (!String(fullResult.tax_results.tax_source_label).includes('Proxy tributário'))

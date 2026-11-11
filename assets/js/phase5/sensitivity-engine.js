@@ -1,6 +1,7 @@
 import { runScenario } from '../phase3/scenario-simulator.js';
 import { calculateSaving } from '../core/model-configuration.js';
 import { isNumericallyUsableScenarioResult } from '../core/analysis-quality.js';
+import { buildPhysicalComparisonBaseline } from './physical-comparison.js';
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj || {}));
 }
@@ -21,18 +22,23 @@ export function runSensitivity({
       warnings: [],
       errors: [`variável não suportada: ${cfg.variable}`],
     };
-  const baselineRaw = baselineBundle?.costs?.costs?.total_with_tax;
-  const baselineUsable =
-    baselineRaw !== null &&
-    baselineRaw !== '' &&
-    Number.isFinite(Number(baselineRaw)) &&
-    Number(baselineRaw) > 0;
-  const baselineTotal = baselineUsable ? Number(baselineRaw) : null;
+  const reference = buildPhysicalComparisonBaseline({
+    companyId,
+    baselineBundle,
+    selectedScenario,
+  });
+  const baselineTotal = reference?.total_with_tax ?? null;
+  const baselineUsable = baselineTotal != null;
   const sensitivity_results = (cfg.values || []).map((value) => {
     const scenario = clone(selectedScenario);
     scenario.scenario_id = `${selectedScenario.scenario_id}__sens_${cfg.variable}_${String(value).replace('.', '_')}`;
     scenario.changes = { ...(scenario.changes || {}), [cfg.variable]: value };
-    const result = runScenario({ companyId, scenario, baselineBundle });
+    const result = runScenario({
+      companyId,
+      scenario,
+      baselineBundle,
+      baselineMode: 'physical_unanchored',
+    });
     const validResult = isNumericallyUsableScenarioResult(result);
     const usable = validResult && baselineUsable;
     const saving = usable
@@ -107,13 +113,13 @@ export function runSensitivityMatrix({
       errors: ['escolha duas variáveis diferentes para a matriz'],
     };
   }
-  const baselineRaw = baselineBundle?.costs?.costs?.total_with_tax;
-  const baselineUsable =
-    baselineRaw !== null &&
-    baselineRaw !== '' &&
-    Number.isFinite(Number(baselineRaw)) &&
-    Number(baselineRaw) > 0;
-  const baselineTotal = baselineUsable ? Number(baselineRaw) : null;
+  const reference = buildPhysicalComparisonBaseline({
+    companyId,
+    baselineBundle,
+    selectedScenario,
+  });
+  const baselineTotal = reference?.total_with_tax ?? null;
+  const baselineUsable = baselineTotal != null;
   const matrix_results = [];
   for (const yValue of cfg.yValues || []) {
     for (const xValue of cfg.xValues || []) {
@@ -128,7 +134,12 @@ export function runSensitivityMatrix({
         [cfg.xVariable]: xValue,
         [cfg.yVariable]: yValue,
       };
-      const result = runScenario({ companyId, scenario, baselineBundle });
+      const result = runScenario({
+        companyId,
+        scenario,
+        baselineBundle,
+        baselineMode: 'physical_unanchored',
+      });
       const validResult = isNumericallyUsableScenarioResult(result);
       const usable = validResult && baselineUsable;
       const total = usable ? Number(result.total_with_tax) : null;

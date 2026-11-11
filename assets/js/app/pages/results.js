@@ -24,12 +24,29 @@ const COST_COMPONENTS = [
   ['total_with_tax', 'Total com tributos'],
 ];
 
-function baselineValues(state) {
+function comparableFiscalBasis(leftScenario, leftResult, rightScenario, rightResult) {
+  const basis = (scenario, result) => ({
+    regime: scenario?.changes?.tax_regime ?? result?.tax_results?.tax_regime ?? null,
+    mode: scenario?.changes?.tax_mode ?? result?.tax_mode ?? null,
+    year: scenario?.changes?.tax_year ?? result?.tax_results?.tax_year ?? null,
+  });
+  const left = basis(leftScenario, leftResult);
+  const right = basis(rightScenario, rightResult);
+  return ['regime', 'mode', 'year'].every(
+    (field) =>
+      left[field] == null || right[field] == null || String(left[field]) === String(right[field])
+  );
+}
+
+export function baselineValues(state) {
   const baseline = selectBaseline(state);
+  const result = selectDecision(state).result;
+  const physical = result?.baseline_mode === 'physical_unanchored';
+  const reference = selectDecision(state).optimizer?.baseline_reference?.result;
   return {
     name: baseline?.model?.scenario_name || 'Referência',
     id: baseline?.model?.scenario_id || 'baseline',
-    costs: baseline?.costs?.costs || {},
+    costs: physical ? reference?.costs || {} : baseline?.costs?.costs || {},
     model: baseline?.model || {},
   };
 }
@@ -98,6 +115,13 @@ export function comparisonCandidates(state) {
   for (const kind of ['simulation']) {
     const run = state.data?.analysis_runs?.[kind];
     if (!run?.scenario || !run?.result || run.company_id !== state.context?.company_id) continue;
+    if (
+      (run.result.baseline_mode || 'canonical_reference') !==
+      (decision.result?.baseline_mode || 'canonical_reference')
+    )
+      continue;
+    if (!comparableFiscalBasis(run.scenario, run.result, decision.scenario, decision.result))
+      continue;
     const runId = `saved-${kind}:${run.run_id}`;
     byId.set(runId, {
       scenario_id: runId,

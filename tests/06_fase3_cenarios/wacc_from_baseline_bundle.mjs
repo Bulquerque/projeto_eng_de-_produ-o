@@ -17,6 +17,22 @@ bundle.costs.assumptions_used = { wacc: 0.23 };
 const defaults = getCompanyModelDefaults('empresa1', bundle);
 assert.equal(defaults.reference_wacc, 0.23);
 assert.equal(defaults.wacc_source, 'bundle_assumptions_used');
+for (const syntheticWacc of [0.12, 0.15]) {
+  const syntheticBundle = {
+    ...bundle,
+    costs: { ...bundle.costs, assumptions_used: { wacc: syntheticWacc } },
+  };
+  const syntheticDefaults = getCompanyModelDefaults('empresa1', syntheticBundle);
+  assert.equal(syntheticDefaults.reference_wacc, syntheticWacc);
+  assert.equal(
+    calculateInventoryCost({
+      companyId: 'empresa1',
+      baselineBundle: syntheticBundle,
+      baseInventoryCost: 1200,
+    }),
+    1200
+  );
+}
 
 const defaultScenario = buildScenarioFromForm({
   companyId: 'empresa1',
