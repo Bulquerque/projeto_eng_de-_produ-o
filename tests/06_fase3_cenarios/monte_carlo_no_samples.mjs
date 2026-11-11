@@ -107,6 +107,11 @@ assert.match(
   rendered,
   /Sem amostras válidas; faixa de risco e leitura probabilística indisponíveis\./i
 );
+assert.match(
+  rendered,
+  /legado|pareada/i,
+  'saved Monte Carlo results without pairing metadata must be labeled legacy'
+);
 assert.doesNotMatch(rendered, /estabilidade razoável|sustentação probabilística/i);
 assert.match(
   rendered,

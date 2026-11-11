@@ -23,6 +23,8 @@ TESTS = [
     'tests/05_fase2_baseline/test_phase2_http_server.py',
     'tests/05_fase2_baseline/test_public_tax_transition_contract.py',
     'tests/06_fase3_cenarios/test_phase3_file_structure.py',
+    'tests/06_fase3_cenarios/test_baseline_modes.py',
+    'tests/06_fase3_cenarios/test_monte_carlo_paired.py',
     'tests/06_fase3_cenarios/test_monte_carlo_no_samples.py',
     'tests/06_fase3_cenarios/test_scenario_quality_concentration.py',
     'tests/06_fase3_cenarios/test_invalid_scenario_comparison.py',
@@ -72,6 +74,7 @@ TESTS = [
     'tests/12_network_intelligence/test_form_values.py',
     'tests/12_network_intelligence/test_mock_provider_engines.py',
     'tests/12_network_intelligence/test_decision_optimizer_flow.py',
+    'tests/13_tcc_handoff/test_handoff_package.py',
     'tests/12_network_intelligence/test_network_ui_playwright.py',
     'tests/12_network_intelligence/test_chart_interactions.py',
 ]

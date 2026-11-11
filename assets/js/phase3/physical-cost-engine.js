@@ -4,14 +4,14 @@
  * Calculates per-flow logistics costs from real data tables.
  *
  * Empresa 1 — distance_matrix       : weight_kg × Frete(R$/kg) for distribution
- *             calibrated UF proxy     : rate (R$/kg-km) derived from Empresa 2 NF data
+ *             historical UF proxy     : values applied as R$/kg-km without validated calibration
  *               → Transfer = weight_kg × rate_per_kg_km[destUF] × distance_km
  * Empresa 2 — tabelas_cif_dist : weight-bracket rate lookup
  *             aux_custo_transferencia : real NF-based transfer rates
  *             aux_custo_armazenagem   : real storage tariffs per CD
  *
- * Kilometric rates for Empresa 1 transfer (cross-company calibrated proxy from
- * Empresa 2 NF data; never loaded as Empresa 1 observed data):
+ * Historical values applied as kilometric rates (dimensional calibration and
+ * supplier-to-CD distances are not established; exploratory use only):
  *   SP: 0.0083 R$/kg-km  |  MG: 0.0049 R$/kg-km
  *   ES: 0.0176 R$/kg-km  |  RJ: 0.0133 R$/kg-km
  *   fallback (cross-state): 0.0050 R$/kg-km
@@ -486,7 +486,7 @@ function calculateCompany1Costs(context, flows) {
     ? []
     : ['distance_matrix não disponível; usando fallback heurístico.'];
   warnings.push(
-    `Empresa 1: transferência usa proxy calibrado com ${MODEL_DEFAULTS.transfer_kilometric_rate_provenance.source_company} / ${MODEL_DEFAULTS.transfer_kilometric_rate_provenance.source_dataset}; não é uma tarifa observada da Empresa 1.`
+    `Empresa 1: transferência usa proxy histórico exploratório; a fonte registra R$/kg, mas o motor aplica R$/(kg·km), e a distância CD–destino não comprova o trecho fornecedor–CD. Não é tarifa observada nem calibração validada.`
   );
   const freightMaps = buildFreightMapE1(matrix);
   let distributionCost = 0;

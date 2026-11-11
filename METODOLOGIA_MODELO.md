@@ -125,7 +125,7 @@ cenários: Empresa 1 usa 30 dias e WACC de 15%; Empresa 2 usa 45 dias e WACC de
 12%. Os 45 dias e 15% em `MODEL_DEFAULTS` são somente fallback genérico para
 identificadores não cadastrados; eles não substituem as referências das duas
 empresas do estudo. Os dias da Empresa 1 são uma premissa equivalente a um mês,
-e seu WACC não é observado no pacote. Os parâmetros da Empresa 2 vêm do
+embora o campo WACC conste nas premissas de origem, sua periodicidade não está documentada e o valor do motor não coincide com o campo. A reconciliação permanece pendente; 15% é uma hipótese de execução, não valor observado validado. Os parâmetros da Empresa 2 vêm do
 workbook. O número de CDs não altera o custo de estoque neste modelo.
 
 Não há:

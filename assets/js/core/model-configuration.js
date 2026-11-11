@@ -21,6 +21,9 @@ export const MODEL_DEFAULTS = Object.freeze({
   }),
   transfer_kilometric_rate_provenance: Object.freeze({
     classification: 'cross_company_calibrated_proxy',
+    validation_status: 'unvalidated_unit_and_physical_route',
+    transfer_source_status: 'missing_supplier_cd_network',
+    decision_use: 'exploratory_only',
     source_company: 'empresa2',
     source_dataset: 'aux_custo_transferencia',
     rationale: 'Empresa 1 não possui custo de transferência observado por km no pacote.',
