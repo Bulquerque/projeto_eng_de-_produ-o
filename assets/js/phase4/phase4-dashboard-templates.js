@@ -19,6 +19,16 @@ export function renderSearchLog(searchLog) {
     ['Motivo da cobertura', searchLog.exactness_reason || '—'],
     ['Cobertura', coverage],
     [
+      'Espaço discreto base',
+      searchLog.base_candidate_space_size == null
+        ? '—'
+        : formatNumber(searchLog.base_candidate_space_size),
+    ],
+    [
+      'Espaço contado',
+      searchLog.candidate_space_size == null ? '—' : formatNumber(searchLog.candidate_space_size),
+    ],
+    [
       'Interpretação',
       searchLog.exact_search_space
         ? 'ótimo global no espaço enumerado'
@@ -38,6 +48,18 @@ export function renderSearchLog(searchLog) {
     [
       'Refino',
       `${formatNumber(searchLog.refinement_rounds)} x ${formatNumber(searchLog.refinement_seed_count)}`,
+    ],
+    [
+      'Refinos já no espaço base',
+      searchLog.refinement_candidates_within_declared_space == null
+        ? '—'
+        : formatNumber(searchLog.refinement_candidates_within_declared_space),
+    ],
+    [
+      'Refinos fora do espaço base',
+      searchLog.refinement_candidates_outside_declared_space == null
+        ? '—'
+        : formatNumber(searchLog.refinement_candidates_outside_declared_space),
     ],
     ['Melhor score', searchLog.best_score == null ? '—' : Number(searchLog.best_score).toFixed(1)],
     ['Top cenário', searchLog.best_scenario_id || '—'],
@@ -65,7 +87,11 @@ export function buildBaselineCardsHtml({ bundle, companyId }) {
       formatNumber((bundle?.model?.active_cds || []).length),
       'base do diagnóstico'
     ),
-    metric('Total baseline', formatBRL(c.total_with_tax, true), 'com tributo'),
+    metric(
+      'Total baseline canônico',
+      formatBRL(c.total_with_tax, true),
+      'referência contábil com tributo'
+    ),
     metric('Fluxos', formatNumber((bundle?.flows || []).length), 'base para candidatos'),
   ].join('');
 }
@@ -83,7 +109,7 @@ export function buildOptimizerInputTableHtml({
     ['Baseline usado', bundle?.model?.scenario_id || '—'],
     ['CDs ativos no baseline', formatNumber((bundle?.model?.active_cds || []).length)],
     ['Fluxos avaliados', formatNumber((bundle?.flows || []).length)],
-    ['Total baseline', formatBRL(c.total_with_tax, true)],
+    ['Total baseline canônico', formatBRL(c.total_with_tax, true)],
     [
       'Regime fiscal fixo',
       taxRegimeLabel(

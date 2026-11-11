@@ -56,6 +56,13 @@ function monteCarloInterpretation(summary, hasValidSamples) {
 
 export function renderScenarioMonteCarlo(state) {
   const summary = state.monteCarlo?.summary;
+  const pairing = state.monteCarlo?.pairing;
+  const pairingLabel =
+    pairing?.status === 'paired'
+      ? `Pareado por sorteios comuns (${Number(pairing.paired_baseline_iterations || 0)} iterações)`
+      : pairing?.status === 'legacy'
+        ? 'Legado: saving calculado contra o total fixo publicado do baseline.'
+        : 'Legado: resultado salvo sem metadados de pareamento do baseline.';
   const validIterations = Number(
     summary?.iterations_valid ?? summary?.iterations ?? state.monteCarlo?.samples?.length ?? 0
   );
@@ -146,6 +153,7 @@ export function renderScenarioMonteCarlo(state) {
         <thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
         <tbody>
           <tr><td>Perfil</td><td>${escapeHtml(monteCarloProfileLabel(summary.profile))}</td></tr>
+          <tr><td>Comparação com baseline</td><td>${escapeHtml(pairingLabel)}</td></tr>
           <tr><td>Seed / RNG</td><td>${escapeHtml(String(summary.seed_effective ?? summary.seed ?? '—'))} · ${escapeHtml(summary.rng_algorithm || '—')}</td></tr>
           <tr><td>Modelo</td><td>${escapeHtml(summary.analysis_type || 'exploratory_uncertainty_analysis')} · fonte: ${escapeHtml(summary.uncertainty_source || 'parametric_assumptions')} · histórico: ${summary.historical_distribution ? 'sim' : 'não'}</td></tr>
           <tr><td>Observações históricas</td><td>${escapeHtml(JSON.stringify(summary.historical_observation_counts || {}))}${summary.historical_sample_warning ? ` · ${escapeHtml(summary.historical_sample_warning)}` : ''}</td></tr>

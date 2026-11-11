@@ -59,8 +59,9 @@ function statusLabel(value) {
 }
 
 export function renderScenarioBuild(state) {
-  const modelDefaults = getCompanyModelDefaults(state.companyId);
-  const base = selectBaseline(state)?.model || {};
+  const baselineBundle = selectBaseline(state);
+  const modelDefaults = getCompanyModelDefaults(state.companyId, baselineBundle);
+  const base = baselineBundle?.model || {};
   const currentScenario = selectActiveScenario(state);
   const draft = state.ui.scenario_draft || currentScenario || {};
   const changes = draft.changes || {};
@@ -72,10 +73,8 @@ export function renderScenarioBuild(state) {
       [
         ...(Array.isArray(base.eligible_cds) ? base.eligible_cds : []),
         ...(Array.isArray(base.active_cds) ? base.active_cds : []),
-        ...(Array.isArray(selectBaseline(state)?.flows)
-          ? selectBaseline(state)
-              .flows.map((flow) => flow.cd ?? flow.cd_id)
-              .filter(Boolean)
+        ...(Array.isArray(baselineBundle?.flows)
+          ? baselineBundle.flows.map((flow) => flow.cd ?? flow.cd_id).filter(Boolean)
           : []),
       ].map(String)
     ),

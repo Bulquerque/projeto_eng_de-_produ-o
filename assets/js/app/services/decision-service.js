@@ -6,6 +6,7 @@ import { runFinalQAChecks } from '../../phase5/final-qa-checker.js';
 import { validateRelease } from '../../phase5/release-validator.js';
 import { buildExportPackage } from '../../phase5/export-center.js';
 import { runRiskAnalysis } from './risk-service.js';
+import { buildPhysicalComparisonBaseline } from '../../phase5/physical-comparison.js';
 
 function buildBlockedPackage(companyId, message, optimizer = null) {
   return {
@@ -153,6 +154,22 @@ export async function runDecisionPipeline({
     );
   }
   const selected = selection.selected_scenario;
+  const baselineResult =
+    selected.result?.baseline_mode === 'physical_unanchored'
+      ? optimizer.baseline_reference?.result ||
+        buildPhysicalComparisonBaseline({
+          companyId,
+          baselineBundle: context.baselineBundle,
+          selectedScenario: selected.scenario,
+        })
+      : null;
+  if (selected.result?.baseline_mode === 'physical_unanchored' && !baselineResult) {
+    return buildBlockedPackage(
+      companyId,
+      'Baseline físico indisponível para comparação.',
+      optimizer
+    );
+  }
   const risk = await runRiskAnalysis({
     provider,
     selectedScenario: selected.scenario,
@@ -163,6 +180,7 @@ export async function runDecisionPipeline({
   const comparison = compareScenarios({
     companyId,
     baselineBundle: context.baselineBundle,
+    baselineResult,
     scenarioResults: [selected.result],
   });
   const recommendation = buildRecommendation({

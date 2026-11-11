@@ -15,8 +15,14 @@ function validationError(message) {
   return { valid: false, message };
 }
 
-export function parseScenarioForm(data, checkedActiveCds, rawValues = {}, companyId = null) {
-  const modelDefaults = getCompanyModelDefaults(companyId);
+export function parseScenarioForm(
+  data,
+  checkedActiveCds,
+  rawValues = {},
+  companyId = null,
+  baselineBundle = null
+) {
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   const requestedTaxMode = data.get('tax_mode');
   const requestedTaxRegime = data.get('tax_regime');
   const taxYear = Number(data.get('tax_year')) || null;

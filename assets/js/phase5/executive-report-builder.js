@@ -270,9 +270,19 @@ export function buildExecutiveReportHtml({
     selectedScenario?.scenario_id ||
     selectedScenario?.result?.scenario_id ||
     'Cenário selecionado';
+  const selectedScenarioIds = new Set(
+    [
+      selectedScenario?.scenario_id,
+      selectedScenario?.result?.scenario_id,
+      selectedScenario?.scenario?.scenario_id,
+    ].filter(Boolean)
+  );
+  const comparisonRow = comparison?.comparison?.find((row) =>
+    selectedScenarioIds.has(row.scenario_id)
+  );
   const total = selectedScenario?.result?.total_with_tax ?? selectedScenario?.total_with_tax;
-  const saving = comparison?.saving_abs ?? comparison?.comparison?.[0]?.saving_abs;
-  const savingPct = comparison?.saving_pct;
+  const saving = comparison?.saving_abs ?? comparisonRow?.saving_abs;
+  const savingPct = comparison?.saving_pct ?? comparisonRow?.saving_pct;
   const robustnessIsCertified = robustness?.certified_robustness_score != null;
   return `<article class="executive-report-content">
     <h2>Relatório executivo — ${esc(companyId)}</h2>

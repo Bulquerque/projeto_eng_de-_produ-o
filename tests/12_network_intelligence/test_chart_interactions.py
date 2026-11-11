@@ -319,7 +319,8 @@ def test_mock_monetary_percentiles_are_derived_from_fixture_costs():
           return Number(summary.baseline_total_with_tax) === baselineTotal
             && samples.length === Number(summary.iterations_valid)
             && samples.every(sample => {
-              const expectedSaving = (baselineTotal-Number(sample.total_with_tax))/baselineTotal*100;
+              const pairedBaseline = Number(sample.baseline_total_with_tax ?? baselineTotal);
+              const expectedSaving = (pairedBaseline-Number(sample.total_with_tax))/pairedBaseline*100;
               return Math.abs(Number(sample.saving_pct)-expectedSaving)<0.001;
             })
             && summary.percentile_curve.every(point => {

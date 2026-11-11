@@ -40,7 +40,7 @@ export function buildScenarioFromForm({
   scenarioId = null,
 }) {
   const base = baselineBundle?.model || {};
-  const modelDefaults = getCompanyModelDefaults(companyId);
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   const baseCds = base.active_cds || [];
   const requested = unique(formValues.active_cds || baseCds);
   const scenarioName = sanitizeScenarioName(formValues.scenario_name);

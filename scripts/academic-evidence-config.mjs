@@ -108,6 +108,12 @@ const MC_SUMMARY_NUMBER_FIELDS = Object.freeze([
   'iterations',
   'iterations_requested',
   'iterations_valid',
+  'seed_effective',
+  'mean_delta_cost_brl',
+  'probability_tie',
+  'p10_delta_cost',
+  'p50_delta_cost',
+  'p90_delta_cost',
   'invalid_sample_count',
   'baseline_total_with_tax',
   'deterministic_total_with_tax',
@@ -333,6 +339,7 @@ export function projectAcademicReconciliation(value = {}) {
 function projectMonteCarloSummary(value) {
   if (!value || typeof value !== 'object') return null;
   const summary = safeNumberFields(value, MC_SUMMARY_NUMBER_FIELDS);
+  summary.rng_algorithm = value.rng_algorithm === 'mulberry32-v1' ? 'mulberry32-v1' : null;
   for (const [field, allowed] of Object.entries(MONTE_CARLO_ENUMS)) {
     const fieldValue =
       field === 'risk_band_policy' && value[field] && typeof value[field] === 'object'
@@ -366,6 +373,14 @@ function projectMonteCarloSummary(value) {
 
 export function projectMonteCarloExecutionEvidence(result = {}) {
   return {
+    pairing: result.pairing
+      ? {
+          method: result.pairing.method,
+          status: result.pairing.status,
+          baseline_mode: result.pairing.baseline_mode,
+          paired_baseline_iterations: result.pairing.paired_baseline_iterations,
+        }
+      : null,
     monte_carlo_status: ['success', 'error', 'blocked'].includes(result.monte_carlo_status)
       ? result.monte_carlo_status
       : null,
@@ -374,6 +389,11 @@ export function projectMonteCarloExecutionEvidence(result = {}) {
       { length: Math.min(20, safeCount(result.warnings)) },
       () => 'warning_present'
     ),
+    data_quality_status: ['complete', 'limited_fiscal_coverage'].includes(
+      result.data_quality_status
+    )
+      ? result.data_quality_status
+      : null,
     summary: projectMonteCarloSummary(result.summary),
   };
 }
@@ -385,28 +405,36 @@ export function projectAcademicScenarioResult({
   quality = null,
   scenarioId = null,
 } = {}) {
-  const activeCds = result.scenario?.changes?.active_cds || result.active_cds || [];
+  const activeCds = result.scenario?.changes?.active_cds || result.active_cds;
+  const projectedCount = normalizeEvidenceNumber(result.active_cds_count);
   const assumptions = buildScenarioAssumptionEvidence(result, baselineResult, result.scenario);
   return {
     scenario_id: projectSafeScenarioId(scenarioId),
     company_id: ['empresa1', 'empresa2'].includes(result.company_id) ? result.company_id : null,
-    active_cds_count: Array.isArray(activeCds) ? activeCds.length : 0,
+    active_cds_count: Array.isArray(activeCds)
+      ? activeCds.length
+      : Number.isInteger(projectedCount) && projectedCount >= 0
+        ? projectedCount
+        : 0,
     ...assumptions,
     reallocation_rule_original: ['nearest_available_cd', 'lowest_freight_available_cd'].includes(
-      reallocationAudit.source_reallocation_rule
+      reallocationAudit.source_reallocation_rule ?? result.reallocation_rule_original
     )
-      ? reallocationAudit.source_reallocation_rule
+      ? (reallocationAudit.source_reallocation_rule ?? result.reallocation_rule_original)
       : null,
     reallocation_rule_effective: ['nearest_available_cd', 'lowest_freight_available_cd'].includes(
-      reallocationAudit.effective_reallocation_rule ?? result.scenario?.changes?.reallocation_rule
+      reallocationAudit.effective_reallocation_rule ??
+        result.scenario?.changes?.reallocation_rule ??
+        result.reallocation_rule_effective
     )
       ? (reallocationAudit.effective_reallocation_rule ??
-        result.scenario?.changes?.reallocation_rule)
+        result.scenario?.changes?.reallocation_rule ??
+        result.reallocation_rule_effective)
       : null,
     costs: projectCosts(result.costs),
     total_with_tax: normalizeEvidenceNumber(result.total_with_tax),
     saving_pct: baselineResult ? buildScenarioSavingEvidence(result, baselineResult) : null,
-    quality: projectQuality(quality),
+    quality: projectQuality(quality ?? result.quality),
     simulation_status: ['success', 'invalid', 'error'].includes(result.simulation_status)
       ? result.simulation_status
       : null,
@@ -433,6 +461,14 @@ export function projectAcademicScenarioPlan(plan = {}) {
       : 'unknown',
     scenarios: (plan.scenarios || []).map((scenario, index) => ({
       scenario_id: `scenario_plan_${String(index + 1).padStart(3, '0')}`,
+      scenario_kind:
+        scenario.scenario_id === 'e1_14_cds_sem_ribeirao_preto'
+          ? 'e1_exclusion_a'
+          : scenario.scenario_id === 'e1_14_cds_sem_cajamar'
+            ? 'e1_exclusion_b'
+            : /^e1_cd_unico_\d{2}$/.test(scenario.scenario_id || '')
+              ? 'e1_single_cd_anonymized'
+              : 'other',
       scenario_name: `Cenário planejado ${index + 1}`,
       status: ['ready', 'not_reproducible'].includes(scenario.status) ? scenario.status : 'unknown',
       reason_code: scenario.status === 'ready' ? null : 'required_source_inputs_unavailable',
@@ -768,7 +804,7 @@ export function buildScenarioAssumptionEvidence(
   baselineResult = {},
   sourceScenario = null
 ) {
-  const changes = sourceScenario?.changes ?? result?.scenario?.changes ?? result?.changes ?? {};
+  const changes = sourceScenario?.changes ?? result?.scenario?.changes ?? result?.changes ?? result;
   const baselineChanges = baselineResult?.scenario?.changes ?? baselineResult?.changes ?? {};
   return {
     freight_multiplier: normalizeEvidenceNumber(

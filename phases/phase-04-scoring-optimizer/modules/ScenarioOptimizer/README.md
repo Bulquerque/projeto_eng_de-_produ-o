@@ -34,6 +34,14 @@ Roda busca leve no navegador, simula candidatos, aplica restrições, normaliza 
 ## Funções internas
 - `runOptimization`
 
+## Contagem do espaço de busca
+
+`candidate_space_size` conta o espaço discreto declarado pelo gerador: subconjuntos não vazios dos CDs-base multiplicados pelos valores discretos configurados para frete, estoque, tributo e demanda. Para `n` CDs e uma combinação fixa das demais dimensões, o tamanho teórico é `2^n - 1`.
+
+Refinamentos que mudam apenas os CDs continuam pertencendo a esse espaço teórico, mesmo quando o catálogo inicial limitado não os gerou. Eles aumentam os candidatos simulados e a cobertura, mas não o denominador. Só um refinamento que muda uma dimensão para fora dos valores declarados é contado como ponto adicional fora do espaço-base. O log separa tamanho-base, refinamentos únicos, refinamentos dentro/fora do domínio e tamanho contado. Refinamentos fora do domínio mantêm `exact_search_space=false`; um ranking desses candidatos não prova ótimo global em um espaço ampliado.
+
+`generated_candidates` conta candidatos produzidos antes da remoção de repetições entre rodadas; `simulated_candidates` conta candidatos únicos que chegaram à avaliação. A completude do espaço-base depende de `search_space_complete`, não apenas de esses totais coincidirem.
+
 ## Módulos chamados
 - `CandidateScenarioGenerator`
 - `ScenarioSimulator`

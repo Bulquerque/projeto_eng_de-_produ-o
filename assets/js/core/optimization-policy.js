@@ -13,8 +13,12 @@ export const CANONICAL_OPTIMIZATION_POLICY = {
   allow_tax_disabled: false,
 };
 
-export function buildCanonicalOptimizationConfig(optimizerConfig = {}, companyId = null) {
-  const modelDefaults = getCompanyModelDefaults(companyId);
+export function buildCanonicalOptimizationConfig(
+  optimizerConfig = {},
+  companyId = null,
+  baselineBundle = null
+) {
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   const requestedMax = Number(optimizerConfig.max_candidates ?? 2000);
   const requestedSeed = Number(optimizerConfig.seed ?? 42);
   return {

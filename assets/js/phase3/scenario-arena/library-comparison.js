@@ -15,7 +15,7 @@ export function buildLibraryComparisonRows({ companyId, library, currentResult, 
   if (!library) return null;
 
   const baselineBundle = library.baselineBundle;
-  const modelDefaults = getCompanyModelDefaults(companyId);
+  const modelDefaults = getCompanyModelDefaults(companyId, baselineBundle);
   const baselineTotal = Number(baselineBundle.costs.costs.total_with_tax || 0);
   const baselineRows = [
     {

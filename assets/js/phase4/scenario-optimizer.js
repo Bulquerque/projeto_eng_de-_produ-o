@@ -10,6 +10,7 @@ import {
   buildBaselineScenario,
   buildFailureResult,
   buildSearchLog,
+  classifyRefinementCandidates,
   compareExactRanking,
   scenarioChangesKey,
   uniqueByChanges,
@@ -32,8 +33,17 @@ const REFINEMENT_CONFIG = Object.freeze({
   wacc_steps: [],
 });
 
+// Keep the optimizer's reference and every candidate on the same physical model.
+// The simulator's default may use the canonical anchor for an unchanged network.
+const OPTIMIZER_BASELINE_MODE = 'physical_unanchored';
+
 function evaluateCandidate({ companyId, scenario, baselineBundle, constraints }) {
-  const result = runScenario({ companyId, scenario, baselineBundle });
+  const result = runScenario({
+    companyId,
+    scenario,
+    baselineBundle,
+    baselineMode: OPTIMIZER_BASELINE_MODE,
+  });
   if (result.simulation_status !== 'success') {
     return { reason: result.errors?.[0] || 'simulação inválida' };
   }
@@ -132,7 +142,15 @@ export function runOptimization({
   constraints = {},
   optimizerConfig = {},
 }) {
-  const canonicalConfig = buildCanonicalOptimizationConfig(optimizerConfig, companyId);
+  const researchTaxDisabled = optimizerConfig.research_tax_disabled === true;
+  const effectiveConstraints = researchTaxDisabled
+    ? { ...constraints, allow_tax_disabled: true }
+    : constraints;
+  const canonicalConfig = buildCanonicalOptimizationConfig(
+    optimizerConfig,
+    companyId,
+    baselineBundle
+  );
   const requestedMethod = String(canonicalConfig.method || 'exact_discrete');
   const maxCandidates = Number(canonicalConfig.max_candidates ?? 2000);
   const refinementRounds = Math.max(0, Math.floor(Number(optimizerConfig.refinement_rounds ?? 2)));
@@ -157,7 +175,7 @@ export function runOptimization({
     });
   }
   const effectiveObjective = normalizeObjective(objective);
-  const constraintValidation = validateConstraintConfig(constraints);
+  const constraintValidation = validateConstraintConfig(effectiveConstraints);
   if (!constraintValidation.valid) {
     return buildFailureResult({
       companyId,
@@ -173,21 +191,22 @@ export function runOptimization({
     });
   }
 
+  const candidateGenerationConfig = {
+    max_candidates: maxCandidates,
+    freight_multipliers: [CANONICAL_OPTIMIZATION_POLICY.freight_multiplier],
+    inventory_days_options: [canonicalConfig.inventory_days],
+    base_tax_mode: researchTaxDisabled ? 'disabled' : CANONICAL_OPTIMIZATION_POLICY.tax_mode,
+    base_tax_regime: researchTaxDisabled ? 'disabled' : CANONICAL_OPTIMIZATION_POLICY.tax_regime,
+    tax_year: researchTaxDisabled ? null : taxYear,
+    allow_tax_disabled: researchTaxDisabled || CANONICAL_OPTIMIZATION_POLICY.allow_tax_disabled,
+    demand_multipliers: [CANONICAL_OPTIMIZATION_POLICY.demand_multiplier],
+    seed: canonicalConfig.seed,
+    exhaustive_subsets: optimizerConfig.exhaustive_subsets === true,
+  };
   const generated = generateCandidateScenarios({
     companyId,
     baselineBundle,
-    generationConfig: {
-      max_candidates: maxCandidates,
-      freight_multipliers: [CANONICAL_OPTIMIZATION_POLICY.freight_multiplier],
-      inventory_days_options: [CANONICAL_OPTIMIZATION_POLICY.inventory_days],
-      base_tax_mode: CANONICAL_OPTIMIZATION_POLICY.tax_mode,
-      base_tax_regime: CANONICAL_OPTIMIZATION_POLICY.tax_regime,
-      tax_year: taxYear,
-      allow_tax_disabled: CANONICAL_OPTIMIZATION_POLICY.allow_tax_disabled,
-      demand_multipliers: [CANONICAL_OPTIMIZATION_POLICY.demand_multiplier],
-      seed: canonicalConfig.seed,
-      exhaustive_subsets: optimizerConfig.exhaustive_subsets === true,
-    },
+    generationConfig: candidateGenerationConfig,
   });
 
   const generatedCount = generated.candidate_scenarios.length;
@@ -240,12 +259,21 @@ export function runOptimization({
   const initialEvaluation = evaluateCandidates(generated.candidate_scenarios, {
     companyId,
     baselineBundle,
-    constraints,
+    constraints: effectiveConstraints,
   });
   const { records: scenarioRecords, invalid, invalidReasons } = initialEvaluation;
 
-  const baselineScenario = buildBaselineScenario(companyId, baselineBundle);
-  const baselineResult = runScenario({ companyId, scenario: baselineScenario, baselineBundle });
+  const baselineScenario = buildBaselineScenario(
+    companyId,
+    baselineBundle,
+    generated.candidate_scenarios[0]?.changes
+  );
+  const baselineResult = runScenario({
+    companyId,
+    scenario: baselineScenario,
+    baselineBundle,
+    baselineMode: OPTIMIZER_BASELINE_MODE,
+  });
   if (baselineResult.simulation_status !== 'success') {
     const message = 'Falha ao simular o baseline de referência.';
     return buildFailureResult({
@@ -274,27 +302,15 @@ export function runOptimization({
     constraint: { passes_constraints: true, violations: [], warnings: [] },
   };
 
-  const preliminaryMetrics = extractScenarioMetrics({
-    companyId,
-    scenarioResults: scenarioRecords,
-  });
-  const preliminaryNormalized = normalizeMetrics({
-    companyId,
-    scenarioMetrics: preliminaryMetrics.scenario_metrics,
-    referenceMetrics: buildBaselineReferenceMetrics(baselineRecord),
-  });
-  const preliminaryScoring = scoreScenarios({
-    companyId,
-    objective: effectiveObjective,
-    normalizedMetrics: preliminaryNormalized.normalized_metrics,
-  });
+  // Select refinement seeds from a stable candidate order, never from a
+  // profile's preliminary score. This keeps the evaluated catalog identical
+  // across profiles for the same company, generated space and constraints.
   const refinementSeeds = uniqueByChanges(
-    (preliminaryScoring.scored_scenarios.length
-      ? preliminaryScoring.scored_scenarios
-          .map((s) => scenarioRecords.find((r) => r.result.scenario_id === s.scenario_id))
-          .filter(Boolean)
-      : [baselineRecord]
-    ).slice(0, refinementSeedCount)
+    [...scenarioRecords]
+      .sort((a, b) =>
+        String(a.result?.scenario_id || '').localeCompare(String(b.result?.scenario_id || ''))
+      )
+      .slice(0, refinementSeedCount)
   );
 
   const refinedCandidates = [];
@@ -327,7 +343,7 @@ export function runOptimization({
   const refinedEvaluation = evaluateCandidates(refinedCandidates, {
     companyId,
     baselineBundle,
-    constraints,
+    constraints: effectiveConstraints,
     deduplicate: true,
     seenScenarioIds,
     seenScenarioKeys,
@@ -339,38 +355,65 @@ export function runOptimization({
     simulated: refinedSimulated,
   } = refinedEvaluation;
 
-  const allScenarioRecords = uniqueByChanges([...scenarioRecords, ...refinedRecords]);
   const baseCandidateSpaceSize = Number(
     generated.generation_summary?.candidate_space_size ?? generatedCount
   );
-  const uniqueRefinementCount = uniqueByChanges(refinedCandidates).filter((candidate) => {
-    const changes = candidate?.changes || {};
-    const key = scenarioChangesKey(changes);
-    return !baseScenarioKeys.has(key);
-  }).length;
-  const candidateSpaceSize = baseCandidateSpaceSize + uniqueRefinementCount;
+  const searchDomain = {
+    active_cd_ids: baselineBundle?.model?.active_cds || [],
+    dimensions: {
+      freight_multipliers: candidateGenerationConfig.freight_multipliers,
+      demand_multipliers: candidateGenerationConfig.demand_multipliers,
+      inventory_days_options: candidateGenerationConfig.inventory_days_options,
+      tax_modes: candidateGenerationConfig.allow_tax_disabled
+        ? [
+            ...new Set(
+              [generated.candidate_scenarios[0]?.changes?.tax_mode, 'disabled'].filter(Boolean)
+            ),
+          ]
+        : [
+            generated.candidate_scenarios[0]?.changes?.tax_mode ||
+              candidateGenerationConfig.base_tax_mode,
+          ],
+    },
+    fixed_changes: generated.candidate_scenarios[0]?.changes || {},
+  };
+  const refinementCounts = classifyRefinementCandidates({
+    candidates: refinedCandidates,
+    baseScenarioKeys,
+    domain: searchDomain,
+    baseCandidateSpaceSize,
+  });
+  const { outsideDeclaredSpaceCount: outsideRefinementCount } = refinementCounts;
+  const allScenarioRecords = uniqueByChanges([...scenarioRecords, ...refinedRecords]);
+  const candidateSpaceSize = refinementCounts.candidateSpaceSize;
   const totalSimulated = generatedCount + refinedSimulated;
   const totalValid = scenarioRecords.length + refinedRecords.length;
   const totalInvalid = invalid + refinedInvalid;
   const limitedFiscalRecords = allScenarioRecords.filter(
     (record) => record.data_quality?.coverage_limited
   );
+  const physicalProxyRecords = allScenarioRecords.filter(
+    (record) =>
+      record.result?.diagnostics?.transfer_proxy_assessment?.decision_use === 'exploratory_only'
+  );
   const coverageRatio = candidateSpaceSize > 0 ? totalSimulated / candidateSpaceSize : 0;
   const baseSpaceComplete = Boolean(generated.generation_summary?.search_space_complete);
   const exactSearchSpace =
     baseSpaceComplete &&
     !generated.generation_summary?.limited_by_max_candidates &&
-    uniqueRefinementCount === 0;
+    outsideRefinementCount === 0;
   const exactnessReason = exactSearchSpace
     ? 'Todas as combinações discretas declaradas foram enumeradas sem truncamento ou refino adicional.'
-    : baseSpaceComplete && uniqueRefinementCount > 0
-      ? 'A enumeração-base é completa, mas o refino adicionou combinações novas fora do espaço declarado.'
+    : baseSpaceComplete && outsideRefinementCount > 0
+      ? 'A enumeração-base é completa, mas o refino adicionou candidatos fora do domínio discreto declarado.'
       : generated.generation_summary?.limited_by_max_candidates
         ? 'A enumeração foi truncada pelo limite máximo de candidatos.'
         : 'A estratégia de CDs é um catálogo limitado; não representa todas as combinações possíveis.';
 
   const spaceLimited =
-    !baseSpaceComplete || Boolean(generated.generation_summary?.limited_by_max_candidates);
+    !baseSpaceComplete ||
+    Boolean(generated.generation_summary?.limited_by_max_candidates) ||
+    outsideRefinementCount > 0;
 
   if (!allScenarioRecords.length) {
     const message = 'Nenhum cenário viável encontrado no espaço discreto modelado.';
@@ -389,6 +432,11 @@ export function runOptimization({
         refinementSeedCount,
         refinementCandidatesGenerated: refinementGenerated,
         refinementCandidatesSimulated: refinedSimulated,
+        refinementCandidatesUnique: refinementCounts.uniqueCandidateCount,
+        refinementCandidatesNewToCatalog: refinementCounts.newToCatalogCount,
+        refinementCandidatesWithinDeclaredSpace: refinementCounts.withinDeclaredSpaceCount,
+        refinementCandidatesOutsideDeclaredSpace: refinementCounts.outsideDeclaredSpaceCount,
+        baseCandidateSpaceSize,
         seed: canonicalConfig.seed,
         spaceLimited,
         exactSearchSpace,
@@ -427,20 +475,28 @@ export function runOptimization({
 
   return {
     company_id: companyId,
+    comparison_baseline_mode: OPTIMIZER_BASELINE_MODE,
+    refinement_seed_policy: 'stable_scenario_id_order_independent_of_objective',
+    tax_research_mode: researchTaxDisabled ? 'all_scenarios_tax_disabled' : 'canonical_tax_policy',
     optimizer_status: exactSearchSpace ? 'success' : 'success_with_limited_space',
     result_scope: exactSearchSpace ? 'exact_declared_space' : 'conditional_declared_catalog',
     data_quality_status: limitedFiscalRecords.length ? 'limited_fiscal_coverage' : 'complete',
-    decision_use: limitedFiscalRecords.length ? 'exploratory_only' : 'decision_support',
+    decision_use:
+      researchTaxDisabled || limitedFiscalRecords.length || physicalProxyRecords.length
+        ? 'exploratory_only'
+        : 'decision_support',
     data_quality_summary: {
       candidates_with_limited_fiscal_coverage: limitedFiscalRecords.length,
       candidates_with_complete_fiscal_coverage:
         allScenarioRecords.length - limitedFiscalRecords.length,
+      candidates_with_physical_proxy_limit: physicalProxyRecords.length,
     },
     search_strategy: 'broad_then_refine',
     best_scenarios,
     best_by_total_cost,
     scored_scenarios: enriched,
     scenario_records: allScenarioRecords,
+    baseline_reference: baselineRecord,
     metrics,
     normalized,
     ranking_sensitivity: rankingSensitivity,
@@ -460,6 +516,11 @@ export function runOptimization({
         refinementSeedCount,
         refinementCandidatesGenerated: refinementGenerated,
         refinementCandidatesSimulated: refinedSimulated,
+        refinementCandidatesUnique: refinementCounts.uniqueCandidateCount,
+        refinementCandidatesNewToCatalog: refinementCounts.newToCatalogCount,
+        refinementCandidatesWithinDeclaredSpace: refinementCounts.withinDeclaredSpaceCount,
+        refinementCandidatesOutsideDeclaredSpace: refinementCounts.outsideDeclaredSpaceCount,
+        baseCandidateSpaceSize,
         seed: canonicalConfig.seed,
         spaceLimited,
         bestScore: best_scenarios[0]?.final_score ?? null,
@@ -473,6 +534,16 @@ export function runOptimization({
     },
     warnings: [
       ...searchWarnings,
+      ...(researchTaxDisabled
+        ? [
+            'Modo de pesquisa sem tributos: baseline e todos os candidatos são simulados sem tributo; resultados somente exploratórios.',
+          ]
+        : []),
+      ...(physicalProxyRecords.length
+        ? [
+            'A transferência usa proxy física não validada; o ranking é exploratório e não constitui recomendação operacional.',
+          ]
+        : []),
       ...(exactSearchSpace
         ? []
         : [

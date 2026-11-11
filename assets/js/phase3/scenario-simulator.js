@@ -120,7 +120,7 @@ function applyCanonicalBaselineReference({ companyId, scenario, baselineBundle, 
   const baselineNetwork = isCanonicalBaselineNetwork({ companyId, scenario, baselineBundle });
   if (!baselineNetwork) return costs;
   const exactBaseline = isCanonicalBaselineScenario({ companyId, scenario, baselineBundle });
-  const defaults = getCompanyModelDefaults(companyId);
+  const defaults = getCompanyModelDefaults(companyId, baselineBundle);
 
   const official = baselineBundle?.costs?.costs || {};
   const numericOr = (value, fallback) => safeNumber(value, safeNumber(fallback));
@@ -195,7 +195,7 @@ function applyCanonicalBaselineReference({ companyId, scenario, baselineBundle, 
 
 // ── Costs ─────────────────────────────────────────────────────────────────────
 
-function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }) {
+function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt, baselineMode }) {
   const dm = safeNumber(scenario.changes?.demand_multiplier, 1);
   const physical = calculatePhysicalCosts({ companyId, scenario, baselineBundle, rebuilt });
   const { taxImpact, taxDetails } = resolveTaxImpact({
@@ -212,20 +212,35 @@ function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }
     inventoryCost: physical.inventory_cost,
   });
 
-  const anchored = applyCanonicalBaselineReference({
-    companyId,
-    scenario,
-    baselineBundle,
-    costs: {
-      ...physical,
-      tax_impact: taxImpact,
-      total_logistics_cost: totalLogistics,
-      total_with_tax: calculateTotalWithTax({ logisticsCost: totalLogistics, taxImpact }),
-      tax_details: taxDetails,
-      physical_warnings: physical.warnings,
-      diagnostics: physical.diagnostics,
-    },
-  });
+  const calculatedCosts = {
+    ...physical,
+    tax_impact: taxImpact,
+    total_logistics_cost: totalLogistics,
+    total_with_tax: calculateTotalWithTax({ logisticsCost: totalLogistics, taxImpact }),
+    tax_details: taxDetails,
+    physical_warnings: physical.warnings,
+    diagnostics: physical.diagnostics,
+  };
+  const anchored =
+    baselineMode === 'physical_unanchored'
+      ? {
+          ...calculatedCosts,
+          diagnostics: {
+            ...(calculatedCosts.diagnostics || {}),
+            baseline_mode: 'physical_unanchored',
+            canonical_baseline_reference: false,
+          },
+          physical_warnings: [
+            ...(calculatedCosts.physical_warnings || []),
+            'Baseline calculado sem ancoragem canônica; custos físicos usam os dados e fallbacks disponíveis.',
+          ],
+        }
+      : applyCanonicalBaselineReference({
+          companyId,
+          scenario,
+          baselineBundle,
+          costs: calculatedCosts,
+        });
   return {
     ...anchored,
     tax_details: alignTaxDetailsToTotal(anchored.tax_details, anchored.tax_impact),
@@ -234,8 +249,16 @@ function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-export function runScenario({ companyId, scenario, baselineBundle }) {
-  scenario = normalizeScenarioModelDefaults(companyId, scenario);
+export function runScenario({
+  companyId,
+  scenario,
+  baselineBundle,
+  baselineMode = 'canonical_reference',
+}) {
+  if (!['canonical_reference', 'physical_unanchored'].includes(baselineMode)) {
+    throw new RangeError(`Modo de baseline desconhecido: ${baselineMode}`);
+  }
+  scenario = normalizeScenarioModelDefaults(companyId, scenario, baselineBundle);
   const validation = validateScenario({ companyId, scenario, baselineBundle });
   if (!validation.valid) {
     return {
@@ -258,7 +281,13 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
     distanceMatrix: baselineBundle.core_data?.distance_matrix,
   });
 
-  const costs = calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt });
+  const costs = calculateScenarioCosts({
+    companyId,
+    scenario,
+    baselineBundle,
+    rebuilt,
+    baselineMode,
+  });
 
   const td = costs.tax_details;
   const taxUsesProxy = Number(td?.tax_coverage?.proxy_flow_count || 0) > 0;
@@ -333,6 +362,7 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
     tax_results: taxResults,
     total_with_tax: costs.total_with_tax,
     calculation_method: costs.calculation_method,
+    ...(baselineMode === 'physical_unanchored' ? { baseline_mode: baselineMode } : {}),
     diagnostics: costs.diagnostics,
     reconciliation,
     validation,

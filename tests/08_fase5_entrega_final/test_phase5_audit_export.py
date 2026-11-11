@@ -34,7 +34,7 @@ for (const companyId of ['empresa1','empresa2']) {
  }
  if(Number(selected.scenario?.changes?.freight_multiplier ?? 1)!==1) throw new Error('selected scenario changed freight');
  if(Number(selected.scenario?.changes?.demand_multiplier ?? 1)!==1) throw new Error('selected scenario changed demand');
- if(Number(selected.scenario?.changes?.inventory_days ?? 45)!==45) throw new Error('selected scenario changed inventory');
+ if(Number(selected.scenario?.changes?.inventory_days)!==(companyId==='empresa1' ? 30 : 45)) throw new Error('selected scenario changed company inventory assumption');
  if((selected.scenario?.changes?.tax_mode || '')==='disabled') throw new Error('selected scenario disabled tax');
  const stress=runStressTests({companyId,selectedScenario:selected.scenario,baselineBundle:bundle});
  const robustness=calculateRobustness({companyId,scenarioId:selected.scenario_id,stressResults:stress.stress_results,quality:selected.quality});
@@ -46,6 +46,8 @@ for (const companyId of ['empresa1','empresa2']) {
  if(!html.includes('Relatório executivo') || !html.includes(companyId)) throw new Error('bad report html');
  if(!html.includes('2026 · ano-teste')) throw new Error('tax period missing from report');
  if(!html.includes('Paridade com workbook')) throw new Error('workbook parity missing');
+ const selectedComparisonHtml=buildExecutiveReportHtml({companyId,selectedScenario:{...selected,scenario_id:'chosen-scenario'},recommendation:rec,stress,robustness,audit,comparison:{comparison:[{scenario_id:'baseline',saving_abs:0,saving_pct:0},{scenario_id:'chosen-scenario',saving_abs:10,saving_pct:4}]},workbookParity});
+ if(!/R\$\s*10/.test(selectedComparisonHtml)) throw new Error('executive report did not select the chosen scenario comparison');
  const pkg=buildExportPackage({companyId,decisionPackage:{company_id:companyId},stress,audit,recommendation:rec,selectedScenario:selected,robustness,comparison:{saving_abs:1},workbookParity});
  if(pkg.files.length<4) throw new Error('bad export count');
  JSON.parse(pkg.files.find(f=>f.filename.endsWith('.json')).content);

@@ -109,17 +109,16 @@ O mapa detalhado está em [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md). O proc
 Para gerar novamente os números, a evidência e a planilha do relatório:
 
 ```bash
-node scripts/generate_academic_evidence.mjs
-node scripts/build_academic_package.mjs
+VISAGIO_EVIDENCE_OUTPUT=entregaveis/nova-execucao/evidence.json node scripts/generate_academic_evidence.mjs
 ```
 
-`generate_academic_evidence.mjs` usa apenas as dependências do projeto. A geração da
+`generate_academic_evidence.mjs` usa apenas as dependências do projeto. O antigo `build_academic_package.mjs` lê somente `entregaveis/evidence.json`; não o execute sobre uma execução distinta sem adaptação. A geração da
 planilha requer `@oai/artifact-tool` instalado localmente ou o caminho local informado
 por `VISAGIO_ARTIFACT_TOOL_PATH`; o script não depende de caminhos absolutos de uma
 máquina específica e falha com uma mensagem explícita quando essa dependência não está
 disponível.
 
-Os arquivos derivados ficam em `entregaveis/`, ignorado pelo Git. Antes de entregar ou publicar, confira o manifesto gerado e os arquivos incluídos; não presuma que uma saída local é segura para distribuição apenas por estar fora do Git.
+Os arquivos derivados ficam em `entregaveis/`, ignorado pelo Git. Escolha um novo caminho a cada execução: o gerador não sobrescreve um arquivo de evidência existente. Para a auditoria canônica, utilize um commit registrado e árvore limpa; uma árvore alterada fica marcada como bloqueada na evidência. Antes de entregar ou publicar, confira o manifesto gerado e os arquivos incluídos; não presuma que uma saída local é segura para distribuição apenas por estar fora do Git.
 
 ## Documentação para o relatório
 

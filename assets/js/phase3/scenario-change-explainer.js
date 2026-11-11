@@ -5,14 +5,9 @@ function pct(v) {
     ? `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`
     : '—';
 }
-export function explainScenarioChanges({
-  baselineBundle: _baselineBundle,
-  scenario,
-  comparisonRow,
-  quality,
-}) {
+export function explainScenarioChanges({ baselineBundle, scenario, comparisonRow, quality }) {
   const c = scenario?.changes || {};
-  const modelDefaults = getCompanyModelDefaults(scenario?.company_id);
+  const modelDefaults = getCompanyModelDefaults(scenario?.company_id, baselineBundle);
   const out = [];
   const drivers = [];
   if ((c.closed_cds || []).length) {

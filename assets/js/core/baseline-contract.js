@@ -21,7 +21,7 @@ export function isCanonicalBaselineNetwork({ companyId, scenario, baselineBundle
 
 export function isCanonicalBaselineScenario({ companyId, scenario, baselineBundle } = {}) {
   const changes = scenario?.changes || {};
-  const modelDefaults = getCompanyModelDefaults(companyId || scenario?.company_id);
+  const modelDefaults = getCompanyModelDefaults(companyId || scenario?.company_id, baselineBundle);
   return (
     isCanonicalBaselineNetwork({ companyId, scenario, baselineBundle }) &&
     safeNumber(changes.freight_multiplier, 1) === 1 &&

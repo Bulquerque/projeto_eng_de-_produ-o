@@ -7,7 +7,7 @@ import {
   selectDecision,
   selectScenarios,
 } from '../selectors/business-selectors.js';
-import { comparisonCandidates } from '../pages/results.js';
+import { baselineValues, comparisonCandidates } from '../pages/results.js';
 
 function finite(value) {
   const number = Number(value);
@@ -41,7 +41,7 @@ function renderComparison(state) {
   }
 
   const decision = selectDecision(state);
-  const baselineCosts = selectBaseline(state)?.costs?.costs || {};
+  const baselineCosts = baselineValues(state).costs;
   const selected = selectActiveScenario(state);
   const allComparisonRows = decision.comparison?.comparison || [];
   const comparisonRows = allComparisonRows;
@@ -56,6 +56,11 @@ function renderComparison(state) {
       !result ||
       (candidate.company_id && candidate.company_id !== state.context?.company_id) ||
       (result.company_id && result.company_id !== state.context?.company_id)
+    )
+      return;
+    if (
+      (result.baseline_mode || 'canonical_reference') !==
+      (decision.result?.baseline_mode || 'canonical_reference')
     )
       return;
     const total = finite(result.total_with_tax);
