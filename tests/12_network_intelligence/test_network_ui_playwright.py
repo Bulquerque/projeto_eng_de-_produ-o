@@ -48,9 +48,11 @@ def run_server():
 
 
 def open_details(page, selector):
-    page.locator(selector).first.evaluate(
+    target = page.locator(selector).first
+    target.evaluate(
         "el => { for (let parent = el.parentElement; parent; parent = parent.parentElement) { if (parent.tagName === 'DETAILS') parent.open = true; } }"
     )
+    target.wait_for(state='visible', timeout=5000)
 
 
 def test_network_ui_is_the_default_public_entrypoint():
