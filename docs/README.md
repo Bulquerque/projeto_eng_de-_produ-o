@@ -12,6 +12,11 @@ Use este índice para localizar documentação por finalidade. Os documentos num
 6. [`05_testes_aceite/README.md`](05_testes_aceite/README.md) — inventário, QA atual do Site e evidências de aceite.
 7. [`06_manifestos/`](06_manifestos/) — manifestos de documentação e de release.
 
+## Premissas do modelo
+
+- [`REGISTRO_PREMISSAS_NUMERICAS.md`](REGISTRO_PREMISSAS_NUMERICAS.md) — fontes,
+  fórmulas, limites e classificação das heurísticas quantitativas.
+
 ## Explorar implementação e execução
 
 - [`../PROJECT_STRUCTURE.md`](../PROJECT_STRUCTURE.md) — árvore resumida e entry points reais.

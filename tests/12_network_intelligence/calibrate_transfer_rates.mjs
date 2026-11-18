@@ -22,22 +22,22 @@ const result = calibrateTransferRates({
 
 assert.equal(result.source, 'ERP sintético');
 assert.equal(result.period, '2026-Q1');
-assert.equal(result.method, 'sum_freight_brl_divided_by_sum_weight_kg_times_distance_km');
-assert.equal(result.unit, 'BRL_per_kg_km');
+assert.equal(result.method, 'sum_freight_brl_divided_by_sum_weight_kg');
+assert.equal(result.unit, 'BRL_per_kg');
 assert.equal(result.input_row_count, 12);
-assert.equal(result.rows_used, 4);
+assert.equal(result.rows_used, 6);
 assert.deepEqual(result.rows_excluded, {
   invalid_uf: 3,
-  nonpositive_or_missing_input: 5,
+  nonpositive_or_missing_input: 3,
 });
 assert.deepEqual(Object.keys(result.rates_by_destination_uf), ['MG', 'PR', 'SP']);
-assert.equal(result.rates_by_destination_uf.MG.rate_brl_per_kg_km, 0.6);
-assert.equal(result.rates_by_destination_uf.PR.rate_brl_per_kg_km, 2);
-assert.equal(result.rates_by_destination_uf.SP.rows_used, 2);
-assert.equal(result.rates_by_destination_uf.SP.freight_brl_sum, 400);
-assert.equal(result.rates_by_destination_uf.SP.weight_distance_kg_km_sum, 200);
-assert.equal(result.rates_by_destination_uf.SP.rate_brl_per_kg_km, 2);
-assert.match(result.warning, /revise filtros fiscais, período e origem\/distância/);
+assert.equal(result.rates_by_destination_uf.MG.rate_brl_per_kg, 6);
+assert.equal(result.rates_by_destination_uf.PR.rate_brl_per_kg, 6);
+assert.equal(result.rates_by_destination_uf.SP.rows_used, 4);
+assert.equal(result.rates_by_destination_uf.SP.freight_brl_sum, 410);
+assert.equal(result.rates_by_destination_uf.SP.weight_kg_sum, 32);
+assert.equal(result.rates_by_destination_uf.SP.rate_brl_per_kg, 410 / 32);
+assert.match(result.warning, /revise filtros fiscais, período e origem/);
 
 assert.throws(
   () => calibrateTransferRates({ rows: {}, source: 'synthetic', period: '2026' }),

@@ -46,7 +46,11 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
   const baseCds = baselineBundle?.model?.active_cds || [];
   const maxCandidates = Number(generationConfig.max_candidates ?? 120);
   const freight = generationConfig.freight_multipliers || [0.95, 1, 1.1];
-  const inv = generationConfig.inventory_days_options || [30, modelDefaults.inventory_days, 60];
+  const inv =
+    generationConfig.inventory_days_options || [
+      modelDefaults.inventory_days,
+      ...modelDefaults.inventory_days_sensitivity,
+    ];
   const taxYear = Number(generationConfig.tax_year) || null;
   const taxRegime = taxYear
     ? resolveTaxRegime({ year: taxYear })

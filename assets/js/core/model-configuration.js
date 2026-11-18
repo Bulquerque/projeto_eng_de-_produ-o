@@ -8,32 +8,35 @@ import { safeNumber } from './common.js';
  * referências diferentes para a mesma grandeza.
  */
 export const MODEL_DEFAULTS = Object.freeze({
-  inventory_days: 45,
+  // Prosthesis/bionics peer DIO: mean inventory / cost of sales × 365 (Ottobock FY2025).
+  inventory_days: 100.4,
+  inventory_days_sensitivity: Object.freeze([154, 187.2]),
+  // MIT medical-device case estimate for annual inventory carrying costs; not financial WACC.
   reference_wacc: 0.15,
-  missing_freight_revenue_pct: 0.025,
-  transfer_to_distribution_ratio: 0.4,
-  transfer_kilometric_fallback_rate: 0.005,
-  transfer_kilometric_rate_by_uf: Object.freeze({
+  // ANS/Anvisa knee prosthesis example: landed logistics (R$335) / sale price (R$13,000).
+  missing_freight_revenue_pct: 335 / 13000,
+  // FDC 2018 shares: long-haul transportation / urban distribution.
+  transfer_to_distribution_ratio: 0.401 / 0.234,
+  // Company 2 workbook proxy: weighted FRETE VALOR / PESO (R$/kg), not R$/kg-km.
+  transfer_rate_per_kg_fallback: 0.005,
+  transfer_rate_per_kg_by_uf: Object.freeze({
     SP: 0.0083,
     MG: 0.0049,
     ES: 0.0176,
     RJ: 0.0133,
   }),
-  transfer_kilometric_rate_provenance: Object.freeze({
+  transfer_rate_per_kg_provenance: Object.freeze({
     classification: 'cross_company_calibrated_proxy',
     source_company: 'empresa2',
     source_dataset: 'aux_custo_transferencia',
-    rationale: 'Empresa 1 não possui custo de transferência observado por km no pacote.',
-    interpretation: 'proxy de engenharia; não é tarifa histórica da Empresa 1.',
+    rationale: 'Empresa 1 não possui custo de transferência observado por kg no pacote.',
+    interpretation: 'proxy em R$/kg; não é tarifa histórica da Empresa 1 nem inclui distância.',
     calibration_method: 'weighted_freight_per_kg_by_destination_uf',
-    recommended_recalibration_method: 'weighted_freight_per_kg_km_by_destination_uf',
-    reproducibility_status: 'historical_method_incomplete',
+    reproducibility_status: 'limited_runtime_snapshot',
     reproducibility_note:
-      'A proveniência registrada descreve uma ponderação em R$/kg, enquanto o motor aplica R$/kg-km. scripts/calibrate_transfer_rates.mjs define uma recalibração compatível com a unidade do motor; os valores existentes permanecem como snapshot até validar distância, período, filtros e fonte autorizada.',
+      'Os valores são snapshot do workbook da Empresa 2; a memória de linhas e o período da extração devem acompanhar a fonte interna.',
   }),
-  storage_active_cd_floor_ratio: 0.65,
-  storage_active_cd_slope: 0.35,
-  storage_active_cd_provenance: 'engineering_hypothesis_not_observed_per_cd',
+  storage_active_cd_provenance: 'company_baseline_cost_per_active_cd',
 });
 
 export const COMPANY_MODEL_DEFAULTS = Object.freeze({
@@ -43,15 +46,22 @@ export const COMPANY_MODEL_DEFAULTS = Object.freeze({
     reference_wacc: 0.15,
     inventory_days_provenance:
       'premissa textual do TCC: estoque de referência equivalente a um mês',
-    wacc_provenance: 'premissa de engenharia; não há WACC observado no pacote da Empresa 1',
+    wacc_provenance: '15% annual inventory carrying-cost proxy from an MIT medical-device case',
   }),
   empresa2: Object.freeze({
     ...MODEL_DEFAULTS,
-    inventory_days: 45,
+    inventory_days: 100.4,
     reference_wacc: 0.12,
-    inventory_days_provenance: 'premissa de cenário sem dias de estoque observados no pacote',
+    inventory_days_provenance: 'proxy DIO Ottobock FY2025; empresa não tem dias de estoque no pacote',
     wacc_provenance: 'Parâmetros do workbook da Empresa 2: WACC anual de 12%',
   }),
+});
+
+export const TAX_HEURISTIC_DEFAULTS = Object.freeze({
+  // ANS/Anvisa knee prosthesis example: R$455 sales taxes / R$13,000 sale price.
+  prosthesis_sales_tax_proxy: 455 / 13000,
+  prosthesis_sales_tax_source:
+    'ANS/Anvisa OPME report; 2015 knee-prosthesis worked example, historical proxy only',
 });
 
 export function getCompanyModelDefaults(companyId) {

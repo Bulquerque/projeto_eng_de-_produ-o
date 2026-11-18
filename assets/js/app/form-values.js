@@ -52,7 +52,7 @@ export function validateScenarioValues(values) {
     return validationError('Dias de estoque não pode ser negativo.');
   }
   if (!Number.isFinite(values.wacc) || values.wacc < 0) {
-    return validationError('WACC não pode ser negativo.');
+    return validationError('A taxa anual aplicada ao estoque não pode ser negativa.');
   }
   if (values.tax_mode === 'disabled') {
     return validationError('O modo tributário desligado não é permitido pela política vigente.');
