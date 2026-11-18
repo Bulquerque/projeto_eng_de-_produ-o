@@ -19,12 +19,20 @@ import { runSensitivity, runSensitivityMatrix } from '../../phase5/sensitivity-e
 import { calculateRobustness } from '../../phase5/robustness-scorer.js';
 import { assertCompanyPolicy, assertKnownCompany } from '../company-registry.js';
 import { assertProviderContract } from './provider-contract.js';
+import { getCompanyModelDefaults } from '../../core/model-configuration.js';
 
 const MOCK_MARKERS = ['empresa_mock', 'synthetic_mock', 'synthetic_fixture', 'demo_only'];
 
-function sensitivityValues(variable, compact = false) {
-  if (variable === 'inventory_days') return [30, 45, 60];
-  if (variable === 'wacc') return [0.1, 0.15, 0.2];
+function sensitivityValues(variable, companyId, compact = false) {
+  const modelDefaults = getCompanyModelDefaults(companyId);
+  if (variable === 'inventory_days')
+    return [modelDefaults.inventory_days, ...modelDefaults.inventory_days_sensitivity];
+  if (variable === 'wacc')
+    return [
+      modelDefaults.reference_wacc - 0.05,
+      modelDefaults.reference_wacc,
+      modelDefaults.reference_wacc + 0.05,
+    ];
   return compact ? [0.9, 1, 1.1] : [0.8, 0.9, 1, 1.1, 1.2];
 }
 
@@ -237,7 +245,7 @@ export async function createProjectProvider() {
         companyId,
         selectedScenario,
         baselineBundle: this.baselineBundle,
-        sensitivityConfig: { variable, values: sensitivityValues(variable) },
+        sensitivityConfig: { variable, values: sensitivityValues(variable, companyId) },
       });
       const xVariable = config.sensitivity_x || 'freight_multiplier';
       const yVariable = config.sensitivity_y || 'demand_multiplier';
@@ -248,8 +256,8 @@ export async function createProjectProvider() {
         matrixConfig: {
           xVariable,
           yVariable,
-          xValues: sensitivityValues(xVariable, true),
-          yValues: sensitivityValues(yVariable, true),
+          xValues: sensitivityValues(xVariable, companyId, true),
+          yValues: sensitivityValues(yVariable, companyId, true),
         },
       });
       const robustness = calculateRobustness({

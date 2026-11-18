@@ -611,15 +611,15 @@ def test_transfer_rate_calibration_is_weighted_and_aggregated():
             {destination_uf:'MG', freight_brl:2, weight_kg:0, distance_km:1},
           ],
         });
-        assert.equal(result.method, 'sum_freight_brl_divided_by_sum_weight_kg_times_distance_km');
-        assert.equal(result.unit, 'BRL_per_kg_km');
+        assert.equal(result.method, 'sum_freight_brl_divided_by_sum_weight_kg');
+        assert.equal(result.unit, 'BRL_per_kg');
         assert.equal(result.rows_used, 3);
         assert.deepEqual(result.rows_excluded, {invalid_uf:1, nonpositive_or_missing_input:1});
-        assert.equal(result.rates_by_destination_uf.SP.rate_brl_per_kg_km, 400 / 250);
-        assert.equal(result.rates_by_destination_uf.RJ.rate_brl_per_kg_km, 2);
+        assert.equal(result.rates_by_destination_uf.SP.rate_brl_per_kg, 400 / 30);
+        assert.equal(result.rates_by_destination_uf.RJ.rate_brl_per_kg, 6);
         assert.equal(Object.hasOwn(result, 'rows'), false, 'output must not include source rows');
-        assert.equal(MODEL_DEFAULTS.transfer_kilometric_rate_provenance.reproducibility_status, 'historical_method_incomplete');
-        assert.equal(MODEL_DEFAULTS.transfer_kilometric_rate_provenance.recommended_recalibration_method, 'weighted_freight_per_kg_km_by_destination_uf');
+        assert.equal(MODEL_DEFAULTS.transfer_rate_per_kg_provenance.reproducibility_status, 'limited_runtime_snapshot');
+        assert.equal(MODEL_DEFAULTS.transfer_rate_per_kg_provenance.calibration_method, 'weighted_freight_per_kg_by_destination_uf');
         console.log('TRANSFER_RATE_CALIBRATION_OK');
         """
     )

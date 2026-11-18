@@ -59,7 +59,7 @@ const UNCERTAINTY_OPTIONS = [
       ['freight_multiplier', 'Frete'],
       ['demand_multiplier', 'Demanda'],
       ['inventory_days', 'Dias de estoque'],
-      ['wacc', 'WACC'],
+      ['wacc', 'Custo estoque a.a.'],
       ['tax_multiplier', 'Tributo'],
     ],
   ],
@@ -78,7 +78,7 @@ const UNCERTAINTY_OPTIONS = [
       ['freight_multiplier', 'Frete'],
       ['demand_multiplier', 'Demanda'],
       ['inventory_days', 'Dias de estoque'],
-      ['wacc', 'WACC'],
+      ['wacc', 'Custo estoque a.a.'],
     ],
   ],
   [
@@ -88,7 +88,7 @@ const UNCERTAINTY_OPTIONS = [
       ['freight_multiplier', 'Frete'],
       ['demand_multiplier', 'Demanda'],
       ['inventory_days', 'Dias de estoque'],
-      ['wacc', 'WACC'],
+      ['wacc', 'Custo estoque a.a.'],
     ],
   ],
   [
@@ -98,7 +98,7 @@ const UNCERTAINTY_OPTIONS = [
       ['demand_multiplier', 'Demanda'],
       ['freight_multiplier', 'Frete'],
       ['inventory_days', 'Dias de estoque'],
-      ['wacc', 'WACC'],
+      ['wacc', 'Custo estoque a.a.'],
     ],
   ],
 ];

@@ -1,5 +1,6 @@
 import { getFiscalCategoryRule, normalizeFiscalCategory } from './fiscal-category-rules.js';
 import { safeNumber } from '../common.js';
+import { TAX_HEURISTIC_DEFAULTS } from '../model-configuration.js';
 
 function getFlowRevenue(flow) {
   return safeNumber(
@@ -17,11 +18,14 @@ export function buildFiscalFlows({
   const baseRevenue = safeNumber(
     baselineBundle?.flow_summary?.total_annual_revenue ??
       baselineBundle?.flow_summary?.total_revenue_cd_to_destination ??
-      baselineBundle?.costs?.costs?.total_logistics_cost ??
       0
   );
-  const baselineTaxPerRevenue =
-    baseRevenue > 0 ? safeNumber(baseTax.total_tax_impact, 0) / baseRevenue : 0.18;
+  const baseTaxImpact = Number(baseTax.total_tax_impact);
+  const hasReconciledBaselineTax =
+    baseRevenue > 0 && Number.isFinite(baseTaxImpact) && baseTaxImpact > 0;
+  const baselineTaxPerRevenue = hasReconciledBaselineTax
+    ? baseTaxImpact / baseRevenue
+    : TAX_HEURISTIC_DEFAULTS.prosthesis_sales_tax_proxy;
   const flows = Array.isArray(rebuiltFlows) ? rebuiltFlows : [];
   const fiscalFlows = [];
   const warnings = [];
@@ -140,5 +144,8 @@ export function buildFiscalFlows({
       errors,
     },
     baseline_tax_per_revenue: baselineTaxPerRevenue,
+    baseline_tax_per_revenue_source: hasReconciledBaselineTax
+      ? 'reconciled_baseline_tax_over_revenue'
+      : TAX_HEURISTIC_DEFAULTS.prosthesis_sales_tax_source,
   };
 }

@@ -20,7 +20,7 @@ const validScenarioData = form({ scenario_name: 'Cenário A', tax_mode: 'current
 const scenario = parseScenarioForm(validScenarioData, [{ value: 'CD-1' }]);
 assert.deepEqual(scenario, {
   scenario_name: 'Cenário A', active_cds: ['CD-1'], tax_year: null, freight_multiplier: 1,
-  demand_multiplier: 1, inventory_days: 45, wacc: 0.15, tax_mode: 'current', tax_regime: 'current', reallocation_rule: 'nearest_available_cd',
+  demand_multiplier: 1, inventory_days: 100.4, wacc: 0.15, tax_mode: 'current', tax_regime: 'current', reallocation_rule: 'nearest_available_cd',
 });
 assert.equal(parseScenarioForm(validScenarioData, [{value:'CD-1'}], {}, 'empresa1').reallocation_rule, 'lowest_freight_available_cd');
 assert.equal(parseScenarioForm(validScenarioData, [{value:'CD-1'}], {}, 'empresa2').reallocation_rule, 'nearest_available_cd');
@@ -32,7 +32,7 @@ assert.equal(validateScenarioValues({ ...scenario, active_cds: [] }).message, 'S
 assert.equal(validateScenarioValues({ ...scenario, freight_multiplier: 0 }).message, 'O multiplicador de frete deve ser maior ou igual a 0,1.');
 assert.equal(validateScenarioValues({ ...scenario, demand_multiplier: 0 }).message, 'O multiplicador de demanda deve ser maior ou igual a 0,1.');
 assert.equal(validateScenarioValues({ ...scenario, inventory_days: -1 }).message, 'Dias de estoque não pode ser negativo.');
-assert.equal(validateScenarioValues({ ...scenario, wacc: -1 }).message, 'WACC não pode ser negativo.');
+assert.equal(validateScenarioValues({ ...scenario, wacc: -1 }).message, 'A taxa anual aplicada ao estoque não pode ser negativa.');
 assert.equal(validateScenarioValues({ ...scenario, tax_mode: 'disabled' }).message, 'O modo tributário desligado não é permitido pela política vigente.');
 
 const optimizer = parseOptimizerForm(form({}), {});

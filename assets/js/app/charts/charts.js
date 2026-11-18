@@ -63,7 +63,7 @@ export function renderSensitivity(canvasId, sensitivity) {
     freight_multiplier: 'Frete',
     demand_multiplier: 'Demanda',
     inventory_days: 'Dias de estoque',
-    wacc: 'WACC',
+    wacc: 'Custo estoque a.a.',
     tax_multiplier: 'Tributo',
   };
   const variable = sensitivity?.most_sensitive_variable || rows[0]?.variable;
@@ -232,7 +232,7 @@ export function renderRiskDrivers(canvasId, monteCarlo) {
     freight_multiplier: 'Frete',
     demand_multiplier: 'Demanda',
     inventory_days: 'Dias de estoque',
-    wacc: 'WACC',
+    wacc: 'Custo estoque a.a.',
     tax_multiplier: 'Tributo',
   };
   const rows = drivers
@@ -273,7 +273,7 @@ export function renderRiskScatter(canvasId, monteCarlo) {
     freight_multiplier: 'Frete',
     demand_multiplier: 'Demanda',
     inventory_days: 'Dias de estoque',
-    wacc: 'WACC',
+    wacc: 'Custo estoque a.a.',
     tax_multiplier: 'Tributo',
   };
   renderScatterChart(canvasId, {

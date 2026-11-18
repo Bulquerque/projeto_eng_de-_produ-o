@@ -264,7 +264,7 @@ export function renderRiskAnalysis(state, advanced = false) {
       ['broad', 'Amplo'],
     ],
     'balanced'
-  )}</select></label><label class="ni-workspace-field"><span>Fator de análise</span><select name="scatter_driver">${options('scatter_driver', [['freight_multiplier', 'Frete'], ['demand_multiplier', 'Demanda'], ['inventory_days', 'Dias de estoque'], ['wacc', 'Custo de capital'], ...(state.context.provider_kind === 'mock' ? [] : [['tax_multiplier', 'Tributos']])], 'freight_multiplier')}</select></label><label class="ni-workspace-field"><span>Teste de estresse</span><select name="stress_profile">${options(
+  )}</select></label><label class="ni-workspace-field"><span>Fator de análise</span><select name="scatter_driver">${options('scatter_driver', [['freight_multiplier', 'Frete'], ['demand_multiplier', 'Demanda'], ['inventory_days', 'Dias de estoque'], ['wacc', 'Custo estoque a.a.'], ...(state.context.provider_kind === 'mock' ? [] : [['tax_multiplier', 'Tributos']])], 'freight_multiplier')}</select></label><label class="ni-workspace-field"><span>Teste de estresse</span><select name="stress_profile">${options(
     'stress_profile',
     [
       ['standard', 'Padrão'],
@@ -277,7 +277,7 @@ export function renderRiskAnalysis(state, advanced = false) {
       ['freight_multiplier', 'Frete'],
       ['demand_multiplier', 'Demanda'],
       ['inventory_days', 'Dias de estoque'],
-      ['wacc', 'Custo de capital'],
+      ['wacc', 'Custo estoque a.a.'],
     ],
     'freight_multiplier'
   )}</select></label><label class="ni-workspace-field"><span>Eixo horizontal da matriz</span><select name="sensitivity_x">${options(
@@ -286,7 +286,7 @@ export function renderRiskAnalysis(state, advanced = false) {
       ['freight_multiplier', 'Frete'],
       ['demand_multiplier', 'Demanda'],
       ['inventory_days', 'Dias de estoque'],
-      ['wacc', 'Custo de capital'],
+      ['wacc', 'Custo estoque a.a.'],
     ],
     'freight_multiplier'
   )}</select></label><label class="ni-workspace-field"><span>Eixo vertical da matriz</span><select name="sensitivity_y">${options(
@@ -295,7 +295,7 @@ export function renderRiskAnalysis(state, advanced = false) {
       ['demand_multiplier', 'Demanda'],
       ['freight_multiplier', 'Frete'],
       ['inventory_days', 'Dias de estoque'],
-      ['wacc', 'Custo de capital'],
+      ['wacc', 'Custo estoque a.a.'],
     ],
     'demand_multiplier'
   )}</select></label><button type="submit" class="ni-button primary" data-testid="risk-run">Recalcular risco</button></form></details>`;

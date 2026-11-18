@@ -40,7 +40,7 @@ function variableLabel(variable) {
       freight_multiplier: 'Frete',
       demand_multiplier: 'Demanda',
       inventory_days: 'Estoque',
-      wacc: 'WACC',
+      wacc: 'Custo estoque a.a.',
     }[variable] || variable
   );
 }

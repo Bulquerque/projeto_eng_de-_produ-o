@@ -384,12 +384,13 @@ function runDecisionPipeline(controls = readDecisionControls()) {
 function sensitivityValues(variable, companyId = state.companyId) {
   const modelDefaults = getCompanyModelDefaults(companyId);
   if (variable === 'inventory_days')
+    return [modelDefaults.inventory_days, ...modelDefaults.inventory_days_sensitivity];
+  if (variable === 'wacc')
     return [
-      Math.max(0, modelDefaults.inventory_days - 15),
-      modelDefaults.inventory_days,
-      modelDefaults.inventory_days + 15,
+      modelDefaults.reference_wacc - 0.05,
+      modelDefaults.reference_wacc,
+      modelDefaults.reference_wacc + 0.05,
     ];
-  if (variable === 'wacc') return [0.1, modelDefaults.reference_wacc, 0.2];
   return [0.9, 1.0, 1.1, 1.2];
 }
 function renderAll() {

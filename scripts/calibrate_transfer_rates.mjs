@@ -21,14 +21,11 @@ export function calibrateTransferRates({ rows, source, period }) {
     }
     const freight = Number(row.freight_brl);
     const weight = Number(row.weight_kg);
-    const distance = Number(row.distance_km);
     if (
       !Number.isFinite(freight) ||
       freight <= 0 ||
       !Number.isFinite(weight) ||
-      weight <= 0 ||
-      !Number.isFinite(distance) ||
-      distance <= 0
+      weight <= 0
     ) {
       excluded.nonpositive_or_missing_input += 1;
       continue;
@@ -36,11 +33,11 @@ export function calibrateTransferRates({ rows, source, period }) {
     const aggregate = byUf.get(uf) || {
       rows_used: 0,
       freight_brl_sum: 0,
-      weight_distance_kg_km_sum: 0,
+      weight_kg_sum: 0,
     };
     aggregate.rows_used += 1;
     aggregate.freight_brl_sum += freight;
-    aggregate.weight_distance_kg_km_sum += weight * distance;
+    aggregate.weight_kg_sum += weight;
     byUf.set(uf, aggregate);
   }
 
@@ -51,15 +48,15 @@ export function calibrateTransferRates({ rows, source, period }) {
         uf,
         {
           ...aggregate,
-          rate_brl_per_kg_km: aggregate.freight_brl_sum / aggregate.weight_distance_kg_km_sum,
+          rate_brl_per_kg: aggregate.freight_brl_sum / aggregate.weight_kg_sum,
         },
       ])
   );
   return {
     source: String(source).trim(),
     period: String(period).trim(),
-    method: 'sum_freight_brl_divided_by_sum_weight_kg_times_distance_km',
-    unit: 'BRL_per_kg_km',
+    method: 'sum_freight_brl_divided_by_sum_weight_kg',
+    unit: 'BRL_per_kg',
     input_row_count: rows.length,
     rows_used: Object.values(rates_by_destination_uf).reduce(
       (sum, item) => sum + item.rows_used,
@@ -68,7 +65,7 @@ export function calibrateTransferRates({ rows, source, period }) {
     rows_excluded: excluded,
     rates_by_destination_uf,
     warning:
-      'Agregados para calibração; revise filtros fiscais, período e origem/distância antes de substituir qualquer premissa do modelo.',
+      'Agregados para calibração; revise filtros fiscais, período e origem antes de substituir qualquer premissa do modelo.',
   };
 }
 

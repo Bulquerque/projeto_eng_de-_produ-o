@@ -12,7 +12,7 @@ const MONTE_CARLO_DRIVER_LABELS = {
   freight_multiplier: 'Frete',
   demand_multiplier: 'Demanda',
   inventory_days: 'Dias de estoque',
-  wacc: 'WACC',
+  wacc: 'Custo estoque a.a.',
   tax_multiplier: 'Tributo',
 };
 const VALID_RISK_BANDS = new Set(['high', 'medium', 'low']);

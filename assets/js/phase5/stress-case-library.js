@@ -8,7 +8,11 @@ export function getDefaultStressCases(profile = 'standard') {
       name: 'Demanda -10%',
       changes: { demand_multiplier_delta: -0.1 },
     },
-    { case_id: 'wacc_mais_5pp', name: 'WACC +5 p.p.', changes: { wacc_delta: 0.05 } },
+    {
+      case_id: 'wacc_mais_5pp',
+      name: 'Taxa anual do estoque +5 p.p.',
+      changes: { wacc_delta: 0.05 },
+    },
     {
       case_id: 'estoque_mais_15d',
       name: 'Estoque +15 dias',
