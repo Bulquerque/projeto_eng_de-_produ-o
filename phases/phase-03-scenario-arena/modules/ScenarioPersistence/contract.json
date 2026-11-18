@@ -58,5 +58,5 @@
     ]
   },
   "file": "assets/js/phase3/scenario-persistence.js",
-  "validation_note": "A persistência valida apenas empresa e IDs com suas próprias funções (`validateStoredScenario`/`validateImportedScenario`); ScenarioValidator é executado pelo dashboard e simulador, não por este módulo."
+  "validation_note": "Os cenários importados passam por `validateImportedScenario`; a lista persistida é segregada por empresa e filtrada ao ser lida pela Network UI. `ScenarioValidator` é aplicado à simulação no dashboard legado."
 }

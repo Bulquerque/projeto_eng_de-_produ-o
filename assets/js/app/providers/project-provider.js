@@ -19,12 +19,19 @@ import { runSensitivity, runSensitivityMatrix } from '../../phase5/sensitivity-e
 import { calculateRobustness } from '../../phase5/robustness-scorer.js';
 import { assertCompanyPolicy, assertKnownCompany } from '../company-registry.js';
 import { assertProviderContract } from './provider-contract.js';
+import { MODEL_DEFAULTS, MONTE_CARLO_CONFIG } from '../../core/model-configuration.js';
 
 const MOCK_MARKERS = ['empresa_mock', 'synthetic_mock', 'synthetic_fixture', 'demo_only'];
 
 function sensitivityValues(variable, compact = false) {
-  if (variable === 'inventory_days') return [30, 45, 60];
-  if (variable === 'wacc') return [0.1, 0.15, 0.2];
+  if (variable === 'inventory_days')
+    return [MODEL_DEFAULTS.inventory_days, ...MODEL_DEFAULTS.inventory_days_sensitivity];
+  if (variable === 'wacc')
+    return [
+      MODEL_DEFAULTS.reference_wacc - 0.05,
+      MODEL_DEFAULTS.reference_wacc,
+      MODEL_DEFAULTS.reference_wacc + 0.05,
+    ];
   return compact ? [0.9, 1, 1.1] : [0.8, 0.9, 1, 1.1, 1.2];
 }
 
@@ -204,8 +211,8 @@ export async function createProjectProvider() {
         selectedScenario,
         baselineBundle: this.baselineBundle,
         deterministicResult: result,
-        iterations: Number(config.iterations || 300),
-        seed: Number(config.seed || 42),
+        iterations: Number(config.iterations || MONTE_CARLO_CONFIG.iterations),
+        seed: Number(config.seed || MONTE_CARLO_CONFIG.seed),
         config: {
           profile: config.profile || 'balanced',
           scatter_driver: config.scatter_driver || 'freight_multiplier',
@@ -276,17 +283,26 @@ export async function createProjectProvider() {
         max_candidates: Number(config.max_candidates || 2000),
         seed: Number(config.seed ?? 42),
       });
+      const effectiveConstraints = defaultConstraints({
+        ...this.optimizationConfig,
+        constraints,
+      });
       const result = runDomainOptimization({
         companyId,
         baselineBundle: this.baselineBundle,
         objective: effectiveObjective,
-        constraints: defaultConstraints({
-          ...this.optimizationConfig,
-          constraints,
-        }),
+        constraints: effectiveConstraints,
         optimizerConfig,
       });
-      this.lastOptimization = { ...result, objective: effectiveObjective };
+      this.lastOptimization = {
+        ...result,
+        objective: effectiveObjective,
+        requested_config: {
+          profile_id: profileId,
+          constraints: effectiveConstraints,
+          optimizer_config: optimizerConfig,
+        },
+      };
       assertNoMockLeakage(result, companyId);
       return this.lastOptimization;
     },
@@ -301,6 +317,7 @@ export async function createProjectProvider() {
         baselineBundle: this.baselineBundle,
         scenarios: this.scenarioLibrary?.scenarios || [],
         optimizationConfig: this.optimizationConfig,
+        optimizer: this.lastOptimization,
       };
     },
     getHealth() {

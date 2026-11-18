@@ -85,7 +85,7 @@ export function buildRefinementVariants({
         Math.round((Number(current.inventory_days || MODEL_DEFAULTS.inventory_days) + delta) / 5) *
           5,
         15,
-        90
+        365
       ),
     });
   }

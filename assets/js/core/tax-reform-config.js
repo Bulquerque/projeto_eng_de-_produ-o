@@ -36,6 +36,13 @@ function normalizeRegimes(regimes = {}) {
   return out;
 }
 
+/**
+ * This configuration intentionally mixes statutory transition fields with
+ * dated estimates and exploratory category proxies. See
+ * docs/REGISTRO_PREMISSAS_NUMERICAS.md before interpreting a rate as legal or
+ * company-observed. In particular, the model's global transition weights do
+ * not constitute a complete tax calculation by tax type.
+ */
 export const DEFAULT_TAX_REFORM_CONFIG = {
   default_tax_mode: 'current',
   default_tax_regime: 'current',

@@ -24,28 +24,88 @@ def test_app_foundation_contracts():
         import { COMPANY_REGISTRY, assertCompanyPolicy } from './assets/js/app/company-registry.js';
         import { buildAppConfig, resolveInitialCompany } from './assets/js/app/config.js';
         import { isKnownRoute, normalizeRoute, parseRoute, replaceCompanyQuery } from './assets/js/app/router.js';
-        import { clearScenarioResults, createEmptyData, createInitialState, createStateStore, commitProviderSnapshot, getSafeStateSnapshot } from './assets/js/app/state.js';
+        import { clearScenarioResults, createEmptyData, createInitialState, createStateStore, commitProviderSnapshot, getSafeStateSnapshot, resetCompanyScopedState } from './assets/js/app/state.js';
         import { formatMetric, readMetric } from './assets/js/app/metric-registry.js';
+        import { COST_COMPONENTS } from './assets/js/app/cost-components.js';
+        import { evidenceClassLabel, robustnessPresentation, userStatusLabel } from './assets/js/app/presentation/status.js';
+        import { createChartPipeline } from './assets/js/app/chart-pipeline.js';
 
         assert.equal(COMPANY_REGISTRY.empresa1.provider, 'project');
         assert.equal(COMPANY_REGISTRY.empresa2.provider, 'project');
         assert.equal(COMPANY_REGISTRY.empresa_mock.release_policy, 'demo_only');
         assert.equal(resolveInitialCompany({ company_id: 'empresa_mock' }, 'project'), 'empresa_mock');
-        assert.equal(buildAppConfig({ request: { company_id: 'empresa_mock', network_ui: true }, location: { protocol: 'https:' } }).company_id, 'empresa_mock');
+        assert.equal(buildAppConfig({ request: { company_id: 'empresa_mock' }, location: { protocol: 'https:' } }).company_id, 'empresa_mock');
         assert.throws(() => assertCompanyPolicy('empresa1', { providerKind: 'mock' }));
-        assert.equal(normalizeRoute('#/diagnostico-baseline'), '#/network/overview/summary');
-        assert.equal(normalizeRoute('#erros'), '#/network/dev/console?tab=errors');
-        assert.equal(isKnownRoute('#erros'), true);
-        assert.equal(parseRoute('#erros').path, '/network/dev/console');
+        assert.equal(normalizeRoute('#/network/overview/summary'), '#/network/overview/summary');
+        assert.equal(normalizeRoute('#/diagnostico-baseline?company=empresa_mock'), '#/network/overview/summary?company=empresa_mock');
+        assert.equal(normalizeRoute('#/simulacao-otimizacao?scenario=abc'), '#/network/scenarios/build?scenario=abc');
+        assert.equal(normalizeRoute('#/homologacao-relatorio?tab=checks'), '#/network/trust/validation?tab=checks');
+        assert.equal(normalizeRoute('#/fase-3-cenarios?scenario=abc'), '#/network/scenarios/build?scenario=abc');
+        assert.equal(normalizeRoute('#/fase-4-score-otimizador'), '#/network/optimizer/configure');
+        assert.equal(normalizeRoute('#/fase-5-entrega-final'), '#/network/trust/validation');
+        assert.equal(isKnownRoute('#/fase-4-score-otimizador'), true);
+        assert.equal(parseRoute('#/simulacao-otimizacao?scenario=abc').query.get('scenario'), 'abc');
+        assert.equal(isKnownRoute('#/network/dev/console?tab=errors'), true);
+        assert.equal(parseRoute('#/network/dev/console?tab=errors').path, '/network/dev/console');
         const store = createStateStore(createInitialState({ company_id: 'empresa1', default_route: '#/network/overview/summary' }));
+        let notifications = 0;
+        const unsubscribe = store.subscribe(() => { notifications += 1; });
+        store.update((state) => { state.ui.scenario_draft = { scenario_name: 'Draft' }; }, { notify: false });
+        assert.equal(store.getState().ui.scenario_draft.scenario_name, 'Draft');
+        assert.equal(notifications, 0);
+        store.update((state) => { state.ui.scenario_draft_dirty = true; });
+        assert.equal(notifications, 1);
+        unsubscribe();
+        assert.deepEqual(COST_COMPONENTS, [
+          { key: 'transfer_cost', label: 'Transferência' },
+          { key: 'distribution_cost', label: 'Distribuição' },
+          { key: 'storage_cost', label: 'Armazenagem' },
+          { key: 'inventory_cost', label: 'Estoque' },
+          { key: 'tax_impact', label: 'Tributos' },
+        ]);
+        assert.equal(userStatusLabel('pass'), 'Aprovado');
+        assert.equal(evidenceClassLabel('proxy'), 'Proxy');
+        assert.equal(robustnessPresentation({ conditional_robustness_score: 68 }).value, 68);
+        const chartCalls = [];
+        const chartPipeline = createChartPipeline(Object.fromEntries(
+          ['overview', 'decision', 'trust', 'bindMap', 'cost', 'volume', 'distance', 'risk', 'sensitivity', 'histogram', 'cdf', 'totalCurve', 'drivers', 'scatter', 'probability', 'ranking']
+            .map((name) => [name, (...args) => chartCalls.push([name, ...args])])
+        ));
+        const chartState = { data: { baseline: { flows: ['flow'] }, scenario_result: 'result', monte_carlo: 'mc', sensitivity: 'sensitivity', optimizer: 'optimizer' } };
+        const chartRoot = {};
+        chartPipeline({ root: chartRoot, path: '/network/overview/costs', state: chartState });
+        assert.deepEqual(chartCalls.map(([name]) => name), ['overview', 'decision', 'trust', 'bindMap', 'cost']);
+        assert.deepEqual(chartCalls[4], ['cost', 'niCostChart', chartState.data.scenario_result]);
+        chartCalls.length = 0;
+        chartPipeline({ root: chartRoot, path: '/network/scenarios/risk', state: chartState });
+        assert.deepEqual(chartCalls.map(([name]) => name), [
+          'overview', 'decision', 'trust', 'bindMap', 'risk', 'sensitivity', 'histogram', 'cdf',
+          'totalCurve', 'drivers', 'scatter', 'probability',
+        ]);
         assert.deepEqual(store.getState().data.saved_scenarios, []);
         const firstData = createEmptyData();
         const secondData = createEmptyData();
         firstData.scenarios.push({ scenario_id: 'isolated' });
         assert.deepEqual(secondData.scenarios, []);
+        store.getState().data.audit = { company_id: 'empresa1' };
+        store.getState().data.release = { release_status: 'passed' };
+        store.getState().data.export_package = { files: ['stale'] };
         store.getState().data.selected_scenario = { scenario_id: 'stale' };
         clearScenarioResults(store.getState());
         assert.equal(store.getState().data.selected_scenario, null);
+        assert.equal(store.getState().data.audit, null);
+        assert.equal(store.getState().data.release, null);
+        assert.equal(store.getState().data.export_package, null);
+        const transient = createInitialState({ company_id: 'empresa1' });
+        transient.ui.optimizer_config = { profile_id: 'cfo', seed: 73 };
+        transient.ui.risk_config = { seed: 73 };
+        transient.ui.scenario_draft_dirty = true;
+        transient.ui.compared_scenario_ids = ['old'];
+        resetCompanyScopedState(transient, 'empresa2');
+        assert.equal(transient.ui.optimizer_config, null);
+        assert.equal(transient.ui.risk_config, null);
+        assert.equal(transient.ui.scenario_draft_dirty, false);
+        assert.equal(transient.ui.compared_scenario_ids, null);
         assert.equal(replaceCompanyQuery('empresa1'), null);
         commitProviderSnapshot(store.getState(), { company_id: 'empresa1', provider_kind: 'project', status: 'ready', data: { baseline: { model: { active_cds: ['A'] } } } });
         assert.equal(store.getState().data.baseline.model.active_cds[0], 'A');
@@ -72,6 +132,8 @@ def test_mock_fixture_isolation_contract():
     mock_provider = (APP / 'providers/mock-provider.js').read_text(encoding='utf-8')
     project_provider = (APP / 'providers/project-provider.js').read_text(encoding='utf-8')
     main = (APP / 'main.js').read_text(encoding='utf-8')
+    scenario_actions = (APP / 'scenario-actions.js').read_text(encoding='utf-8')
+    analysis_actions = (APP / 'analysis-actions.js').read_text(encoding='utf-8')
     dev_console = (APP / 'dev/dev-console.js').read_text(encoding='utf-8')
     shell_source = (APP / 'shell.js').read_text(encoding='utf-8')
     bindings_source = (APP / 'bindings.js').read_text(encoding='utf-8')
@@ -86,13 +148,18 @@ def test_mock_fixture_isolation_contract():
     assert 'runDomainOptimization' in project_provider
     assert 'return assertNoMockLeakage(' in project_provider
     assert 'return assertNoMockLeakage(packageResult' in project_provider
-    assert 'let operationId = 0' in main
-    assert 'let activeAction = null' in main
-    assert "beginAction('scenario'" in main
-    assert "beginAction('decision'" in main
+    assert "import { createOperationGuard } from './operation-guard.js'" in main
+    assert 'createOperationGuard({ getState: store.getState' in main
+    assert "import { createScenarioActions } from './scenario-actions.js'" in main
+    assert 'const scenarioActions = createScenarioActions({' in main
+    assert '...scenarioActions' in main
+    assert "import { createAnalysisActions } from './analysis-actions.js'" in main
+    assert 'const analysisActions = createAnalysisActions({' in main
+    assert '...analysisActions' in main
+    assert "beginAction('decision'" in analysis_actions
     assert 'packageExportsInFlight' in main
     assert 'if (index === 0 && exportInFlight) return;' in main
-    assert 'isCurrentOperation(token, companyId, activeProvider)' in main
+    assert 'isCurrentOperation(token, companyId, activeProvider)' in scenario_actions
     assert 'getSafeStateSnapshot(state)' in dev_console
     assert 'snapshot: sanitize(state)' not in dev_console
     assert 'getSafeStateSnapshot' in dev_console
@@ -112,7 +179,167 @@ def test_mock_fixture_isolation_contract():
     assert 'body.network-ui-active .network-toast-root' in styles
 
 
-def test_network_ui_compatibility_and_e2e_hooks():
+def test_async_operation_guard_rejects_stale_actions():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { createOperationGuard } from './assets/js/app/operation-guard.js';
+
+        const state = { context: { company_id: 'empresa1' } };
+        const provider = {};
+        const guard = createOperationGuard({ getState: () => state, getProvider: () => provider });
+        const token = guard.nextOperation();
+        const action = guard.beginAction('scenario', provider, 'empresa1');
+
+        assert.ok(action);
+        assert.equal(guard.hasActiveAction(), true);
+        assert.equal(guard.isCurrentAction(action), true);
+        assert.equal(guard.beginAction('risk', provider, 'empresa1'), null);
+
+        state.context.company_id = 'empresa2';
+        assert.equal(guard.isCurrentAction(action), false);
+        assert.equal(guard.isCurrentOperation(token, 'empresa2', provider), true);
+        assert.notEqual(guard.nextOperation(), token);
+        assert.equal(guard.isCurrentToken(token), false);
+
+        guard.cancelActiveAction();
+        assert.equal(guard.hasActiveAction(), false);
+        assert.equal(guard.isCurrentAction(action), false);
+        console.log('OPERATION_GUARD_OK');
+        """
+    )
+    assert output.endswith('OPERATION_GUARD_OK')
+
+
+def test_scenario_actions_controller_contract():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { createScenarioActions } from './assets/js/app/scenario-actions.js';
+        import { createOperationGuard } from './assets/js/app/operation-guard.js';
+
+        const state = { context: { company_id: 'empresa1' }, data: {}, ui: {} };
+        const provider = {};
+        const actions = createScenarioActions({
+          root: {},
+          store: { getState: () => state, update() {} },
+          getProvider: () => provider,
+          operationGuard: createOperationGuard({
+            getState: () => state,
+            getProvider: () => provider,
+          }),
+          render() {},
+        });
+        assert.deepEqual(Object.keys(actions).sort(), [
+          'clearSavedScenarios',
+          'deleteSavedScenario',
+          'exportCurrentScenario',
+          'importScenario',
+          'loadScenarioDraft',
+          'resetScenarioDraft',
+          'runScenario',
+          'saveCurrentScenario',
+          'selectComparedScenario',
+        ]);
+        console.log('SCENARIO_ACTIONS_API_OK');
+        """
+    )
+    assert output.endswith('SCENARIO_ACTIONS_API_OK')
+
+
+def test_analysis_actions_ignore_stale_work_and_report_failures():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { createAnalysisActions } from './assets/js/app/analysis-actions.js';
+        import { createOperationGuard } from './assets/js/app/operation-guard.js';
+        import { createInitialState, createStateStore, resetCompanyScopedState } from './assets/js/app/state.js';
+
+        const deferred = () => {
+          let resolve;
+          const promise = new Promise((done) => { resolve = done; });
+          return { promise, resolve };
+        };
+        const makeHarness = (provider) => {
+          const state = createInitialState({ company_id: 'empresa1' });
+          state.context.provider_kind = 'project';
+          state.data.selected_scenario = { scenario_id: 'scenario-1', company_id: 'empresa1' };
+          state.data.scenario_result = { total_with_tax: 100 };
+          state.data.recommendation = { status: 'old' };
+          state.data.audit = { status: 'old' };
+          state.data.final_qa = { status: 'old' };
+          state.data.release = { status: 'old' };
+          state.data.export_package = { files: ['old'] };
+          const store = createStateStore(state);
+          const guard = createOperationGuard({
+            getState: store.getState,
+            getProvider: () => provider,
+          });
+          const toasts = [];
+          const routes = [];
+          let renderCount = 0;
+          let committedDecision = false;
+          const actions = createAnalysisActions({
+            store,
+            getProvider: () => provider,
+            operationGuard: guard,
+            commitDecisionPackage(target, result) {
+              committedDecision = true;
+              target.data.optimizer = result.optimizer;
+              target.meta.status = 'decision_ready';
+              target.ui.loading = false;
+            },
+            render() { renderCount += 1; },
+            showLoading() {},
+            showToast(message, kind) { toasts.push({ message, kind }); },
+            navigate(route) { routes.push(route); },
+          });
+          return { state, store, guard, actions, toasts, routes, get renderCount() { return renderCount; }, get committedDecision() { return committedDecision; } };
+        };
+
+        const riskResponse = deferred();
+        const staleHarness = makeHarness({ runRiskSuite: () => riskResponse.promise });
+        const pendingRisk = staleHarness.actions.runRisk({ seed: 9 });
+        assert.equal(staleHarness.state.ui.loading, true);
+        staleHarness.guard.cancelActiveAction();
+        staleHarness.guard.nextOperation();
+        staleHarness.store.update((state) => resetCompanyScopedState(state, 'empresa2'));
+        riskResponse.resolve({ monte_carlo: { stale: true }, stress: { stale: true } });
+        await pendingRisk;
+        assert.equal(staleHarness.state.context.company_id, 'empresa2');
+        assert.equal(staleHarness.state.data.monte_carlo, null);
+        assert.equal(staleHarness.state.meta.status, 'switching_company');
+
+        const successHarness = makeHarness({
+          runRiskSuite: async () => ({
+            monte_carlo: { seed: 9 }, stress: { cases: [] }, sensitivity: { rows: [] },
+            sensitivity_matrix: { cells: [] }, robustness: { score: 80 },
+          }),
+        });
+        await successHarness.actions.runRisk({ seed: 9 });
+        assert.equal(successHarness.state.meta.status, 'risk_ready');
+        assert.deepEqual(successHarness.state.ui.risk_config, { seed: 9 });
+        for (const key of ['recommendation', 'audit', 'final_qa', 'release', 'export_package']) {
+          assert.equal(successHarness.state.data[key], null);
+        }
+        assert.equal(successHarness.routes.at(-1), '#/network/scenarios/risk');
+
+        const failureHarness = makeHarness({
+          buildDecisionPackage: async () => { throw new Error('decision failed'); },
+        });
+        await failureHarness.actions.runDecision({ profileId: 'balanced' });
+        assert.equal(failureHarness.state.ui.loading, false);
+        assert.equal(failureHarness.state.meta.status, 'error');
+        assert.equal(failureHarness.state.ui.error.message, 'decision failed');
+        assert.equal(failureHarness.toasts.at(-1).kind, 'error');
+        assert.equal(failureHarness.guard.hasActiveAction(), false);
+        console.log('ANALYSIS_ACTIONS_STALENESS_FAILURE_OK');
+        """
+    )
+    assert output.endswith('ANALYSIS_ACTIONS_STALENESS_FAILURE_OK')
+
+
+def test_network_ui_entrypoint_and_e2e_hooks():
     index = (ROOT / 'index.html').read_text(encoding='utf-8')
     assert 'assets/js/app/main.js' in index
     for phase in range(1, 6):
@@ -135,6 +362,7 @@ def test_network_ui_compatibility_and_e2e_hooks():
         (APP / 'pages' / filename).read_text(encoding='utf-8')
         for filename in ('overview.js', 'scenarios.js', 'optimizer.js', 'trust.js')
     )
+    assert "from '../charts/trust-analytics.js'" not in (APP / 'pages/trust.js').read_text(encoding='utf-8')
     for test_id in (
         'page-overview-summary',
         'page-scenarios-build',
@@ -154,9 +382,53 @@ def test_network_ui_compatibility_and_e2e_hooks():
     ):
         assert f'data-testid="{test_id}"' in page_sources
 
+    assert 'niFlowCountByCdChart' in page_sources
+
+
+def test_overview_analytics_aggregation():
+    result = subprocess.run(
+        ['node', str(ROOT / 'tests/12_network_intelligence/overview_analytics_aggregation.mjs')],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert 'OVERVIEW_ANALYTICS_AGGREGATION_OK' in result.stdout
+
+
+def test_draft_reactivation_and_risk_configuration():
+    output = run_node(
+        """
+        import assert from 'node:assert/strict';
+        import { createInitialState } from './assets/js/app/state.js';
+        import { renderScenarioBuild, renderScenarioRisk } from './assets/js/app/pages/scenarios.js';
+        const state = createInitialState({company_id:'empresa1'});
+        state.data.baseline = {model:{active_cds:['A','B'],inventory_days:40,wacc:0.15},flows:[]};
+        state.ui.scenario_draft = {scenario_name:'Reduced',changes:{active_cds:['A']}};
+        state.ui.scenario_draft_dirty = true;
+        const html = renderScenarioBuild(state);
+        assert.match(html, /name="active_cds" value="A" checked/);
+        assert.match(html, /name="active_cds" value="B"(?! checked)/);
+        assert.match(html, /Alterações pendentes/);
+        state.data.selected_scenario = {scenario_id:'a',company_id:'empresa1'};
+        state.data.scenario_result = {total_with_tax:100};
+        state.data.monte_carlo = {summary:{iterations:100,seed:42}};
+        state.ui.risk_config = {iterations:500,seed:73,profile:'conservative',stress_profile:'conservative'};
+        const risk = renderScenarioRisk(state, true);
+        assert.match(risk, /name="seed"[^>]*value="73"/);
+        assert.match(risk, /value="conservative" selected/);
+        console.log('DRAFT_AND_RISK_CONFIG_OK');
+        """
+    )
+    assert output.endswith('DRAFT_AND_RISK_CONFIG_OK')
+
 
 if __name__ == '__main__':
     test_app_foundation_contracts()
     test_mock_fixture_isolation_contract()
-    test_network_ui_compatibility_and_e2e_hooks()
+    test_network_ui_entrypoint_and_e2e_hooks()
+    test_scenario_actions_controller_contract()
+    test_analysis_actions_ignore_stale_work_and_report_failures()
+    test_overview_analytics_aggregation()
+    test_draft_reactivation_and_risk_configuration()
     print('NETWORK_INTELLIGENCE_APP_CONTRACTS_OK')

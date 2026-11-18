@@ -19,21 +19,3 @@ export function findNearestCd({ destination, activeCds, distanceMatrix = [] }) {
 
   return candidates[0].ORIGEM || candidates[0].UF_ORIGEM;
 }
-
-export function getDistance({ origin, destination, distanceMatrix = [] }) {
-  const row = distanceMatrix.find(
-    (r) =>
-      (r.ORIGEM === origin || r.UF_ORIGEM === origin) &&
-      (r.DESTINO === destination || r.UF_DESTINO === destination)
-  );
-  return Number(row?.['Distancia(KM)'] || 0);
-}
-
-export function getFreightRate({ origin, destination, distanceMatrix = [] }) {
-  const row = distanceMatrix.find(
-    (r) =>
-      (r.ORIGEM === origin || r.UF_ORIGEM === origin) &&
-      (r.DESTINO === destination || r.UF_DESTINO === destination)
-  );
-  return Number(row?.['Frete (R$/Kg)'] || 0);
-}

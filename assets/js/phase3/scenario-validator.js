@@ -87,7 +87,11 @@ export function validateScenario({ companyId, scenario, baselineBundle }) {
     'INVENTORY_NON_NEGATIVE',
     'Dias de estoque não podem ser negativos.'
   );
-  validate(Number(c.wacc) >= 0, 'WACC_NON_NEGATIVE', 'WACC não pode ser negativo.');
+  validate(
+    Number(c.wacc) >= 0,
+    'WACC_NON_NEGATIVE',
+    'A taxa anual de carregamento do estoque não pode ser negativa.'
+  );
   validate(Boolean(resolvedTaxRegime), 'TAX_MODE_VALID', 'Modo tributário inválido.');
   const taxModeCandidate = String(c.tax_mode || resolveTaxModeForRegime(resolvedTaxRegime));
   validate(

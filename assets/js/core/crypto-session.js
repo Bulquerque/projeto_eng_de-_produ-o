@@ -69,9 +69,8 @@ function showPasswordPrompt(entry, errorMessage = '') {
       <p>Digite a frase de acesso para carregar ${entry.company_id || 'os dados'}.</p>
       <input type="password" id="cryptoPasswordInput" autocomplete="current-password" placeholder="Frase de acesso" required>
       <div class="crypto-actions">
-        <button type="submit" class="primary-button">Desbloquear simulador</button>
-        <button type="button" class="secondary-button" id="cryptoReturnToDemo">Voltar à Empresa Falsa</button>
-        <button type="button" class="secondary-button" id="cryptoCancel">Cancelar</button>
+        <button type="submit" class="ni-button primary">Desbloquear</button>
+        <button type="button" class="ni-button secondary" id="cryptoCancel">Cancelar</button>
       </div>
       <div class="crypto-error" id="cryptoPromptError" ${errorMessage ? '' : 'hidden'}>${errorMessage}</div>
     `;
@@ -86,11 +85,6 @@ function showPasswordPrompt(entry, errorMessage = '') {
     card.querySelector('#cryptoCancel').addEventListener('click', () => {
       card.remove();
       reject(new CryptoDataError('CRYPTO_003', 'Acesso negado. Senha não informada.'));
-    });
-    card.querySelector('#cryptoReturnToDemo').addEventListener('click', () => {
-      window.location.replace(
-        '?ui=network-intelligence&company=empresa_mock#/network/overview/summary'
-      );
     });
   });
 }
@@ -114,7 +108,7 @@ export function installLockButton() {
   const button = document.createElement('button');
   button.type = 'button';
   button.id = 'cryptoLockButton';
-  button.className = 'secondary-button crypto-lock-button';
+  button.className = 'ni-button secondary crypto-lock-button';
   button.textContent = 'Bloquear dados';
   button.addEventListener('click', () => {
     lockCryptoSession();

@@ -25,10 +25,20 @@ assert not missing, f'Missing Phase 4 files: {missing}'
 html = (ROOT / 'fase-4-score-otimizador/index.html').read_text(encoding='utf-8')
 assert '../assets/styles.css' in html
 assert '../assets/js/core/runtime-warning.js' in html
-assert 'index.html#/simulacao-otimizacao' in html
+assert 'index.html#/network/optimizer/configure' in html
 portal = (ROOT / 'index.html').read_text(encoding='utf-8')
-assert 'assets/js/phase4/main.js' in portal
-assert 'objective-builder' in portal and 'otimizador' in portal.lower()
+assert '<script type="module" src="assets/js/app/main.js"></script>' in portal
+route_renderers = (ROOT / 'assets/js/app/route-renderers.js').read_text(encoding='utf-8')
+optimizer_routes = {
+    "'/network/optimizer/configure'": 'renderOptimizerConfigure',
+    "'/network/optimizer/results'": 'renderOptimizerResults',
+    "'/network/optimizer/tradeoffs'": 'renderOptimizerTradeoffs',
+}
+for route, renderer in optimizer_routes.items():
+    assert route in route_renderers and renderer in route_renderers, (route, renderer)
+optimizer_pages = (ROOT / 'assets/js/app/pages/optimizer.js').read_text(encoding='utf-8')
+for renderer in optimizer_routes.values():
+    assert f'export function {renderer}(' in optimizer_pages, renderer
 css = (ROOT / 'assets/styles.css').read_text(encoding='utf-8')
 for cls in ['objective-builder', 'profile-card', 'optimizer-panel', 'search-log-grid', 'tradeoff-frontier']:
     assert cls in css, f'CSS class missing: {cls}'

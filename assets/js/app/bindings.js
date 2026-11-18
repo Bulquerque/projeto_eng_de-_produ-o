@@ -36,7 +36,7 @@ export function installBindings({ root, store, controller }) {
     } else if (action === 'open-help') {
       controller.openDrawer(
         'Ajuda',
-        '<p>Use as seções para explorar baseline, cenários, otimização e confiança. Os resultados continuam sendo calculados pelos engines do projeto.</p>'
+        '<p>Use as seções para explorar baseline, cenários, otimização e confiança. Os resultados continuam sendo calculados pelos engines do projeto.</p><div class="ni-actions"><button type="button" class="ni-button secondary" data-action="open-settings">Configurações</button><button type="button" class="ni-button secondary" data-action="open-styleguide">Style guide</button></div>'
       );
     } else if (action === 'open-settings') {
       controller.openDrawer(
@@ -46,7 +46,7 @@ export function installBindings({ root, store, controller }) {
     } else if (action === 'open-styleguide') {
       controller.openDrawer(
         'Style guide',
-        '<p>Tokens visuais do workspace: azul petróleo para navegação, verde menta para ações positivas, âmbar para alertas e superfícies claras para evidências.</p><div class="ni-styleguide-swatches"><span class="swatch deep">#062d35</span><span class="swatch mint">#c8f3e0</span><span class="swatch amber">#f2b84b</span></div>'
+        '<p>Tokens visuais do workspace: azul petróleo para navegação, verde menta para ações positivas, âmbar para alertas e superfícies claras para evidências.</p><div class="ni-styleguide-swatches"><span class="swatch deep">#00363d</span><span class="swatch mint">#a9fdac</span><span class="swatch amber">#f2b84b</span></div>'
       );
     } else if (action === 'open-export') {
       controller.exportPackage();
@@ -55,7 +55,22 @@ export function installBindings({ root, store, controller }) {
     } else if (action === 'lock-crypto') {
       controller.lock();
     } else if (action === 'run-decision') {
-      void controller.runDecision();
+      const state = store.getState();
+      const selectedId = state.context.selected_scenario_id;
+      const ranked = [
+        ...(state.data.optimizer?.scored_scenarios || []),
+        ...(state.data.optimizer?.best_scenarios || []),
+      ].some((candidate) => candidate.scenario_id === selectedId);
+      void controller.runDecision(
+        ranked
+          ? {
+              selectionMode: 'manual',
+              manualScenarioId: selectedId,
+              existingOptimizerResult: state.data.optimizer,
+              riskConfig: state.ui.risk_config || {},
+            }
+          : {}
+      );
     } else if (action === 'run-decision-manual') {
       const manualScenarioId =
         root.querySelector('#niManualScenarioId')?.value.trim() ||
@@ -64,6 +79,8 @@ export function installBindings({ root, store, controller }) {
       void controller.runDecision({
         selectionMode: 'manual',
         manualScenarioId,
+        existingOptimizerResult: store.getState().data.optimizer,
+        riskConfig: store.getState().ui.risk_config || {},
       });
     } else if (action === 'select-compared-scenario') {
       const scenarioId = event.target.closest('[data-scenario-id]')?.dataset.scenarioId;
@@ -90,6 +107,11 @@ export function installBindings({ root, store, controller }) {
     }
   };
 
+  root.addEventListener('network-scenario-select', (event) => {
+    if (!store.getState().ui.loading && event.detail?.scenarioId) {
+      controller.selectComparedScenario(event.detail.scenarioId);
+    }
+  });
   root.addEventListener('click', onClick);
   root.querySelector('#niCompanySelect')?.addEventListener('change', (event) => {
     void controller.switchCompany(event.target.value);
@@ -99,7 +121,8 @@ export function installBindings({ root, store, controller }) {
     const scenarioId = event.target.value || null;
     store.update((state) => setSelectedScenario(state, scenarioId));
     navigate('#/network/scenarios/result');
-    void controller.runScenario({ scenarioId });
+    if (scenarioId) controller.selectComparedScenario(scenarioId);
+    else void controller.runScenario({ scenarioId });
   });
   root.addEventListener('submit', (event) => {
     if (event.target.id === 'niScenarioForm') {
@@ -157,11 +180,56 @@ export function installBindings({ root, store, controller }) {
   const rawInputValues = new WeakMap();
   root.addEventListener('input', (event) => {
     const form = event.target.form;
-    if (!form || !['niScenarioForm', 'niOptimizerForm'].includes(form.id)) return;
+    if (!form || !['niScenarioForm', 'niOptimizerForm', 'niRiskForm'].includes(form.id)) return;
     if (event.target.type !== 'number' && event.target.name !== 'scenario_name') return;
     const current = rawInputValues.get(form) || {};
     current[event.target.name] = event.target.value;
     rawInputValues.set(form, current);
+  });
+  const markDraft = (event) => {
+    const form = event.target.form;
+    if (form?.id !== 'niScenarioForm' || event.target.disabled) return;
+    const values = parseScenarioForm(
+      new FormData(form),
+      form.querySelectorAll('input[name="active_cds"]:checked'),
+      rawInputValues.get(form)
+    );
+    store.update(
+      (state) => {
+        state.ui.scenario_draft = {
+          ...(state.ui.scenario_draft || {}),
+          scenario_name: values.scenario_name,
+          changes: { ...values },
+        };
+        state.ui.scenario_draft_dirty = true;
+      },
+      { notify: false }
+    );
+    const status = root.querySelector('[data-testid="scenario-draft-status"]');
+    if (status) status.textContent = 'Alterações pendentes; execute para atualizar.';
+    for (const control of root.querySelectorAll(
+      '[data-testid="scenario-save"], [data-testid="scenario-export"]'
+    ))
+      control.disabled = true;
+  };
+  root.addEventListener('input', markDraft);
+  root.addEventListener('change', markDraft);
+  root.addEventListener('change', (event) => {
+    if (!event.target.matches('[data-compare-scenario]')) return;
+    const checked = [...root.querySelectorAll('[data-compare-scenario]:checked')];
+    if (checked.length > 4) {
+      event.target.checked = false;
+      showToast(root, 'Selecione até quatro cenários para comparar.', 'neutral');
+      return;
+    }
+    store.update((state) => {
+      state.ui.compared_scenario_ids = checked.map((input) => input.value);
+    });
+    const details = root.querySelector('[data-testid="comparison-choice-details"]');
+    if (details) details.open = true;
+    [...root.querySelectorAll('[data-compare-scenario]')]
+      .find((input) => input.value === event.target.value)
+      ?.focus({ preventScroll: true });
   });
   const onKeyDown = (event) => {
     const drawer = root.querySelector('#networkDrawer');

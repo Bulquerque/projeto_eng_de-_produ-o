@@ -4,17 +4,17 @@
  * Calculates per-flow logistics costs from real data tables.
  *
  * Empresa 1 — distance_matrix       : weight_kg × Frete(R$/kg) for distribution
- *             calibrated UF proxy     : rate (R$/kg-km) derived from Empresa 2 NF data
- *               → Transfer = weight_kg × rate_per_kg_km[destUF] × distance_km
+ *             calibrated UF proxy     : rate (R$/kg) derived from Empresa 2 NF data
+ *               → Transfer = weight_kg × rate_per_kg[destUF]
  * Empresa 2 — tabelas_cif_dist : weight-bracket rate lookup
  *             aux_custo_transferencia : real NF-based transfer rates
  *             aux_custo_armazenagem   : real storage tariffs per CD
  *
- * Kilometric rates for Empresa 1 transfer (cross-company calibrated proxy from
+ * Per-kilogram rates for Empresa 1 transfer (cross-company calibrated proxy from
  * Empresa 2 NF data; never loaded as Empresa 1 observed data):
- *   SP: 0.0083 R$/kg-km  |  MG: 0.0049 R$/kg-km
- *   ES: 0.0176 R$/kg-km  |  RJ: 0.0133 R$/kg-km
- *   fallback (cross-state): 0.0050 R$/kg-km
+ *   SP: 0.0083 R$/kg  |  MG: 0.0049 R$/kg
+ *   ES: 0.0176 R$/kg  |  RJ: 0.0133 R$/kg
+ *   fallback (cross-state): 0.0050 R$/kg
  */
 
 import {
@@ -60,9 +60,9 @@ function flowRevenue(flow) {
 
 /** Proportional storage estimate when the real table has no match. */
 function storageRatioCost(base, activeCds, baselineCds, dm) {
-  const ratio =
-    MODEL_DEFAULTS.storage_active_cd_floor_ratio +
-    MODEL_DEFAULTS.storage_active_cd_slope * (activeCds.length / (baselineCds || 1));
+  // Unit-cost allocation anchored to the company's own baseline storage cost and CD count.
+  // It assumes equal average cost per active CD where no CD-level tariff is available.
+  const ratio = activeCds.length / Math.max(1, baselineCds);
   return toNum(base.storage_cost) * dm * ratio;
 }
 
@@ -364,8 +364,8 @@ function resolveStorageCostFromTable(storageCostMap, activeCds, dm) {
   return total > 0 ? total * 12 * dm : null; // annualise monthly figures
 }
 
-const KILOMETRIC_RATE_BY_UF = MODEL_DEFAULTS.transfer_kilometric_rate_by_uf;
-const KILOMETRIC_RATE_FALLBACK = MODEL_DEFAULTS.transfer_kilometric_fallback_rate;
+const TRANSFER_RATE_PER_KG_BY_UF = MODEL_DEFAULTS.transfer_rate_per_kg_by_uf;
+const TRANSFER_RATE_PER_KG_FALLBACK = MODEL_DEFAULTS.transfer_rate_per_kg_fallback;
 
 function buildCostContext({ scenario, baselineBundle }) {
   const changes = scenario.changes || {};
@@ -434,7 +434,7 @@ function calculateCompany1Costs(context, flows) {
     ? []
     : ['distance_matrix não disponível; usando fallback heurístico.'];
   warnings.push(
-    `Empresa 1: transferência usa proxy calibrado com ${MODEL_DEFAULTS.transfer_kilometric_rate_provenance.source_company} / ${MODEL_DEFAULTS.transfer_kilometric_rate_provenance.source_dataset}; não é uma tarifa observada da Empresa 1.`
+    `Empresa 1: transferência usa proxy ponderado em R$/kg calibrado com ${MODEL_DEFAULTS.transfer_rate_per_kg_provenance.source_company} / ${MODEL_DEFAULTS.transfer_rate_per_kg_provenance.source_dataset}; não é uma tarifa observada da Empresa 1.`
   );
   const freightMaps = buildFreightMapE1(matrix);
   let distributionCost = 0;
@@ -452,17 +452,15 @@ function calculateCompany1Costs(context, flows) {
     const weightKg = flowWeight(flow);
     const destinationUf = up(flow.destination_uf || flow.cd_uf || flow.cd || '').slice(0, 2);
     const distanceKm = getTransferDistanceKmE1(flow, matrix);
+    if (weightKg > 0 && !(distanceKm > 0)) missingDistanceCount += 1;
     let flowTransferCost = 0;
     let transferMethod = 'not_required';
-    let transferSource = 'distance_matrix_kilometric_proxy';
-    if (weightKg > 0 && distanceKm > 0) {
-      flowTransferCost =
-        weightKg *
-        (KILOMETRIC_RATE_BY_UF[destinationUf] || KILOMETRIC_RATE_FALLBACK) *
-        distanceKm *
-        freightMultiplier *
-        demandMultiplier;
-      transferMethod = 'kilometric_proxy';
+    let transferSource = 'cross_company_weighted_freight_per_kg';
+    const transferRatePerKg =
+      TRANSFER_RATE_PER_KG_BY_UF[destinationUf] || TRANSFER_RATE_PER_KG_FALLBACK;
+    if (weightKg > 0 && transferRatePerKg > 0) {
+      flowTransferCost = weightKg * transferRatePerKg * freightMultiplier * demandMultiplier;
+      transferMethod = 'cross_company_rate_per_kg';
     } else if (weightKg > 0) {
       const fallback = resolveTransferFallback({
         distributionCost: flowDistributionCost,
@@ -474,7 +472,6 @@ function calculateCompany1Costs(context, flows) {
       transferMethod = fallback.method;
       transferSource = fallback.source;
       transferFallbackCount += 1;
-      missingDistanceCount += 1;
     }
 
     distributionCost += flowDistributionCost;
@@ -485,7 +482,7 @@ function calculateCompany1Costs(context, flows) {
       distribution_cost: flowDistributionCost,
       transfer_cost: flowTransferCost,
       transfer_dist_km: distanceKm,
-      transfer_rate_per_kg_km: KILOMETRIC_RATE_BY_UF[destinationUf] || KILOMETRIC_RATE_FALLBACK,
+      transfer_rate_per_kg: transferRatePerKg,
       dest_uf: destinationUf,
       method,
       rate,
@@ -500,7 +497,7 @@ function calculateCompany1Costs(context, flows) {
     );
   if (missingDistanceCount)
     warnings.push(
-      `${missingDistanceCount} fluxo(s) sem distância exata na matriz; transferência desses fluxos usa fallback rastreável (${Math.round(MODEL_DEFAULTS.transfer_to_distribution_ratio * 100)}% da distribuição quando disponível).`
+      `${missingDistanceCount} fluxo(s) sem distância exata na matriz; a transferência usa a taxa ponderada observada em R$/kg e não depende da distância.`
     );
 
   const anyPriced = flowCostDetail.some(
@@ -560,11 +557,11 @@ function calculateCompany1Costs(context, flows) {
           },
       proxy_sources: [
         'distance_matrix',
-        'calibrated_uf_kilometric_transfer_rate',
-        `${MODEL_DEFAULTS.transfer_kilometric_rate_provenance.source_company}_${MODEL_DEFAULTS.transfer_kilometric_rate_provenance.source_dataset}`,
+        'calibrated_uf_transfer_rate_per_kg',
+        `${MODEL_DEFAULTS.transfer_rate_per_kg_provenance.source_company}_${MODEL_DEFAULTS.transfer_rate_per_kg_provenance.source_dataset}`,
       ],
       source_classification: 'observed_distribution_plus_cross_company_calibrated_transfer_proxy',
-      transfer_proxy_provenance: MODEL_DEFAULTS.transfer_kilometric_rate_provenance,
+      transfer_proxy_provenance: MODEL_DEFAULTS.transfer_rate_per_kg_provenance,
     },
   });
 }

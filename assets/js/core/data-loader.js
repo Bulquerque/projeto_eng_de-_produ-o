@@ -8,6 +8,8 @@ import { getCoreDataPaths, SHARED_TAX_REFERENCE_PATH } from './runtime-bundle-co
 import { recomputePhase2Baseline } from '../phase2/baseline-deriver.js';
 
 let encryptedManifest = null;
+const complementsOmitted =
+  document.querySelector('meta[name="visagio-complements"]')?.content === 'omitted';
 
 function isCompanyDataPath(path) {
   return /^data\/empresa[12]\//.test(resolveProjectPath(path));
@@ -125,15 +127,7 @@ export async function loadPhase2Bundle(companyId) {
       }
       await Promise.all(coreLoads);
 
-      try {
-        bundle.complements = { available: true, ...(await loadComplementPackage(companyId)) };
-        bundle.tax_source_context =
-          bundle.complements?.field_sources || bundle.complements?.source_summary || null;
-      } catch (e) {
-        console.warn(
-          `[data-loader] Could not load complement package for ${companyId}:`,
-          e.message
-        );
+      if (complementsOmitted) {
         bundle.complements = {
           company_id: companyId,
           tenant_id:
@@ -143,12 +137,39 @@ export async function loadPhase2Bundle(companyId) {
                 ? 'empresa_2'
                 : companyId,
           available: false,
-          error: e.message,
+          completeness: 'not_published',
+          error: null,
           source_summary: [],
           field_sources: {},
           audit_sources: [],
         };
         bundle.tax_source_context = null;
+      } else {
+        try {
+          bundle.complements = { available: true, ...(await loadComplementPackage(companyId)) };
+          bundle.tax_source_context =
+            bundle.complements?.field_sources || bundle.complements?.source_summary || null;
+        } catch (e) {
+          console.warn(
+            `[data-loader] Could not load complement package for ${companyId}:`,
+            e.message
+          );
+          bundle.complements = {
+            company_id: companyId,
+            tenant_id:
+              companyId === 'empresa1'
+                ? 'empresa_1'
+                : companyId === 'empresa2'
+                  ? 'empresa_2'
+                  : companyId,
+            available: false,
+            error: e.message,
+            source_summary: [],
+            field_sources: {},
+            audit_sources: [],
+          };
+          bundle.tax_source_context = null;
+        }
       }
 
       recomputePhase2Baseline(bundle, companyId);

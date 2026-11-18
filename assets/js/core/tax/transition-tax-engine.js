@@ -1,6 +1,9 @@
 import { safeNumber } from '../common.js';
 
 export function combineTaxResults({ currentResult = {}, reformResult = {}, regime = {} } = {}) {
+  // `current_weight`/`reform_weight` blend aggregate model blocks. During
+  // 2029–2032 this is an exploratory simplification, not the statutory
+  // per-tax transition for ICMS/ISS versus CBS/IBS; see the numeric register.
   const currentWeight = safeNumber(regime.current_weight, 1);
   const reformWeight =
     regime.reform_weight != null

@@ -5,19 +5,27 @@ import {
   createStateStore,
   beginLoading,
   commitProviderSnapshot,
-  clearScenarioResults,
   failLoading,
   resetCompanyScopedState,
   setRoute,
   setSelectedScenario,
 } from './state.js';
-import { navigate, parseRoute, replaceCompanyQuery, startRouter } from './router.js';
+import { parseRoute, replaceCompanyQuery, startRouter } from './router.js';
 import { renderShell, setActiveNav, showLoading, showToast, updateGlobalContext } from './shell.js';
 import { installBindings } from './bindings.js';
+import { createOperationGuard } from './operation-guard.js';
+import { createScenarioActions } from './scenario-actions.js';
+import { createAnalysisActions } from './analysis-actions.js';
 import { sanitizeError } from './dev/dev-console.js';
 import { routeFallback } from './view-helpers.js';
 import { ROUTE_RENDERERS } from './route-renderers.js';
+import { destroyAllCharts } from '../core/chart-renderer.js';
+import { createChartPipeline } from './chart-pipeline.js';
+import { renderOverviewAnalytics } from './charts/overview-analytics.js';
+import { renderDecisionAnalytics } from './charts/decision-analytics.js';
+import { renderTrustAnalytics } from './charts/trust-analytics.js';
 import {
+  bindMapInteraction,
   renderDistanceHistogram,
   renderCostChart,
   renderRanking,
@@ -31,39 +39,31 @@ import {
   renderSensitivity,
   renderVolumeByCdChart,
 } from './charts/charts.js';
-import {
-  clearCompanyScenarios,
-  deleteScenario,
-  loadSavedScenarios,
-  saveScenario,
-} from '../phase3/scenario-persistence.js';
-import {
-  downloadScenarioJson,
-  parseImportedScenario,
-  validateImportedScenario,
-} from '../phase3/scenario-import-export.js';
+import { loadSavedScenarios } from '../phase3/scenario-persistence.js';
+
+const renderCharts = createChartPipeline({
+  overview: renderOverviewAnalytics,
+  decision: renderDecisionAnalytics,
+  trust: renderTrustAnalytics,
+  bindMap: bindMapInteraction,
+  cost: renderCostChart,
+  volume: renderVolumeByCdChart,
+  distance: renderDistanceHistogram,
+  risk: renderRiskChart,
+  sensitivity: renderSensitivity,
+  histogram: renderRiskHistogram,
+  cdf: renderRiskCdf,
+  totalCurve: renderRiskTotalCurve,
+  drivers: renderRiskDrivers,
+  scatter: renderRiskScatter,
+  probability: renderRiskProbability,
+  ranking: renderRanking,
+});
 
 const request = readRuntimeRequest();
-const networkActive = request.network_ui || window.location.hash.startsWith('#/network/');
-window.__VISAGIO_NETWORK_UI__ = networkActive;
+window.__VISAGIO_NETWORK_UI__ = true;
 
-function findScenario(state, scenarioId) {
-  return [
-    ...(state.data.scenarios || []),
-    ...(state.data.saved_scenarios || []),
-    ...(state.data.optimizer?.scored_scenarios || []),
-    ...(state.data.optimizer?.best_scenarios || []),
-  ].find((scenario) => scenario.scenario_id === scenarioId);
-}
-
-function upsertScenario(scenarios, scenario) {
-  return [
-    ...(scenarios || []).filter((item) => item.scenario_id !== scenario.scenario_id),
-    scenario,
-  ];
-}
-
-if (networkActive) {
+function initializeNetworkIntelligence() {
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.href = new URL('./main.css', import.meta.url);
@@ -96,7 +96,7 @@ if (networkActive) {
     let config;
     try {
       config = buildAppConfig({
-        request: { ...request, network_ui: true },
+        request,
         location: window.location,
       });
     } catch (error) {
@@ -110,43 +110,23 @@ if (networkActive) {
     const store = createStateStore(createInitialState(config));
     let provider = null;
     let stopRouter = null;
-    let operationId = 0;
     let companySwitchQueue = Promise.resolve();
-    let activeAction = null;
     let exportInFlight = false;
-    let lastScenarioExportAt = 0;
     const packageExportsInFlight = new Set();
     const lastPackageExportAt = new Map();
     let drawerReturnFocus = null;
 
-    const nextOperation = () => {
-      operationId += 1;
-      return operationId;
-    };
-
-    const isCurrentOperation = (token, companyId, ownerProvider = null) => {
-      const state = store.getState();
-      return (
-        token === operationId &&
-        state.context.company_id === companyId &&
-        (!ownerProvider || provider === ownerProvider)
-      );
-    };
-
-    const beginAction = (kind, activeProvider, companyId) => {
-      if (activeAction) return null;
-      const action = { kind, activeProvider, companyId, token: operationId };
-      activeAction = action;
-      return action;
-    };
-
-    const isCurrentAction = (action) =>
-      activeAction === action &&
-      isCurrentOperation(action.token, action.companyId, action.activeProvider);
-
-    const finishAction = (action) => {
-      if (activeAction === action) activeAction = null;
-    };
+    const {
+      nextOperation,
+      currentToken,
+      isCurrentToken,
+      isCurrentOperation,
+      beginAction,
+      isCurrentAction,
+      finishAction,
+      cancelActiveAction,
+      hasActiveAction,
+    } = createOperationGuard({ getState: store.getState, getProvider: () => provider });
 
     const render = () => {
       const state = store.getState();
@@ -155,10 +135,11 @@ if (networkActive) {
       const page = root.querySelector('#networkPage');
       if (!page) return;
       page.dataset.routeCurrent = route.hash;
+      destroyAllCharts();
       page.innerHTML = renderer(state, route);
       setActiveNav(root, route);
       updateGlobalContext(root, state);
-      renderCharts(route.path, state);
+      renderCharts({ root, path: route.path, state });
       if (state.ui.error) {
         page.insertAdjacentHTML(
           'afterbegin',
@@ -200,7 +181,7 @@ if (networkActive) {
     };
 
     const loadCompany = async (companyId, token) => {
-      if (token !== operationId) return;
+      if (!isCurrentToken(token)) return;
       const previousProvider = provider;
       const previousCompany = store.getState().context.company_id;
       let nextProvider = null;
@@ -262,11 +243,13 @@ if (networkActive) {
           store.update((state) => commitDecisionPackage(state, packageResult, nextProvider));
         }
         showLoading(root, false);
-        showToast(
-          root,
-          `${getCompanyDefinition(companyId)?.label || companyId} carregada.`,
-          'success'
-        );
+        if (previousProvider && previousCompany !== companyId) {
+          showToast(
+            root,
+            `${getCompanyDefinition(companyId)?.label || companyId} carregada.`,
+            'success'
+          );
+        }
       } catch (error) {
         if (!isCurrentOperation(token, companyId)) {
           if (nextProvider) await nextProvider.dispose({ lock: companyId !== 'empresa_mock' });
@@ -290,12 +273,41 @@ if (networkActive) {
       if (isCurrentOperation(token, companyId)) render();
     };
 
+    const scenarioActions = createScenarioActions({
+      root,
+      store,
+      getProvider: () => provider,
+      operationGuard: {
+        currentToken,
+        isCurrentOperation,
+        beginAction,
+        isCurrentAction,
+        finishAction,
+        hasActiveAction,
+      },
+      render,
+    });
+    const analysisActions = createAnalysisActions({
+      store,
+      getProvider: () => provider,
+      operationGuard: { beginAction, isCurrentAction, finishAction, hasActiveAction },
+      commitDecisionPackage,
+      render,
+      showLoading: (visible, title, note) => showLoading(root, visible, title, note),
+      showToast: (message, kind) => showToast(root, message, kind),
+      navigate: (route) => {
+        window.location.hash = route;
+      },
+    });
+
     const controller = {
+      ...scenarioActions,
+      ...analysisActions,
       async switchCompany(companyId) {
         if (!getCompanyDefinition(companyId)) return;
         const current = store.getState();
         if (current.context.company_id === companyId && (provider || current.ui.loading)) return;
-        activeAction = null;
+        cancelActiveAction();
         const token = nextOperation();
         replaceCompanyQuery(companyId);
         companySwitchQueue = companySwitchQueue
@@ -303,295 +315,9 @@ if (networkActive) {
           .then(() => loadCompany(companyId, token));
         await companySwitchQueue;
       },
-      loadScenarioDraft(scenarioId) {
-        const state = store.getState();
-        const scenario = findScenario(state, scenarioId);
-        if (!scenario) {
-          showToast(root, 'Cenário não encontrado na biblioteca ativa.', 'error');
-          return;
-        }
-        store.update((nextState) => {
-          nextState.ui.scenario_draft = scenario;
-          nextState.context.selected_scenario_id = scenario.scenario_id;
-          clearScenarioResults(nextState);
-        });
-        navigate('#/network/scenarios/build');
-        showToast(
-          root,
-          `Cenário carregado: ${scenario.scenario_name || scenario.scenario_id}.`,
-          'success'
-        );
-      },
-      resetScenarioDraft() {
-        store.update((nextState) => {
-          nextState.ui.scenario_draft = null;
-          nextState.context.selected_scenario_id = null;
-          clearScenarioResults(nextState);
-        });
-        navigate('#/network/scenarios/build');
-        showToast(root, 'Rascunho limpo; formulário voltou ao baseline.', 'success');
-      },
-      selectComparedScenario(scenarioId) {
-        const state = store.getState();
-        const candidate = findScenario(state, scenarioId);
-        if (!candidate) {
-          showToast(root, 'Cenário comparado não está disponível para reexecução.', 'error');
-          return;
-        }
-        void this.runScenario({ scenario: candidate.scenario || candidate, scenarioId });
-      },
-      saveCurrentScenario() {
-        const state = store.getState();
-        const scenario = state.data.selected_scenario;
-        if (!scenario || !state.data.scenario_result) {
-          showToast(root, 'Simule um cenário antes de salvar.', 'error');
-          return;
-        }
-        const result = saveScenario(state.context.company_id, scenario);
-        if (!result.saved) {
-          showToast(root, 'Persistência local indisponível.', 'error');
-          return;
-        }
-        const saved = loadSavedScenarios(state.context.company_id);
-        store.update((nextState) => {
-          nextState.data.saved_scenarios = saved;
-          nextState.data.scenarios = upsertScenario(nextState.data.scenarios, scenario);
-        });
-        showToast(
-          root,
-          `Cenário salvo: ${scenario.scenario_name || scenario.scenario_id}.`,
-          'success'
-        );
-      },
-      exportCurrentScenario() {
-        const now = Date.now();
-        if (now - lastScenarioExportAt < 600) return;
-        lastScenarioExportAt = now;
-        const state = store.getState();
-        const scenario = state.data.selected_scenario;
-        if (!scenario) {
-          showToast(root, 'Simule um cenário antes de exportar.', 'error');
-          return;
-        }
-        try {
-          downloadScenarioJson(scenario);
-          showToast(root, `Cenário exportado: ${scenario.scenario_id}.`, 'success');
-        } catch (error) {
-          showToast(root, sanitizeError(error).message, 'error');
-        }
-      },
-      deleteSavedScenario(scenarioId) {
-        const state = store.getState();
-        const result = deleteScenario(state.context.company_id, scenarioId);
-        if (!result.deleted) {
-          showToast(root, 'Não foi possível excluir o cenário salvo.', 'error');
-          return;
-        }
-        store.update((nextState) => {
-          nextState.data.saved_scenarios = loadSavedScenarios(nextState.context.company_id);
-          nextState.data.scenarios = (nextState.data.scenarios || []).filter(
-            (scenario) => scenario.scenario_id !== scenarioId
-          );
-          if (nextState.ui.scenario_draft?.scenario_id === scenarioId) {
-            nextState.ui.scenario_draft = null;
-            nextState.context.selected_scenario_id = null;
-          }
-        });
-        showToast(root, 'Cenário salvo excluído.', 'success');
-      },
-      clearSavedScenarios() {
-        const state = store.getState();
-        const savedIds = new Set(
-          (state.data.saved_scenarios || []).map((item) => item.scenario_id)
-        );
-        const result = clearCompanyScenarios(state.context.company_id);
-        if (!result.cleared) {
-          showToast(root, 'Não foi possível limpar os cenários salvos.', 'error');
-          return;
-        }
-        store.update((nextState) => {
-          nextState.data.saved_scenarios = [];
-          nextState.data.scenarios = (nextState.data.scenarios || []).filter(
-            (scenario) => !savedIds.has(scenario.scenario_id)
-          );
-        });
-        showToast(root, 'Cenários salvos limpos para esta empresa.', 'success');
-      },
-      async importScenario(file) {
-        const state = store.getState();
-        const companyId = state.context.company_id;
-        const activeProvider = provider;
-        const token = operationId;
-        try {
-          const scenario = await parseImportedScenario(file);
-          if (!isCurrentOperation(token, companyId, activeProvider)) return;
-          const validation = validateImportedScenario(companyId, scenario);
-          if (!validation.valid) throw new Error(validation.error);
-          const result = saveScenario(companyId, scenario);
-          if (!result.saved) throw new Error('Persistência local indisponível.');
-          if (!isCurrentOperation(token, companyId, activeProvider)) return;
-          const saved = loadSavedScenarios(companyId);
-          store.update((nextState) => {
-            nextState.data.saved_scenarios = saved;
-            nextState.data.scenarios = upsertScenario(nextState.data.scenarios, scenario);
-            nextState.ui.scenario_draft = scenario;
-            nextState.context.selected_scenario_id = scenario.scenario_id;
-            clearScenarioResults(nextState);
-          });
-          navigate('#/network/scenarios/build');
-          showToast(
-            root,
-            `Cenário importado: ${scenario.scenario_name || scenario.scenario_id}.`,
-            'success'
-          );
-        } catch (error) {
-          if (!isCurrentOperation(token, companyId, activeProvider)) return;
-          showToast(root, sanitizeError(error).message, 'error');
-        }
-      },
-      async runScenario({
-        formValues = {},
-        scenarioId = null,
-        scenario: inputScenario = null,
-      } = {}) {
-        if (!provider) return;
-        const activeProvider = provider;
-        const companyId = store.getState().context.company_id;
-        const action = beginAction('scenario', activeProvider, companyId);
-        if (!action) return;
-        const effectiveScenarioId =
-          scenarioId ||
-          inputScenario?.scenario_id ||
-          (store.getState().context.provider_kind === 'mock'
-            ? store.getState().ui.scenario_draft?.scenario_id
-            : null);
-        store.update((state) => {
-          beginLoading(state, 'Simulando cenário…');
-        });
-        showLoading(root, true, 'Simulando cenário', 'Chamando o engine de cenários.');
-        try {
-          const output = await activeProvider.runScenario({
-            formValues,
-            scenarioId: effectiveScenarioId,
-            scenario: inputScenario,
-          });
-          if (!isCurrentAction(action) || (output?.company_id && output.company_id !== companyId)) {
-            return;
-          }
-          const scenario = output.scenario || output;
-          const result = output.result || null;
-          store.update((state) => {
-            state.data.selected_scenario = scenario;
-            state.data.scenario_result = result;
-            state.data.scenario_quality = output.quality || null;
-            state.data.comparison = output.comparison || null;
-            state.data.monte_carlo = null;
-            state.data.stress = null;
-            state.data.sensitivity = null;
-            state.data.sensitivity_matrix = null;
-            state.data.robustness = null;
-            state.data.recommendation = null;
-            state.meta.status = 'scenario_ready';
-            state.ui.loading = false;
-            state.context.selected_scenario_id = scenario?.scenario_id || null;
-            state.ui.scenario_draft = scenario;
-          });
-          showLoading(root, false);
-          showToast(root, 'Cenário simulado pelo provider ativo.', 'success');
-          window.location.hash = '#/network/scenarios/result';
-        } catch (error) {
-          if (!isCurrentAction(action)) return;
-          store.update((state) => failLoading(state, error));
-          showLoading(root, false);
-          showToast(root, sanitizeError(error).message, 'error');
-        } finally {
-          finishAction(action);
-        }
-        if (isCurrentAction(action) || !activeAction) render();
-      },
-      async runRisk(config = {}) {
-        if (!provider) return;
-        const activeProvider = provider;
-        const current = store.getState();
-        const companyId = current.context.company_id;
-        const selectedScenario = current.data.selected_scenario;
-        const deterministicResult = current.data.scenario_result;
-        if (!selectedScenario || !deterministicResult) {
-          showToast(root, 'Simule um cenário antes de calcular risco.', 'error');
-          return;
-        }
-        const action = beginAction('risk', activeProvider, companyId);
-        if (!action) return;
-        store.update((state) => {
-          beginLoading(state, 'Calculando risco e sensibilidade…');
-        });
-        showLoading(root, true, 'Calculando risco', 'Monte Carlo, stress e sensibilidade.');
-        try {
-          const risk = await activeProvider.runRiskSuite({
-            selectedScenario,
-            deterministicResult,
-            config,
-          });
-          if (!isCurrentAction(action)) return;
-          store.update((state) => {
-            state.data.monte_carlo = risk?.monte_carlo || null;
-            state.data.stress = risk?.stress || null;
-            state.data.sensitivity = risk?.sensitivity || null;
-            state.data.sensitivity_matrix = risk?.sensitivity_matrix || null;
-            state.data.robustness = risk?.robustness || null;
-            state.meta.status = 'risk_ready';
-            state.ui.loading = false;
-          });
-          showLoading(root, false);
-          showToast(root, 'Análise de risco concluída pelo provider ativo.', 'success');
-          window.location.hash = '#/network/scenarios/risk';
-        } catch (error) {
-          if (!isCurrentAction(action)) return;
-          store.update((state) => failLoading(state, error));
-          showLoading(root, false);
-          showToast(root, sanitizeError(error).message, 'error');
-        } finally {
-          finishAction(action);
-        }
-        if (isCurrentAction(action) || !activeAction) render();
-      },
-      async runDecision(options = {}) {
-        if (!provider) return;
-        const activeProvider = provider;
-        const companyId = store.getState().context.company_id;
-        const action = beginAction('decision', activeProvider, companyId);
-        if (!action) return;
-        store.update((state) => {
-          beginLoading(state, 'Executando pipeline de decisão…');
-        });
-        showLoading(root, true, 'Executando decisão', 'Optimizer, risco, Evidence, QA e release.');
-        try {
-          const packageResult = await activeProvider.buildDecisionPackage(options);
-          if (
-            !isCurrentAction(action) ||
-            (packageResult?.company_id && packageResult.company_id !== companyId)
-          ) {
-            return;
-          }
-          store.update((state) => {
-            commitDecisionPackage(state, packageResult, activeProvider);
-          });
-          showLoading(root, false);
-          showToast(root, 'Pipeline de decisão concluído.', 'success');
-          window.location.hash = '#/network/trust/validation';
-        } catch (error) {
-          if (!isCurrentAction(action)) return;
-          store.update((state) => failLoading(state, error));
-          showLoading(root, false);
-          showToast(root, sanitizeError(error).message, 'error');
-        } finally {
-          finishAction(action);
-        }
-        if (isCurrentAction(action) || !activeAction) render();
-      },
       exportPackage(index = 0) {
         const companyId = store.getState().context.company_id;
-        const token = operationId;
+        const token = currentToken();
         const files = store.getState().data.export_package?.files || [];
         const file = files[index] || files[0];
         if (!file) {
@@ -624,7 +350,7 @@ if (networkActive) {
       },
       lock() {
         nextOperation();
-        activeAction = null;
+        cancelActiveAction();
         const activeProvider = provider;
         provider = null;
         void activeProvider?.dispose({ lock: true });
@@ -660,34 +386,16 @@ if (networkActive) {
       },
     };
 
-    function renderCharts(path, state) {
-      if (path === '/network/overview/costs')
-        renderCostChart('niCostChart', state.data.scenario_result || state.data.baseline);
-      if (path === '/network/overview/network') {
-        const flows = state.data.baseline?.flows || [];
-        renderVolumeByCdChart('niVolumeByCdChart', flows);
-        renderDistanceHistogram('niDistanceHistogramChart', flows);
-      }
-      if (path.includes('/risk')) {
-        renderRiskChart('niRiskChart', state.data.monte_carlo);
-        renderSensitivity('niSensitivityChart', state.data.sensitivity);
-        const monteCarlo = state.data.monte_carlo;
-        renderRiskHistogram('niRiskHistogramChart', monteCarlo);
-        renderRiskCdf('niRiskCdfChart', monteCarlo);
-        renderRiskTotalCurve('niRiskTotalChart', monteCarlo);
-        renderRiskDrivers('niRiskDriversChart', monteCarlo);
-        renderRiskScatter('niRiskScatterChart', monteCarlo);
-        renderRiskProbability('niRiskProbabilityChart', monteCarlo);
-      }
-      if (path === '/network/optimizer/results')
-        renderRanking('niRankingChart', state.data.optimizer);
-    }
-
     store.subscribe(render);
     stopRouter = startRouter({
       initialRoute: config.default_route,
       onRouteChange(route) {
+        root.querySelector('#networkToastRoot')?.replaceChildren();
         store.update((state) => setRoute(state, route.hash));
+        window.requestAnimationFrame(() => {
+          window.scrollTo(0, 0);
+          root.querySelector('#networkPage')?.focus({ preventScroll: true });
+        });
       },
     });
     installBindings({ root, store, controller });
@@ -704,3 +412,5 @@ if (networkActive) {
 
   void bootstrap();
 }
+
+initializeNetworkIntelligence();

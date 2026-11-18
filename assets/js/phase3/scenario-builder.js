@@ -82,16 +82,3 @@ export function buildScenarioFromForm({
     errors: [],
   };
 }
-export function buildChangeLog(scenario) {
-  const c = scenario?.changes || {};
-  const out = [];
-  if ((c.closed_cds || []).length) out.push(`CDs fechados: ${c.closed_cds.join(', ')}`);
-  if (Number(c.freight_multiplier) !== 1) out.push(`Frete x${c.freight_multiplier}`);
-  if (Number(c.demand_multiplier) !== 1) out.push(`Demanda x${c.demand_multiplier}`);
-  if (Number(c.inventory_days) !== MODEL_DEFAULTS.inventory_days)
-    out.push(`Estoque: ${c.inventory_days} dias`);
-  if (c.tax_mode === 'disabled') out.push('Tributário desligado');
-  if (c.tax_regime && c.tax_regime !== 'current')
-    out.push(`Regime fiscal: ${taxRegimeLabel(c.tax_regime)}`);
-  return out;
-}

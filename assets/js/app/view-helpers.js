@@ -65,10 +65,14 @@ export function sectionTabs(section, currentPath) {
         ['Metodologia', '#/network/trust/methodology'],
       ],
     }[section] || [];
+  const normalizedPath = String(currentPath || '').split('?')[0];
+  const activeRoute = (route) =>
+    route === normalizedPath ||
+    (route === '#/network/scenarios/risk' && normalizedPath.startsWith(`${route}/`));
   return `<nav class="ni-section-tabs" aria-label="Navegação da seção">${tabs
     .map(
       ([label, route]) =>
-        `<a href="${route}" data-route="${route}" class="${route === currentPath ? 'active' : ''}"${route === currentPath ? ' aria-current="page"' : ''}>${escapeHtml(label)}</a>`
+        `<a href="${route}" data-route="${route}" class="${activeRoute(route) ? 'active' : ''}"${activeRoute(route) ? ' aria-current="page"' : ''}>${escapeHtml(label)}</a>`
     )
     .join('')}</nav>`;
 }

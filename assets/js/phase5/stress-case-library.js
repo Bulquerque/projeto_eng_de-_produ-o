@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+
 export function getDefaultStressCases(profile = 'standard') {
   const standard = [
     { case_id: 'frete_mais_10', name: 'Frete +10%', changes: { freight_multiplier_delta: 0.1 } },
@@ -8,11 +10,18 @@ export function getDefaultStressCases(profile = 'standard') {
       name: 'Demanda -10%',
       changes: { demand_multiplier_delta: -0.1 },
     },
-    { case_id: 'wacc_mais_5pp', name: 'WACC +5 p.p.', changes: { wacc_delta: 0.05 } },
+    {
+      case_id: 'wacc_mais_5pp',
+      name: 'Custo anual de estoque +5 p.p.',
+      changes: { wacc_delta: 0.05 },
+    },
     {
       case_id: 'estoque_mais_15d',
-      name: 'Estoque +15 dias',
-      changes: { inventory_days_delta: 15 },
+      name: 'Estoque no benchmark MedTech 2019',
+      changes: {
+        inventory_days_delta:
+          MODEL_DEFAULTS.inventory_days_sensitivity[0] - MODEL_DEFAULTS.inventory_days,
+      },
     },
     {
       case_id: 'reforma_2033',

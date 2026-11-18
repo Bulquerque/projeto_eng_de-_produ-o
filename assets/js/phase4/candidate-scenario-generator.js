@@ -44,7 +44,11 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
   const baseCds = baselineBundle?.model?.active_cds || [];
   const maxCandidates = Number(generationConfig.max_candidates ?? 120);
   const freight = generationConfig.freight_multipliers || [0.95, 1, 1.1];
-  const inv = generationConfig.inventory_days_options || [30, MODEL_DEFAULTS.inventory_days, 60];
+  const inv =
+    generationConfig.inventory_days_options || [
+      MODEL_DEFAULTS.inventory_days,
+      ...MODEL_DEFAULTS.inventory_days_sensitivity,
+    ];
   const baseTaxMode = generationConfig.base_tax_mode || 'current';
   const baseTaxRegime = generationConfig.base_tax_regime || null;
   const tax = generationConfig.allow_tax_disabled ? [baseTaxMode, 'disabled'] : [baseTaxMode];

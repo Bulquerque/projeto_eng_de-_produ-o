@@ -23,12 +23,21 @@ def test_phase2_html_references_assets():
         '../assets/styles.css',
         'type="module"',
         '../assets/js/core/runtime-warning.js',
-        'index.html#/diagnostico-baseline',
+        'index.html#/network/trust/overview',
     ]:
         assert token in html, token
     portal = read('index.html')
-    for token in ['assets/js/phase2/main.js', 'baselineSummaryCards', 'calibrationPanel']:
-        assert token in portal, token
+    assert '<script type="module" src="assets/js/app/main.js"></script>' in portal
+    route_renderers = read('assets/js/app/route-renderers.js')
+    for route, renderer in [
+        ("'/network/overview/costs'", 'renderOverviewCosts'),
+        ("'/network/overview/network'", 'renderOverviewNetwork'),
+        ("'/network/overview/tax'", 'renderOverviewTax'),
+    ]:
+        assert route in route_renderers and renderer in route_renderers, (route, renderer)
+    overview_page = read('assets/js/app/pages/overview.js')
+    for renderer in ['renderOverviewCosts', 'renderOverviewNetwork', 'renderOverviewTax']:
+        assert f'export function {renderer}(' in overview_page, renderer
 
 
 def test_phase2_css_components_exist():

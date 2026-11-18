@@ -12,20 +12,17 @@ export const APP_CONFIG = Object.freeze({
   app_build: 'network-intelligence-6.2-modular',
   debug_default: false,
   mock_query_key: 'mock',
-  network_ui_query_key: 'ui',
 });
 
 export function readRuntimeRequest(location = window.location) {
   const params = new URLSearchParams(location.search);
   const requestedCompany = params.get('company');
   const requestedMode = params.get('runtime') || params.get('mode');
-  const requestedUi = params.get(APP_CONFIG.network_ui_query_key);
   const mockDisabled = params.get(APP_CONFIG.mock_query_key) === 'off';
   const debugRequested = params.get('dev') === '1';
   return {
     company_id: requestedCompany || APP_CONFIG.default_company_id,
     runtime_mode: requestedMode || APP_CONFIG.default_runtime_mode,
-    network_ui: requestedUi === 'network-intelligence',
     mock_disabled: mockDisabled,
     debug_requested: debugRequested,
   };
@@ -60,7 +57,6 @@ export function buildAppConfig({
     runtime_mode: runtimeMode,
     company_id: companyId,
     company_definition: definition,
-    network_ui: request.network_ui,
     debug_enabled: Boolean(request.debug_requested && runtimeMode === 'project'),
     mock_disabled: request.mock_disabled,
   });

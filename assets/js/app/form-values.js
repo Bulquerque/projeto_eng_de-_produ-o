@@ -1,3 +1,5 @@
+import { MODEL_DEFAULTS, MONTE_CARLO_CONFIG } from '../core/model-configuration.js';
+
 function readFormValue(data, rawValues, name) {
   return Object.prototype.hasOwnProperty.call(rawValues, name) ? rawValues[name] : data.get(name);
 }
@@ -17,8 +19,8 @@ export function parseScenarioForm(data, checkedActiveCds, rawValues = {}) {
     active_cds: [...checkedActiveCds].map((input) => input.value),
     freight_multiplier: readFormNumber(data, rawValues, 'freight_multiplier', 1),
     demand_multiplier: readFormNumber(data, rawValues, 'demand_multiplier', 1),
-    inventory_days: readFormNumber(data, rawValues, 'inventory_days', 45),
-    wacc: readFormNumber(data, rawValues, 'wacc', 0.15),
+    inventory_days: readFormNumber(data, rawValues, 'inventory_days', MODEL_DEFAULTS.inventory_days),
+    wacc: readFormNumber(data, rawValues, 'wacc', MODEL_DEFAULTS.reference_wacc),
     tax_mode: data.get('tax_mode') || 'current',
   };
 }
@@ -36,7 +38,7 @@ export function validateScenarioValues(values) {
     return validationError('Dias de estoque não pode ser negativo.');
   }
   if (!Number.isFinite(values.wacc) || values.wacc < 0) {
-    return validationError('WACC não pode ser negativo.');
+    return validationError('A taxa anual de carregamento do estoque não pode ser negativa.');
   }
   if (values.tax_mode === 'disabled') {
     return validationError('O modo tributário desligado não é permitido pela política vigente.');
@@ -57,8 +59,8 @@ export function parseOptimizerForm(data, rawValues = {}) {
     },
     profile_id: data.get('profile_id') || 'balanced',
     risk_config: {
-      iterations: readFormNumber(data, rawValues, 'risk_iterations', 300),
-      seed: readFormNumber(data, rawValues, 'risk_seed', 42),
+      iterations: readFormNumber(data, rawValues, 'risk_iterations', MONTE_CARLO_CONFIG.iterations),
+      seed: readFormNumber(data, rawValues, 'risk_seed', MONTE_CARLO_CONFIG.seed),
       profile: data.get('risk_profile') || 'balanced',
       scatter_driver: data.get('risk_scatter_driver') || 'freight_multiplier',
       stress_profile: data.get('stress_profile') || 'standard',
@@ -98,8 +100,8 @@ export function validateOptimizerValues(values) {
 
 export function parseRiskForm(data, rawValues = {}) {
   return {
-    iterations: readFormNumber(data, rawValues, 'iterations', 300),
-    seed: readFormNumber(data, rawValues, 'seed', 42),
+    iterations: readFormNumber(data, rawValues, 'iterations', MONTE_CARLO_CONFIG.iterations),
+    seed: readFormNumber(data, rawValues, 'seed', MONTE_CARLO_CONFIG.seed),
     profile: data.get('profile') || 'balanced',
     scatter_driver: data.get('scatter_driver') || 'freight_multiplier',
     stress_profile: data.get('stress_profile') || 'standard',
@@ -110,7 +112,11 @@ export function parseRiskForm(data, rawValues = {}) {
 }
 
 export function validateRiskValues(values) {
-  if (!Number.isInteger(values.iterations) || values.iterations < 50 || values.iterations > 5000) {
+  if (
+    !Number.isInteger(values.iterations) ||
+    values.iterations < MONTE_CARLO_CONFIG.min_iterations ||
+    values.iterations > MONTE_CARLO_CONFIG.max_iterations
+  ) {
     return validationError('Iterações devem ser um inteiro entre 50 e 5.000.');
   }
   if (!Number.isInteger(values.seed))

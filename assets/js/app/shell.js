@@ -13,21 +13,21 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
     <aside class="network-sidebar" aria-label="Navegação Network Intelligence">
       <div class="network-brand"><span class="network-brand-mark" aria-hidden="true">V</span><div><strong>visagio</strong><small>Network Intelligence</small></div></div>
       <nav class="network-nav" aria-label="Seções principais">
-        <a href="#/network/overview/summary" data-route="#/network/overview/summary" data-section="overview"><span>01</span>Visão executiva</a>
-        <a href="#/network/scenarios/build" data-route="#/network/scenarios/build" data-section="scenarios"><span>02</span>Cenários</a>
-        <a href="#/network/optimizer/configure" data-route="#/network/optimizer/configure" data-section="optimizer"><span>03</span>Otimizador</a>
-        <a href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust"><span>04</span>Dados & confiança</a>
-        ${debugEnabled ? '<a href="#/network/dev/console" data-route="#/network/dev/console" data-section="dev">Debug</a>' : ''}
+        <a href="#/network/overview/summary" data-route="#/network/overview/summary" data-section="overview"><span class="network-nav-number" aria-hidden="true">01</span><span>Visão executiva</span></a>
+        <a href="#/network/scenarios/build" data-route="#/network/scenarios/build" data-section="scenarios"><span class="network-nav-number" aria-hidden="true">02</span><span>Cenários</span></a>
+        <a href="#/network/optimizer/configure" data-route="#/network/optimizer/configure" data-section="optimizer"><span class="network-nav-number" aria-hidden="true">03</span><span>Otimizador</span></a>
+        <a href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust"><span class="network-nav-number" aria-hidden="true">04</span><span>Dados & confiança</span></a>
+        ${debugEnabled ? '<a href="#/network/dev/console" data-route="#/network/dev/console" data-section="dev"><img class="network-nav-icon" src="assets/icons/bootstrap-icons/gear.svg" alt="" aria-hidden="true"><span>Debug</span></a>' : ''}
       </nav>
-      <div class="network-sidebar-tools"><button type="button" data-action="open-help">Ajuda</button><button type="button" data-action="open-settings">Configurações</button><button type="button" data-action="open-styleguide">◫ Style guide</button></div>
+      <div class="network-sidebar-tools"><button type="button" data-action="open-help"><img class="network-tool-icon" src="assets/icons/bootstrap-icons/question-circle.svg" alt="" aria-hidden="true">Ajuda</button></div>
       <div class="network-sidebar-foot"><small>Decision workspace</small><span data-testid="mode-badge">runtime</span></div>
     </aside>
     <div class="network-content">
       <header class="network-topbar" data-testid="network-topbar">
-        <div class="network-product"><strong>Network Intelligence</strong><small>Decision workspace</small></div>
+        <div class="network-product"><strong>Network Intelligence</strong><small>Decision Workspace</small></div>
         <div class="network-context">
-          <label>Empresa<select id="niCompanySelect" data-testid="company-selector" aria-label="Selecionar empresa">${companies}</select></label>
-          <label>Cenário<select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário"><option value="">Baseline</option></select></label>
+          <label><span class="ni-workspace-sr-only">Empresa</span><select id="niCompanySelect" data-testid="company-selector" aria-label="Selecionar empresa">${companies}</select></label>
+          <label><span class="ni-workspace-sr-only">Cenário</span><select id="niScenarioSelect" data-testid="scenario-selector" aria-label="Selecionar cenário"><option value="">Baseline</option></select></label>
         </div>
         <div class="network-topbar-actions">
           <span id="niEvidenceTopbar" data-testid="evidence-topbar" class="ni-status status-neutral">Evidence —</span>
@@ -35,7 +35,6 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
           <span class="ni-runtime-badge" data-testid="runtime-badge">RUNTIME</span>
           <button type="button" class="ni-button secondary" data-action="open-export" data-testid="export-center">Exportar</button>
           ${debugEnabled ? '<button type="button" class="ni-button primary" data-action="open-dev" data-testid="dev-console">&lt;/&gt; Dev</button>' : ''}
-          <span class="ni-avatar" aria-hidden="true">UI</span>
         </div>
       </header>
       <main id="networkPage" class="network-page" data-route-current="${escapeHtml(route || '')}" tabindex="-1" aria-live="polite"></main>
@@ -80,13 +79,28 @@ export function updateGlobalContext(root, state) {
   if (scenarioSelect) {
     scenarioSelect.disabled = Boolean(state.ui.loading);
     const selected = state.context.selected_scenario_id || '';
-    scenarioSelect.innerHTML = `<option value="">Baseline</option>${(state.data.scenarios || [])
+    const scenarios = new Map();
+    for (const candidate of [
+      ...(state.data.scenarios || []),
+      ...(state.data.saved_scenarios || []),
+      ...(state.data.optimizer?.best_scenarios || []).map((item) => item.scenario || item),
+      state.data.selected_scenario,
+    ]) {
+      if (candidate?.scenario_id) scenarios.set(candidate.scenario_id, candidate);
+    }
+    scenarioSelect.innerHTML = `<option value="">Baseline</option>${[...scenarios.values()]
       .map(
         (scenario) =>
           `<option value="${escapeHtml(scenario.scenario_id)}">${escapeHtml(scenario.scenario_name || scenario.scenario_id)}</option>`
       )
       .join('')}`;
     scenarioSelect.value = selected;
+  }
+  const lockButton = document.getElementById('cryptoLockButton');
+  const actions = root.querySelector('.network-topbar-actions');
+  if (lockButton && actions) {
+    lockButton.hidden = state.context.provider_kind === 'mock';
+    if (lockButton.parentElement !== actions) actions.appendChild(lockButton);
   }
   const evidenceScore = state.data.scenario_result?.evidence?.evidence_score;
   if (evidence)
@@ -107,6 +121,6 @@ export function showToast(root, message, kind = 'neutral') {
   const toast = document.createElement('div');
   toast.className = `network-toast ${kind}`;
   toast.textContent = message;
-  root.querySelector('#networkToastRoot')?.append(toast);
+  root.querySelector('#networkToastRoot')?.replaceChildren(toast);
   window.setTimeout(() => toast.remove(), 4200);
 }

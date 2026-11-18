@@ -23,3 +23,5 @@ Use este índice para localizar documentação por finalidade. Os documentos num
 ## Dados e compartilhamento
 
 As fixtures em `data-demo/empresa_mock/` são sintéticas e destinadas à demonstração. Os conjuntos reais em `data/` têm regras próprias de proteção e podem incluir arquivos ignorados pelo Git. Consulte [`../README.md`](../README.md) e os documentos de dados antes de compartilhar arquivos ou gerar um pacote. Não use relatórios históricos como prova de que o checkout atual passou nos mesmos testes.
+
+Consulte [`REGISTRO_PREMISSAS_NUMERICAS.md`](REGISTRO_PREMISSAS_NUMERICAS.md) para a classificação, justificativa e fonte dos parâmetros numéricos de negócio, fiscais, incerteza e decisão do simulador.

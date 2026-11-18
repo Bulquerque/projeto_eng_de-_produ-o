@@ -1,0 +1,4 @@
+# Versions used by the local quality gate and GitHub Actions.
+playwright==1.58.0
+cryptography==50.0.2
+ruff==0.15.12

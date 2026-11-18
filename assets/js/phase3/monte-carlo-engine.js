@@ -1,6 +1,10 @@
 import { runScenario } from './scenario-simulator.js';
 import { safeNumber } from '../core/common.js';
-import { calculateSaving, MODEL_DEFAULTS } from '../core/model-configuration.js';
+import {
+  calculateSaving,
+  MODEL_DEFAULTS,
+  MONTE_CARLO_CONFIG,
+} from '../core/model-configuration.js';
 function clone(value) {
   return JSON.parse(JSON.stringify(value || {}));
 }
@@ -14,7 +18,7 @@ function hashSeed(seed) {
     return Math.trunc(Number(seed)) >>> 0;
   }
 
-  const text = String(seed || '42');
+  const text = String(seed || MONTE_CARLO_CONFIG.seed);
   let hash = 2166136261;
   for (let i = 0; i < text.length; i += 1) {
     hash ^= text.charCodeAt(i);
@@ -289,15 +293,19 @@ const PROFILE_PRESETS = {
 };
 
 function buildMonteCarloConfig({
-  iterations = 300,
-  seed = 42,
+  iterations = MONTE_CARLO_CONFIG.iterations,
+  seed = MONTE_CARLO_CONFIG.seed,
   profile = 'balanced',
   scatterDriver = 'freight_multiplier',
   histogramBins = 12,
   historicalData = null,
   historical_data = null,
 } = {}) {
-  const normalizedIterations = clamp(Math.round(safeNumber(iterations, 300)), 50, 5000);
+  const normalizedIterations = clamp(
+    Math.round(safeNumber(iterations, MONTE_CARLO_CONFIG.iterations)),
+    MONTE_CARLO_CONFIG.min_iterations,
+    MONTE_CARLO_CONFIG.max_iterations
+  );
   const normalizedProfile = normalizeProfile(profile);
   const normalizedDriver = normalizeDriver(scatterDriver);
   const preset = PROFILE_PRESETS[normalizedProfile];
@@ -579,13 +587,99 @@ function summarizeSamples({
   };
 }
 
+function sampleUncertaintyInputs({
+  baseFreight,
+  baseDemand,
+  baseInventory,
+  baseWacc,
+  historicalData,
+  historicalDrivers,
+  preset,
+  rng,
+}) {
+  const sharedShock = gaussian(rng);
+  const historicalObservation = sampleHistoricalObservation(historicalData.observations, rng);
+  const historicalValue = (driver) => {
+    const value = historicalObservation?.[driver];
+    return Number.isFinite(Number(value))
+      ? Number(value)
+      : sampleHistorical(historicalData[driver], rng);
+  };
+
+  return {
+    freight_multiplier: historicalDrivers.has('freight_multiplier')
+      ? historicalValue('freight_multiplier')
+      : sampleMultiplicative(
+          baseFreight,
+          preset.spread.freight_multiplier,
+          rng,
+          sharedShock,
+          1,
+          preset.idiosyncratic_shock,
+          0.6,
+          1.8
+        ),
+    demand_multiplier: historicalDrivers.has('demand_multiplier')
+      ? historicalValue('demand_multiplier')
+      : sampleMultiplicative(
+          baseDemand,
+          preset.spread.demand_multiplier,
+          rng,
+          sharedShock,
+          0.9,
+          preset.idiosyncratic_shock,
+          0.6,
+          1.6
+        ),
+    inventory_days: historicalDrivers.has('inventory_days')
+      ? Math.max(0, Math.round(historicalValue('inventory_days')))
+      : Math.round(
+          sampleAdditive(
+            baseInventory,
+            preset.spread.inventory_days,
+            rng,
+            sharedShock,
+            1,
+            preset.idiosyncratic_shock,
+            0,
+            120
+          )
+        ),
+    wacc: historicalDrivers.has('wacc')
+      ? Math.max(0, historicalValue('wacc'))
+      : sampleAdditive(
+          baseWacc,
+          preset.spread.wacc,
+          rng,
+          sharedShock,
+          0.7,
+          preset.idiosyncratic_shock,
+          0,
+          0.5
+        ),
+    tax_multiplier: historicalDrivers.has('tax_multiplier')
+      ? Math.max(0, historicalValue('tax_multiplier'))
+      : sampleMultiplicative(
+          1,
+          preset.spread.tax_multiplier,
+          rng,
+          sharedShock,
+          0.5,
+          preset.idiosyncratic_shock,
+          0.7,
+          1.35
+        ),
+    common_shock: sharedShock,
+  };
+}
+
 export function runMonteCarloSimulation({
   companyId,
   selectedScenario,
   baselineBundle,
   deterministicResult = null,
-  iterations = 300,
-  seed = 42,
+  iterations = MONTE_CARLO_CONFIG.iterations,
+  seed = MONTE_CARLO_CONFIG.seed,
   config = {},
 } = {}) {
   const warnings = [];
@@ -685,80 +779,16 @@ export function runMonteCarloSimulation({
 
   const samples = [];
   for (let index = 0; index < normalizedConfig.iterations; index += 1) {
-    const sharedShock = gaussian(rng);
-    const historicalObservation = sampleHistoricalObservation(historicalData.observations, rng);
-    const historicalValue = (driver) => {
-      const value = historicalObservation?.[driver];
-      return Number.isFinite(Number(value))
-        ? Number(value)
-        : sampleHistorical(historicalData[driver], rng);
-    };
-
-    const sampled = {
-      freight_multiplier: historicalDrivers.has('freight_multiplier')
-        ? historicalValue('freight_multiplier')
-        : sampleMultiplicative(
-            baseFreight,
-            preset.spread.freight_multiplier,
-            rng,
-            sharedShock,
-            1,
-            preset.idiosyncratic_shock,
-            0.6,
-            1.8
-          ),
-      demand_multiplier: historicalDrivers.has('demand_multiplier')
-        ? historicalValue('demand_multiplier')
-        : sampleMultiplicative(
-            baseDemand,
-            preset.spread.demand_multiplier,
-            rng,
-            sharedShock,
-            0.9,
-            preset.idiosyncratic_shock,
-            0.6,
-            1.6
-          ),
-      inventory_days: historicalDrivers.has('inventory_days')
-        ? Math.max(0, Math.round(historicalValue('inventory_days')))
-        : Math.round(
-            sampleAdditive(
-              baseInventory,
-              preset.spread.inventory_days,
-              rng,
-              sharedShock,
-              1,
-              preset.idiosyncratic_shock,
-              0,
-              120
-            )
-          ),
-      wacc: historicalDrivers.has('wacc')
-        ? Math.max(0, historicalValue('wacc'))
-        : sampleAdditive(
-            baseWacc,
-            preset.spread.wacc,
-            rng,
-            sharedShock,
-            0.7,
-            preset.idiosyncratic_shock,
-            0,
-            0.5
-          ),
-      tax_multiplier: historicalDrivers.has('tax_multiplier')
-        ? Math.max(0, historicalValue('tax_multiplier'))
-        : sampleMultiplicative(
-            1,
-            preset.spread.tax_multiplier,
-            rng,
-            sharedShock,
-            0.5,
-            preset.idiosyncratic_shock,
-            0.7,
-            1.35
-          ),
-      common_shock: sharedShock,
-    };
+    const sampled = sampleUncertaintyInputs({
+      baseFreight,
+      baseDemand,
+      baseInventory,
+      baseWacc,
+      historicalData,
+      historicalDrivers,
+      preset,
+      rng,
+    });
 
     const sampledScenario = buildSampleScenario({
       scenario: baseScenario,

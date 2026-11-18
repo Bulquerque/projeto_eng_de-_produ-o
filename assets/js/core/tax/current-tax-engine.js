@@ -1,4 +1,5 @@
 import { groupBy, safeNumber } from '../common.js';
+import { TAX_HEURISTIC_DEFAULTS } from '../model-configuration.js';
 
 function normalizeText(value) {
   return String(value ?? '')
@@ -94,7 +95,9 @@ export function calculateCurrentTax({
   const totalRevenue = fiscalFlows.reduce((sum, flow) => sum + safeNumber(flow.gross_revenue), 0);
   const isEmpresa1 = baselineBundle?.model?.company_id === 'empresa1';
   const referenceRateReconciled = totalRevenue > 0 && totalTax > 0;
-  const referenceRate = referenceRateReconciled ? totalTax / totalRevenue : 0.18;
+  const referenceRate = referenceRateReconciled
+    ? totalTax / totalRevenue
+    : TAX_HEURISTIC_DEFAULTS.prosthesis_sales_tax_proxy;
 
   const taxData = baselineBundle?.core_data?.tax_data || [];
   const hasDetailedTax = Array.isArray(taxData) && taxData.length > 0;
@@ -234,7 +237,7 @@ export function calculateCurrentTax({
       reference_rate: referenceRate,
       reference_rate_source: referenceRateReconciled
         ? 'reconciled_baseline_tax_over_revenue'
-        : 'default_parameter_18_percent',
+        : TAX_HEURISTIC_DEFAULTS.prosthesis_sales_tax_source,
     },
   };
 }

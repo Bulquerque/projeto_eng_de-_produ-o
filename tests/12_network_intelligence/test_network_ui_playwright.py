@@ -47,7 +47,33 @@ def run_server():
         os.chdir(previous)
 
 
-def test_network_ui_mock_flow_and_compatibility():
+def test_network_ui_is_the_default_public_entrypoint():
+    requested_urls = []
+    page_errors = []
+    with run_server() as port, sync_playwright() as playwright:
+        browser = playwright.chromium.launch(headless=True)
+        page = browser.new_page(viewport={'width': 1440, 'height': 1000})
+        page.on('request', lambda request: requested_urls.append(request.url))
+        page.on('pageerror', lambda error: page_errors.append(str(error)))
+        page.goto(f'http://127.0.0.1:{port}/', wait_until='networkidle')
+        page.locator('#networkAppRoot').wait_for(state='visible')
+        page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
+        assert page.locator('[data-testid="company-selector"]').input_value() == 'empresa_mock'
+        assert (
+            page.locator('[data-testid="network-topbar"]').evaluate(
+                'element => getComputedStyle(element).backgroundColor'
+            )
+            == 'rgb(255, 255, 255)'
+        )
+        assert page.locator('.network-nav-number').all_text_contents() == ['01', '02', '03', '04']
+        assert page.locator('.network-product strong').inner_text() == 'Network Intelligence'
+        assert page.locator('.network-product small').evaluate('node => node.textContent') == 'Decision Workspace'
+        assert not any('/assets/js/phase' in url and '/main.js' in url for url in requested_urls)
+        assert not page_errors, f'page_errors={page_errors}'
+        browser.close()
+
+
+def test_network_ui_mock_flow():
     console_errors = []
     page_errors = []
     request_failures = []
@@ -63,9 +89,7 @@ def test_network_ui_mock_flow_and_compatibility():
         page.on('request', lambda request: request_urls.append(request.url))
 
         base = f'http://127.0.0.1:{port}'
-        page.goto(
-            f'{base}/?ui=network-intelligence&company=empresa_mock#/network/overview/summary', wait_until='networkidle'
-        )
+        page.goto(f'{base}/?company=empresa_mock#/network/overview/summary', wait_until='networkidle')
         page.locator('#networkAppRoot').wait_for(state='visible')
         page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
         assert page.locator('[data-testid="company-selector"]').input_value() == 'empresa_mock'
@@ -132,35 +156,33 @@ def test_network_ui_mock_flow_and_compatibility():
         page.locator('#cryptoPasswordPrompt').wait_for(state='visible', timeout=10000)
         assert 'Senha inválida ou dados corrompidos' in page.locator('#cryptoPasswordPrompt').inner_text()
         page.locator('#cryptoCancel').click()
-        page.goto(
-            f'{base}/?ui=network-intelligence&company=empresa_mock#/network/overview/summary', wait_until='networkidle'
-        )
+        page.goto(f'{base}/?company=empresa_mock#/network/overview/summary', wait_until='networkidle')
 
         page.locator('a[data-route="#/network/optimizer/configure"]').first.click()
         page.locator('[data-testid="page-optimizer-configure"]').wait_for(state='visible')
         page.locator('[data-testid="optimizer-run"]').click()
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=20000)
+        page.evaluate("window.location.hash = '#/network/trust/validation'")
         page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=20000)
         assert page.locator('[data-testid="qa-status"]').is_visible()
         assert page.locator('[data-testid="release-status"]').is_visible()
-        assert 'demo_only' in page.locator('#networkPage').inner_text()
+        assert 'Política restrita à demonstração' in page.locator('#networkPage').inner_text()
         with page.expect_download(timeout=10000) as download_info:
             page.locator('[data-testid="export-center"]').click()
         assert download_info.value.suggested_filename == 'empresa_mock_decision_package.json'
 
-        page.goto(
-            f'{base}/?ui=network-intelligence&company=empresa_mock#/diagnostico-baseline', wait_until='networkidle'
-        )
+        page.goto(f'{base}/?company=empresa_mock#/network/overview/summary', wait_until='networkidle')
         page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
         assert page.locator('#networkPage').get_attribute('data-route-current') == '#/network/overview/summary'
 
         page.goto(
-            f'{base}/?ui=network-intelligence&dev=1&company=empresa_mock#/network/dev/console',
+            f'{base}/?dev=1&company=empresa_mock#/network/dev/console',
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-dev-console"]').wait_for(state='visible')
         assert 'Snapshot seguro' in page.locator('#networkPage').inner_text()
         page.goto(
-            f'{base}/?ui=network-intelligence&dev=1&company=empresa_mock#erros',
+            f'{base}/?dev=1&company=empresa_mock#/network/dev/console?tab=errors',
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-dev-console"]').wait_for(state='visible')
@@ -189,7 +211,7 @@ def test_network_ui_reference_shell_overview_and_scenario_contracts():
         base = f'http://127.0.0.1:{port}'
 
         page.goto(
-            f'{base}/?ui=network-intelligence&company=empresa_mock#/network/overview/summary',
+            f'{base}/?company=empresa_mock#/network/overview/summary',
             wait_until='networkidle',
         )
         shell = page.locator('[data-testid="network-shell"]')
@@ -204,7 +226,8 @@ def test_network_ui_reference_shell_overview_and_scenario_contracts():
         assert evidence_badge.inner_text().strip().lower().startswith('evidence')
         assert evidence_badge.inner_text().strip().lower() == 'evidence 100/100'
 
-        page.locator('[data-action="open-styleguide"]').click()
+        page.locator('[data-action="open-help"]').click()
+        page.locator('#networkDrawer [data-action="open-styleguide"]').click()
         page.locator('#networkDrawer').wait_for(state='visible')
         assert 'Style guide' in page.locator('#networkDrawer').inner_text()
         page.locator('[data-action="close-drawer"]').first.click()
@@ -214,7 +237,7 @@ def test_network_ui_reference_shell_overview_and_scenario_contracts():
         brazil_map = page.locator('[data-testid="brazil-map"]')
         brazil_map.wait_for(state='visible', timeout=5000)
         assert brazil_map.locator('.ni-map-state').count() == 27
-        assert 'dados por uf do provider' in brazil_map.inner_text().lower()
+        assert 'fluxos com uf' in brazil_map.inner_text().lower()
         brazil_map.locator('.ni-map-state').first.click()
         page.locator('#networkDrawer').wait_for(state='visible')
         assert 'Estado' in page.locator('#networkDrawer').inner_text()
@@ -254,14 +277,14 @@ def test_network_ui_fallback_debug_drawer_and_manual_decision():
         base = f'http://127.0.0.1:{port}'
 
         page.goto(
-            f'{base}/?ui=network-intelligence&company=empresa_mock#/network/overview/summary',
+            f'{base}/?company=empresa_mock#/network/overview/summary',
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
         assert page.locator('[data-testid="dev-console"]').count() == 0
 
         page.goto(
-            f'{base}/?ui=network-intelligence&company=empresa_mock#/network/route-does-not-exist',
+            f'{base}/?company=empresa_mock#/network/route-does-not-exist',
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-route-fallback"]').wait_for(state='visible')
@@ -269,6 +292,8 @@ def test_network_ui_fallback_debug_drawer_and_manual_decision():
         page.locator('[data-testid="page-route-fallback"] [data-route]').click()
         page.locator('[data-testid="page-overview-summary"]').wait_for(state='visible')
 
+        page.locator('[data-action="open-help"]').click()
+        page.locator('#networkDrawer').wait_for(state='visible')
         styleguide = page.locator('[data-action="open-styleguide"]')
         styleguide.click()
         page.locator('#networkDrawer').wait_for(state='visible')
@@ -279,7 +304,7 @@ def test_network_ui_fallback_debug_drawer_and_manual_decision():
         page.locator('#networkDrawer').wait_for(state='hidden')
 
         page.goto(
-            f'{base}/?ui=network-intelligence&company=empresa_mock#/network/optimizer/configure',
+            f'{base}/?company=empresa_mock#/network/optimizer/configure',
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-optimizer-configure"]').wait_for(state='visible')
@@ -292,10 +317,12 @@ def test_network_ui_fallback_debug_drawer_and_manual_decision():
         page.locator('input[name="min_active_cds"]').fill('1')
         page.locator('input[name="max_active_cds"]').fill('10')
         page.locator('[data-testid="optimizer-run"]').click()
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=20000)
+        page.evaluate("window.location.hash = '#/network/trust/validation'")
         page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=20000)
 
         page.goto(
-            f'{base}/?ui=network-intelligence&company=empresa_mock#/network/optimizer/results',
+            f'{base}/?company=empresa_mock#/network/optimizer/results',
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible')
@@ -320,7 +347,7 @@ def test_network_ui_parity_extensions():
     with run_server() as port, sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
         page = browser.new_page(viewport={'width': 1440, 'height': 1000})
-        base = f'http://127.0.0.1:{port}/?ui=network-intelligence&company=empresa_mock'
+        base = f'http://127.0.0.1:{port}/?company=empresa_mock'
         page.goto(f'{base}#/network/overview/network', wait_until='networkidle')
         page.locator('[data-testid="network-flow-analytics"]').wait_for(state='visible')
         assert page.locator('#niVolumeByCdChart').count() == 1
@@ -353,20 +380,26 @@ def test_network_ui_parity_extensions():
         page.locator('[data-testid="page-scenarios-result"]').wait_for(state='visible', timeout=10000)
         page.locator('[data-action="run-risk"]').click()
         page.locator('[data-testid="page-scenarios-risk"]').wait_for(state='visible', timeout=10000)
+        assert page.locator('[data-testid="risk-controls"]').count() == 0
+        assert page.locator('#niRiskHistogramChart').count() == 1
+        assert page.locator('#niRiskDriversChart').count() == 1
+        page.get_by_role('link', name='Abrir análise avançada').click()
+        page.locator('.ni-workspace-risk-settings > summary').click()
         page.locator('[data-testid="risk-controls"]').wait_for(state='visible')
         for canvas_id in (
-            'niRiskChart',
             'niRiskProbabilityChart',
             'niRiskHistogramChart',
-            'niRiskCdfChart',
             'niRiskTotalChart',
             'niRiskDriversChart',
             'niRiskScatterChart',
         ):
             assert page.locator(f'#{canvas_id}').count() == 1
-        page.locator('[data-route="#/network/scenarios/risk/advanced"]').click()
+        page.get_by_role('link', name='Voltar ao risco resumido').click()
+        page.locator('[data-testid="page-scenarios-risk"]').wait_for(state='visible')
+        page.get_by_role('link', name='Abrir análise avançada').click()
+        page.locator('[data-testid="page-scenarios-risk"]').wait_for(state='visible')
         assert 'Risco avançado' in page.locator('#networkPage').inner_text()
-        page.locator('[data-route="#/network/scenarios/risk"]').last.click()
+        page.get_by_role('link', name='Risco & sensibilidade').click()
         assert 'Risco e sensibilidade' in page.locator('#networkPage').inner_text()
         browser.close()
 
@@ -376,9 +409,7 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
         browser = playwright.chromium.launch(headless=True)
         page = browser.new_page()
         base = f'http://127.0.0.1:{port}'
-        page.goto(
-            f'{base}/?ui=network-intelligence&company=empresa1#/network/overview/summary', wait_until='networkidle'
-        )
+        page.goto(f'{base}/?company=empresa1#/network/overview/summary', wait_until='networkidle')
         page.locator('#networkAppRoot').wait_for(state='visible')
         page.locator('#cryptoPasswordPrompt').wait_for(state='visible', timeout=10000)
         assert page.locator('#cryptoPasswordPrompt').inner_text().find('empresa1') >= 0
@@ -406,20 +437,26 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
             page.evaluate("window.location.hash = '#/network/optimizer/configure'")
             page.locator('[data-testid="page-optimizer-configure"]').wait_for(state='visible', timeout=20000)
             page.locator('[data-testid="optimizer-run"]').click()
+            page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=20000)
+            page.evaluate("window.location.hash = '#/network/trust/validation'")
             page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=20000)
             page.locator('[data-testid="qa-status"]').wait_for(state='visible', timeout=20000)
+            page.locator('summary', has_text='Registro técnico').first.click()
             page.locator('pre.ni-json', has_text='Fonte protegida').wait_for(state='visible', timeout=20000)
             audit_text = page.locator('#networkPage').inner_text()
             assert 'data/empresa1' not in audit_text
             assert 'Fonte protegida (detalhes no pacote de exportação)' in audit_text
             page.evaluate("window.location.hash = '#/network/scenarios/risk'")
             page.locator('[data-testid="page-scenarios-risk"]').wait_for(state='visible', timeout=20000)
+            assert page.locator('[data-testid="risk-controls"]').count() == 0
+            assert page.locator('#niRiskHistogramChart').count() == 1
+            assert page.locator('#niRiskDriversChart').count() == 1
+            page.evaluate("window.location.hash = '#/network/scenarios/risk/advanced'")
+            page.locator('.ni-workspace-risk-settings > summary').click()
             page.locator('[data-testid="risk-controls"]').wait_for(state='visible', timeout=20000)
             for canvas_id in (
-                'niRiskChart',
                 'niRiskProbabilityChart',
                 'niRiskHistogramChart',
-                'niRiskCdfChart',
                 'niRiskTotalChart',
                 'niRiskDriversChart',
                 'niRiskScatterChart',
@@ -444,7 +481,7 @@ def test_network_ui_real_tenant_preserves_crypto_boundary():
             page.locator('#cryptoPasswordPrompt').wait_for(state='visible', timeout=20000)
             page.locator('#cryptoCancel').click()
             page.goto(
-                f'{base}/?ui=network-intelligence&dev=1&company=empresa1#/network/dev/console',
+                f'{base}/?dev=1&company=empresa1#/network/dev/console',
                 wait_until='networkidle',
             )
             page.locator('[data-testid="page-dev-console"]').wait_for(state='visible', timeout=20000)
@@ -467,7 +504,7 @@ def test_network_ui_mobile_has_no_horizontal_overflow():
         page = browser.new_page(viewport={'width': 390, 'height': 844})
         base = f'http://127.0.0.1:{port}'
         page.goto(
-            f'{base}/?ui=network-intelligence&company=empresa_mock#/network/overview/network',
+            f'{base}/?company=empresa_mock#/network/overview/network',
             wait_until='networkidle',
         )
         page.locator('[data-testid="brazil-map"]').wait_for(state='visible')
@@ -484,7 +521,7 @@ def test_network_ui_reentrant_submissions_and_export_deduplication():
         page.on('download', lambda download: downloads.append(download))
         base = f'http://127.0.0.1:{port}'
         page.goto(
-            f'{base}/?ui=network-intelligence&dev=1&company=empresa_mock#/network/scenarios/build',
+            f'{base}/?dev=1&company=empresa_mock#/network/scenarios/build',
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-scenarios-build"]').wait_for(state='visible')
@@ -497,10 +534,12 @@ def test_network_ui_reentrant_submissions_and_export_deduplication():
             }"""
         )
         page.locator('[data-testid="page-scenarios-result"]').wait_for(state='visible', timeout=10000)
-        assert page.locator('.network-toast', has_text='Cenário simulado pelo provider ativo.').count() == 1
+        # The simulation toast is cleared when the result route renders, so it
+        # cannot linger over the completed result screen.
+        assert page.locator('.network-toast', has_text='Cenário simulado pelo provider ativo.').count() == 0
 
         page.goto(
-            f'{base}/?ui=network-intelligence&dev=1&company=empresa_mock#/network/optimizer/configure',
+            f'{base}/?dev=1&company=empresa_mock#/network/optimizer/configure',
             wait_until='networkidle',
         )
         page.locator('[data-testid="page-optimizer-configure"]').wait_for(state='visible')
@@ -511,8 +550,9 @@ def test_network_ui_reentrant_submissions_and_export_deduplication():
                 }
             }"""
         )
-        page.locator('[data-testid="page-trust-validation"]').wait_for(state='visible', timeout=20000)
-        assert page.locator('.network-toast', has_text='Pipeline de decisão concluído.').count() == 1
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=20000)
+        # Route transitions clear completion toasts after the next screen renders.
+        assert page.locator('.network-toast', has_text='Pipeline de decisão concluído.').count() == 0
 
         export_button = page.locator('[data-testid="export-center"]')
         export_button.click()
@@ -521,17 +561,86 @@ def test_network_ui_reentrant_submissions_and_export_deduplication():
         assert len(downloads) == 1, f'downloads={len(downloads)}'
         page.reload(wait_until='networkidle')
         page.locator('#networkAppRoot').wait_for(state='visible')
-        assert page.locator('[data-testid="page-trust-validation"]').is_visible()
+        assert page.locator('[data-testid="page-optimizer-results"]').is_visible()
         page.close()
         browser.close()
 
 
+def test_audit_configuration_identity_and_all_mobile_routes():
+    routes = [
+        'overview/summary',
+        'overview/network',
+        'overview/costs',
+        'overview/tax',
+        'scenarios/build',
+        'scenarios/result',
+        'scenarios/compare',
+        'scenarios/risk',
+        'scenarios/risk/advanced',
+        'optimizer/configure',
+        'optimizer/results',
+        'optimizer/tradeoffs',
+        'trust/overview',
+        'trust/evidence',
+        'trust/sources',
+        'trust/validation',
+        'trust/methodology',
+    ]
+    with run_server() as port, sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
+        page = browser.new_page(viewport={'width': 390, 'height': 844})
+        errors = []
+        page.on('pageerror', lambda error: errors.append(str(error)))
+        page.goto(
+            f'http://127.0.0.1:{port}/?company=empresa_mock#/network/optimizer/configure', wait_until='networkidle'
+        )
+        page.locator('input[name="profile_id"][value="cfo"]').check()
+        page.locator('input[name="seed"]').fill('73')
+        page.locator('[data-testid="optimizer-run"]').click()
+        page.locator('[data-testid="page-optimizer-results"]').wait_for(state='visible', timeout=30000)
+        selected = page.locator('[data-testid="scenario-selector"]').input_value()
+        assert selected, 'Active candidate must appear in the global selector.'
+        for route in routes:
+            page.evaluate('(route) => location.hash = "#/network/" + route', route)
+            page.wait_for_function(
+                '(route) => document.querySelector("#networkPage")?.dataset.routeCurrent === "#/network/" + route',
+                arg=route,
+            )
+            page.evaluate('() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
+            assert page.locator('[data-testid="scenario-selector"]').input_value() == selected
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), route
+            if route == 'optimizer/configure':
+                assert page.locator('input[name="profile_id"]:checked').input_value() == 'cfo'
+                assert page.locator('input[name="seed"]').input_value() == '73'
+        page.evaluate("location.hash = '#/network/scenarios/compare'")
+        page.locator('[data-testid="page-scenarios-compare"]').wait_for(state='visible')
+        page.locator('[data-testid="comparison-choice-details"] > summary').click()
+        chart_rows = page.locator('#niDecisionScenarioSavingsChart').locator('..').locator('.vg-chart-data tbody tr')
+        before = chart_rows.count()
+        first_choice = page.locator('[data-compare-scenario]:checked').first.input_value()
+        page.locator(f'[data-compare-scenario][value="{first_choice}"]').uncheck()
+        assert page.locator('[data-testid="comparison-choice-details"]').get_attribute('open') is not None
+        assert chart_rows.count() == before - 1
+        page.evaluate("location.hash = '#/network/optimizer/tradeoffs'")
+        page.locator('[data-testid="page-optimizer-tradeoffs"]').wait_for(state='visible')
+        page.locator('#niDecisionOptimizerFrontierChart').focus()
+        page.keyboard.press('Home')
+        page.keyboard.press('Enter')
+        page.locator('[data-testid="page-scenarios-result"]').wait_for(state='visible')
+        page.locator('[data-testid="export-center"]').click()
+        assert page.locator('.network-toast.error', has_text='Nenhum pacote de exportação').is_visible()
+        assert not errors
+        browser.close()
+
+
 if __name__ == '__main__':
-    test_network_ui_mock_flow_and_compatibility()
+    test_network_ui_is_the_default_public_entrypoint()
+    test_network_ui_mock_flow()
     test_network_ui_reference_shell_overview_and_scenario_contracts()
     test_network_ui_parity_extensions()
     test_network_ui_fallback_debug_drawer_and_manual_decision()
     test_network_ui_real_tenant_preserves_crypto_boundary()
     test_network_ui_mobile_has_no_horizontal_overflow()
     test_network_ui_reentrant_submissions_and_export_deduplication()
+    test_audit_configuration_identity_and_all_mobile_routes()
     print('NETWORK_INTELLIGENCE_E2E_OK')

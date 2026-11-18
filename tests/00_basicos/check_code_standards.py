@@ -18,7 +18,10 @@ ROOT = find_project_root()
 def check_python_standards():
     ruff_bin = shutil.which('ruff')
     if not ruff_bin:
-        raise AssertionError("Ruff is required for the standards gate. Run 'pip install ruff'.")
+        raise AssertionError(
+            'Ruff is required for the standards gate. Install the quality dependencies with '
+            "'python -m pip install -r requirements-quality.txt'."
+        )
 
     print('Checking Python linting with Ruff...')
     res_lint = subprocess.run([ruff_bin, 'check', '.'], cwd=ROOT, capture_output=True, text=True)

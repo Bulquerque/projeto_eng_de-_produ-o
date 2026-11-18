@@ -38,6 +38,10 @@ export function clearScenarioResults(state) {
     sensitivity_matrix: null,
     robustness: null,
     recommendation: null,
+    audit: null,
+    final_qa: null,
+    release: null,
+    export_package: null,
   });
   return state;
 }
@@ -62,6 +66,10 @@ export function createInitialState(config = {}) {
       selected_metric: null,
       selected_tradeoff: null,
       scenario_draft: null,
+      scenario_draft_dirty: false,
+      optimizer_config: null,
+      risk_config: null,
+      compared_scenario_ids: null,
     },
     dev: {
       enabled: Boolean(config.debug_enabled),
@@ -88,6 +96,10 @@ export function resetCompanyScopedState(state, companyId) {
   state.meta.status = 'switching_company';
   state.ui.error = null;
   state.ui.scenario_draft = null;
+  state.ui.scenario_draft_dirty = false;
+  state.ui.optimizer_config = null;
+  state.ui.risk_config = null;
+  state.ui.compared_scenario_ids = null;
   return state.context.generation;
 }
 
@@ -150,10 +162,10 @@ export function createStateStore(initialState) {
       listeners.forEach((listener) => listener(state));
       return state;
     },
-    update(mutator) {
+    update(mutator, { notify = true } = {}) {
       const nextState = mutator(state) || state;
       state = nextState;
-      listeners.forEach((listener) => listener(state));
+      if (notify) listeners.forEach((listener) => listener(state));
       return state;
     },
     subscribe(listener) {

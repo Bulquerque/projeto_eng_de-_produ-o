@@ -140,6 +140,26 @@ export async function createMockProvider() {
         readFixture(FIXTURE_URLS.objective),
         readFixture(FIXTURE_URLS.stress),
       ]);
+      // Monetary percentiles follow T = baseline × (1 − saving / 100).
+      // Since T decreases with saving, Qp(T) uses Q(100−p)(saving).
+      const baselineTotal = Number(baseline.costs?.costs?.total_with_tax);
+      const summary = stress.risk?.monte_carlo?.summary;
+      if (summary && Number.isFinite(baselineTotal)) {
+        const savings = (summary.percentile_curve || []).filter(
+          (point) =>
+            point.value != null &&
+            point.percentile != null &&
+            Number.isFinite(Number(point.value)) &&
+            Number.isFinite(Number(point.percentile))
+        );
+        summary.total_percentile_curve = savings
+          .map((point) => ({
+            percentile: 100 - Number(point.percentile),
+            value: baselineTotal * (1 - Number(point.value) / 100),
+          }))
+          .sort((a, b) => a.percentile - b.percentile);
+        summary.total_percentile_source = 'derived_from_saving_fixture';
+      }
       this.fixtures = {
         baseline: assertFixturePolicy(baseline),
         scenarios: assertFixturePolicy(scenarios),
@@ -185,22 +205,41 @@ export async function createMockProvider() {
     async runOptimization() {
       return this.fixtures.objective.optimizer;
     },
-    async buildDecisionPackage({ scenarioId } = {}) {
-      const defaultScenarioId =
-        scenarioId || this.fixtures.objective.optimizer.search_log?.best_scenario_id;
-      const scenario =
-        this.fixtures.scenarios.scenarios.find((item) => item.scenario_id === defaultScenarioId) ||
-        this.fixtures.scenarios.scenarios[0];
+    async buildDecisionPackage({
+      scenarioId,
+      selectionMode = 'best_by_score',
+      manualScenarioId = null,
+    } = {}) {
+      const optimizer = this.fixtures.objective.optimizer;
+      const requestedScenarioId =
+        selectionMode === 'manual'
+          ? manualScenarioId
+          : scenarioId || optimizer.search_log?.best_scenario_id;
+      const rankedScenario = (optimizer.scored_scenarios || optimizer.best_scenarios || []).find(
+        (candidate) => candidate.scenario_id === requestedScenarioId
+      );
+      if (!rankedScenario) {
+        throw new Error(
+          selectionMode === 'manual'
+            ? 'O cenário manual não está no ranking avaliado.'
+            : 'O cenário selecionado não está disponível na fixture demonstrativa.'
+        );
+      }
+      const scenario = this.fixtures.scenarios.scenarios.find(
+        (item) => item.scenario_id === rankedScenario.scenario_id
+      );
+      if (!scenario)
+        throw new Error('O ranking demonstrativo não tem resultado para este cenário.');
       const packageResult = buildDecisionPackage({
         baseline: this.fixtures.baseline,
         scenario,
         objective: this.fixtures.objective.objective,
-        optimizer: this.fixtures.objective.optimizer,
+        optimizer,
         risk: this.fixtures.stress.risk,
       });
       return {
         ...packageResult,
-        optimizer: this.fixtures.objective.optimizer,
+        optimizer,
         selected_scenario: {
           scenario,
           result: scenario.result,

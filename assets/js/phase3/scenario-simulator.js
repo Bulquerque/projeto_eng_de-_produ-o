@@ -184,7 +184,7 @@ function applyCanonicalBaselineReference({ companyId, scenario, baselineBundle, 
 
   if (!exactBaseline) {
     anchoredCosts.physical_warnings.push(
-      'Sensibilidade escalar ancorada nos componentes do baseline canônico; frete, demanda, dias de estoque e WACC são aplicados sem reprocessar proxies físicos na mesma rede.'
+      'Sensibilidade escalar ancorada nos componentes do baseline canônico; frete, demanda, dias de estoque e a taxa de carregamento de estoque é aplicada sem reprocessar proxies físicos na mesma rede.'
     );
   }
 
