@@ -34,7 +34,7 @@ assert.deepEqual(Object.keys(result.rates_by_destination_uf), ['MG', 'PR', 'SP']
 assert.equal(result.rates_by_destination_uf.MG.rate_brl_per_kg, 6);
 assert.equal(result.rates_by_destination_uf.PR.rate_brl_per_kg, 6);
 assert.equal(result.rates_by_destination_uf.SP.rows_used, 4);
-assert.equal(result.rates_by_destination_uf.SP.freight_brl_sum, 400);
+assert.equal(result.rates_by_destination_uf.SP.freight_brl_sum, 410);
 assert.equal(result.rates_by_destination_uf.SP.weight_kg_sum, 32);
 assert.equal(result.rates_by_destination_uf.SP.rate_brl_per_kg, 410 / 32);
 assert.match(result.warning, /revise filtros fiscais, período e origem/);
