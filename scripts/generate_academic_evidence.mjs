@@ -13,6 +13,8 @@ import { runStressTests } from '../assets/js/phase5/stress-test-engine.js';
 import { buildStressCaseLibrary } from '../assets/js/phase5/stress-case-library.js';
 import { calculateRobustness } from '../assets/js/phase5/robustness-scorer.js';
 import { evaluateScenarioQuality } from '../assets/js/phase3/scenario-quality-check.js';
+import { buildScenarioFromForm } from '../assets/js/phase3/scenario-builder.js';
+import { findMatchingCdLabel } from '../assets/js/core/cd-utils.js';
 import { loadRuntimeBundle } from '../tests/runtime_bundle_support.mjs';
 
 function readPassword() {
@@ -78,6 +80,208 @@ function makeScenario(companyId, bundle, overrides = {}) {
     scenario_name: overrides.label || 'evidence scenario',
     changes: { ...base.changes, ...overrides },
   };
+}
+function finiteOrNull(value) {
+  return value != null && Number.isFinite(Number(value)) ? Number(value) : null;
+}
+function summarizeT08Result(result) {
+  const costs = result?.costs || {};
+  const tax = result?.tax_results || {};
+  const coverage = tax.tax_coverage || {};
+  const changes = result?.scenario?.changes || {};
+  return {
+    scenario_id: result?.scenario_id || null,
+    scenario_name: result?.scenario_name || null,
+    active_cds_count: Array.isArray(changes.active_cds) ? changes.active_cds.length : null,
+    freight_multiplier: finiteOrNull(changes.freight_multiplier),
+    demand_multiplier: finiteOrNull(changes.demand_multiplier),
+    inventory_days: finiteOrNull(changes.inventory_days),
+    wacc: finiteOrNull(changes.wacc),
+    tax_mode: tax.tax_mode || changes.tax_mode || null,
+    tax_regime: tax.tax_regime || changes.tax_regime || null,
+    simulation_status: result?.simulation_status || null,
+    calculation_status: result?.calculation_status || null,
+    data_quality_status: result?.data_quality?.status || null,
+    decision_use: result?.data_quality?.decision_use || tax.decision_use || null,
+    official_fiscal_validation: tax.official_fiscal_validation === true,
+    costs: {
+      transfer_cost: finiteOrNull(costs.transfer_cost),
+      distribution_cost: finiteOrNull(costs.distribution_cost),
+      storage_cost: finiteOrNull(costs.storage_cost),
+      inventory_cost: finiteOrNull(costs.inventory_cost),
+      total_logistics_cost: finiteOrNull(costs.total_logistics_cost),
+      tax_impact: finiteOrNull(costs.tax_impact),
+      total_with_tax: finiteOrNull(result?.total_with_tax),
+    },
+    tax_coverage: {
+      input_flow_count: coverage.input_flow_count ?? null,
+      eligible_flow_count: coverage.eligible_flow_count ?? null,
+      excluded_missing_destination_count: coverage.excluded_missing_destination_count ?? null,
+      excluded_missing_revenue_count: coverage.excluded_missing_revenue_count ?? null,
+      missing_origin_uf_count: coverage.missing_origin_uf_count ?? null,
+      complete_fiscal_coverage_ratio: finiteOrNull(coverage.complete_fiscal_coverage_ratio),
+      origin_coverage_ratio: finiteOrNull(coverage.origin_coverage_ratio),
+      revenue_coverage_ratio: finiteOrNull(coverage.revenue_coverage_ratio),
+      proxy_flow_count: coverage.proxy_flow_count ?? null,
+      coverage_limited: coverage.coverage_limited === true,
+    },
+    diagnostics: {
+      fallback_counts: result?.diagnostics?.fallback_counts || null,
+      scenario_fallback_counts: result?.diagnostics?.scenario_fallback_counts || null,
+      transfer_method_counts: result?.diagnostics?.transfer_method_counts || null,
+      flow_method_counts: result?.diagnostics?.flow_method_counts || null,
+    },
+    warning_count: Array.isArray(result?.warnings) ? result.warnings.length : 0,
+    error_count: Array.isArray(result?.errors) ? result.errors.length : 0,
+  };
+}
+function buildT08Evidence({ companyId, bundle }) {
+  if (companyId !== 'empresa2') return null;
+  const baselineCds = Array.isArray(bundle.model?.active_cds) ? bundle.model.active_cds : [];
+  const matchingCds = baselineCds.filter((cd) => findMatchingCdLabel('Red-ES', [cd]));
+  const evidence = {
+    status: 'blocked',
+    task: 'T08',
+    company_id: companyId,
+    target_cd_source: {
+      artifact: 'industrial workbook in supplied materials ZIP',
+      worksheet: 'Cenários',
+      scenario_label: 'Cenário 2 — 1 CD ES',
+      target_match: 'Red-ES',
+    },
+    requested_tax_mode: 'reform_2033',
+    requested_tax_regime: 'reform_full_2033',
+    model_tax_source: 'data/complements/complementos/empresa_2/tax/tax_inputs_reform.json',
+    workbook_comparison: {
+      status: 'not_comparable_tax_regime_unidentified',
+      worksheet: 'Cenários',
+      scenario_label: 'Cenário 2 — 1 CD ES',
+      tax_regime_or_year_field_present: false,
+      tax_formula_regime_reference_present: false,
+      reason:
+        'A planilha identifica a alternativa pelo rótulo do cenário; a fórmula de efeitos tributários filtra débitos/créditos por esse rótulo, sem identificar o ano ou regime 2033.',
+    },
+    official_fiscal_validation: false,
+    limitation:
+      'A execução do modelo em regime 2033 é exploratória. A conta da planilha não tem metadado de regime tributário compatível para comparação direta.',
+  };
+  if (baselineCds.length === 0) {
+    evidence.reason = 'baseline_active_cds_missing';
+    evidence.missing_source = 'Empresa 2 baseline model active_cds';
+    return evidence;
+  }
+  if (matchingCds.length !== 1) {
+    evidence.reason = matchingCds.length ? 'target_cd_match_not_unique' : 'target_cd_not_found';
+    evidence.target_cd_match_count = matchingCds.length;
+    evidence.missing_source = matchingCds.length
+      ? 'unique Red-ES mapping in Empresa 2 baseline model active_cds'
+      : 'Red-ES mapping in Empresa 2 baseline model active_cds';
+    return evidence;
+  }
+
+  const baselineInputs = buildBaselineScenario(companyId, bundle).changes;
+  const buildMatchedScenario = ({ scenarioId, scenarioName, activeCds, scenarioType }) =>
+    buildScenarioFromForm({
+      companyId,
+      baselineBundle: bundle,
+      scenarioId,
+      formValues: {
+        scenario_name: scenarioName,
+        active_cds: activeCds,
+        freight_multiplier: baselineInputs.freight_multiplier,
+        demand_multiplier: baselineInputs.demand_multiplier,
+        inventory_days: baselineInputs.inventory_days,
+        wacc: baselineInputs.wacc,
+        tax_mode: 'reform_2033',
+        tax_regime: 'reform_full_2033',
+        reallocation_rule: baselineInputs.reallocation_rule,
+        scenario_type: scenarioType,
+      },
+    });
+  const targetScenario = buildMatchedScenario({
+    scenarioId: 'empresa2_t08_red_es_reform_2033',
+    scenarioName: 'T08 — CD único ES, regime 2033',
+    activeCds: matchingCds,
+    scenarioType: 'academic_evidence',
+  });
+  const sameRegimeBaselineScenario = buildMatchedScenario({
+    scenarioId: 'empresa2_t08_baseline_reform_2033',
+    scenarioName: 'T08 — baseline Empresa 2, regime 2033',
+    activeCds: baselineCds,
+    scenarioType: 'academic_evidence_reference',
+  });
+  const targetResult = runScenario({
+    companyId,
+    scenario: targetScenario,
+    baselineBundle: bundle,
+  });
+  const sameRegimeBaselineResult = runScenario({
+    companyId,
+    scenario: sameRegimeBaselineScenario,
+    baselineBundle: bundle,
+  });
+  const targetSummary = summarizeT08Result(targetResult);
+  const baselineSummary = summarizeT08Result(sameRegimeBaselineResult);
+  const comparableInputFields = [
+    'freight_multiplier',
+    'demand_multiplier',
+    'inventory_days',
+    'wacc',
+    'tax_mode',
+    'tax_regime',
+    'reallocation_rule',
+  ];
+  const sameNonNetworkInputs = comparableInputFields.every(
+    (key) => targetScenario.changes[key] === sameRegimeBaselineScenario.changes[key]
+  );
+  const sameRegime = targetSummary.tax_regime === baselineSummary.tax_regime;
+  const targetTotal = targetSummary.costs.total_with_tax;
+  const baselineTotal = baselineSummary.costs.total_with_tax;
+  const hasComparableTotals =
+    targetResult.simulation_status === 'success' &&
+    sameRegimeBaselineResult.simulation_status === 'success' &&
+    sameRegime &&
+    sameNonNetworkInputs &&
+    targetTotal != null &&
+    baselineTotal != null &&
+    baselineTotal !== 0;
+  const decisionSupported =
+    hasComparableTotals &&
+    targetSummary.decision_use === 'decision_support' &&
+    baselineSummary.decision_use === 'decision_support' &&
+    targetSummary.official_fiscal_validation &&
+    baselineSummary.official_fiscal_validation &&
+    !targetSummary.tax_coverage.coverage_limited &&
+    !baselineSummary.tax_coverage.coverage_limited;
+  const delta = hasComparableTotals ? targetTotal - baselineTotal : null;
+  evidence.status = decisionSupported
+    ? 'validated_same_regime_model_comparison'
+    : hasComparableTotals
+      ? 'calculated_same_regime_model_comparison_exploratory_only'
+      : 'calculated_with_comparison_limits';
+  evidence.target_cd_match_count = matchingCds.length;
+  evidence.target_cd_match_verified = true;
+  evidence.operating_assumptions_source = 'Empresa 2 model baseline defaults applied identically to both scenarios';
+  evidence.same_regime_baseline = baselineSummary;
+  evidence.single_cd_es_scenario = targetSummary;
+  evidence.model_comparison = {
+    comparison_basis: 'Empresa 2 model, identical non-network inputs and identical 2033 tax regime',
+    same_tax_regime: sameRegime,
+    same_non_network_inputs: sameNonNetworkInputs,
+    status: decisionSupported
+      ? 'comparable_within_model_decision_support'
+      : hasComparableTotals
+        ? 'comparable_within_model_exploratory_only'
+        : 'not_comparable_or_incomplete',
+    total_with_tax_delta: finiteOrNull(delta),
+    total_with_tax_delta_pct:
+      hasComparableTotals && baselineTotal !== 0
+        ? finiteOrNull((delta / baselineTotal) * 100)
+        : null,
+    target_decision_use: targetSummary.decision_use,
+    baseline_decision_use: baselineSummary.decision_use,
+  };
+  return evidence;
 }
 const output = {
   generated_at: new Date().toISOString(),
@@ -221,6 +425,7 @@ for (const companyId of ['empresa1', 'empresa2']) {
     };
   });
   const mc = monteCarloResults[0];
+  const t08Es2033 = buildT08Evidence({ companyId, bundle });
   const profiles = loadDefaultProfiles();
   const optimization = {};
   for (const profile of profiles) {
@@ -316,6 +521,7 @@ for (const companyId of ['empresa1', 'empresa2']) {
       data_quality: mc.data_quality,
       scenario_results: monteCarloResults,
     },
+    ...(t08Es2033 ? { t08_es_2033: t08Es2033 } : {}),
     optimization,
   };
 }
