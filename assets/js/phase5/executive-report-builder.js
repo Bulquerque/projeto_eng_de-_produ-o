@@ -141,7 +141,11 @@ function optimizationCoverageSection(audit = {}) {
       <tr><td>Método</td><td>${esc(optimization.method_applied || optimization.method_requested || '—')}</td></tr>
       <tr><td>Seed</td><td>${esc(optimization.seed ?? '—')}</td></tr>
       <tr><td>Candidatos gerados / simulados / válidos</td><td>${esc(`${optimization.generated_candidates ?? '—'} / ${optimization.simulated_candidates ?? '—'} / ${optimization.valid_candidates ?? '—'}`)}</td></tr>
-      <tr><td>Espaço declarado</td><td>${esc(optimization.candidate_space_size ?? '—')}</td></tr>
+      <tr><td>Subconjuntos brutos de CDs</td><td>${esc(optimization.raw_cd_subset_count ?? '—')}</td></tr>
+      <tr><td>Catálogo-base gerado</td><td>${esc(optimization.base_candidates_generated ?? '—')}</td></tr>
+      <tr><td>Refinamentos únicos</td><td>${esc(optimization.unique_refinement_candidates ?? '—')}</td></tr>
+      <tr><td>Espaço declarado</td><td>${esc(optimization.candidate_space_size ?? '—')} (${esc(optimization.candidate_space_size_basis || 'base_space_plus_unique_refinements')})</td></tr>
+      <tr><td>Estratégia de geração</td><td>${esc(optimization.candidate_generation_strategy ?? '—')}</td></tr>
       <tr><td>Cobertura</td><td>${esc(optimization.coverage_ratio == null ? '—' : `${(Number(optimization.coverage_ratio) * 100).toFixed(2)}%`)}</td></tr>
       <tr><td>Ótimo global no espaço</td><td>${esc(optimization.exact_search_space ? 'sim' : 'não')}</td></tr>
       <tr><td>Limitação</td><td>${esc(optimization.exactness_reason || '—')}</td></tr>
@@ -194,6 +198,7 @@ function methodologySection(selectedScenario = {}, audit = {}, robustness = {}) 
       <tr><td>Método de custo</td><td>${esc(costs.calculation_method || '—')}</td></tr>
       <tr><td>Classificação da fonte</td><td>${esc(diagnostics.source_classification || '—')}</td></tr>
       <tr><td>Fonte tributária</td><td>${esc(result?.tax_results?.tax_source_label || '—')}</td></tr>
+      <tr><td>Tratamento tributário da comparação</td><td>${esc(tax.tax_treatment || changes.tax_treatment || 'recomputed')} · ${esc(tax.tax_breakdown_scope || tax.metadata?.tax_breakdown_scope || 'scenario_recomputed')}</td></tr>
       <tr><td>Estudo próprio tributário</td><td>${esc(taxStudy.study_id || '—')} · ${esc(taxStudy.status || '—')}</td></tr>
       <tr><td>Fontes registradas no estudo</td><td>${esc(
         (taxStudy.sources || [])
@@ -216,7 +221,7 @@ function methodologySection(selectedScenario = {}, audit = {}, robustness = {}) 
       <tr><td>Regime tributário do cenário</td><td>${esc(result?.tax_results?.tax_regime || changes.tax_regime || changes.tax_mode || '—')}</td></tr>
       <tr><td>Período tributário selecionado</td><td>${esc(taxPeriodContract.selected_period?.year || '—')} · ${esc(taxPeriodContract.selected_period?.source_status || '—')}</td></tr>
       <tr><td>Estoque</td><td>Escolha B — independente da quantidade de CDs ativos</td></tr>
-      <tr><td>Fallbacks físicos</td><td>${esc(JSON.stringify({ counts: diagnostics.fallback_counts || {}, rates: diagnostics.fallback_rates || {}, flow_count: diagnostics.flow_count ?? null }))}</td></tr>
+      <tr><td>Fallbacks físicos</td><td>${esc(JSON.stringify({ flow_counts: diagnostics.fallback_counts || {}, flow_rates: diagnostics.fallback_rates || {}, flow_count: diagnostics.flow_count ?? null, scenario_counts: diagnostics.scenario_fallback_counts || {}, storage: diagnostics.storage || {} }))}</td></tr>
       <tr><td>Proveniência do proxy de transferência</td><td>${esc(JSON.stringify(diagnostics.transfer_proxy_provenance || '—'))}</td></tr>
       <tr><td>Audit ID</td><td>${esc(audit?.audit_id || '—')}</td></tr>
       <tr><td>Nível de suporte da evidência</td><td>${esc(evidence.evidence_score == null ? '—' : `${evidence.evidence_score}/100 · ${evidence.evidence_status || '—'}`)}</td></tr>
@@ -231,6 +236,12 @@ function methodologySection(selectedScenario = {}, audit = {}, robustness = {}) 
 }
 
 function scenarioConfigurationSection(selectedScenario = {}) {
+  const result = selectedScenario?.result || selectedScenario;
+  const taxTreatment =
+    result?.tax_results?.tax_treatment ||
+    selectedScenario?.scenario?.changes?.tax_treatment ||
+    selectedScenario?.changes?.tax_treatment ||
+    'recomputed';
   const summary = buildScenarioSummary({
     scenario: selectedScenario?.scenario,
     result: selectedScenario?.result || selectedScenario,
@@ -242,7 +253,10 @@ function scenarioConfigurationSection(selectedScenario = {}) {
     ['Estoque', formatInventoryDaysDisplay(summary.inventory_days)],
     ['Regime tributário', summary.tax_regime_label],
     ['Transferência', brl(summary.transfer_cost)],
-    ['Tributo', brl(summary.tax_impact)],
+    [
+      taxTreatment === 'fixed_baseline' ? 'Tributo (referência agregada fixa do baseline)' : 'Tributo',
+      brl(summary.tax_impact),
+    ],
     ['Total', brl(summary.total_with_tax)],
   ];
 

@@ -1,11 +1,18 @@
 import { DEFAULT_OBJECTIVE_PROFILES } from './objective-profile-library.js';
 import { normalizeMetrics } from './metric-normalizer.js';
 import { scoreScenarios } from './scenario-scoring.js';
+import { compareExactRanking } from './optimizer-utils.js';
 
 const STABILITY_THRESHOLDS = Object.freeze({
   stable: 0.67,
   sensitive: 0.5,
 });
+
+function finiteTiebreakValue(value) {
+  if (value === null || value === undefined || value === '') return undefined;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : undefined;
+}
 
 /**
  * Mede se o ranking permanece estável quando a decisão é vista por perfis
@@ -29,11 +36,40 @@ export function assessObjectiveSensitivity({
       objective: { weights: profile.weights },
       normalizedMetrics: normalized.normalized_metrics,
     });
-    const ranking = scoring.scored_scenarios.map((row) => ({
-      scenario_id: row.scenario_id,
-      rank: row.rank,
-      final_score: row.final_score,
-    }));
+    // Reuse the optimizer comparator so tie behavior and invalid-value
+    // fallbacks cannot drift between official and sensitivity rankings.
+    const metricsById = new Map(scenarioMetrics.map((row) => [row.scenario_id, row]));
+    const ranking = scoring.scored_scenarios
+      .map((row) => ({
+        scenario_id: row.scenario_id,
+        final_score: row.final_score,
+        tiebreak: metricsById.get(row.scenario_id)?.raw?.ranking_tiebreak || {},
+      }))
+      .sort((left, right) =>
+        compareExactRanking(
+          {
+            ...left,
+            result: { total_with_tax: finiteTiebreakValue(left.tiebreak.total_with_tax) },
+            quality: {
+              risk_level: left.tiebreak.risk_level,
+              quality_score: finiteTiebreakValue(left.tiebreak.quality_score),
+            },
+          },
+          {
+            ...right,
+            result: { total_with_tax: finiteTiebreakValue(right.tiebreak.total_with_tax) },
+            quality: {
+              risk_level: right.tiebreak.risk_level,
+              quality_score: finiteTiebreakValue(right.tiebreak.quality_score),
+            },
+          }
+        )
+      )
+      .map(({ scenario_id, final_score }, index) => ({
+        scenario_id,
+        rank: index + 1,
+        final_score,
+      }));
     return {
       profile_id: profile.profile_id,
       profile_name: profile.profile_name,

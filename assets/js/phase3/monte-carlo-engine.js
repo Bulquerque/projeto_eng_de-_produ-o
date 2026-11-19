@@ -298,6 +298,7 @@ function buildMonteCarloConfig({
   profile = 'balanced',
   scatterDriver = 'freight_multiplier',
   histogramBins = 12,
+  taxTreatment = 'sampled_tax',
   historicalData = null,
   historical_data = null,
 } = {}) {
@@ -308,11 +309,14 @@ function buildMonteCarloConfig({
   );
   const normalizedProfile = normalizeProfile(profile);
   const normalizedDriver = normalizeDriver(scatterDriver);
+  const normalizedTaxTreatment =
+    taxTreatment === 'fixed_baseline' ? 'fixed_baseline' : 'sampled_tax';
   const preset = PROFILE_PRESETS[normalizedProfile];
   const historical = normalizeHistoricalData(historicalData || historical_data);
   const historicalProvenanceValid = historical.validation?.provenance_status === 'declared';
   const historicalDrivers = Object.keys(historical)
     .filter((key) => key !== 'observations' && key !== 'validation' && key !== 'provenance')
+    .filter((key) => normalizedTaxTreatment !== 'fixed_baseline' || key !== 'tax_multiplier')
     .filter(() => historicalProvenanceValid);
   const uncertaintySource = historicalDrivers.length
     ? historicalDrivers.length === 5
@@ -366,10 +370,14 @@ function buildMonteCarloConfig({
         ? 'marginal_empirical_bootstrap'
         : 'parametric_draws',
     deterministic_method: 'scenario_simulation',
+    tax_treatment: normalizedTaxTreatment,
     profile: normalizedProfile,
     scatter_driver: normalizedDriver,
     histogram_bins: clamp(Math.round(safeNumber(histogramBins, 12)), 6, 30),
-    spread: clone(preset.spread),
+    spread: {
+      ...clone(preset.spread),
+      ...(normalizedTaxTreatment === 'fixed_baseline' ? { tax_multiplier: 0 } : {}),
+    },
     shared_shock: preset.shared_shock,
     idiosyncratic_shock: preset.idiosyncratic_shock,
     historical_data: historical,
@@ -596,6 +604,7 @@ function sampleUncertaintyInputs({
   historicalDrivers,
   preset,
   rng,
+  fixedBaselineTax = false,
 }) {
   const sharedShock = gaussian(rng);
   const historicalObservation = sampleHistoricalObservation(historicalData.observations, rng);
@@ -657,18 +666,20 @@ function sampleUncertaintyInputs({
           0,
           0.5
         ),
-    tax_multiplier: historicalDrivers.has('tax_multiplier')
-      ? Math.max(0, historicalValue('tax_multiplier'))
-      : sampleMultiplicative(
-          1,
-          preset.spread.tax_multiplier,
-          rng,
-          sharedShock,
-          0.5,
-          preset.idiosyncratic_shock,
-          0.7,
-          1.35
-        ),
+    tax_multiplier: fixedBaselineTax
+      ? 1
+      : historicalDrivers.has('tax_multiplier')
+        ? Math.max(0, historicalValue('tax_multiplier'))
+        : sampleMultiplicative(
+            1,
+            preset.spread.tax_multiplier,
+            rng,
+            sharedShock,
+            0.5,
+            preset.idiosyncratic_shock,
+            0.7,
+            1.35
+          ),
     common_shock: sharedShock,
   };
 }
@@ -718,8 +729,14 @@ export function runMonteCarloSimulation({
     profile: config.profile || config.uncertainty_profile || 'balanced',
     scatterDriver: config.scatter_driver || config.scatterDriver || 'freight_multiplier',
     histogramBins: config.histogram_bins || 12,
+    taxTreatment: config.tax_treatment || config.taxTreatment || 'sampled_tax',
     historicalData: suppliedHistoricalData || null,
   });
+  if (normalizedConfig.tax_treatment === 'fixed_baseline') {
+    warnings.push(
+      'Tributo mantido no valor total do baseline em todas as amostras; a incerteza tributária não é amostrada.'
+    );
+  }
   const preset = PROFILE_PRESETS[normalizedConfig.profile];
   const historicalData = normalizedConfig.historical_data || {};
   const historicalDrivers = new Set(normalizedConfig.historical_drivers || []);
@@ -727,6 +744,12 @@ export function runMonteCarloSimulation({
   const baseScenario = clone(selectedScenario);
   delete baseScenario.monte_carlo;
   delete baseScenario.analysis;
+  if (normalizedConfig.tax_treatment === 'fixed_baseline') {
+    baseScenario.changes = {
+      ...(baseScenario.changes || {}),
+      tax_treatment: 'fixed_baseline',
+    };
+  }
   const baseChanges = baseScenario.changes || {};
   const baseFreight = Math.max(0.0001, safeNumber(baseChanges.freight_multiplier, 1));
   const baseDemand = Math.max(0.0001, safeNumber(baseChanges.demand_multiplier, 1));
@@ -736,8 +759,36 @@ export function runMonteCarloSimulation({
   );
   const baseWacc = Math.max(0, safeNumber(baseChanges.wacc, MODEL_DEFAULTS.reference_wacc));
   const baselineTotal = safeNumber(baselineBundle?.costs?.costs?.total_with_tax);
+  const rawBaselineTaxValue = baselineBundle?.costs?.costs?.tax_impact;
+  const baselineTaxValuePresent =
+    typeof rawBaselineTaxValue === 'number' ||
+    (typeof rawBaselineTaxValue === 'string' && rawBaselineTaxValue.trim() !== '');
+  const baselineTaxValue = baselineTaxValuePresent ? Number(rawBaselineTaxValue) : NaN;
+  if (
+    normalizedConfig.tax_treatment === 'fixed_baseline' &&
+    (!Number.isFinite(baselineTaxValue) || baselineTaxValue < 0)
+  ) {
+    return {
+      company_id: companyId,
+      scenario_id: selectedScenario?.scenario_id || null,
+      monte_carlo_status: 'blocked',
+      analysis_type: normalizedConfig.analysis_type,
+      forecast: false,
+      historical_distribution: normalizedConfig.historical_distribution,
+      uncertainty_source: normalizedConfig.uncertainty_source,
+      config: normalizedConfig,
+      samples: [],
+      summary: null,
+      warnings,
+      errors: [
+        'tax_treatment=fixed_baseline exige tax_impact finito e não negativo no baseline_bundle.',
+      ],
+    };
+  }
   const deterministic =
-    deterministicResult || runScenario({ companyId, scenario: baseScenario, baselineBundle });
+    normalizedConfig.tax_treatment === 'fixed_baseline'
+      ? runScenario({ companyId, scenario: baseScenario, baselineBundle })
+      : deterministicResult || runScenario({ companyId, scenario: baseScenario, baselineBundle });
   const baselineScenarioId = baselineBundle?.model?.scenario_id || null;
 
   if (deterministic?.errors?.length) {
@@ -788,6 +839,7 @@ export function runMonteCarloSimulation({
       historicalDrivers,
       preset,
       rng,
+      fixedBaselineTax: normalizedConfig.tax_treatment === 'fixed_baseline',
     });
 
     const sampledScenario = buildSampleScenario({
@@ -806,7 +858,10 @@ export function runMonteCarloSimulation({
 
     const taxImpact = safeNumber(result.costs?.tax_impact);
     const totalLogistics = safeNumber(result.costs?.total_logistics_cost);
-    const adjustedTaxImpact = Math.max(0, taxImpact * sampled.tax_multiplier);
+    const fixedBaselineTax = normalizedConfig.tax_treatment === 'fixed_baseline';
+    const adjustedTaxImpact = fixedBaselineTax
+      ? baselineTaxValue
+      : Math.max(0, taxImpact * sampled.tax_multiplier);
     const adjustedTotal = totalLogistics + adjustedTaxImpact;
     const saving = calculateSaving({ baselineTotal, scenarioTotal: adjustedTotal });
 
@@ -820,6 +875,8 @@ export function runMonteCarloSimulation({
       raw_tax_impact: taxImpact,
       tax_impact: adjustedTaxImpact,
       tax_multiplier: sampled.tax_multiplier,
+      tax_treatment: normalizedConfig.tax_treatment,
+      tax_impact_source: fixedBaselineTax ? 'baseline_bundle' : 'sampled_scenario',
       saving_abs: saving.saving_abs,
       saving_pct: saving.saving_pct,
       warnings: result.warnings || [],

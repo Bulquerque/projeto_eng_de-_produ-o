@@ -61,6 +61,50 @@ function sumLogisticsCosts(costs = {}) {
   });
 }
 
+function buildFixedBaselineTaxDetails({ baselineBundle, baselineTax }) {
+  const baselineDetails = baselineBundle?.tax_results?.tax_results || {};
+  const comparisonNote =
+    'Hipótese contrafactual de comparação: tributo agregado do baseline mantido fixo. Não é apuração fiscal do cenário nem validação tributária oficial.';
+  return {
+    tax_mode: 'current',
+    tax_regime: 'current',
+    total_tax: baselineTax,
+    total_tax_impact: baselineTax,
+    breakdown: { baseline_tax_impact: baselineTax },
+    flow_breakdown: [],
+    tax_treatment: 'fixed_baseline',
+    tax_breakdown_scope: 'baseline_aggregate_comparison_reference',
+    calculation_mode: 'fixed_baseline_comparison_reference',
+    calculation_method: 'baseline_bundle_aggregate_reference',
+    explanation: comparisonNote,
+    tax_source_classification: 'baseline_aggregate_reference',
+    tax_source_label: 'Tributo agregado do baseline — hipótese de comparação fixa',
+    baseline_tax_reference: {
+      source: 'baselineBundle.costs.costs.tax_impact',
+      scenario_id: baselineBundle?.model?.scenario_id || null,
+      amount: baselineTax,
+      source_classification:
+        baselineDetails.tax_source_classification ||
+        baselineDetails.metadata?.tax_source_classification ||
+        null,
+    },
+    warnings: [
+      ...(Array.isArray(baselineDetails.warnings) ? baselineDetails.warnings : []),
+      comparisonNote,
+    ],
+    decision_use: 'exploratory_only',
+    metadata: {
+      ...(baselineDetails.metadata || {}),
+      tax_treatment: 'fixed_baseline',
+      tax_breakdown_scope: 'baseline_aggregate_comparison_reference',
+      baseline_tax_source: 'baselineBundle.costs.costs.tax_impact',
+      scenario_tax_recalculation_included: false,
+      official_fiscal_validation: false,
+    },
+    official_fiscal_validation: false,
+  };
+}
+
 function alignTaxDetailsToTotal(taxDetails = {}, targetTotal = 0) {
   const target = safeNumber(targetTotal);
   const source = safeNumber(taxDetails.total_tax_impact, target);
@@ -131,12 +175,15 @@ function applyCanonicalBaselineReference({ companyId, scenario, baselineBundle, 
   };
   const freightMultiplier = safeNumber(scenario.changes?.freight_multiplier, 1);
   const demandMultiplier = safeNumber(scenario.changes?.demand_multiplier, 1);
+  const fixedBaselineTax = scenario.changes?.tax_treatment === 'fixed_baseline';
   const scaledCosts = {
     transfer_cost: officialCosts.transfer_cost * freightMultiplier * demandMultiplier,
     distribution_cost: officialCosts.distribution_cost * freightMultiplier * demandMultiplier,
     storage_cost: officialCosts.storage_cost * demandMultiplier,
     inventory_cost: exactBaseline ? officialCosts.inventory_cost : costs.inventory_cost,
-    tax_impact: officialCosts.tax_impact * demandMultiplier,
+    tax_impact: fixedBaselineTax
+      ? officialCosts.tax_impact
+      : officialCosts.tax_impact * demandMultiplier,
   };
   const officialLogisticsCost = Number.isFinite(Number(official.total_logistics_cost))
     ? Number(official.total_logistics_cost)
@@ -196,12 +243,16 @@ function applyCanonicalBaselineReference({ companyId, scenario, baselineBundle, 
 function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }) {
   const dm = safeNumber(scenario.changes?.demand_multiplier, 1);
   const physical = calculatePhysicalCosts({ companyId, scenario, baselineBundle, rebuilt });
-  const { taxImpact, taxDetails } = resolveTaxImpact({
-    scenario,
-    baselineBundle,
-    rebuilt,
-    demandMultiplier: dm,
-  });
+  const fixedBaselineTax = scenario.changes?.tax_treatment === 'fixed_baseline';
+  const rawBaselineTax = baselineBundle?.costs?.costs?.tax_impact;
+  const baselineTax = fixedBaselineTax ? Number(rawBaselineTax) : null;
+  const resolvedTax = fixedBaselineTax
+    ? {
+        taxImpact: baselineTax,
+        taxDetails: buildFixedBaselineTaxDetails({ baselineBundle, baselineTax }),
+      }
+    : resolveTaxImpact({ scenario, baselineBundle, rebuilt, demandMultiplier: dm });
+  const { taxImpact, taxDetails } = resolvedTax;
 
   const totalLogistics = calculateLogisticsTotal({
     transferCost: physical.transfer_cost,
@@ -224,6 +275,19 @@ function calculateScenarioCosts({ companyId, scenario, baselineBundle, rebuilt }
       diagnostics: physical.diagnostics,
     },
   });
+  if (fixedBaselineTax) {
+    anchored.diagnostics = {
+      ...(anchored.diagnostics || {}),
+      tax_treatment: 'fixed_baseline',
+      tax_reference: {
+        source: 'baselineBundle.costs.costs.tax_impact',
+        baseline_scenario_id: baselineBundle?.model?.scenario_id || null,
+        baseline_tax_impact: baselineTax,
+        interpretation: 'comparison_counterfactual',
+        scenario_tax_recalculation_included: false,
+      },
+    };
+  }
   return {
     ...anchored,
     tax_details: alignTaxDetailsToTotal(anchored.tax_details, anchored.tax_impact),
@@ -241,7 +305,11 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
       simulation_status: 'invalid',
       flows: [],
       costs: {},
-      tax_results: { total_tax_impact: 0 },
+      tax_results: {
+        total_tax_impact:
+          scenario?.changes?.tax_treatment === 'fixed_baseline' ? null : 0,
+        tax_treatment: scenario?.changes?.tax_treatment || 'recomputed',
+      },
       total_with_tax: null,
       validation,
       warnings: validation.warnings,
@@ -278,12 +346,26 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
     warnings: td?.warnings || [],
     decision_use: td?.decision_use || 'decision_support',
     tax_study: td?.tax_study || td?.metadata?.tax_study || null,
-    source_classification: companyId === 'empresa1' ? 'shared_reference_proxy' : 'observed',
-    calculation_method: 'parametric_recomputation',
-    validation_scope: 'parametric_model_reconciliation',
+    tax_treatment: td?.tax_treatment || scenario.changes?.tax_treatment || 'recomputed',
+    source_classification:
+      td?.tax_treatment === 'fixed_baseline'
+        ? 'baseline_aggregate_reference'
+        : companyId === 'empresa1'
+          ? 'shared_reference_proxy'
+          : 'observed',
+    calculation_method:
+      td?.tax_treatment === 'fixed_baseline'
+        ? 'baseline_bundle_aggregate_reference'
+        : 'parametric_recomputation',
+    validation_scope:
+      td?.tax_treatment === 'fixed_baseline'
+        ? 'counterfactual_fixed_baseline_tax'
+        : 'parametric_model_reconciliation',
     official_fiscal_validation: false,
     tax_source_classification:
-      companyId === 'empresa1'
+      td?.tax_treatment === 'fixed_baseline'
+        ? 'baseline_aggregate_reference'
+        : companyId === 'empresa1'
         ? 'shared_reference_proxy'
         : taxUsesProxy
           ? 'observed_tax_inputs_with_fiscal_proxy'
@@ -291,7 +373,9 @@ export function runScenario({ companyId, scenario, baselineBundle }) {
             ? 'observed_tax_inputs_with_flow_fallback'
             : 'observed_tax_inputs_reconciled',
     tax_source_label:
-      companyId === 'empresa1'
+      td?.tax_treatment === 'fixed_baseline'
+        ? 'Tributo agregado do baseline — hipótese de comparação fixa'
+        : companyId === 'empresa1'
         ? 'Proxy tributário — referência compartilhada'
         : taxUsesProxy
           ? 'Dados tributários observados — com proxy fiscal'

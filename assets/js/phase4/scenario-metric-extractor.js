@@ -34,7 +34,16 @@ export function extractScenarioMetrics({ companyId, scenarioResults = [] }) {
       operational_risk: safeNumber(risk, 50),
       tax_impact: tax,
       inventory_efficiency: invEfficiency,
-      raw: { total_with_tax: total, quality_score: q, risk_level: quality.risk_level || 'unknown' },
+      raw: {
+        total_with_tax: total,
+        quality_score: q,
+        risk_level: quality.risk_level || 'unknown',
+        ranking_tiebreak: {
+          total_with_tax: result.total_with_tax,
+          risk_level: quality.risk_level,
+          quality_score: quality.quality_score,
+        },
+      },
     };
   });
   return { company_id: companyId, scenario_metrics, warnings, errors };

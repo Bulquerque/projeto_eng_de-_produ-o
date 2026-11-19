@@ -428,14 +428,14 @@ export function renderScenarioRisk(state, advanced = false) {
       ['broad', 'Amplo'],
     ],
     config.profile || 'balanced'
-  )}</label><label>Variável da dispersão${select('scatter_driver', driverOptions, config.scatter_driver || mc.scatter_driver || 'freight_multiplier')}</label><label>Perfil de stress${select(
+  )}</label><label>Tributo no Monte Carlo${select('tax_treatment', [['sampled_tax', 'Recalculado/amostrado (padrão)'], ['fixed_baseline', 'Fixo no tributo do baseline (condicional)']], config.tax_treatment || mc.tax_treatment || 'sampled_tax')}</label><label>Variável da dispersão${select('scatter_driver', driverOptions, config.scatter_driver || mc.scatter_driver || 'freight_multiplier')}</label><label>Perfil de stress${select(
     'stress_profile',
     [
       ['standard', 'Padrão'],
       ['conservative', 'Conservador'],
     ],
     stressProfile
-  )}</label><label>Sensibilidade${select('sensitivity_variable', variableOptions, risk.sensitivity?.most_sensitive_variable || 'freight_multiplier')}</label><label>Matriz X${select('sensitivity_x', variableOptions, risk.sensitivity_matrix?.x_variable || 'freight_multiplier')}</label><label>Matriz Y${select('sensitivity_y', variableOptions, risk.sensitivity_matrix?.y_variable || 'demand_multiplier')}</label></div><div class="ni-actions"><button type="submit" class="ni-button primary" data-testid="risk-run">Recalcular risco</button>${advanced ? '<a class="ni-button secondary" href="#/network/scenarios/risk" data-route="#/network/scenarios/risk">Voltar ao risco resumido</a>' : '<a class="ni-button secondary" href="#/network/scenarios/risk/advanced" data-route="#/network/scenarios/risk/advanced">Abrir risco avançado</a>'}</div></form></section></details>`;
+  )}</label><label>Sensibilidade${select('sensitivity_variable', variableOptions, risk.sensitivity?.most_sensitive_variable || 'freight_multiplier')}</label><label>Matriz X${select('sensitivity_x', variableOptions, risk.sensitivity_matrix?.x_variable || 'freight_multiplier')}</label><label>Matriz Y${select('sensitivity_y', variableOptions, risk.sensitivity_matrix?.y_variable || 'demand_multiplier')}</label></div><p class="ni-note">O modo de tributo fixo mantém o total fiscal do baseline em cada amostra, exclui a incerteza tributária e produz uma análise condicional. Não é uma previsão; confirme o valor do baseline antes de usar.</p><div class="ni-actions"><button type="submit" class="ni-button primary" data-testid="risk-run">Recalcular risco</button>${advanced ? '<a class="ni-button secondary" href="#/network/scenarios/risk" data-route="#/network/scenarios/risk">Voltar ao risco resumido</a>' : '<a class="ni-button secondary" href="#/network/scenarios/risk/advanced" data-route="#/network/scenarios/risk/advanced">Abrir risco avançado</a>'}</div></form></section></details>`;
 
   const chartPanel = (title, canvasId, ariaLabel, className = '', available = true) =>
     `<article class="ni-card ni-workspace-panel ni-workspace-chart-panel ${className}">${available ? `<canvas id="${canvasId}" class="ni-chart" role="img" aria-label="${escapeHtml(ariaLabel)}"></canvas>` : `<p class="ni-note" role="status" style="margin:8px 0">${escapeHtml(title)}: sem dados válidos nesta execução.</p>`}</article>`;

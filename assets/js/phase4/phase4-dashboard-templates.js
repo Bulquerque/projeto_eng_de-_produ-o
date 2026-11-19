@@ -16,6 +16,11 @@ export function renderSearchLog(searchLog) {
     ['Estratégia', searchLog.search_strategy || '—'],
     ['Método', method],
     ['Espaço exato', searchLog.exact_search_space ? 'sim' : 'não'],
+    ['Subconjuntos brutos de CDs', formatNumber(searchLog.raw_cd_subset_count)],
+    ['Estratégia de geração', searchLog.candidate_generation_strategy || '—'],
+    ['Espaço-base', formatNumber(searchLog.base_candidate_space_size)],
+    ['Refinamentos únicos', formatNumber(searchLog.unique_refinement_candidates)],
+    ['Base / refino no espaço declarado', searchLog.candidate_space_size_basis || '—'],
     ['Motivo da cobertura', searchLog.exactness_reason || '—'],
     ['Cobertura', coverage],
     [
@@ -104,6 +109,10 @@ export function buildOptimizerInputTableHtml({
     ['Concentração máxima', formatPct(constraints.max_cd_volume_share * 100, 0)],
     ['Risco aceitável', constraints.max_risk_level],
     ['Estratégia', searchLog?.search_strategy || '—'],
+    ['Subconjuntos brutos de CDs', formatNumber(searchLog?.raw_cd_subset_count)],
+    ['Estratégia de geração', searchLog?.candidate_generation_strategy || '—'],
+    ['Catálogo-base gerado', formatNumber(searchLog?.base_candidates_generated)],
+    ['Refinamentos únicos', formatNumber(searchLog?.unique_refinement_candidates)],
     [
       'Cobertura do espaço',
       searchLog?.coverage_ratio != null ? formatPct(searchLog.coverage_ratio * 100, 1) : '—',

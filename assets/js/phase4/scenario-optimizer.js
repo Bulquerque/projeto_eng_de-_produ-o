@@ -189,6 +189,13 @@ export function runOptimization({
   });
 
   const generatedCount = generated.candidate_scenarios.length;
+  const generationSummary = generated.generation_summary || {};
+  const searchSpaceMetadata = {
+    rawCdSubsetCount: generationSummary.full_cd_set_count ?? null,
+    baseCandidateSpaceSize: generationSummary.candidate_space_size ?? generatedCount,
+    baseCandidatesGenerated: generatedCount,
+    candidateGenerationStrategy: generationSummary.search_space_strategy || null,
+  };
   const searchWarnings = [...(generated.warnings || [])];
   const searchErrors = [...(generated.errors || [])];
   if (!generated.generation_summary?.search_space_complete) {
@@ -223,6 +230,9 @@ export function runOptimization({
         methodApplied: SUPPORTED_METHOD,
         generatedCandidates: generatedCount,
         candidateSpaceSize: generated.generation_summary?.candidate_space_size ?? generatedCount,
+        ...searchSpaceMetadata,
+        uniqueRefinementCandidates: 0,
+        candidateSpaceSizeBasis: 'base_space_only_refinement_not_run',
         refinementRounds,
         refinementSeedCount,
         seed: canonicalConfig.seed,
@@ -255,6 +265,10 @@ export function runOptimization({
         simulatedCandidates: initialEvaluation.simulated,
         validCandidates: scenarioRecords.length,
         invalidCandidates: invalid,
+        candidateSpaceSize: generated.generation_summary?.candidate_space_size ?? generatedCount,
+        ...searchSpaceMetadata,
+        uniqueRefinementCandidates: 0,
+        candidateSpaceSizeBasis: 'base_space_only_refinement_not_run',
         refinementRounds,
         refinementSeedCount,
         seed: canonicalConfig.seed,
@@ -346,14 +360,19 @@ export function runOptimization({
     const key = scenarioChangesKey(changes);
     return !baseScenarioKeys.has(key);
   }).length;
-  const candidateSpaceSize = baseCandidateSpaceSize + uniqueRefinementCount;
+  // Refinement variants are exploration outside the declared base universe.
+  // Keep them as a separate count instead of silently enlarging the denominator.
+  const candidateSpaceSize = baseCandidateSpaceSize;
   const totalSimulated = generatedCount + refinedSimulated;
   const totalValid = scenarioRecords.length + refinedRecords.length;
   const totalInvalid = invalid + refinedInvalid;
   const limitedFiscalRecords = allScenarioRecords.filter(
     (record) => record.data_quality?.coverage_limited
   );
-  const coverageRatio = candidateSpaceSize > 0 ? totalSimulated / candidateSpaceSize : 0;
+  // This ratio measures the base catalog only. Refinement variants are logged
+  // separately because they may be outside the declared catalog denominator.
+  const coverageRatio =
+    candidateSpaceSize > 0 ? generatedCount / candidateSpaceSize : 0;
   const baseSpaceComplete = Boolean(generated.generation_summary?.search_space_complete);
   const exactSearchSpace =
     baseSpaceComplete &&
@@ -387,6 +406,9 @@ export function runOptimization({
         refinementSeedCount,
         refinementCandidatesGenerated: refinementGenerated,
         refinementCandidatesSimulated: refinedSimulated,
+        ...searchSpaceMetadata,
+        uniqueRefinementCandidates: uniqueRefinementCount,
+        candidateSpaceSizeBasis: 'declared_base_space_refinements_reported_separately',
         seed: canonicalConfig.seed,
         spaceLimited,
         exactSearchSpace,
@@ -458,6 +480,9 @@ export function runOptimization({
         refinementSeedCount,
         refinementCandidatesGenerated: refinementGenerated,
         refinementCandidatesSimulated: refinedSimulated,
+        ...searchSpaceMetadata,
+        uniqueRefinementCandidates: uniqueRefinementCount,
+        candidateSpaceSizeBasis: 'declared_base_space_refinements_reported_separately',
         seed: canonicalConfig.seed,
         spaceLimited,
         bestScore: best_scenarios[0]?.final_score ?? null,

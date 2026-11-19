@@ -30,6 +30,15 @@ export function auditTaxFlowCoverage(fiscalFlows = [], flowContext = {}) {
   const destinationCoverageRatio = total ? destinationCovered / total : 0;
   const originCoverageRatio = total ? originCovered / total : 0;
   const fiscalClassificationCoverage = total ? completeFiscalData / total : 0;
+  const inputGrossRevenue = Number(flowContext.input_gross_revenue);
+  const eligibleGrossRevenue = fiscalFlows.reduce(
+    (sum, flow) => sum + Math.max(0, Number(flow.gross_revenue) || 0),
+    0
+  );
+  const revenueCoverageRatio =
+    Number.isFinite(inputGrossRevenue) && inputGrossRevenue > 0
+      ? eligibleGrossRevenue / inputGrossRevenue
+      : null;
   const precision_mode =
     total === 0 ? 'top_down_fallback' : proxy > 0 ? 'realistic_proxy' : 'bottom_up_flow';
   const warnings = [];
@@ -81,8 +90,10 @@ export function auditTaxFlowCoverage(fiscalFlows = [], flowContext = {}) {
     destination_coverage_pct: destinationCoverageRatio * 100,
     origin_coverage_ratio: originCoverageRatio,
     origin_coverage_pct: originCoverageRatio * 100,
-    revenue_coverage_ratio: inputFlowCount ? total / inputFlowCount : 0,
-    revenue_coverage_pct: inputFlowCount ? (total / inputFlowCount) * 100 : 0,
+    input_gross_revenue: Number.isFinite(inputGrossRevenue) ? inputGrossRevenue : null,
+    eligible_gross_revenue: eligibleGrossRevenue,
+    revenue_coverage_ratio: revenueCoverageRatio,
+    revenue_coverage_pct: revenueCoverageRatio == null ? null : revenueCoverageRatio * 100,
     complete_fiscal_coverage_ratio: fiscalClassificationCoverage,
     complete_fiscal_coverage_pct: fiscalClassificationCoverage * 100,
     fiscal_classification_coverage: fiscalClassificationCoverage,

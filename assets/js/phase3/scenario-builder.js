@@ -63,6 +63,9 @@ export function buildScenarioFromForm({
   if (formValues.tax_year != null) {
     changes.tax_year = Number(formValues.tax_year);
   }
+  if (formValues.tax_treatment != null) {
+    changes.tax_treatment = String(formValues.tax_treatment);
+  }
   return {
     scenario_id: scenarioId || createScenarioId(companyId, scenarioName),
     scenario_name: scenarioName,

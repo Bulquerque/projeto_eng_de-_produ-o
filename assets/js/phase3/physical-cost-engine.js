@@ -354,10 +354,16 @@ function resolveStorageCostFromTable(storageCostMap, activeCds, dm) {
   let total = 0;
   for (const cd of activeCds) {
     const key = up(cd);
-    const cost =
-      storageCostMap[key] ||
-      Object.entries(storageCostMap).find(([k]) => key.includes(k) || k.includes(key))?.[1] ||
-      0;
+    const match = Object.entries(storageCostMap).find(
+      ([storedKey]) =>
+        storedKey === key ||
+        (key && storedKey && (key.includes(storedKey) || storedKey.includes(key)))
+    );
+    // A partial tariff match is not a complete observed storage total. Apply
+    // the documented baseline-ratio contingency for the full scenario instead
+    // of silently treating unmatched active CDs as having zero storage cost.
+    if (!match) return null;
+    const cost = match[1];
     total += cost;
   }
 
@@ -418,9 +424,12 @@ function buildCostResult(context, values) {
         reference_wacc: MODEL_DEFAULTS.reference_wacc,
       },
       storage: {
+        ...(values.diagnostics?.storage || {}),
         active_cd_count: context.activeCds.length,
         baseline_cd_count: context.baselineCds,
-        method: 'active_cd_ratio_hypothesis_when_no_cd_tariff_match',
+        method: values.diagnostics?.storage?.fallback_applied
+          ? 'active_cd_ratio_hypothesis_when_no_cd_tariff_match'
+          : 'cd_tariff_table',
         provenance: MODEL_DEFAULTS.storage_active_cd_provenance,
       },
     },
@@ -543,6 +552,9 @@ function calculateCompany1Costs(context, flows) {
         transfer_fallback: transferFallbackCount,
         heuristic_fallback: anyPriced ? 0 : 1,
       },
+      // Scenario-level count: storage is estimated once per scenario, not per flow.
+      scenario_fallback_counts: { storage_proportional: 1 },
+      storage: { fallback_applied: true, fallback_source: 'baseline_ratio' },
       fallback_cost_share: anyPriced
         ? {}
         : {
@@ -676,9 +688,10 @@ function calculateCompany2Costs(context, flows) {
   }
 
   const realStorage = resolveStorageCostFromTable(storageCostMap, activeCds, demandMultiplier);
+  const storageFallbackApplied = realStorage === null;
   if (realStorage === null)
     warnings.push(
-      'CDs do cenário sem correspondência na tabela de armazenagem; usando custo proporcional do baseline.'
+      'A tabela de armazenagem não cobre todos os CDs do cenário; usando custo proporcional do baseline.'
     );
   return buildCostResult(context, {
     transferCost,
@@ -702,6 +715,12 @@ function calculateCompany2Costs(context, flows) {
         revenue_fallback: revenueFallbackCount,
         transfer_fallback: transferFallbackCount,
         heuristic_fallback: anyPriced ? 0 : 1,
+      },
+      // Keep this out of flow fallback_counts/rates: it is one decision per scenario.
+      scenario_fallback_counts: { storage_proportional: storageFallbackApplied ? 1 : 0 },
+      storage: {
+        fallback_applied: storageFallbackApplied,
+        fallback_source: storageFallbackApplied ? 'baseline_ratio' : 'cd_tariff_table',
       },
       distribution_eligible_flow_count: distributionEligibleCount,
       distribution_observed_flow_count: distributionObservedCount,
@@ -739,6 +758,8 @@ function calculateUnknownCompanyCosts(companyId, context) {
       flow_method_counts: {},
       transfer_method_counts: {},
       fallback_counts: { unknown_company: 1 },
+      scenario_fallback_counts: { storage_proportional: 1 },
+      storage: { fallback_applied: true, fallback_source: 'baseline_ratio' },
       proxy_sources: ['generic_baseline_heuristic'],
     },
   });

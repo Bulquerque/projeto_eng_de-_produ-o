@@ -21,6 +21,7 @@ const VALID_REALLOCATION = new Set([
   'first_available_cd',
   'keep_if_active_else_first',
 ]);
+const VALID_TAX_TREATMENTS = new Set(['recomputed', 'fixed_baseline']);
 function check(cond, code, message, severity = 'error') {
   return cond ? null : { code, message, severity };
 }
@@ -45,6 +46,7 @@ export function validateScenario({ companyId, scenario, baselineBundle }) {
   const c = scenario?.changes || {};
   const rawTaxMode = c.tax_mode != null ? String(c.tax_mode) : null;
   const rawTaxRegime = c.tax_regime != null ? String(c.tax_regime) : null;
+  const taxTreatment = c.tax_treatment == null ? 'recomputed' : String(c.tax_treatment);
   const resolvedTaxRegime = resolveTaxRegime({
     taxMode: c.tax_mode,
     taxRegime: c.tax_regime,
@@ -93,6 +95,11 @@ export function validateScenario({ companyId, scenario, baselineBundle }) {
     'A taxa anual de carregamento do estoque não pode ser negativa.'
   );
   validate(Boolean(resolvedTaxRegime), 'TAX_MODE_VALID', 'Modo tributário inválido.');
+  validate(
+    VALID_TAX_TREATMENTS.has(taxTreatment),
+    'TAX_TREATMENT_VALID',
+    'Tratamento do tributo no cenário inválido.'
+  );
   const taxModeCandidate = String(c.tax_mode || resolveTaxModeForRegime(resolvedTaxRegime));
   validate(
     !rawTaxMode || VALID_TAX_MODES.has(taxModeCandidate),
@@ -104,6 +111,34 @@ export function validateScenario({ companyId, scenario, baselineBundle }) {
     'TAX_REGIME_VALID',
     'Regime tributário inválido.'
   );
+  if (taxTreatment === 'fixed_baseline') {
+    validate(
+      taxModeCandidate === 'current' && resolvedTaxRegime === 'current',
+      'FIXED_BASELINE_TAX_CURRENT_REGIME_ONLY',
+      'Tributo fixo do baseline só pode ser usado em comparações do regime atual; reforma ou tributo desligado exige recálculo próprio.'
+    );
+    const rawBaselineTax = baselineBundle?.costs?.costs?.tax_impact;
+    const baselineTaxDetails = baselineBundle?.tax_results?.tax_results || {};
+    const baselineRegime = String(
+      baselineTaxDetails.tax_regime ||
+        baselineBundle?.model?.tax_regime ||
+        'current'
+    );
+    const hasBaselineTax =
+      typeof rawBaselineTax === 'number' ||
+      (typeof rawBaselineTax === 'string' && rawBaselineTax.trim() !== '');
+    const baselineTax = hasBaselineTax ? Number(rawBaselineTax) : NaN;
+    validate(
+      Number.isFinite(baselineTax) && baselineTax >= 0,
+      'FIXED_BASELINE_TAX_VALUE_REQUIRED',
+      'Tributo fixo exige tax_impact numérico, não vazio, finito e não negativo no baseline.'
+    );
+    validate(
+      baselineRegime === 'current',
+      'FIXED_BASELINE_TAX_BASELINE_CURRENT_REGIME_ONLY',
+      'Tributo fixo do baseline exige referência tributária do regime atual.'
+    );
+  }
   validate(
     VALID_REALLOCATION.has(String(c.reallocation_rule || 'nearest_available_cd')),
     'REALLOCATION_RULE_VALID',

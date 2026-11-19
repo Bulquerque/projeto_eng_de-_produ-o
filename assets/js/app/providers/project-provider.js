@@ -216,6 +216,7 @@ export async function createProjectProvider() {
         config: {
           profile: config.profile || 'balanced',
           scatter_driver: config.scatter_driver || 'freight_multiplier',
+          tax_treatment: config.tax_treatment || 'sampled_tax',
         },
       });
       const stressProfile = config.stress_profile || 'standard';

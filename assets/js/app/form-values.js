@@ -63,6 +63,7 @@ export function parseOptimizerForm(data, rawValues = {}) {
       seed: readFormNumber(data, rawValues, 'risk_seed', MONTE_CARLO_CONFIG.seed),
       profile: data.get('risk_profile') || 'balanced',
       scatter_driver: data.get('risk_scatter_driver') || 'freight_multiplier',
+      tax_treatment: data.get('risk_tax_treatment') || 'sampled_tax',
       stress_profile: data.get('stress_profile') || 'standard',
       sensitivity_variable: data.get('sensitivity_variable') || 'freight_multiplier',
       sensitivity_x: data.get('sensitivity_x') || 'freight_multiplier',
@@ -72,7 +73,7 @@ export function parseOptimizerForm(data, rawValues = {}) {
 }
 
 export function validateOptimizerValues(values) {
-  const { max_candidates: maxCandidates, seed, constraints = {} } = values;
+  const { max_candidates: maxCandidates, seed, constraints = {}, risk_config: riskConfig = {} } = values;
   if (!Number.isInteger(maxCandidates) || maxCandidates < 100 || maxCandidates > 10000) {
     return validationError('Máximo de candidatos deve ser um inteiro entre 100 e 10.000.');
   }
@@ -95,6 +96,9 @@ export function validateOptimizerValues(values) {
   if (!['low', 'medium', 'high'].includes(constraints.max_risk_level)) {
     return validationError('Selecione um nível de risco válido.');
   }
+  if (!['sampled_tax', 'fixed_baseline'].includes(riskConfig.tax_treatment || 'sampled_tax')) {
+    return validationError('Selecione um tratamento tributário válido para o Monte Carlo.');
+  }
   return { valid: true, message: '' };
 }
 
@@ -104,6 +108,7 @@ export function parseRiskForm(data, rawValues = {}) {
     seed: readFormNumber(data, rawValues, 'seed', MONTE_CARLO_CONFIG.seed),
     profile: data.get('profile') || 'balanced',
     scatter_driver: data.get('scatter_driver') || 'freight_multiplier',
+    tax_treatment: data.get('tax_treatment') || 'sampled_tax',
     stress_profile: data.get('stress_profile') || 'standard',
     sensitivity_variable: data.get('sensitivity_variable') || 'freight_multiplier',
     sensitivity_x: data.get('sensitivity_x') || 'freight_multiplier',
@@ -123,6 +128,9 @@ export function validateRiskValues(values) {
     return validationError('Seed do risco deve ser um número inteiro.');
   if (!['balanced', 'conservative', 'broad'].includes(values.profile)) {
     return validationError('Selecione um perfil de incerteza válido.');
+  }
+  if (!['sampled_tax', 'fixed_baseline'].includes(values.tax_treatment || 'sampled_tax')) {
+    return validationError('Selecione um tratamento tributário válido para o Monte Carlo.');
   }
   if (!['standard', 'conservative'].includes(values.stress_profile)) {
     return validationError('Selecione um perfil de stress válido.');

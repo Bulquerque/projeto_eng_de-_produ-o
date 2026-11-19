@@ -1,6 +1,9 @@
 import { COMPANY_REGISTRY } from './company-registry.js';
 import { escapeHtml } from './view-helpers.js';
 
+const HELP_ICON_URL = new URL('../../icons/bootstrap-icons/question-circle.svg', import.meta.url).href;
+const DEBUG_ICON_URL = new URL('../../icons/bootstrap-icons/gear.svg', import.meta.url).href;
+
 export function renderShell({ companyId, route, debugEnabled = false } = {}) {
   const companies = Object.values(COMPANY_REGISTRY)
     .map(
@@ -17,9 +20,9 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
         <a href="#/network/scenarios/build" data-route="#/network/scenarios/build" data-section="scenarios"><span class="network-nav-number" aria-hidden="true">02</span><span>Cenários</span></a>
         <a href="#/network/optimizer/configure" data-route="#/network/optimizer/configure" data-section="optimizer"><span class="network-nav-number" aria-hidden="true">03</span><span>Otimizador</span></a>
         <a href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust"><span class="network-nav-number" aria-hidden="true">04</span><span>Dados & confiança</span></a>
-        ${debugEnabled ? '<a href="#/network/dev/console" data-route="#/network/dev/console" data-section="dev"><img class="network-nav-icon" src="assets/icons/bootstrap-icons/gear.svg" alt="" aria-hidden="true"><span>Debug</span></a>' : ''}
+        ${debugEnabled ? `<a href="#/network/dev/console" data-route="#/network/dev/console" data-section="dev"><img class="network-nav-icon" src="${DEBUG_ICON_URL}" alt="" aria-hidden="true"><span>Debug</span></a>` : ''}
       </nav>
-      <div class="network-sidebar-tools"><button type="button" data-action="open-help"><img class="network-tool-icon" src="assets/icons/bootstrap-icons/question-circle.svg" alt="" aria-hidden="true">Ajuda</button></div>
+      <div class="network-sidebar-tools"><button type="button" data-action="open-help"><img class="network-tool-icon" src="${HELP_ICON_URL}" alt="" aria-hidden="true">Ajuda</button></div>
       <div class="network-sidebar-foot"><small>Decision workspace</small><span data-testid="mode-badge">runtime</span></div>
     </aside>
     <div class="network-content">

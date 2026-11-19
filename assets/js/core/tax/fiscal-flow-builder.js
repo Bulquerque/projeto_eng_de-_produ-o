@@ -31,8 +31,11 @@ export function buildFiscalFlows({
   let excludedMissingDestination = 0;
   let excludedMissingRevenue = 0;
   let missingOrigin = 0;
+  let inputGrossRevenue = 0;
 
   for (const [index, flow] of flows.entries()) {
+    const grossRevenue = getFlowRevenue(flow);
+    if (grossRevenue > 0) inputGrossRevenue += grossRevenue;
     const destinationUf = String(flow?.destination_uf || '')
       .trim()
       .toUpperCase();
@@ -45,7 +48,6 @@ export function buildFiscalFlows({
       });
       continue;
     }
-    const grossRevenue = getFlowRevenue(flow);
     if (!(grossRevenue > 0)) {
       excludedMissingRevenue += 1;
       warnings.push({
@@ -128,6 +130,7 @@ export function buildFiscalFlows({
     errors,
     quality_report: {
       input_flow_count: flows.length,
+      input_gross_revenue: inputGrossRevenue,
       flow_count: fiscalFlows.length,
       eligible_flow_count: fiscalFlows.length,
       missing_origin_uf_count: missingOrigin,

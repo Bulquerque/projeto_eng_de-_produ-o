@@ -41,7 +41,12 @@ function uniqueSets(sets) {
   return out;
 }
 export function generateCandidateScenarios({ companyId, baselineBundle, generationConfig = {} }) {
-  const baseCds = baselineBundle?.model?.active_cds || [];
+  const rawBaseCds = Array.isArray(baselineBundle?.model?.active_cds)
+    ? baselineBundle.model.active_cds
+    : [];
+  const baseCds = [
+    ...new Set(rawBaseCds.map((cd) => (cd == null ? '' : String(cd).trim())).filter(Boolean)),
+  ];
   const maxCandidates = Number(generationConfig.max_candidates ?? 120);
   const freight = generationConfig.freight_multipliers || [0.95, 1, 1.1];
   const inv =
@@ -104,24 +109,33 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
     }
   }
   const candidate_scenarios = uniqueByChanges(candidates);
-  const fullCdSetCount = baseCds.length > 30 ? null : 2 ** baseCds.length - 1;
-  const fullCandidateSpaceSize = fullCdSetCount
-    ? fullCdSetCount * freight.length * inv.length * tax.length * demand.length
-    : null;
+  const fullCdSetCount =
+    baseCds.length <= 53 ? 2 ** baseCds.length - 1 : null;
+  const dimensionProduct = [freight.length, inv.length, tax.length, demand.length].reduce(
+    (product, size) => product * size,
+    1
+  );
+  const candidateSpaceProduct =
+    fullCdSetCount === null ? null : fullCdSetCount * dimensionProduct;
+  const fullCandidateSpaceSize =
+    Number.isSafeInteger(candidateSpaceProduct) ? candidateSpaceProduct : null;
   const catalogCandidateSpaceSize =
     cdSetsUnique.length * freight.length * inv.length * tax.length * demand.length;
   const generatedCandidateCount = candidate_scenarios.length;
   const limited_by_max_candidates =
     Number.isFinite(maxCandidates) &&
-    generatedCandidateCount < (fullCandidateSpaceSize ?? catalogCandidateSpaceSize) &&
+    generatedCandidateCount <
+      (fullCandidateSpaceSize ?? catalogCandidateSpaceSize) &&
     candidates.length >= maxCandidates;
-  const coveredCandidateSpaceSize = Math.min(
-    generatedCandidateCount,
-    fullCandidateSpaceSize ?? catalogCandidateSpaceSize
-  );
+  const coveredCandidateSpaceSize =
+    fullCandidateSpaceSize === null
+      ? generatedCandidateCount
+      : Math.min(generatedCandidateCount, fullCandidateSpaceSize);
   const allDimensionsExhaustive =
-    Boolean(fullCdSetCount && cdSetsUnique.length === fullCdSetCount) &&
-    generatedCandidateCount === (fullCandidateSpaceSize ?? generatedCandidateCount);
+    fullCdSetCount !== null &&
+    cdSetsUnique.length === fullCdSetCount &&
+    fullCandidateSpaceSize !== null &&
+    generatedCandidateCount === fullCandidateSpaceSize;
   return {
     company_id: companyId,
     candidate_scenarios: Number.isFinite(maxCandidates)
@@ -138,7 +152,7 @@ export function generateCandidateScenarios({ companyId, baselineBundle, generati
       limited_by_max_candidates,
       max_candidates: maxCandidates,
       space_coverage_ratio:
-        fullCandidateSpaceSize && fullCandidateSpaceSize > 0
+        fullCandidateSpaceSize !== null && fullCandidateSpaceSize > 0
           ? generatedCandidateCount / fullCandidateSpaceSize
           : null,
     },
