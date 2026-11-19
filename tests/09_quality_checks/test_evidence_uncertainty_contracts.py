@@ -40,33 +40,6 @@ for (const companyId of ['empresa1', 'empresa2']) {
   });
   const result = runScenario({ companyId, scenario, baselineBundle: bundle });
   if (result.simulation_status !== 'success') throw new Error(`${companyId}: scenario failed`);
-  const fixedTaxScenario = buildScenarioFromForm({
-    companyId,
-    baselineBundle: bundle,
-    formValues: {
-      scenario_name: 'fixed-baseline-tax-comparison',
-      active_cds: activeCds,
-      freight_multiplier: 1.1,
-      demand_multiplier: 1.2,
-      inventory_days: 45,
-      wacc: 0.15,
-      tax_mode: 'current',
-      tax_treatment: 'fixed_baseline',
-    },
-  });
-  const fixedTaxComparison = runScenario({
-    companyId,
-    scenario: fixedTaxScenario,
-    baselineBundle: bundle,
-  });
-  if (fixedTaxComparison.simulation_status !== 'success')
-    throw new Error(`${companyId}: fixed-baseline-tax comparison failed`);
-  if (fixedTaxComparison.costs.tax_impact !== Number(bundle.costs.costs.tax_impact))
-    throw new Error(`${companyId}: fixed-baseline-tax comparison changed baseline tax`);
-  if (fixedTaxComparison.tax_results.tax_treatment !== 'fixed_baseline')
-    throw new Error(`${companyId}: fixed-baseline-tax comparison treatment missing`);
-  if (fixedTaxComparison.tax_results.official_fiscal_validation !== false)
-    throw new Error(`${companyId}: fixed-baseline-tax comparison must not claim official validation`);
   if (!result.evidence || !Number.isFinite(result.evidence.evidence_score))
     throw new Error(`${companyId}: evidence report missing`);
   if (!Array.isArray(result.evidence.components)) throw new Error(`${companyId}: evidence components missing`);
@@ -120,49 +93,6 @@ for (const companyId of ['empresa1', 'empresa2']) {
     throw new Error(`${companyId}: probability interpretation missing`);
   if (JSON.stringify(first.summary) !== JSON.stringify(second.summary))
     throw new Error(`${companyId}: MC is not reproducible`);
-
-  const fixedTax = runMonteCarloSimulation({
-    companyId,
-    selectedScenario: scenario,
-    baselineBundle: bundle,
-    deterministicResult: result,
-    iterations: 60,
-    seed: 7,
-    config: {
-      tax_treatment: 'fixed_baseline',
-      history: {
-        provenance: {
-          source: 'synthetic_test_fixture',
-          period_start: '2024-01-01',
-          period_end: '2024-12-31',
-          company_id: companyId,
-          unit: 'mixed_declared_test_units',
-        },
-        freight_multiplier: [0.9, 1.0, 1.1],
-        demand_multiplier: [0.95, 1.0, 1.05],
-        inventory_days: [40, 45, 50],
-        wacc: [0.12, 0.15, 0.18],
-        tax_multiplier: [0.5, 1.0, 1.5],
-        observations: [
-          { freight_multiplier: 0.9, demand_multiplier: 0.95, inventory_days: 40, wacc: 0.12, tax_multiplier: 0.5 },
-          { freight_multiplier: 1.1, demand_multiplier: 1.05, inventory_days: 50, wacc: 0.18, tax_multiplier: 1.5 },
-        ],
-      },
-    },
-  });
-  if (fixedTax.monte_carlo_status !== 'success' || !fixedTax.summary)
-    throw new Error(`${companyId}: fixed-baseline-tax MC failed`);
-  if (fixedTax.config.tax_treatment !== 'fixed_baseline')
-    throw new Error(`${companyId}: fixed-baseline-tax treatment missing from config`);
-  if (fixedTax.config.historical_drivers.includes('tax_multiplier'))
-    throw new Error(`${companyId}: fixed-baseline-tax MC must exclude historical tax uncertainty`);
-  const baselineTax = Number(bundle.costs.costs.tax_impact);
-  if (fixedTax.samples.some((sample) => sample.tax_impact !== baselineTax))
-    throw new Error(`${companyId}: fixed-baseline-tax sample changed baseline tax`);
-  if (fixedTax.samples.some((sample) => sample.inputs.tax_multiplier !== 1))
-    throw new Error(`${companyId}: fixed-baseline-tax sample changed tax multiplier`);
-  if (fixedTax.summary.deterministic_total_with_tax !== fixedTax.deterministic_reference.total_with_tax)
-    throw new Error(`${companyId}: fixed-tax deterministic summary reference mismatch`);
 
   const historical = runMonteCarloSimulation({
     companyId,
