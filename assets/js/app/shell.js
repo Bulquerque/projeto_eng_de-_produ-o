@@ -14,12 +14,13 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
   return `<div id="networkAppRoot" class="network-app" data-testid="network-shell" data-runtime="network-intelligence">
     <button class="network-skip-link" type="button" data-action="skip-to-content">Pular para o conteúdo</button>
     <aside class="network-sidebar" aria-label="Navegação Network Intelligence">
-      <div class="network-brand"><span class="network-brand-mark" aria-hidden="true">V</span><div><strong>visagio</strong><small>Network Intelligence</small></div></div>
+      <div class="network-brand"><span class="network-brand-mark" aria-hidden="true">M</span><div><strong>Malha</strong><small>Network Intelligence</small></div></div>
       <nav class="network-nav" aria-label="Seções principais">
         <a href="#/network/overview/summary" data-route="#/network/overview/summary" data-section="overview"><span class="network-nav-number" aria-hidden="true">01</span><span>Visão executiva</span></a>
         <a href="#/network/scenarios/build" data-route="#/network/scenarios/build" data-section="scenarios"><span class="network-nav-number" aria-hidden="true">02</span><span>Cenários</span></a>
-        <a href="#/network/optimizer/configure" data-route="#/network/optimizer/configure" data-section="optimizer"><span class="network-nav-number" aria-hidden="true">03</span><span>Otimizador</span></a>
-        <a href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust"><span class="network-nav-number" aria-hidden="true">04</span><span>Dados & confiança</span></a>
+        <a href="#/network/optimizer/configure" data-route="#/network/optimizer/configure" data-section="optimizer"><span class="network-nav-number" aria-hidden="true">03</span><span>Avaliação de alternativas</span></a>
+        <a href="#/network/scenarios/result" data-route="#/network/scenarios/result" data-section="results"><span class="network-nav-number" aria-hidden="true">04</span><span>Resultados</span></a>
+        <a href="#/network/trust/overview" data-route="#/network/trust/overview" data-section="trust"><span class="network-nav-number" aria-hidden="true">05</span><span>Dados & confiança</span></a>
         ${debugEnabled ? `<a href="#/network/dev/console" data-route="#/network/dev/console" data-section="dev"><img class="network-nav-icon" src="${DEBUG_ICON_URL}" alt="" aria-hidden="true"><span>Debug</span></a>` : ''}
       </nav>
       <div class="network-sidebar-tools"><button type="button" data-action="open-help"><img class="network-tool-icon" src="${HELP_ICON_URL}" alt="" aria-hidden="true">Ajuda</button></div>
@@ -54,7 +55,9 @@ export function renderShell({ companyId, route, debugEnabled = false } = {}) {
 
 export function setActiveNav(root, route) {
   const currentPath = route?.path || route?.hash?.split('?')[0];
-  const currentSection = currentPath?.match(/^\/network\/([^/]+)/)?.[1];
+  const currentSection = /^\/network\/scenarios\/(result|compare|risk)/.test(currentPath || '')
+    ? 'results'
+    : currentPath?.match(/^\/network\/([^/]+)/)?.[1];
   root.querySelectorAll('.network-nav [data-route]').forEach((link) => {
     const linkPath = link.getAttribute('data-route')?.split('?')[0].replace(/^#/, '');
     const active =

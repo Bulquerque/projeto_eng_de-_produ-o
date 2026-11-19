@@ -220,12 +220,13 @@ export async function createProjectProvider() {
         },
       });
       const stressProfile = config.stress_profile || 'standard';
+      const stressCases = buildStressCaseLibrary({ companyId, stressProfile }).stress_cases;
       const stress = runStressTests({
         companyId,
         selectedScenario,
         baselineBundle: this.baselineBundle,
         baselineResult: result,
-        stressCases: buildStressCaseLibrary({ companyId, stressProfile }).stress_cases,
+        stressCases,
       });
       const variable = config.sensitivity_variable || 'freight_multiplier';
       const sensitivity = runSensitivity({
@@ -251,6 +252,7 @@ export async function createProjectProvider() {
         companyId,
         scenarioId: selectedScenario?.scenario_id,
         stressResults: stress.stress_results,
+        expectedStressCaseCount: stressCases.length,
         quality: this.lastScenario?.quality || {},
         monteCarlo,
         evidence: result?.evidence || null,

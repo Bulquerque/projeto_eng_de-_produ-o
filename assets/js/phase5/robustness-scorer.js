@@ -10,6 +10,7 @@ export function calculateRobustness({
   companyId,
   scenarioId,
   stressResults = [],
+  expectedStressCaseCount = null,
   quality = {},
   monteCarlo = null,
   evidence = null,
@@ -22,10 +23,19 @@ export function calculateRobustness({
       typeof result?.scenario_still_better_than_baseline === 'boolean'
   );
   const blockedStressCases = stressList.length - validStressResults.length;
+  const expectedStressCount = finiteValue(expectedStressCaseCount);
+  const uniqueStressCaseCount = new Set(
+    stressList.map((result) => String(result?.case_id || '')).filter(Boolean)
+  ).size;
   const limitedStressCases = validStressResults.filter(
     (result) => result.data_quality_status === 'limited_fiscal_coverage'
   ).length;
-  const stressComplete = stressList.length > 0 && validStressResults.length === stressList.length;
+  const stressComplete =
+    expectedStressCount !== null &&
+    expectedStressCount > 0 &&
+    stressList.length === expectedStressCount &&
+    uniqueStressCaseCount === expectedStressCount &&
+    validStressResults.length === expectedStressCount;
   const total = validStressResults.length || 0;
   const positives = validStressResults.filter((r) => r.scenario_still_better_than_baseline).length;
   const positiveRatio = total ? positives / total : 0;

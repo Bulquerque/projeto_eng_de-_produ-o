@@ -265,15 +265,16 @@ function runDecisionPipeline(controls = readDecisionControls()) {
   const selectedWithMonteCarlo = { ...selected, monte_carlo: state.monteCarlo };
   state.selection.selected_scenario = selectedWithMonteCarlo;
   state.workbookParity = buildWorkbookParitySummary(state.bundle);
+  const stressCases = buildStressCaseLibrary({
+    companyId: state.companyId,
+    stressProfile: controls.stressProfile,
+  }).stress_cases;
   state.stress = runStressTests({
     companyId: state.companyId,
     selectedScenario: scenario,
     baselineBundle: state.bundle,
     baselineResult: baselineResult(),
-    stressCases: buildStressCaseLibrary({
-      companyId: state.companyId,
-      stressProfile: controls.stressProfile,
-    }).stress_cases,
+    stressCases,
   });
   state.sensitivity = runSensitivity({
     companyId: state.companyId,
@@ -299,6 +300,7 @@ function runDecisionPipeline(controls = readDecisionControls()) {
     companyId: state.companyId,
     scenarioId: scenario?.scenario_id,
     stressResults: state.stress.stress_results,
+    expectedStressCaseCount: stressCases.length,
     quality,
     monteCarlo: state.monteCarlo,
     evidence: selected?.result?.evidence || null,

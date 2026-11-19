@@ -47,6 +47,8 @@ export function validateScenarioValues(values) {
 }
 
 export function parseOptimizerForm(data, rawValues = {}) {
+  const taxTreatment = data.get('risk_tax_treatment') || 'sampled_tax';
+  const scatterDriver = data.get('risk_scatter_driver') || 'freight_multiplier';
   return {
     max_candidates: readFormNumber(data, rawValues, 'max_candidates', 2000),
     seed: readFormNumber(data, rawValues, 'seed', 42),
@@ -62,8 +64,11 @@ export function parseOptimizerForm(data, rawValues = {}) {
       iterations: readFormNumber(data, rawValues, 'risk_iterations', MONTE_CARLO_CONFIG.iterations),
       seed: readFormNumber(data, rawValues, 'risk_seed', MONTE_CARLO_CONFIG.seed),
       profile: data.get('risk_profile') || 'balanced',
-      scatter_driver: data.get('risk_scatter_driver') || 'freight_multiplier',
-      tax_treatment: data.get('risk_tax_treatment') || 'sampled_tax',
+      scatter_driver:
+        taxTreatment === 'fixed_baseline' && scatterDriver === 'tax_multiplier'
+          ? 'freight_multiplier'
+          : scatterDriver,
+      tax_treatment: taxTreatment,
       stress_profile: data.get('stress_profile') || 'standard',
       sensitivity_variable: data.get('sensitivity_variable') || 'freight_multiplier',
       sensitivity_x: data.get('sensitivity_x') || 'freight_multiplier',
@@ -99,16 +104,33 @@ export function validateOptimizerValues(values) {
   if (!['sampled_tax', 'fixed_baseline'].includes(riskConfig.tax_treatment || 'sampled_tax')) {
     return validationError('Selecione um tratamento tributário válido para o Monte Carlo.');
   }
+  const riskIterations = riskConfig.iterations ?? MONTE_CARLO_CONFIG.iterations;
+  const riskSeed = riskConfig.seed ?? MONTE_CARLO_CONFIG.seed;
+  if (
+    !Number.isInteger(riskIterations) ||
+    riskIterations < MONTE_CARLO_CONFIG.min_iterations ||
+    riskIterations > MONTE_CARLO_CONFIG.max_iterations
+  ) {
+    return validationError('Iterações do Monte Carlo devem ser um inteiro entre 50 e 5.000.');
+  }
+  if (!Number.isInteger(riskSeed)) {
+    return validationError('Seed do Monte Carlo deve ser um número inteiro.');
+  }
   return { valid: true, message: '' };
 }
 
 export function parseRiskForm(data, rawValues = {}) {
+  const taxTreatment = data.get('tax_treatment') || 'sampled_tax';
+  const scatterDriver = data.get('scatter_driver') || 'freight_multiplier';
   return {
     iterations: readFormNumber(data, rawValues, 'iterations', MONTE_CARLO_CONFIG.iterations),
     seed: readFormNumber(data, rawValues, 'seed', MONTE_CARLO_CONFIG.seed),
     profile: data.get('profile') || 'balanced',
-    scatter_driver: data.get('scatter_driver') || 'freight_multiplier',
-    tax_treatment: data.get('tax_treatment') || 'sampled_tax',
+    scatter_driver:
+      taxTreatment === 'fixed_baseline' && scatterDriver === 'tax_multiplier'
+        ? 'freight_multiplier'
+        : scatterDriver,
+    tax_treatment: taxTreatment,
     stress_profile: data.get('stress_profile') || 'standard',
     sensitivity_variable: data.get('sensitivity_variable') || 'freight_multiplier',
     sensitivity_x: data.get('sensitivity_x') || 'freight_multiplier',

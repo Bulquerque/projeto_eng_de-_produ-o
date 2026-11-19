@@ -436,6 +436,33 @@ export function runOptimization({
     scenarioMetrics: metrics.scenario_metrics,
     referenceMetrics: buildBaselineReferenceMetrics(baselineRecord),
   });
+  const recordByScenarioId = new Map(
+    allScenarioRecords.map((record) => [record.result.scenario_id, record])
+  );
+  rankingSensitivity.profile_results = (rankingSensitivity.profile_results || []).map(
+    (profileResult) => {
+      const ranking = (profileResult.ranking || []).map((ranked) => {
+        const record = recordByScenarioId.get(ranked.scenario_id);
+        const activeCds = record?.scenario?.changes?.active_cds || [];
+        return {
+          ...ranked,
+          scenario_name: record?.scenario?.scenario_name || null,
+          active_cds: [...activeCds],
+          active_cd_count: activeCds.length,
+          total_with_tax: record?.result?.total_with_tax ?? null,
+          decision_use: record?.data_quality?.decision_use || null,
+          data_quality_status: record?.data_quality?.status || null,
+        };
+      });
+      const winner = ranking[0] || null;
+      return {
+        ...profileResult,
+        winner_scenario_id: winner?.scenario_id || null,
+        winner,
+        ranking,
+      };
+    }
+  );
   const enriched = buildRankedScenarios(scoring, allScenarioRecords);
   const best_scenarios = enriched.slice(0, 10);
   const best_by_total_cost =

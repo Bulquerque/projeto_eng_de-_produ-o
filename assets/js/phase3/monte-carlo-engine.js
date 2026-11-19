@@ -759,6 +759,22 @@ export function runMonteCarloSimulation({
   );
   const baseWacc = Math.max(0, safeNumber(baseChanges.wacc, MODEL_DEFAULTS.reference_wacc));
   const baselineTotal = safeNumber(baselineBundle?.costs?.costs?.total_with_tax);
+  if (!Number.isFinite(baselineTotal) || baselineTotal <= 0) {
+    return {
+      company_id: companyId,
+      scenario_id: selectedScenario?.scenario_id || null,
+      monte_carlo_status: 'blocked',
+      analysis_type: normalizedConfig.analysis_type,
+      forecast: false,
+      historical_distribution: normalizedConfig.historical_distribution,
+      uncertainty_source: normalizedConfig.uncertainty_source,
+      config: normalizedConfig,
+      samples: [],
+      summary: null,
+      warnings,
+      errors: ['Monte Carlo exige custo total positivo e válido no baseline.'],
+    };
+  }
   const rawBaselineTaxValue = baselineBundle?.costs?.costs?.tax_impact;
   const baselineTaxValuePresent =
     typeof rawBaselineTaxValue === 'number' ||
@@ -931,6 +947,24 @@ export function runMonteCarloSimulation({
       scenario_id: deterministic?.scenario_id || selectedScenario?.scenario_id || null,
       total_with_tax: safeNumber(deterministic?.total_with_tax),
       saving_pct: deterministicSaving.saving_pct,
+    },
+    simulation_provenance: {
+      company_id: companyId,
+      scenario_id: selectedScenario?.scenario_id || null,
+      baseline_scenario_id: baselineScenarioId,
+      baseline_total_with_tax: baselineTotal,
+      baseline_tax_impact:
+        normalizedConfig.tax_treatment === 'fixed_baseline' ? baselineTaxValue : null,
+      tax_treatment: normalizedConfig.tax_treatment,
+      profile: normalizedConfig.profile,
+      scatter_driver: normalizedConfig.scatter_driver,
+      uncertainty_source: normalizedConfig.uncertainty_source,
+      iterations_requested: normalizedConfig.iterations,
+      iterations_valid: samples.length,
+      seed: normalizedConfig.seed,
+      seed_effective: normalizedConfig.seed_effective,
+      rng_algorithm: normalizedConfig.rng_algorithm,
+      sampling_method: normalizedConfig.historical_sampling,
     },
     config: normalizedConfig,
     samples,

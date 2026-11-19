@@ -28,7 +28,11 @@ try {
 await mkdir(outputRoot, { recursive: true });
 await mkdir(path.join(releaseRoot, 'assets', 'js', 'app'), { recursive: true });
 
-async function copyTree(sourceRelative, targetRelative, { exclude = new Set() } = {}) {
+async function copyTree(
+  sourceRelative,
+  targetRelative,
+  { exclude = new Set(), extensions = new Set() } = {}
+) {
   const source = path.join(repoRoot, sourceRelative);
   const target = path.join(releaseRoot, targetRelative);
   await mkdir(target, { recursive: true });
@@ -40,8 +44,11 @@ async function copyTree(sourceRelative, targetRelative, { exclude = new Set() } 
     const from = path.join(source, entry.name);
     const to = path.join(target, entry.name);
     if (entry.isDirectory()) {
-    await copyTree(path.relative(repoRoot, from), path.relative(releaseRoot, to), { exclude });
-    } else if (entry.isFile() && !entry.name.toLowerCase().endsWith('.md')) {
+      await copyTree(path.relative(repoRoot, from), path.relative(releaseRoot, to), {
+        exclude,
+        extensions,
+      });
+    } else if (entry.isFile() && extensions.has(path.extname(entry.name).toLowerCase())) {
       await cp(from, to);
     }
   }
@@ -119,16 +126,23 @@ const indexHtml = `<!doctype html>
 await writeFile(path.join(outputRoot, 'index.html'), indexHtml);
 await writeFile(path.join(releaseRoot, 'assets', 'js', 'app', 'config.js'), appConfig);
 await writeFile(path.join(releaseRoot, 'assets', 'js', 'app', 'company-registry.js'), companyRegistry);
-await copyTree('assets/js/app', 'assets/js/app', { exclude: new Set(['config.js', 'company-registry.js', 'providers']) });
+await copyTree('assets/js/app', 'assets/js/app', {
+  exclude: new Set(['config.js', 'company-registry.js', 'providers']),
+  extensions: new Set(['.js', '.css']),
+});
 await writeFile(path.join(releaseRoot, 'assets', 'js', 'app', 'config.js'), appConfig);
 await writeFile(path.join(releaseRoot, 'assets', 'js', 'app', 'company-registry.js'), companyRegistry);
-await copyTree('assets/js/core', 'assets/js/core');
+await copyTree('assets/js/core', 'assets/js/core', { extensions: new Set(['.js']) });
 for (const phase of ['phase1', 'phase2', 'phase3', 'phase4', 'phase5']) {
-  await copyTree(`assets/js/${phase}`, `assets/js/${phase}`);
+  await copyTree(`assets/js/${phase}`, `assets/js/${phase}`, { extensions: new Set(['.js']) });
 }
 await cp(path.join(repoRoot, 'assets', 'styles.css'), path.join(releaseRoot, 'assets', 'styles.css'));
-await copyTree('assets/icons/bootstrap-icons', 'assets/icons/bootstrap-icons');
-await copyTree('data-demo/empresa_mock', 'data-demo/empresa_mock');
+await copyTree('assets/icons/bootstrap-icons', 'assets/icons/bootstrap-icons', {
+  extensions: new Set(['.svg']),
+});
+await copyTree('data-demo/empresa_mock', 'data-demo/empresa_mock', {
+  extensions: new Set(['.json']),
+});
 await mkdir(path.join(releaseRoot, 'assets', 'js', 'app', 'providers'), { recursive: true });
 await cp(
   path.join(repoRoot, 'assets/js/app/providers/mock-provider.js'),
@@ -152,12 +166,59 @@ async function inventory(directory, relative = '') {
 }
 
 const files = (await inventory(outputRoot)).sort();
-const forbidden = files.filter((file) =>
-  /(^|\/)(data|references|docs|tests|scripts|etl|debug)(\/|$)|\.env|\.enc\.json|\.md$/i.test(file)
-);
-if (forbidden.length) throw new Error(`Arquivos fora da allowlist: ${forbidden.join(', ')}`);
-if (files.some((file) => file.includes('project-provider.js'))) {
-  throw new Error('Provider de dados reais não pode integrar o bundle público.');
+const releasePrefix = `releases/${buildId}/`;
+function releaseRelativePath(file) {
+  if (file === 'index.html' || file === 'PUBLIC_PAYLOAD_MANIFEST.json') return file;
+  return file.startsWith(releasePrefix) ? file.slice(releasePrefix.length) : null;
+}
+
+function isAllowedPublicPath(file) {
+  if (file === 'index.html' || file === 'PUBLIC_PAYLOAD_MANIFEST.json') return true;
+  if (file === 'assets/styles.css') return true;
+  if (/^assets\/js\/app\/(?!providers\/).+\.js$/i.test(file)) return true;
+  if (/^assets\/js\/(core|phase[1-5])\/.+\.js$/i.test(file)) return true;
+  if (/^assets\/js\/app\/.+\.css$/i.test(file)) return true;
+  if (
+    /^assets\/js\/app\/providers\/(mock-provider|provider-contract)\.js$/i.test(file)
+  ) return true;
+  if (/^assets\/icons\/bootstrap-icons\/[a-z0-9-]+\.svg$/i.test(file)) return true;
+  if (
+    /^data-demo\/empresa_mock\/(baseline|objective|scenarios|stress-cases)\.json$/i.test(file)
+  ) return true;
+  return false;
+}
+const outsideAllowlist = files.filter((file) => {
+  const relative = releaseRelativePath(file);
+  return relative === null || !isAllowedPublicPath(relative);
+});
+if (outsideAllowlist.length) {
+  throw new Error(`Arquivos fora da allowlist pública: ${outsideAllowlist.join(', ')}`);
+}
+const requiredFixtureFiles = [
+  'data-demo/empresa_mock/baseline.json',
+  'data-demo/empresa_mock/objective.json',
+  'data-demo/empresa_mock/scenarios.json',
+  'data-demo/empresa_mock/stress-cases.json',
+];
+const fixtureFiles = files
+  .map(releaseRelativePath)
+  .filter((file) => file?.startsWith('data-demo/empresa_mock/'));
+if (
+  requiredFixtureFiles.some((file) => !fixtureFiles.includes(file)) ||
+  fixtureFiles.length !== requiredFixtureFiles.length
+) {
+  throw new Error('A publicação exige exatamente os quatro arquivos JSON da fixture sintética.');
+}
+for (const fixtureFile of requiredFixtureFiles) {
+  const fixture = JSON.parse(await readFile(path.join(releaseRoot, fixtureFile), 'utf8'));
+  if (
+    fixture.company_id !== 'empresa_mock' ||
+    fixture.release_policy !== 'demo_only' ||
+    fixture.provenance?.provider_kind !== 'mock' ||
+    fixture.provenance?.synthetic !== true
+  ) {
+    throw new Error(`Fixture sem marcadores de demonstração sintética: ${fixtureFile}`);
+  }
 }
 const companyRegistryText = await readFile(
   path.join(releaseRoot, 'assets/js/app/company-registry.js'),

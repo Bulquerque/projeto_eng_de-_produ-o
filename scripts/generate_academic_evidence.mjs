@@ -10,6 +10,7 @@ import { loadDefaultProfiles } from '../assets/js/phase4/objective-profile-libra
 import { buildBundleReconciliation } from '../assets/js/core/reconciliation-engine.js';
 import { MODEL_DEFAULTS, calculateInventoryCost } from '../assets/js/core/model-configuration.js';
 import { runStressTests } from '../assets/js/phase5/stress-test-engine.js';
+import { buildStressCaseLibrary } from '../assets/js/phase5/stress-case-library.js';
 import { calculateRobustness } from '../assets/js/phase5/robustness-scorer.js';
 import { evaluateScenarioQuality } from '../assets/js/phase3/scenario-quality-check.js';
 import { loadRuntimeBundle } from '../tests/runtime_bundle_support.mjs';
@@ -99,16 +100,19 @@ for (const companyId of ['empresa1', 'empresa2']) {
   const published_scenarios = sampleList.map((scenario) => {
     const result = runScenario({ companyId, scenario, baselineBundle: bundle });
     const quality = evaluateScenarioQuality({ scenarioResult: result, baselineBundle: bundle });
+    const stressCases = buildStressCaseLibrary({ companyId }).stress_cases;
     const stress = runStressTests({
       companyId,
       selectedScenario: scenario,
       baselineBundle: bundle,
       baselineResult: baseline,
+      stressCases,
     });
     const robustness = calculateRobustness({
       companyId,
       scenarioId: result.scenario_id,
       stressResults: stress.stress_results,
+      expectedStressCaseCount: stressCases.length,
       quality,
       evidence: result.evidence,
     });
@@ -204,6 +208,7 @@ for (const companyId of ['empresa1', 'empresa2']) {
       p10_saving_pct: simulation.summary?.p10_saving_pct ?? null,
       data_quality: simulation.data_quality,
       provenance: simulation.provenance,
+      simulation_provenance: simulation.simulation_provenance,
       warnings: simulation.warnings,
       errors: simulation.errors,
     };
@@ -294,6 +299,7 @@ for (const companyId of ['empresa1', 'empresa2']) {
       scatter_driver: mc.config?.scatter_driver,
       summary: mc.summary,
       provenance: mc.provenance,
+      simulation_provenance: mc.simulation_provenance,
       data_quality: mc.data_quality,
       scenario_results: monteCarloResults,
     },
