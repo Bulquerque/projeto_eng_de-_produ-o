@@ -369,6 +369,8 @@ export function runOptimization({
   const limitedFiscalRecords = allScenarioRecords.filter(
     (record) => record.data_quality?.coverage_limited
   );
+  // This ratio measures the base catalog only. Refinement variants are logged
+  // separately because they may be outside the declared catalog denominator.
   const coverageRatio =
     candidateSpaceSize > 0 ? generatedCount / candidateSpaceSize : 0;
   const baseSpaceComplete = Boolean(generated.generation_summary?.search_space_complete);
