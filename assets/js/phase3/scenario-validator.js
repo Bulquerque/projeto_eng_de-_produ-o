@@ -1,0 +1,180 @@
+import {
+  resolveTaxRegime,
+  resolveTaxModeForRegime,
+  listTaxModes,
+} from '../core/tax-reform-config.js';
+import { sameCdLabel } from '../core/cd-utils.js';
+const VALID_TAX_MODES = new Set(listTaxModes());
+const VALID_TAX_REGIMES = new Set([
+  'current',
+  'disabled',
+  'reform_2026',
+  'reform_2027_2028',
+  'transition_2029',
+  'transition_2030',
+  'transition_2031',
+  'transition_2032',
+  'reform_full_2033',
+]);
+const VALID_REALLOCATION = new Set([
+  'nearest_available_cd',
+  'first_available_cd',
+  'keep_if_active_else_first',
+]);
+const VALID_TAX_TREATMENTS = new Set(['recomputed', 'fixed_baseline']);
+function check(cond, code, message, severity = 'error') {
+  return cond ? null : { code, message, severity };
+}
+export function validateScenario({ companyId, scenario, baselineBundle }) {
+  const errors = [];
+  const warnings = [];
+  const checks = [];
+  function add(result) {
+    if (!result) return;
+    (result.severity === 'warning' ? warnings : errors).push(result);
+    checks.push({
+      check: result.code,
+      status: 'failed',
+      severity: result.severity,
+      message: result.message,
+    });
+  }
+  function validate(condition, code, message) {
+    add(check(condition, code, message));
+  }
+  const base = baselineBundle?.model || {};
+  const c = scenario?.changes || {};
+  const rawTaxMode = c.tax_mode != null ? String(c.tax_mode) : null;
+  const rawTaxRegime = c.tax_regime != null ? String(c.tax_regime) : null;
+  const taxTreatment = c.tax_treatment == null ? 'recomputed' : String(c.tax_treatment);
+  const resolvedTaxRegime = resolveTaxRegime({
+    taxMode: c.tax_mode,
+    taxRegime: c.tax_regime,
+    year: c.tax_year,
+  });
+  const baseActiveCds = base.active_cds || [];
+  validate(!!scenario, 'SCENARIO_REQUIRED', 'Cenário ausente.');
+  validate(
+    scenario?.company_id === companyId,
+    'COMPANY_MATCH',
+    'O cenário não pertence à empresa selecionada.'
+  );
+  validate(
+    scenario?.base_scenario_id === base.scenario_id,
+    'BASELINE_MATCH',
+    'O cenário não usa o baseline correto.'
+  );
+  validate(
+    Array.isArray(c.active_cds) && c.active_cds.length > 0,
+    'ACTIVE_CD_REQUIRED',
+    'O cenário precisa ter pelo menos um CD ativo.'
+  );
+  validate(
+    (c.active_cds || []).every((cd) => baseActiveCds.some((baseCd) => sameCdLabel(baseCd, cd))),
+    'ACTIVE_CD_KNOWN',
+    'Todos os CDs ativos precisam existir no baseline.'
+  );
+  validate(
+    Number(c.freight_multiplier) > 0,
+    'FREIGHT_POSITIVE',
+    'Multiplicador de frete precisa ser maior que zero.'
+  );
+  validate(
+    Number(c.demand_multiplier) > 0,
+    'DEMAND_POSITIVE',
+    'Multiplicador de demanda precisa ser maior que zero.'
+  );
+  validate(
+    Number(c.inventory_days) >= 0,
+    'INVENTORY_NON_NEGATIVE',
+    'Dias de estoque não podem ser negativos.'
+  );
+  validate(
+    Number(c.wacc) >= 0,
+    'WACC_NON_NEGATIVE',
+    'A taxa anual de carregamento do estoque não pode ser negativa.'
+  );
+  validate(Boolean(resolvedTaxRegime), 'TAX_MODE_VALID', 'Modo tributário inválido.');
+  validate(
+    VALID_TAX_TREATMENTS.has(taxTreatment),
+    'TAX_TREATMENT_VALID',
+    'Tratamento do tributo no cenário inválido.'
+  );
+  const taxModeCandidate = String(c.tax_mode || resolveTaxModeForRegime(resolvedTaxRegime));
+  validate(
+    !rawTaxMode || VALID_TAX_MODES.has(taxModeCandidate),
+    'TAX_MODE_KNOWN',
+    'Modo tributário inválido.'
+  );
+  validate(
+    !rawTaxRegime || VALID_TAX_REGIMES.has(rawTaxRegime),
+    'TAX_REGIME_VALID',
+    'Regime tributário inválido.'
+  );
+  if (taxTreatment === 'fixed_baseline') {
+    validate(
+      taxModeCandidate === 'current' && resolvedTaxRegime === 'current',
+      'FIXED_BASELINE_TAX_CURRENT_REGIME_ONLY',
+      'Tributo fixo do baseline só pode ser usado em comparações do regime atual; reforma ou tributo desligado exige recálculo próprio.'
+    );
+    const rawBaselineTax = baselineBundle?.costs?.costs?.tax_impact;
+    const baselineTaxDetails = baselineBundle?.tax_results?.tax_results || {};
+    const baselineRegime = String(
+      baselineTaxDetails.tax_regime ||
+        baselineBundle?.model?.tax_regime ||
+        'current'
+    );
+    const hasBaselineTax =
+      typeof rawBaselineTax === 'number' ||
+      (typeof rawBaselineTax === 'string' && rawBaselineTax.trim() !== '');
+    const baselineTax = hasBaselineTax ? Number(rawBaselineTax) : NaN;
+    validate(
+      Number.isFinite(baselineTax) && baselineTax >= 0,
+      'FIXED_BASELINE_TAX_VALUE_REQUIRED',
+      'Tributo fixo exige tax_impact numérico, não vazio, finito e não negativo no baseline.'
+    );
+    validate(
+      baselineRegime === 'current',
+      'FIXED_BASELINE_TAX_BASELINE_CURRENT_REGIME_ONLY',
+      'Tributo fixo do baseline exige referência tributária do regime atual.'
+    );
+  }
+  validate(
+    VALID_REALLOCATION.has(String(c.reallocation_rule || 'nearest_available_cd')),
+    'REALLOCATION_RULE_VALID',
+    'Regra de realocação inválida.'
+  );
+  if ((c.closed_cds || []).length) {
+    warnings.push({
+      code: 'REALLOCATION_REQUIRED',
+      severity: 'warning',
+      message: 'Um ou mais CDs foram fechados; fluxos serão realocados.',
+    });
+  }
+  if ((c.active_cds || []).length === 1) {
+    warnings.push({
+      code: 'SINGLE_CD_CONCENTRATION',
+      severity: 'warning',
+      message: 'Cenário com um único CD pode concentrar risco operacional.',
+    });
+  }
+  checks.push({
+    check: 'basic_structure',
+    status: errors.length ? 'failed' : 'passed',
+    severity: errors.length ? 'error' : 'ok',
+    message: errors.length ? 'Corrigir erros antes de simular.' : 'Estrutura mínima válida.',
+  });
+  return {
+    scenario_id: scenario?.scenario_id,
+    valid: errors.length === 0,
+    severity: errors.length ? 'error' : warnings.length ? 'warning' : 'ok',
+    errors,
+    warnings,
+    checks,
+    validation_summary: {
+      active_cds_count: (c.active_cds || []).length,
+      closed_cds_count: (c.closed_cds || []).length,
+      requires_reallocation: (c.closed_cds || []).length > 0,
+    },
+  };
+}
