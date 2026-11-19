@@ -1,0 +1,61 @@
+{
+  "company_id": "empresa_mock",
+  "release_policy": "demo_only",
+  "provenance": {
+    "provider_kind": "mock",
+    "source": "public_demo_fixture",
+    "synthetic": true
+  },
+  "objective": {
+    "objective_id": "mock_balanced_demo",
+    "objective_name": "Perfil balanceado demonstrativo",
+    "company_id": "empresa_mock",
+    "weights": {
+      "total_cost": 0.3,
+      "service_quality": 0.25,
+      "operational_risk": 0.2,
+      "tax_impact": 0.15,
+      "inventory_efficiency": 0.1
+    }
+  },
+  "optimizer": {
+    "optimizer_status": "success_with_limited_space",
+    "result_scope": "demo_fixture",
+    "search_log": {
+      "method_applied": "fixture",
+      "exact_search_space": false,
+      "coverage_ratio": 1,
+      "best_scenario_id": "mock_consolidation"
+    },
+    "best_scenarios": [
+      {
+        "scenario_id": "mock_consolidation",
+        "scenario_name": "Consolidação demonstrativa",
+        "final_score": 82,
+        "rank": 1,
+        "decision_use": "demo_only"
+      },
+      {
+        "scenario_id": "mock_regional_balance",
+        "scenario_name": "Balanceamento regional demonstrativo",
+        "final_score": 79,
+        "rank": 2,
+        "decision_use": "demo_only"
+      },
+      {
+        "scenario_id": "mock_tax_reform",
+        "scenario_name": "Transição tributária demonstrativa",
+        "final_score": 74,
+        "rank": 3,
+        "decision_use": "demo_only"
+      },
+      {
+        "scenario_id": "mock_service_resilience",
+        "scenario_name": "Resiliência de serviço demonstrativa",
+        "final_score": 65,
+        "rank": 4,
+        "decision_use": "demo_only"
+      }
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+import {
+  resolveTaxRegime,
+  resolveTaxModeForRegime,
+  taxRegimeLabel,
+} from '../core/tax-reform-config.js';
+import { sameCdLabel } from '../core/cd-utils.js';
+import { MODEL_DEFAULTS } from '../core/model-configuration.js';
+function slugify(value) {
+  return (
+    String(value || 'cenario')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 72) || 'cenario'
+  );
+}
+function unique(arr) {
+  return Array.from(
+    new Set((arr || []).filter((v) => v !== null && v !== undefined && String(v).trim() !== ''))
+  );
+}
+export function createScenarioId(companyId, name) {
+  return `${companyId}_${slugify(name)}_${Date.now().toString(36)}`;
+}
+export function deriveClosedCds(baseCds, activeCds) {
+  const active = activeCds || [];
+  return (baseCds || []).filter((cd) => !active.some((item) => sameCdLabel(item, cd)));
+}
+export function sanitizeScenarioName(name) {
+  const clean = String(name || '').trim();
+  return clean || 'Cenário customizado';
+}
+export function buildScenarioFromForm({
+  companyId,
+  baselineBundle,
+  formValues = {},
+  scenarioId = null,
+}) {
+  const base = baselineBundle?.model || {};
+  const baseCds = base.active_cds || [];
+  const requested = unique(formValues.active_cds || baseCds);
+  const scenarioName = sanitizeScenarioName(formValues.scenario_name);
+  const taxMode = String(formValues.tax_mode || 'current');
+  const taxRegime = resolveTaxRegime({
+    taxMode,
+    taxRegime: formValues.tax_regime,
+    year: formValues.tax_year,
+  });
+  const changes = {
+    active_cds: requested,
+    closed_cds: deriveClosedCds(baseCds, requested),
+    freight_multiplier: Number(formValues.freight_multiplier ?? 1),
+    demand_multiplier: Number(formValues.demand_multiplier ?? 1),
+    inventory_days: Number(formValues.inventory_days ?? MODEL_DEFAULTS.inventory_days),
+    wacc: Number(formValues.wacc ?? MODEL_DEFAULTS.reference_wacc),
+    tax_mode: taxMode,
+    tax_regime: taxRegime,
+    tax_regime_label: taxRegimeLabel(taxRegime),
+    reallocation_rule: String(formValues.reallocation_rule || 'nearest_available_cd'),
+  };
+  if (formValues.tax_year != null) {
+    changes.tax_year = Number(formValues.tax_year);
+  }
+  if (formValues.tax_treatment != null) {
+    changes.tax_treatment = String(formValues.tax_treatment);
+  }
+  return {
+    scenario_id: scenarioId || createScenarioId(companyId, scenarioName),
+    scenario_name: scenarioName,
+    company_id: companyId,
+    base_scenario_id: base.scenario_id,
+    scenario_type: formValues.scenario_type || 'manual',
+    changes,
+    scenario_ready: true,
+    metadata: {
+      phase: 3,
+      source: 'ScenarioBuilder',
+      created_at: 'browser_runtime',
+      tax_mode: resolveTaxModeForRegime(taxRegime),
+      tax_regime: taxRegime,
+    },
+    warnings: [],
+    errors: [],
+  };
+}
