@@ -4,765 +4,765 @@
     {
       "path": "index.html",
       "bytes": 587,
-      "sha256": "e745e93e6469e0fde84b489c953b65c758d8dffc4da7939f7c0c0ea21ec224d6"
+      "sha256": "8bb8c60a783962e0e9364349035b6143e2c59ccda630fc497a4f26a152b47849"
     },
     {
-      "path": "releases/20261119c/assets/icons/bootstrap-icons/LICENSE",
+      "path": "releases/20261119d/assets/icons/bootstrap-icons/LICENSE",
       "bytes": 1093,
       "sha256": "0fb3e11bd57e896c5a512afd64864d28a37de45d19835016c87ca1ad19ead969"
     },
     {
-      "path": "releases/20261119c/assets/icons/bootstrap-icons/diagram-3.svg",
+      "path": "releases/20261119d/assets/icons/bootstrap-icons/diagram-3.svg",
       "bytes": 993,
       "sha256": "d48107b77d139e2c6f71354a3a0bb9b9a9314c51e2b606932082ee51d580a9ae"
     },
     {
-      "path": "releases/20261119c/assets/icons/bootstrap-icons/gear.svg",
+      "path": "releases/20261119d/assets/icons/bootstrap-icons/gear.svg",
       "bytes": 1507,
       "sha256": "0f480fcb1400c05fe3eb44006e3effd5d4c6c35402b045f8fa5529afc033b62a"
     },
     {
-      "path": "releases/20261119c/assets/icons/bootstrap-icons/question-circle.svg",
+      "path": "releases/20261119d/assets/icons/bootstrap-icons/question-circle.svg",
       "bytes": 715,
       "sha256": "6ec0095139e8e6f35e47d4de1968846d57f3006a0d3074651637e0bcc80c8c9c"
     },
     {
-      "path": "releases/20261119c/assets/icons/bootstrap-icons/shield-check.svg",
+      "path": "releases/20261119d/assets/icons/bootstrap-icons/shield-check.svg",
       "bytes": 1064,
       "sha256": "42ff8c3f4a4df2a6593c53ddbc0cb0137c865ae62389f55b219da881e6d95c0e"
     },
     {
-      "path": "releases/20261119c/assets/icons/bootstrap-icons/sliders.svg",
+      "path": "releases/20261119d/assets/icons/bootstrap-icons/sliders.svg",
       "bytes": 485,
       "sha256": "38986f0874b63e3a34e5f489a39b23579f31cbd0c43b79d17e95b50312ac21fc"
     },
     {
-      "path": "releases/20261119c/assets/icons/bootstrap-icons/speedometer2.svg",
+      "path": "releases/20261119d/assets/icons/bootstrap-icons/speedometer2.svg",
       "bytes": 866,
       "sha256": "aa49f93d592c5938b9395ea8bae7a56d313f4333634daa9d9b4fc6428546f73a"
     },
     {
-      "path": "releases/20261119c/assets/js/app/analysis-actions.js",
+      "path": "releases/20261119d/assets/js/app/analysis-actions.js",
       "bytes": 4461,
       "sha256": "50ad561add600849636ef166bef99d5813f3b05dd9194eb1d75e530584c51045"
     },
     {
-      "path": "releases/20261119c/assets/js/app/bindings.js",
+      "path": "releases/20261119d/assets/js/app/bindings.js",
       "bytes": 11602,
       "sha256": "9ca12cf764dc836e407b74c2d48e09a5e3c884930d0dd1525c054776b6350bf5"
     },
     {
-      "path": "releases/20261119c/assets/js/app/chart-pipeline.js",
+      "path": "releases/20261119d/assets/js/app/chart-pipeline.js",
       "bytes": 1261,
       "sha256": "5052a10b6cf95bc068cd02a904770b59dc2c687c6e72d9834ea011ec475e297a"
     },
     {
-      "path": "releases/20261119c/assets/js/app/charts/brazil-map-data.js",
+      "path": "releases/20261119d/assets/js/app/charts/brazil-map-data.js",
       "bytes": 106821,
       "sha256": "567cff86a26a62c0873e89d96600d3768f85c5b0aa4a4037fe9e28b4ffdb2269"
     },
     {
-      "path": "releases/20261119c/assets/js/app/charts/charts.js",
+      "path": "releases/20261119d/assets/js/app/charts/charts.js",
       "bytes": 19106,
       "sha256": "862944b9c84e4c39729cd6e157098268f34b81fc73706e3ff284b9514864e2d5"
     },
     {
-      "path": "releases/20261119c/assets/js/app/charts/decision-analytics.js",
+      "path": "releases/20261119d/assets/js/app/charts/decision-analytics.js",
       "bytes": 8609,
       "sha256": "d480c76644e756236bc2fce9f2b53fa3dbf14a3ee0a56daa4b70a348c3c5dce2"
     },
     {
-      "path": "releases/20261119c/assets/js/app/charts/overview-analytics.js",
+      "path": "releases/20261119d/assets/js/app/charts/overview-analytics.js",
       "bytes": 17329,
       "sha256": "1788fd3cf529cabd27be89b21e9727cec3ff4dd8fee0a697da71d16ac3f44961"
     },
     {
-      "path": "releases/20261119c/assets/js/app/charts/trust-analytics.js",
+      "path": "releases/20261119d/assets/js/app/charts/trust-analytics.js",
       "bytes": 3829,
       "sha256": "c967b395cbf05b3e3181846f9901cbbc2d5b4080ea6392f695c936a215e6ea89"
     },
     {
-      "path": "releases/20261119c/assets/js/app/company-registry.js",
+      "path": "releases/20261119d/assets/js/app/company-registry.js",
       "bytes": 1258,
       "sha256": "cb6badf90068b1494f6855073dd85a80aca8c62602b3e03de20ea3e454e36c7f"
     },
     {
-      "path": "releases/20261119c/assets/js/app/config.js",
+      "path": "releases/20261119d/assets/js/app/config.js",
       "bytes": 1134,
       "sha256": "d206c6b8427063afead589f862bbfd3097589fe16647805ef4b4135cf2cd25fa"
     },
     {
-      "path": "releases/20261119c/assets/js/app/cost-components.js",
+      "path": "releases/20261119d/assets/js/app/cost-components.js",
       "bytes": 376,
       "sha256": "e3c80719e3a6d3a9782ae613485a1c9598e963db50b34de3259d9bd9dfa5e413"
     },
     {
-      "path": "releases/20261119c/assets/js/app/dev/dev-console.js",
+      "path": "releases/20261119d/assets/js/app/dev/dev-console.js",
       "bytes": 3455,
       "sha256": "da9e20bc4ff8b0025726cae68b75276598670b3ee2fbc15ab9671a2e1afea0ae"
     },
     {
-      "path": "releases/20261119c/assets/js/app/form-values.js",
+      "path": "releases/20261119d/assets/js/app/form-values.js",
       "bytes": 6793,
       "sha256": "96e6c67eb1be5d160167d49d6e05d8794ee1a3bbfabf9b65a85b99219c63a705"
     },
     {
-      "path": "releases/20261119c/assets/js/app/main.css",
+      "path": "releases/20261119d/assets/js/app/main.css",
       "bytes": 59952,
       "sha256": "9a7032e7337840e29f13c777294dceb8d6f699a4a23efa50de0cd49c1264345a"
     },
     {
-      "path": "releases/20261119c/assets/js/app/main.js",
+      "path": "releases/20261119d/assets/js/app/main.js",
       "bytes": 15833,
       "sha256": "de273cba503e3aa200f5b35dcf2c13b646490ac1632828e2fd9fc734dbafd19d"
     },
     {
-      "path": "releases/20261119c/assets/js/app/metric-registry.js",
+      "path": "releases/20261119d/assets/js/app/metric-registry.js",
       "bytes": 3258,
       "sha256": "ced1d05e9f77cf88b26b48956b2565385805411df3811f9f745291173e65f647"
     },
     {
-      "path": "releases/20261119c/assets/js/app/operation-guard.js",
+      "path": "releases/20261119d/assets/js/app/operation-guard.js",
       "bytes": 1506,
       "sha256": "b60877acddfb421dd0055dd3199f78de1e6c222dee139ac771e74dc0c38b3e1b"
     },
     {
-      "path": "releases/20261119c/assets/js/app/pages/optimizer.js",
+      "path": "releases/20261119d/assets/js/app/pages/optimizer.js",
       "bytes": 22234,
       "sha256": "a34636377a48f8a8860b5dcb9149d63f15cafd5fe8f0435d30089fb4a06c9b08"
     },
     {
-      "path": "releases/20261119c/assets/js/app/pages/overview.js",
+      "path": "releases/20261119d/assets/js/app/pages/overview.js",
       "bytes": 15932,
       "sha256": "6f143d70dc1f61dfa04854c4a11b528b375ff04bbf09cc39cc6d775e7e34bd36"
     },
     {
-      "path": "releases/20261119c/assets/js/app/pages/scenarios.js",
+      "path": "releases/20261119d/assets/js/app/pages/scenarios.js",
       "bytes": 44664,
       "sha256": "0eae4835501c6e866be2cdb9f5378c2ba54530b0fb538d46d46f5efa8a0c14ce"
     },
     {
-      "path": "releases/20261119c/assets/js/app/pages/trust.js",
+      "path": "releases/20261119d/assets/js/app/pages/trust.js",
       "bytes": 14237,
       "sha256": "dcf149aeddb0ebcdc525dcb1f7d78f951e45d54682d1819feac30405703e8578"
     },
     {
-      "path": "releases/20261119c/assets/js/app/presentation/status.js",
+      "path": "releases/20261119d/assets/js/app/presentation/status.js",
       "bytes": 3276,
       "sha256": "96d10c010db833a8dd911a6277e422dc0570588c3f2f3080dcb50670cf190055"
     },
     {
-      "path": "releases/20261119c/assets/js/app/providers/mock-provider.js",
+      "path": "releases/20261119d/assets/js/app/providers/mock-provider.js",
       "bytes": 9916,
       "sha256": "e414ba6468e128f723bacd8508ec0e09642bcf5c9cec02503e3dd161b8ad8048"
     },
     {
-      "path": "releases/20261119c/assets/js/app/providers/provider-contract.js",
+      "path": "releases/20261119d/assets/js/app/providers/provider-contract.js",
       "bytes": 1247,
       "sha256": "d828fc9c3ea2912d9c2d6ba39edd5708fb1b8e6c65deca37ebb5b687053f3006"
     },
     {
-      "path": "releases/20261119c/assets/js/app/route-renderers.js",
+      "path": "releases/20261119d/assets/js/app/route-renderers.js",
       "bytes": 1708,
       "sha256": "cbbd94031189bea0bcd925f8450b304c41bcdcd0a0447ae81b995c9eb76ee64a"
     },
     {
-      "path": "releases/20261119c/assets/js/app/router.js",
+      "path": "releases/20261119d/assets/js/app/router.js",
       "bytes": 4429,
       "sha256": "9ca1255a13b612b03079f62937baf341834aa921e999981a64d727ba42109854"
     },
     {
-      "path": "releases/20261119c/assets/js/app/scenario-actions.js",
+      "path": "releases/20261119d/assets/js/app/scenario-actions.js",
       "bytes": 9850,
       "sha256": "2b1519be78247b3d4c3aa63fe67c4f8ff694cace9bf29c6fddc351e746bee290"
     },
     {
-      "path": "releases/20261119c/assets/js/app/selectors/business-selectors.js",
+      "path": "releases/20261119d/assets/js/app/selectors/business-selectors.js",
       "bytes": 2556,
       "sha256": "75769648bdde9d0aa4b45e3023db793f3c5594e73be94d52d16b96d4c9817809"
     },
     {
-      "path": "releases/20261119c/assets/js/app/services/decision-service.js",
+      "path": "releases/20261119d/assets/js/app/services/decision-service.js",
       "bytes": 7606,
       "sha256": "8f6a062af05e6591abfdcf133cfda7afcca81806493c19f443b896753931354c"
     },
     {
-      "path": "releases/20261119c/assets/js/app/services/risk-service.js",
+      "path": "releases/20261119d/assets/js/app/services/risk-service.js",
       "bytes": 278,
       "sha256": "63ca6979df88567661ce096aa4273a74fa6f395cdf981abe0da8b0a8e637fe49"
     },
     {
-      "path": "releases/20261119c/assets/js/app/shell.js",
-      "bytes": 8255,
-      "sha256": "8ffca1bfad7c55a819fad2947cbdff1790bf9f2a519309489127f0bbd0fb13d6"
+      "path": "releases/20261119d/assets/js/app/shell.js",
+      "bytes": 8402,
+      "sha256": "c8629f28e5adc5a8c00bd87b0a99ed10d5159e4405aa063226a289b96f5d67b8"
     },
     {
-      "path": "releases/20261119c/assets/js/app/state.js",
+      "path": "releases/20261119d/assets/js/app/state.js",
       "bytes": 5855,
       "sha256": "f53e44552c92cf2ab65a3e4d9852d304a5b905927269e61f8bf24c82150e87a1"
     },
     {
-      "path": "releases/20261119c/assets/js/app/view-helpers.js",
+      "path": "releases/20261119d/assets/js/app/view-helpers.js",
       "bytes": 3743,
       "sha256": "68072a82662dbbc2345f2aff5eca26d908be7bd50a5767318199791be12a75b0"
     },
     {
-      "path": "releases/20261119c/assets/js/core/analysis-quality.js",
+      "path": "releases/20261119d/assets/js/core/analysis-quality.js",
       "bytes": 2823,
       "sha256": "a7ba214c94d5a9f48ac5d968283640fff9b4b305202805a9ea8020ded537bdd7"
     },
     {
-      "path": "releases/20261119c/assets/js/core/baseline-contract.js",
+      "path": "releases/20261119d/assets/js/core/baseline-contract.js",
       "bytes": 1351,
       "sha256": "35d1a772f50b83a08cc18b4795cb7f9a7ebbb637377d3f59889b6026edb904dc"
     },
     {
-      "path": "releases/20261119c/assets/js/core/browser-storage.js",
+      "path": "releases/20261119d/assets/js/core/browser-storage.js",
       "bytes": 2058,
       "sha256": "ede155cf8b650c1bb8c00e8e3ab8aa83cd10a0ee29b336aa573caadc18fbc0a5"
     },
     {
-      "path": "releases/20261119c/assets/js/core/cd-utils.js",
+      "path": "releases/20261119d/assets/js/core/cd-utils.js",
       "bytes": 808,
       "sha256": "df8f95c2e2de7b9f324238679aef4823540516dcaa055d51676617d514f1d4c8"
     },
     {
-      "path": "releases/20261119c/assets/js/core/chart-renderer.js",
+      "path": "releases/20261119d/assets/js/core/chart-renderer.js",
       "bytes": 28434,
       "sha256": "75541e16ed3c178c52137cfafeb6880fdd51e0c23536736ff99a830ba90591be"
     },
     {
-      "path": "releases/20261119c/assets/js/core/common.js",
+      "path": "releases/20261119d/assets/js/core/common.js",
       "bytes": 2810,
       "sha256": "827f749ca20ddc2bdb2eceee917b8da16997abb04d1d55f28b5941d79b7167c1"
     },
     {
-      "path": "releases/20261119c/assets/js/core/company-context.js",
+      "path": "releases/20261119d/assets/js/core/company-context.js",
       "bytes": 745,
       "sha256": "ccb625059441d245c656683332f76c8650e2857bda56f18d9054e80483c9dd06"
     },
     {
-      "path": "releases/20261119c/assets/js/core/complements.js",
+      "path": "releases/20261119d/assets/js/core/complements.js",
       "bytes": 11400,
       "sha256": "14b28e4bfd75a63f59adbcca504a46af36833928128c0ea06fab2d4e5cd95cdd"
     },
     {
-      "path": "releases/20261119c/assets/js/core/crypto-session.js",
+      "path": "releases/20261119d/assets/js/core/crypto-session.js",
       "bytes": 7486,
       "sha256": "af40a09455e667b5b9efd9c302a589d533fe6df8b70fba1cd4c0dfe486fdd14c"
     },
     {
-      "path": "releases/20261119c/assets/js/core/data-decryptor.js",
+      "path": "releases/20261119d/assets/js/core/data-decryptor.js",
       "bytes": 2857,
       "sha256": "0aca02e5821ffa6fecf685f03184381782b7b7e9278380877250b47e279f095c"
     },
     {
-      "path": "releases/20261119c/assets/js/core/data-loader.js",
+      "path": "releases/20261119d/assets/js/core/data-loader.js",
       "bytes": 6910,
       "sha256": "d7e8638cfa410da9a4edf31202d2434a42185aaf36b253504bc4109b9e427e6d"
     },
     {
-      "path": "releases/20261119c/assets/js/core/debug-tools.js",
+      "path": "releases/20261119d/assets/js/core/debug-tools.js",
       "bytes": 6805,
       "sha256": "b15f50e69bec52e25db77233b2700055eb637c6e52fc9fee5120a1e88cacb204"
     },
     {
-      "path": "releases/20261119c/assets/js/core/evidence-quality-engine.js",
+      "path": "releases/20261119d/assets/js/core/evidence-quality-engine.js",
       "bytes": 10889,
       "sha256": "0db3c261526eb36c78bbd07167737b21e71028f27575d736d1d3f9f76d3fd02f"
     },
     {
-      "path": "releases/20261119c/assets/js/core/geo-utils.js",
+      "path": "releases/20261119d/assets/js/core/geo-utils.js",
       "bytes": 747,
       "sha256": "7b9468427652c61243c53d29124cccc0d061b888254775616a367292cdb812ed"
     },
     {
-      "path": "releases/20261119c/assets/js/core/model-configuration.js",
+      "path": "releases/20261119d/assets/js/core/model-configuration.js",
       "bytes": 5988,
       "sha256": "c6c1a50a3c23588f89250770d8b6cf390252b12f040bfeef5b66606d6a831b9a"
     },
     {
-      "path": "releases/20261119c/assets/js/core/optimization-config-store.js",
+      "path": "releases/20261119d/assets/js/core/optimization-config-store.js",
       "bytes": 513,
       "sha256": "769fdace23f8777d8279347d13de8058fa5d6de2ca6c720b318522321e4c171d"
     },
     {
-      "path": "releases/20261119c/assets/js/core/optimization-policy.js",
+      "path": "releases/20261119d/assets/js/core/optimization-policy.js",
       "bytes": 1173,
       "sha256": "cb6aa17b6b979cccef53aef89f400b93f1ac1a11e9691e69f148943e5d107bda"
     },
     {
-      "path": "releases/20261119c/assets/js/core/project-paths.js",
+      "path": "releases/20261119d/assets/js/core/project-paths.js",
       "bytes": 494,
       "sha256": "40300892986cdb3f129404c5ef44f528c433ba8992693c8ed36bf9863c0033f2"
     },
     {
-      "path": "releases/20261119c/assets/js/core/reconciliation-engine.js",
+      "path": "releases/20261119d/assets/js/core/reconciliation-engine.js",
       "bytes": 5038,
       "sha256": "28277a05ba8c155f92ddac5a3e9eab0dd3631be686fe79d52f0efb1807edce2d"
     },
     {
-      "path": "releases/20261119c/assets/js/core/runtime-bundle-contract.js",
+      "path": "releases/20261119d/assets/js/core/runtime-bundle-contract.js",
       "bytes": 998,
       "sha256": "6402c060ef3d9521c256dd6e2c04ca222876fc265bc97dcf826a31c2097f3aaf"
     },
     {
-      "path": "releases/20261119c/assets/js/core/runtime-env.js",
+      "path": "releases/20261119d/assets/js/core/runtime-env.js",
       "bytes": 383,
       "sha256": "a215ecf0d571945f7a3abeaf8b1877d3d941e7121d45571039e8622e79648e56"
     },
     {
-      "path": "releases/20261119c/assets/js/core/runtime-warning.js",
+      "path": "releases/20261119d/assets/js/core/runtime-warning.js",
       "bytes": 165,
       "sha256": "2c65127211cb3e8de33b7f0100ac67268c9010c46a2c5da7478cb0edcd4abd45"
     },
     {
-      "path": "releases/20261119c/assets/js/core/scenario-summary.js",
+      "path": "releases/20261119d/assets/js/core/scenario-summary.js",
       "bytes": 2945,
       "sha256": "e522ae65b055f69d9d2f74e483058b13c920d25bc201654362e9f22456a56c03"
     },
     {
-      "path": "releases/20261119c/assets/js/core/tax-reform-config.js",
+      "path": "releases/20261119d/assets/js/core/tax-reform-config.js",
       "bytes": 15798,
       "sha256": "c3f8d4443f2fe7b99c2e2d946f2f5444f19527a1a72ae2c22a89e3f4859a4b6d"
     },
     {
-      "path": "releases/20261119c/assets/js/core/tax/current-tax-engine.js",
+      "path": "releases/20261119d/assets/js/core/tax/current-tax-engine.js",
       "bytes": 9116,
       "sha256": "696f94d797cc274efe538e7f4e217fb9ecd527925a41e3d58eba66de14157305"
     },
     {
-      "path": "releases/20261119c/assets/js/core/tax/fiscal-category-rules.js",
+      "path": "releases/20261119d/assets/js/core/tax/fiscal-category-rules.js",
       "bytes": 1523,
       "sha256": "8104ab39733e571e8a9689edda626b61fac55fa2505b698400c6200720a2a37c"
     },
     {
-      "path": "releases/20261119c/assets/js/core/tax/fiscal-flow-builder.js",
+      "path": "releases/20261119d/assets/js/core/tax/fiscal-flow-builder.js",
       "bytes": 5585,
       "sha256": "6610564e5bb6f33e207a52188d6c01e55d537cfa9a9f9f737da171df69309900"
     },
     {
-      "path": "releases/20261119c/assets/js/core/tax/reform-tax-engine.js",
+      "path": "releases/20261119d/assets/js/core/tax/reform-tax-engine.js",
       "bytes": 3941,
       "sha256": "765b6e2df7021d3d24d7e67a9eebc85915635b22cae8fbb0c84ea8c720ea78b2"
     },
     {
-      "path": "releases/20261119c/assets/js/core/tax/tax-orchestrator.js",
+      "path": "releases/20261119d/assets/js/core/tax/tax-orchestrator.js",
       "bytes": 16681,
       "sha256": "285de971e901358c237ad7c16c0d85740feb94d4732454f8e4e9cdaca86bf72a"
     },
     {
-      "path": "releases/20261119c/assets/js/core/tax/tax-period-contract.js",
+      "path": "releases/20261119d/assets/js/core/tax/tax-period-contract.js",
       "bytes": 6929,
       "sha256": "8785fdb3ee24e5f7c9bf0bcd1639badeeae17f64fdbc79c988ad7d3c27720109"
     },
     {
-      "path": "releases/20261119c/assets/js/core/tax/tax-quality-gate.js",
+      "path": "releases/20261119d/assets/js/core/tax/tax-quality-gate.js",
       "bytes": 5389,
       "sha256": "0507c7a7ae710a8cb94f0bcc8dcd9160fb991cf0078dcd57117b4ca10e05a39d"
     },
     {
-      "path": "releases/20261119c/assets/js/core/tax/tax-reform-parameters.js",
+      "path": "releases/20261119d/assets/js/core/tax/tax-reform-parameters.js",
       "bytes": 1893,
       "sha256": "7a8f935dca68e0839b906c556080be852891b83af6639b146ae3e2f13f6ce142"
     },
     {
-      "path": "releases/20261119c/assets/js/core/tax/transition-tax-engine.js",
+      "path": "releases/20261119d/assets/js/core/tax/transition-tax-engine.js",
       "bytes": 3159,
       "sha256": "26ffd6fbd61e382556c054a0c97430efe8a1bfe5c51ad0c68728bdafa43c90b1"
     },
     {
-      "path": "releases/20261119c/assets/js/phase1/csv-parser.js",
+      "path": "releases/20261119d/assets/js/phase1/csv-parser.js",
       "bytes": 1282,
       "sha256": "b1864071e41ff20f4cd1f714f348a364cafea9a69a49c1ae074a30d8f357c72e"
     },
     {
-      "path": "releases/20261119c/assets/js/phase1/main.js",
+      "path": "releases/20261119d/assets/js/phase1/main.js",
       "bytes": 30858,
       "sha256": "d5cc8d634d7ff09528d40f35759ba80283cd4f313984d293b2c6e0e857437911"
     },
     {
-      "path": "releases/20261119c/assets/js/phase1/table-view.js",
+      "path": "releases/20261119d/assets/js/phase1/table-view.js",
       "bytes": 1081,
       "sha256": "a46e54a354d5630fbf3f81170f553afdc07800862740690441f1da19db426f9c"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/base-fit-score.js",
+      "path": "releases/20261119d/assets/js/phase2/base-fit-score.js",
       "bytes": 434,
       "sha256": "911879ba9a3af9d904f79b0d0ca4e53cc621acf982c186dd196720d50869bd2c"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/baseline-builder.js",
+      "path": "releases/20261119d/assets/js/phase2/baseline-builder.js",
       "bytes": 1259,
       "sha256": "47a5899a8fbf458cdef07d673a66a3f942a35d733199f54103765c364b477c4b"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/baseline-checks.js",
+      "path": "releases/20261119d/assets/js/phase2/baseline-checks.js",
       "bytes": 2655,
       "sha256": "99c1635f93b1e226336fe99f10e6a2ffa56ca645992a80ef01b751c7fc4814a8"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/baseline-dashboard.js",
+      "path": "releases/20261119d/assets/js/phase2/baseline-dashboard.js",
       "bytes": 9467,
       "sha256": "3e2155855a8c1c39372b12ebc06bb75ca97b393f8ab6e54d2d22febeae2baf81"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/baseline-data-adapter.js",
+      "path": "releases/20261119d/assets/js/phase2/baseline-data-adapter.js",
       "bytes": 1174,
       "sha256": "9cc60e23dcc2e25034966dc7125c17565e11a0fe4f8871922e8dace1e9f52ae8"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/baseline-deriver.js",
+      "path": "releases/20261119d/assets/js/phase2/baseline-deriver.js",
       "bytes": 9406,
       "sha256": "13f03c9c41e2eef530bfe5405d03b0600b0c5b01c687f5606e9982a65ecdf63a"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/calibration-panel.js",
+      "path": "releases/20261119d/assets/js/phase2/calibration-panel.js",
       "bytes": 4429,
       "sha256": "8dee2d6f67c0f06f11f737fdfb7bd096ad85e9838a13189a42a641ef82b6a5fe"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/charts.js",
+      "path": "releases/20261119d/assets/js/phase2/charts.js",
       "bytes": 2242,
       "sha256": "3bb4e132980fde74412fac42eb2d05300dd0dc53be76a9c1892e03e23da727cc"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/cost-engine.js",
+      "path": "releases/20261119d/assets/js/phase2/cost-engine.js",
       "bytes": 497,
       "sha256": "879032fd9fb719d34e962a0409142be85c5ca3ba15cbac78ad4b008e8c5d814a"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/flow-builder.js",
+      "path": "releases/20261119d/assets/js/phase2/flow-builder.js",
       "bytes": 1151,
       "sha256": "595e4199dceef0d65af2645d683a9d1a5df0f9c4cfb75ca0969d80b0f4f51286"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/main.js",
+      "path": "releases/20261119d/assets/js/phase2/main.js",
       "bytes": 8026,
       "sha256": "e81ec7813b14af07899070ecc93ce3747ca2407f8571ade64f212ab509e55219"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/manual-checklist.js",
+      "path": "releases/20261119d/assets/js/phase2/manual-checklist.js",
       "bytes": 2789,
       "sha256": "c562dc606c6fef4adddcd15c30164cc01994bf00397c824d6ed8d892fb9950db"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/reference-result-extractor.js",
+      "path": "releases/20261119d/assets/js/phase2/reference-result-extractor.js",
       "bytes": 1252,
       "sha256": "5155d9a10bb76aa0bbaf7076a4bc7cf0271ee099ec14af29611a20bee55c386d"
     },
     {
-      "path": "releases/20261119c/assets/js/phase2/tax-engine-basic.js",
+      "path": "releases/20261119d/assets/js/phase2/tax-engine-basic.js",
       "bytes": 1369,
       "sha256": "14a83266d06407bebfd2b435e6eb399a5231e3a5a39ebfc1588866f07a3e6928"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/charts.js",
+      "path": "releases/20261119d/assets/js/phase3/charts.js",
       "bytes": 5463,
       "sha256": "60dfd25fe4cfd4316c7e6af70022c12d9d32fa58a3123eee1e717f46a48392d1"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/main.js",
+      "path": "releases/20261119d/assets/js/phase3/main.js",
       "bytes": 2086,
       "sha256": "7c3f189579026fbb720571227ee671e62d3701ce762a11a1025aedaed2ef56e6"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/monte-carlo-engine.js",
+      "path": "releases/20261119d/assets/js/phase3/monte-carlo-engine.js",
       "bytes": 32903,
       "sha256": "7df033c58a376859ab198511bddb3ff2786282d598f5ecd16f3ae66f1caf7d1f"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/physical-cost-engine.js",
+      "path": "releases/20261119d/assets/js/phase3/physical-cost-engine.js",
       "bytes": 29512,
       "sha256": "4316da8712b430ee37017f8716878ff6e0be5f57d809114b7ad32cd494c206b5"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-arena-dashboard.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-arena-dashboard.js",
       "bytes": 28173,
       "sha256": "6007d3692d15841772bca5ee951c162223185023cd8f6af8fbc3d7a7ad9674e1"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-arena/comparison-view.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-arena/comparison-view.js",
       "bytes": 5460,
       "sha256": "90ee4c625482dad0b89e5a8646d27f0149ff7976b6e453d2ffe91c83163ab3b3"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-arena/library-comparison.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-arena/library-comparison.js",
       "bytes": 2567,
       "sha256": "21e2e20e94cc240b4aede6fef96a568e695595295b1f693ae79766093128b4aa"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-arena/library-view.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-arena/library-view.js",
       "bytes": 3576,
       "sha256": "c5d84d8c6f6cb30c1b0cc6b17a72d93aef7f07dbc7311784668867746d3f2fb9"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-arena/monte-carlo-view.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-arena/monte-carlo-view.js",
       "bytes": 7632,
       "sha256": "e744a14d84cdc4c1d28bd1af73e451141a508ee532ab8cf2a7e2def819a62f48"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-builder.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-builder.js",
       "bytes": 2883,
       "sha256": "74a1cfe1bd379d219ee00bf8cd08e71484ecf899016a0932aec352e415cceb7f"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-change-explainer.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-change-explainer.js",
       "bytes": 2551,
       "sha256": "a499b7fbf048d589865e27939875049ac7c76b3136933eee67ca482096c3e7a6"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-comparator.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-comparator.js",
       "bytes": 4046,
       "sha256": "738d0dfeba5e680727f139c86fe733bf936d75219768e5162f3dc15857fde752"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-flow-rebuilder.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-flow-rebuilder.js",
       "bytes": 5967,
       "sha256": "7aede2750ec995dfe178ecd716c8baf79e89dc2e51928e3bfdebae03afbb76c2"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-import-export.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-import-export.js",
       "bytes": 1436,
       "sha256": "7e7e3df176745c5f0c517af7f9eaf20917162519f75616e18f76e00fcfb30eee"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-library.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-library.js",
       "bytes": 1453,
       "sha256": "2cde587e3300177b40804e5452795bef571b1cdc4c1f330bf44b6e609cc39043"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-persistence.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-persistence.js",
       "bytes": 1091,
       "sha256": "29dc7fc2bc25cad7c2b507b831aa5531609a178d96cbea507fb84d43783c11b6"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-quality-check.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-quality-check.js",
       "bytes": 2806,
       "sha256": "39372d42b6d6caf2a456f652631f4b3aa0584ca764a74fdd88bb7de4b8db5d41"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-simulator.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-simulator.js",
       "bytes": 17191,
       "sha256": "e4f1aa435a506d4e3e96dfdab1a0176e90b5fd88e55b40bae000572f74e81788"
     },
     {
-      "path": "releases/20261119c/assets/js/phase3/scenario-validator.js",
+      "path": "releases/20261119d/assets/js/phase3/scenario-validator.js",
       "bytes": 6028,
       "sha256": "001e53f1051cb2492ee03e1fcd514da0b0279b0f06b8577f14c61cdefac1f070"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/candidate-scenario-generator.js",
+      "path": "releases/20261119d/assets/js/phase4/candidate-scenario-generator.js",
       "bytes": 6560,
       "sha256": "e9dcfa99eb4047b3b73e67bb24bf7af3ddb1b030b8a9ceba66500673a42604bf"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/charts.js",
+      "path": "releases/20261119d/assets/js/phase4/charts.js",
       "bytes": 1997,
       "sha256": "795b3a2821552879ad2f36e5304761af466c9eb7443f218648e402eb7540a508"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/constraint-engine.js",
+      "path": "releases/20261119d/assets/js/phase4/constraint-engine.js",
       "bytes": 3025,
       "sha256": "0a781b9a66131b63880d8adc109d619e5f0ab162da6e05f72aa0807e176667c9"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/main.js",
+      "path": "releases/20261119d/assets/js/phase4/main.js",
       "bytes": 674,
       "sha256": "226ddf282a4387fab9069ca380a05510076f163ab59d2c7144e6c7198af7886e"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/metric-normalizer.js",
+      "path": "releases/20261119d/assets/js/phase4/metric-normalizer.js",
       "bytes": 1940,
       "sha256": "ba2fbb0a71f3bca9c21694c1ebd35cbfc1f3a86d0f5b106f4e0e288c78ab881c"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/objective-builder.js",
+      "path": "releases/20261119d/assets/js/phase4/objective-builder.js",
       "bytes": 2002,
       "sha256": "f96ecef2536442821a1e700ae58843f984bd14bbb258e8770edece525b4488f8"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/objective-preview-view.js",
+      "path": "releases/20261119d/assets/js/phase4/objective-preview-view.js",
       "bytes": 389,
       "sha256": "0642b6514981154c10516f281cac5a20f03a6d40a9ccb0de10abdef6545eb7e6"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/objective-profile-library.js",
+      "path": "releases/20261119d/assets/js/phase4/objective-profile-library.js",
       "bytes": 2811,
       "sha256": "a887b0f4b49c228645dc91f9c2a9fb6353fc341b7a71b019dc881c4ece7466af"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/objective-validator.js",
+      "path": "releases/20261119d/assets/js/phase4/objective-validator.js",
       "bytes": 2157,
       "sha256": "6757498b316df3944a8b521d2f37d487108acbf08e1280eaa878de9c6bf6b891"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/optimization-sensitivity.js",
+      "path": "releases/20261119d/assets/js/phase4/optimization-sensitivity.js",
       "bytes": 4046,
       "sha256": "726e02fdd7eb765fa24368598a8457b89d52b793a7ac2b9069f09b801fad625e"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/optimizer-refinement.js",
+      "path": "releases/20261119d/assets/js/phase4/optimizer-refinement.js",
       "bytes": 3904,
       "sha256": "0abf660350a1a4d9075681d285c4b64bdb2c466b96cd2b35e07e38ccbe23a83d"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/optimizer-utils.js",
+      "path": "releases/20261119d/assets/js/phase4/optimizer-utils.js",
       "bytes": 6118,
       "sha256": "c6d202cbb6a91a85fef96c014d4fa7a4fc70de75c18a20e854f038033f45a7b6"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/phase4-dashboard-templates.js",
+      "path": "releases/20261119d/assets/js/phase4/phase4-dashboard-templates.js",
       "bytes": 7925,
       "sha256": "5d16852c5802703cae0518ff7fe7af45fed80fac05f6e7b7a2f66ab66ec10a45"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/phase4-dashboard.js",
+      "path": "releases/20261119d/assets/js/phase4/phase4-dashboard.js",
       "bytes": 11652,
       "sha256": "ed644f7ce59cab07994b3eab784402eee7077ec6f6b06be694596da745ccdd74"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/ranking-explainer.js",
+      "path": "releases/20261119d/assets/js/phase4/ranking-explainer.js",
       "bytes": 1334,
       "sha256": "bbeb0976ef92afbcb1e8b830da4bc2d25928820f5d2e003d0aab54554f31e764"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/scenario-metric-extractor.js",
+      "path": "releases/20261119d/assets/js/phase4/scenario-metric-extractor.js",
       "bytes": 2033,
       "sha256": "582a60c3ff47d76e902e6750084e5893d8e2752f37a4a063d97ebf575e265bdf"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/scenario-optimizer.js",
+      "path": "releases/20261119d/assets/js/phase4/scenario-optimizer.js",
       "bytes": 19657,
       "sha256": "43e14817a8c33f9d3ad12b162d62fb6f25abaef26331ba1ae193f6e332ce11dc"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/scenario-scoring.js",
+      "path": "releases/20261119d/assets/js/phase4/scenario-scoring.js",
       "bytes": 1167,
       "sha256": "3606ef8a1d67517f0ccd1522c278ec4487a8b4346d5920e77f796d4dc5f012e2"
     },
     {
-      "path": "releases/20261119c/assets/js/phase4/tradeoff-frontier.js",
+      "path": "releases/20261119d/assets/js/phase4/tradeoff-frontier.js",
       "bytes": 1223,
       "sha256": "6686b9c8638f80b49d4be361f23b5faa41480f4a3cb5a1e4db8a8bf4b7f25016"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/audit-trail-engine.js",
+      "path": "releases/20261119d/assets/js/phase5/audit-trail-engine.js",
       "bytes": 5986,
       "sha256": "c2756d4215d5a68493b5ad2da6d06b1d9dc95b68a7f980eb55c68420ff0fd2e3"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/charts.js",
+      "path": "releases/20261119d/assets/js/phase5/charts.js",
       "bytes": 2131,
       "sha256": "94b843d5024cc41bdd7e825eda7d0f9deb36475035c7efe322a1862f477c0509"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/decision-controls.js",
+      "path": "releases/20261119d/assets/js/phase5/decision-controls.js",
       "bytes": 757,
       "sha256": "d40575f04c0fb133a3e3d1274c33f4cc3b1ef11b4226804a0962495dead06ba8"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/executive-report-builder.js",
+      "path": "releases/20261119d/assets/js/phase5/executive-report-builder.js",
       "bytes": 22022,
       "sha256": "30646b0efa28d3ae045f089c9b999c8a6fd4ea358f1880299272b445eb4c3821"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/export-center.js",
+      "path": "releases/20261119d/assets/js/phase5/export-center.js",
       "bytes": 15126,
       "sha256": "abab86be0bbdae6c1e94b17042539cb877e8c599648e3337bfaa3cd4bb900755"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/final-qa-checker.js",
+      "path": "releases/20261119d/assets/js/phase5/final-qa-checker.js",
       "bytes": 3920,
       "sha256": "79d0013305e989bb0f9bace0cc0c65b878d7718b1c76bd816c6ffa633411e2ff"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/final-scenario-selector.js",
+      "path": "releases/20261119d/assets/js/phase5/final-scenario-selector.js",
       "bytes": 3056,
       "sha256": "4d4013df13ba8fff06b45289268b9bcae782c4491c507f52c32adc0f658dc4af"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/final-situation-view.js",
+      "path": "releases/20261119d/assets/js/phase5/final-situation-view.js",
       "bytes": 3969,
       "sha256": "22dd5eb75e789354bae8751e304010c3011b60fa68fb98c289c7d85ba025d969"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/main.js",
+      "path": "releases/20261119d/assets/js/phase5/main.js",
       "bytes": 674,
       "sha256": "d6ad0dbe0e470a40f7da63eca8fd3a280aa8238be4976eaf9876259e50c4b1b3"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/phase5-dashboard-view.js",
+      "path": "releases/20261119d/assets/js/phase5/phase5-dashboard-view.js",
       "bytes": 10366,
       "sha256": "e680f94a64108ff7ddd6284387e720e45c3dba6edbc12880491ecd44d5284d39"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/phase5-dashboard.js",
+      "path": "releases/20261119d/assets/js/phase5/phase5-dashboard.js",
       "bytes": 17173,
       "sha256": "5b45a35c4e73ee54e787ec0ab39d6d8d5edd38c7a12c4421b981865b0dc257b6"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/recommendation-engine.js",
+      "path": "releases/20261119d/assets/js/phase5/recommendation-engine.js",
       "bytes": 5743,
       "sha256": "3abeac71c485c9eb0b8c838077c5140ff9d1ac7e3454d56d2ec8db80fb68659d"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/release-validator.js",
+      "path": "releases/20261119d/assets/js/phase5/release-validator.js",
       "bytes": 2936,
       "sha256": "d3239469c94fdd23d0bac23a5366a93ab58821067cda9bf815b34eae5aab2ca0"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/robustness-scorer.js",
+      "path": "releases/20261119d/assets/js/phase5/robustness-scorer.js",
       "bytes": 6815,
       "sha256": "63a6dabc48c2ce211439c280474d28d9dc45a085738cb463152dd1d653e037cb"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/sensitivity-engine.js",
+      "path": "releases/20261119d/assets/js/phase5/sensitivity-engine.js",
       "bytes": 4587,
       "sha256": "0d434736d6299783053a9bcb62e7e531b61c89121da13cde72f032021322349d"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/stress-case-library.js",
+      "path": "releases/20261119d/assets/js/phase5/stress-case-library.js",
       "bytes": 1811,
       "sha256": "50305f2d6ba04259e855e5e9c7efca2984b30e37cf13a76cb17ccc5f3db66515"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/stress-test-engine.js",
+      "path": "releases/20261119d/assets/js/phase5/stress-test-engine.js",
       "bytes": 5847,
       "sha256": "a1e66a01533ff1b16ce5c258c898498f612e6d7d248d73ee5fada9a7f44619d6"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/tax-periods-view.js",
+      "path": "releases/20261119d/assets/js/phase5/tax-periods-view.js",
       "bytes": 1738,
       "sha256": "ca325d70865d2f0bc9a601eb9d3611e554c6364b853a4d728390274450a01c68"
     },
     {
-      "path": "releases/20261119c/assets/js/phase5/workbook-parity.js",
+      "path": "releases/20261119d/assets/js/phase5/workbook-parity.js",
       "bytes": 7707,
       "sha256": "7c750797047b4adaf99a996b96935dbab3979c21c695ce3907793a0b799ba810"
     },
     {
-      "path": "releases/20261119c/assets/styles.css",
+      "path": "releases/20261119d/assets/styles.css",
       "bytes": 26925,
       "sha256": "8bceadaea5710966b1723722db7c479aadfea668ea01b72e9b5ffabf8d7a53f2"
     },
     {
-      "path": "releases/20261119c/data-demo/empresa_mock/baseline.json",
+      "path": "releases/20261119d/data-demo/empresa_mock/baseline.json",
       "bytes": 4199,
       "sha256": "865095cb92a53e5de53df82504200900f82d1efdacde23af545cc4cd620df79b"
     },
     {
-      "path": "releases/20261119c/data-demo/empresa_mock/objective.json",
+      "path": "releases/20261119d/data-demo/empresa_mock/objective.json",
       "bytes": 1652,
       "sha256": "bd70ef0df2bd71dab22518a99ec9811ccebf818b995e7790df57beca14470bbc"
     },
     {
-      "path": "releases/20261119c/data-demo/empresa_mock/scenarios.json",
+      "path": "releases/20261119d/data-demo/empresa_mock/scenarios.json",
       "bytes": 7139,
       "sha256": "d3ebf99731c5a6b5f1608b4970836edfe6b1d59e1fd14c384dacefcffc71e89d"
     },
     {
-      "path": "releases/20261119c/data-demo/empresa_mock/stress-cases.json",
+      "path": "releases/20261119d/data-demo/empresa_mock/stress-cases.json",
       "bytes": 5042,
       "sha256": "29324346aaac6cfcc9e11cde90f3072dd2ec23ab07bd1bf9d737eb4620e4b564"
     }
