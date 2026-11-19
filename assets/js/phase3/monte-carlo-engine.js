@@ -292,6 +292,14 @@ const PROFILE_PRESETS = {
   },
 };
 
+const UNCERTAINTY_DRIVERS = Object.freeze([
+  'freight_multiplier',
+  'demand_multiplier',
+  'inventory_days',
+  'wacc',
+  'tax_multiplier',
+]);
+
 function buildMonteCarloConfig({
   iterations = MONTE_CARLO_CONFIG.iterations,
   seed = MONTE_CARLO_CONFIG.seed,
@@ -299,6 +307,8 @@ function buildMonteCarloConfig({
   scatterDriver = 'freight_multiplier',
   histogramBins = 12,
   taxTreatment = 'sampled_tax',
+  sampledDrivers = null,
+  historicalDataMode = 'auto',
   historicalData = null,
   historical_data = null,
 } = {}) {
@@ -311,11 +321,19 @@ function buildMonteCarloConfig({
   const normalizedDriver = normalizeDriver(scatterDriver);
   const normalizedTaxTreatment =
     taxTreatment === 'fixed_baseline' ? 'fixed_baseline' : 'sampled_tax';
+  const normalizedSampledDrivers = Array.isArray(sampledDrivers)
+    ? [...new Set(sampledDrivers.map((driver) => String(driver).trim()))].filter((driver) =>
+        UNCERTAINTY_DRIVERS.includes(driver)
+      )
+    : UNCERTAINTY_DRIVERS.filter(
+        (driver) => normalizedTaxTreatment !== 'fixed_baseline' || driver !== 'tax_multiplier'
+      );
   const preset = PROFILE_PRESETS[normalizedProfile];
   const historical = normalizeHistoricalData(historicalData || historical_data);
   const historicalProvenanceValid = historical.validation?.provenance_status === 'declared';
   const historicalDrivers = Object.keys(historical)
     .filter((key) => key !== 'observations' && key !== 'validation' && key !== 'provenance')
+    .filter((key) => normalizedSampledDrivers.includes(key))
     .filter((key) => normalizedTaxTreatment !== 'fixed_baseline' || key !== 'tax_multiplier')
     .filter(() => historicalProvenanceValid);
   const uncertaintySource = historicalDrivers.length
@@ -371,6 +389,9 @@ function buildMonteCarloConfig({
         : 'parametric_draws',
     deterministic_method: 'scenario_simulation',
     tax_treatment: normalizedTaxTreatment,
+    sampled_drivers: normalizedSampledDrivers,
+    historical_data_mode:
+      historicalDataMode === 'parametric_only' ? 'parametric_only' : 'auto',
     profile: normalizedProfile,
     scatter_driver: normalizedDriver,
     histogram_bins: clamp(Math.round(safeNumber(histogramBins, 12)), 6, 30),
@@ -603,6 +624,7 @@ function sampleUncertaintyInputs({
   historicalData,
   historicalDrivers,
   preset,
+  sampledDrivers,
   rng,
   fixedBaselineTax = false,
 }) {
@@ -614,9 +636,12 @@ function sampleUncertaintyInputs({
       ? Number(value)
       : sampleHistorical(historicalData[driver], rng);
   };
+  const shouldSample = (driver) => sampledDrivers.has(driver);
 
   return {
-    freight_multiplier: historicalDrivers.has('freight_multiplier')
+    freight_multiplier: !shouldSample('freight_multiplier')
+      ? baseFreight
+      : historicalDrivers.has('freight_multiplier')
       ? historicalValue('freight_multiplier')
       : sampleMultiplicative(
           baseFreight,
@@ -628,7 +653,9 @@ function sampleUncertaintyInputs({
           0.6,
           1.8
         ),
-    demand_multiplier: historicalDrivers.has('demand_multiplier')
+    demand_multiplier: !shouldSample('demand_multiplier')
+      ? baseDemand
+      : historicalDrivers.has('demand_multiplier')
       ? historicalValue('demand_multiplier')
       : sampleMultiplicative(
           baseDemand,
@@ -640,7 +667,9 @@ function sampleUncertaintyInputs({
           0.6,
           1.6
         ),
-    inventory_days: historicalDrivers.has('inventory_days')
+    inventory_days: !shouldSample('inventory_days')
+      ? baseInventory
+      : historicalDrivers.has('inventory_days')
       ? Math.max(0, Math.round(historicalValue('inventory_days')))
       : Math.round(
           sampleAdditive(
@@ -654,7 +683,9 @@ function sampleUncertaintyInputs({
             120
           )
         ),
-    wacc: historicalDrivers.has('wacc')
+    wacc: !shouldSample('wacc')
+      ? baseWacc
+      : historicalDrivers.has('wacc')
       ? Math.max(0, historicalValue('wacc'))
       : sampleAdditive(
           baseWacc,
@@ -666,7 +697,7 @@ function sampleUncertaintyInputs({
           0,
           0.5
         ),
-    tax_multiplier: fixedBaselineTax
+    tax_multiplier: fixedBaselineTax || !shouldSample('tax_multiplier')
       ? 1
       : historicalDrivers.has('tax_multiplier')
         ? Math.max(0, historicalValue('tax_multiplier'))
@@ -718,10 +749,14 @@ export function runMonteCarloSimulation({
   }
 
   const suppliedHistoricalData = [
-    config.history,
-    config.historical_data,
-    baselineBundle?.core_data?.historical_series,
-    baselineBundle?.core_data?.time_series,
+    ...(config.historical_data_mode === 'parametric_only'
+      ? []
+      : [
+          config.history,
+          config.historical_data,
+          baselineBundle?.core_data?.historical_series,
+          baselineBundle?.core_data?.time_series,
+        ]),
   ].find(hasHistoricalContent);
   const normalizedConfig = buildMonteCarloConfig({
     iterations,
@@ -730,6 +765,8 @@ export function runMonteCarloSimulation({
     scatterDriver: config.scatter_driver || config.scatterDriver || 'freight_multiplier',
     histogramBins: config.histogram_bins || 12,
     taxTreatment: config.tax_treatment || config.taxTreatment || 'sampled_tax',
+    sampledDrivers: config.sampled_drivers || config.sampledDrivers || null,
+    historicalDataMode: config.historical_data_mode || 'auto',
     historicalData: suppliedHistoricalData || null,
   });
   if (normalizedConfig.tax_treatment === 'fixed_baseline') {
@@ -854,6 +891,7 @@ export function runMonteCarloSimulation({
       historicalData,
       historicalDrivers,
       preset,
+      sampledDrivers: new Set(normalizedConfig.sampled_drivers),
       rng,
       fixedBaselineTax: normalizedConfig.tax_treatment === 'fixed_baseline',
     });
